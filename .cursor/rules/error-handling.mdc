@@ -1,0 +1,22 @@
+---
+description: Tratamento de erros tipados entre camadas
+globs: src/modules/**/{actions,services,repositories}/**,src/shared/errors/**
+alwaysApply: false
+---
+
+# Error handling
+
+Ver `architecture/008-error-handling.md`.
+
+## Fluxo
+
+1. Repository → erros técnicos (DB)
+2. Service → erros de domínio (`shared/errors/`)
+3. Action → `{ success, data | error }` para a UI
+4. UI → Toast / form feedback
+
+## Regras
+
+- Não engolir erros sem log (`core/logger`)
+- `ApiClient` centraliza erros HTTP
+- Actions traduzem erros de serviço em respostas previsíveis

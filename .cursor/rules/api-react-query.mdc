@@ -1,0 +1,24 @@
+---
+description: ApiClient e TanStack Query no client
+globs: src/modules/**/{queries,mutations,hooks}/**,src/shared/api/**
+alwaysApply: false
+---
+
+# API + React Query
+
+Ver `architecture/007-api-pattern.md`.
+
+## Regras
+
+- Nunca `fetch` solto — use `shared/api` (ApiClient)
+- Preferir Server Actions + services no App Router
+- ApiClient + React Query só quando a UI precisar de cache/polling/interatividade
+
+## React Query
+
+- Factories em `modules/<feature>/queries/` e `mutations/`
+- Hooks (`usePatients`) encapsulam `useQuery` — não espalhar `useQuery(...)` em pages
+
+```
+ApiClient → AuthInterceptor → Request → Response → ErrorHandler
+```

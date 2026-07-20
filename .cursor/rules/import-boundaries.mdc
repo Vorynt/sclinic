@@ -1,0 +1,28 @@
+---
+description: Regras de import e boundaries entre pastas
+globs: src/**/*.{ts,tsx}
+alwaysApply: false
+---
+
+# Imports e boundaries
+
+Ver `architecture/003-import-rules.md`.
+
+## Preferências
+
+- Alias `@/` em vez de `../../../../`
+- Domínio: `@/modules/<feature>/...`
+- Infra: `@/shared/...` ou `@/core/...`
+- UI/app: `@/components/`, `@/utils/`, `@/types/`, `@/providers/`
+- Sem `any` injustificado; sem `console.log` em produção
+
+## Boundaries
+
+- `app/` pode importar modules, shared, core, components, providers
+- Um módulo **não** importa internals de outro módulo
+- Entre módulos: actions/services públicos ou `core/events`
+
+## `shared/` vs topo
+
+- `shared/` só: `api/`, `auth/`, `errors/`, `validators/`
+- Não criar em `shared/`: components, hooks, providers, types, utils, constants

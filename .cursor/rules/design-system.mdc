@@ -1,0 +1,28 @@
+---
+description: Design system, Storybook e componentes UI
+globs: src/components/**/*.{ts,tsx},src/modules/**/components/**/*.{ts,tsx},.storybook/**
+alwaysApply: false
+---
+
+# Design system
+
+Ver `architecture/010-design-system.md`.
+
+## Stack
+
+- Tailwind CSS v4 + shadcn/ui
+- Tokens em `config/theme.ts` + CSS variables
+- UI genérica nasce primeiro no Storybook (`.storybook/`)
+
+## Onde colocar
+
+| Tipo | Local |
+|------|-------|
+| Button, Input, Dialog | `src/components/` |
+| PatientCard, etc. | `modules/<feature>/components/` |
+
+## Regras
+
+- Sem hex soltos nos módulos — use tokens
+- Reutilize primitives; não reinvente Button/Input/Dialog
+- Evite wrappers/cards sem necessidade de interação

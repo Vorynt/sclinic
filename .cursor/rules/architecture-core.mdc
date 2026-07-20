@@ -1,0 +1,34 @@
+---
+description: Arquitetura sclinic — pair programming e fonte da verdade
+alwaysApply: true
+---
+
+# Arquitetura (sempre)
+
+Antes de criar pastas ou padrões novos, consulte `architecture/` e `AGENTS.md`.
+
+## Fluxo
+
+```
+Page → Server Action → Service → Repository → Drizzle (src/db/)
+```
+
+Nunca Page → DB / Page → Repository.
+
+## Domínio
+
+- Código de domínio em `src/modules/<feature>/`.
+- Referência canônica: `src/modules/patients/`.
+- Módulos: patients, appointments, medical-records, billing, inventory, dashboard, settings, users, authentication.
+
+## Estado
+
+- Server state → TanStack Query (`queries/` / `mutations/` do módulo).
+- Client state → Zustand em `src/stores/` (nunca dados de domínio).
+
+## Pair programming
+
+1. Confirme escopo em 1–2 frases.
+2. Espelhe `patients`; implemente na ordem das camadas.
+3. Mudanças mínimas; responda em português.
+4. Em dúvida entre rápido e correto → arquitetura vence.

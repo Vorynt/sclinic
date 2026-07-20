@@ -1,0 +1,26 @@
+---
+description: Regras de repositories e acesso a dados
+globs: src/modules/**/repositories/**
+alwaysApply: false
+---
+
+# Repositories
+
+Ver `architecture/006-repositories.md`.
+
+## Responsabilidade
+
+Única camada que fala com o banco (Drizzle).
+
+## Regras
+
+- Nome: `<entity>.repository.ts`
+- Sem regra de negócio (isso é do service)
+- Retorna tipos de domínio / DTOs mapeados — não vaze ORM para a UI
+- Um repository por agregado/entidade principal
+- Client, schema e migrations só em `src/db/`
+
+```typescript
+// ❌ Drizzle em service/action/page
+// ✅ Drizzle só no repository
+```

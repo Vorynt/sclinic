@@ -1,0 +1,34 @@
+---
+description: Camadas e pastas dos módulos de domínio
+globs: src/modules/**/*
+alwaysApply: false
+---
+
+# Módulos — camadas
+
+Ver `architecture/001-feature-based.md` e `002-folder-convention.md`.
+
+## Pastas do módulo
+
+`components/ actions/ services/ repositories/ schemas/ validators/ hooks/ queries/ mutations/ types/ dto/ mappers/ permissions/ constants/ utils/ tests/`
+
+## Ordem de implementação
+
+1. schema / DTO / validator
+2. repository
+3. service
+4. action
+5. queries / mutations / hooks
+6. components → page
+
+## Nomenclatura
+
+- Arquivos: `kebab-case` (`create-patient.ts`, `patient.service.ts`)
+- Componentes React: `PascalCase` (`PatientCard.tsx`)
+- Alias `@/` — sem imports relativos profundos
+
+## Anti-padrões
+
+- Lógica de negócio em components
+- SQL fora de `repositories/`
+- Espalhar arquivos do domínio fora do módulo

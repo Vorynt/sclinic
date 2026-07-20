@@ -1,0 +1,25 @@
+---
+description: Localização e pirâmide de testes
+globs: src/modules/**/tests/**,**/__tests__/**,**/*.{test,spec}.{ts,tsx}
+alwaysApply: false
+---
+
+# Testing
+
+Ver `architecture/009-testing.md`.
+
+## Localização
+
+Testes de domínio em `modules/<feature>/tests/`.
+
+## Pirâmide
+
+- Unit: services, validators, utils, mappers
+- Integration: repositories (DB de teste) e actions
+- E2E: fluxos críticos — fase posterior
+
+## Regras
+
+- Services testáveis sem UI
+- Repositories mockáveis ou com banco isolado
+- Priorizar domínio; não obsessão por detalhes visuais no início

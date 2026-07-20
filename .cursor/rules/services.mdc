@@ -1,0 +1,23 @@
+---
+description: Regras de services de domínio
+globs: src/modules/**/services/**
+alwaysApply: false
+---
+
+# Services
+
+Ver `architecture/005-services.md`.
+
+## Responsabilidade
+
+Concentra regra de negócio do domínio.
+
+## Regras
+
+- Nome: `<entity>.service.ts` (ex.: `patient.service.ts`)
+- Recebe dados já validados (action + schema)
+- Orquestra repositories (e outros services com cuidado entre módulos)
+- Não conhece HTTP / React
+- Sempre em `modules/<feature>/services/`
+
+`src/services/` só para serviços realmente transversais.

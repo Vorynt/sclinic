@@ -1,0 +1,30 @@
+---
+description: Convenções de Server Actions
+globs: src/modules/**/actions/**
+alwaysApply: false
+---
+
+# Server Actions
+
+Ver `architecture/004-server-actions.md` e `008-error-handling.md`.
+
+## Regras
+
+- `"use server"` no topo do arquivo
+- Um arquivo por action: `create-patient.ts`, `update-patient.ts`
+- Validar input (schema/DTO) e delegar ao service
+- Sem SQL e sem regra de negócio pesada
+- Retorno previsível para UI (`success` / `data | error`)
+
+## Exemplo
+
+```typescript
+// ✅ Action fina
+export async function createPatientAction(data: CreatePatientDto) {
+  return patientService.create(data)
+}
+
+// ❌ Lógica/SQL na action
+```
+
+Referência: `src/modules/patients/actions/`.
