@@ -1,6 +1,11 @@
+"use client"
+
 /**
- * Hook de listagem de pacientes — implementação com React Query na Fase de infraestrutura.
+ * Listagem de pacientes — aguarda action/list no service.
+ * Use `patientsQueryKeys.list()` + `queryOptions` quando o endpoint existir.
  */
 export function usePatients() {
-  throw new Error("Not implemented: usePatients")
+  throw new Error(
+    "Not implemented: usePatients — create listPatientsAction + patientsQueries.list first",
+  )
 }

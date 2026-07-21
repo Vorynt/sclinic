@@ -19,8 +19,17 @@ Ver `architecture/006-repositories.md`.
 - Retorna tipos de domínio / DTOs mapeados — não vaze ORM para a UI
 - Um repository por agregado/entidade principal
 - Client, schema e migrations só em `src/db/`
+- Envolver queries com `withDbError` → `TechnicalError`
 
 ```typescript
+import { withDbError } from "@/db/with-db-error"
+
+// ✅
+return withDbError(async () => {
+  const [row] = await db.insert(patients).values(data).returning()
+  return toPatient(row)
+})
+
 // ❌ Drizzle em service/action/page
-// ✅ Drizzle só no repository
+// ❌ throw new Error / AppError no repository
 ```

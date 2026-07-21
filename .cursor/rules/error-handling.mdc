@@ -10,7 +10,7 @@ Ver `architecture/008-error-handling.md`.
 
 ## Fluxo
 
-1. Repository → erros técnicos (DB)
+1. Repository → `withDbError` / `TechnicalError` (DB)
 2. Service → erros de domínio (`shared/errors/`)
 3. Action → `{ success, data | error }` para a UI
 4. UI → Toast / form feedback

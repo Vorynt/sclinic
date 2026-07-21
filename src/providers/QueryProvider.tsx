@@ -1,14 +1,20 @@
+"use client"
+
+import { QueryClientProvider } from "@tanstack/react-query"
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
 import type { ReactNode } from "react"
 
-/**
- * Providers serão implementados na Fase de infraestrutura.
- * QueryProvider | ThemeProvider | ToastProvider | AuthProvider | PermissionProvider
- */
+import { getQueryClient } from "@/lib/get-query-client"
 
-export function QueryProviderPlaceholder({
-  children,
-}: {
-  children: ReactNode
-}) {
-  return children
+export function QueryProvider({ children }: { children: ReactNode }) {
+  const queryClient = getQueryClient()
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      {children}
+      {process.env.NODE_ENV === "development" ? (
+        <ReactQueryDevtools initialIsOpen={false} />
+      ) : null}
+    </QueryClientProvider>
+  )
 }
