@@ -40,6 +40,7 @@ Repository throws TechnicalError
 ## Arquivos
 
 - `shared/errors/` — `AppError`, `TechnicalError`, `ValidationError`, `ErrorCode`, `toActionResult`
+- `shared/validators/` — `parseOrThrow` (Zod → `ValidationError` com `fields`)
 - `db/with-db-error.ts` — mapeia Neon/Postgres/Drizzle → `TechnicalError` (`withDbError`)
 - `shared/api/` — `apiClient`, `mapHttpError`
 - `types/api.ts` — `ApiResponse`

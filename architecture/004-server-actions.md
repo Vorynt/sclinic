@@ -15,7 +15,7 @@ Nunca: Page → Database.
 ## Convenções
 
 - Um arquivo por action: `create-patient.ts`, `update-patient.ts`.
-- Actions validam input (schema/DTO) e delegam ao service.
+- Actions validam input com Zod (`parseOrThrow` em `shared/validators`) e delegam ao service.
 - Actions não contêm SQL nem lógica de negócio pesada.
 - Marcar com `"use server"` no topo do arquivo.
 

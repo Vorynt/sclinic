@@ -19,11 +19,14 @@ Ver `architecture/004-server-actions.md` e `008-error-handling.md`.
 ## Exemplo
 
 ```typescript
-// ✅ Action fina — throw interno, Result na borda
+// ✅ Action fina — valida na borda, Result para a UI
 export async function createPatientAction(
-  data: CreatePatientDto,
+  data: unknown,
 ): Promise<ApiResponse<Patient>> {
-  return toActionResult(() => patientService.create(data))
+  return toActionResult(async () => {
+    const parsed = parseOrThrow(createPatientSchema, data)
+    return patientService.create(parsed)
+  })
 }
 
 // ❌ Lógica/SQL na action ou retornar throw cru para a UI

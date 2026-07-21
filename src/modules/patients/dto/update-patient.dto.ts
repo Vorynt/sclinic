@@ -1,11 +1,7 @@
+import type { UpdatePatientInput } from "@/modules/patients/schemas/patient.schema"
 import type { Patient } from "@/modules/patients/types/patient"
 
-export type UpdatePatientDto = {
-  id: string
-  name?: string
-  cpf?: string
-}
-
-export type UpdatePatientInput = UpdatePatientDto
+/** Validated update payload (digits-only CPF when present). */
+export type UpdatePatientDto = UpdatePatientInput
 
 export type UpdatePatientResult = Patient
