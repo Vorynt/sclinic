@@ -1,0 +1,10 @@
+-- Table owners bypass RLS unless FORCE is set.
+-- Run after drizzle-kit migrate (or include in a follow-up migration).
+
+ALTER TABLE IF EXISTS clinic_memberships FORCE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS invitations FORCE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS professional_clinics FORCE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS subscriptions FORCE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS patients FORCE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS appointments FORCE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS clinics FORCE ROW LEVEL SECURITY;
