@@ -82,6 +82,9 @@ function mapBaUser(baUser: BaAuthUser): AuthUser {
     image: baUser.image ?? null,
     phone: (baUser as { phone?: string | null }).phone ?? null,
     status: toUserStatus((baUser as { status?: unknown }).status),
+    mustChangePassword: Boolean(
+      (baUser as { mustChangePassword?: boolean | null }).mustChangePassword,
+    ),
   });
 }
 
@@ -130,7 +133,10 @@ async function buildAuthContextFromParts(
 }
 
 async function buildAuthContext(ba: BaSessionResult): Promise<AuthContext> {
-  return buildAuthContextFromParts(mapBaUser(ba.user), mapBaSession(ba.session));
+  return buildAuthContextFromParts(
+    mapBaUser(ba.user),
+    mapBaSession(ba.session),
+  );
 }
 
 /**
@@ -155,6 +161,32 @@ async function buildAuthContextFromBaResult(result: {
 }
 
 export const authService = {
+  /**
+   * Provisions a credential account for an invited collaborator.
+   * Does not create a session. If the email already exists, returns that user
+   * and leaves the existing password unchanged.
+   */
+  async provisionInvitedUser(params: {
+    name: string;
+    email: string;
+    password: string;
+  }): Promise<{ user: AuthUser; created: boolean }> {
+    const existing = await userRepository.findByEmail(params.email);
+    if (existing) {
+      return { user: existing, created: false };
+    }
+
+    const { hashPassword } = await import("better-auth/crypto");
+    const passwordHash = await hashPassword(params.password);
+    const created = await userRepository.createWithCredential({
+      name: params.name,
+      email: params.email,
+      passwordHash,
+    });
+
+    return { user: created, created: true };
+  },
+
   async signUp(data: SignUpDto, ctx: AuthRequestContext): Promise<AuthContext> {
     try {
       const result = await auth.api.signUpEmail({
@@ -162,6 +194,7 @@ export const authService = {
           name: data.name,
           email: data.email,
           password: data.password,
+          callbackURL: AUTH_CONSTANTS.DEFAULT_EMAIL_VERIFICATION_CALLBACK,
           ...(data.phone ? { phone: data.phone } : {}),
         },
         headers: ctx.headers,
@@ -369,8 +402,8 @@ export const authService = {
   async changePassword(
     data: ChangePasswordDto,
     ctx: AuthRequestContext,
-  ): Promise<void> {
-    await this.requireSession(ctx);
+  ): Promise<AuthContext> {
+    const authContext = await this.requireSession(ctx);
 
     try {
       await auth.api.changePassword({
@@ -383,6 +416,12 @@ export const authService = {
     } catch (error) {
       mapBetterAuthError(error);
     }
+
+    if (authContext.user.mustChangePassword) {
+      await userRepository.setMustChangePassword(authContext.user.id, false);
+    }
+
+    return this.requireSession(ctx);
   },
 
   async resendVerificationEmail(ctx: AuthRequestContext): Promise<void> {

@@ -15,7 +15,7 @@
     "db:seed:plans": "tsx src/db/seed/plans.ts",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "test": "node --import tsx --test src/modules/authentication/tests/*.test.ts src/modules/clinics/tests/*.test.ts"
+    "test": "node --import tsx --test src/modules/authentication/tests/*.test.ts src/modules/clinics/tests/*.test.ts src/modules/users/tests/*.test.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.4.0",

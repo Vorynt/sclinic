@@ -57,6 +57,7 @@ describe("auth schemas", () => {
     const parsed = changePasswordSchema.parse({
       currentPassword: "antiga-senha",
       newPassword: "nova-senha-ok",
+      confirmPassword: "nova-senha-ok",
     })
     assert.equal(parsed.newPassword, "nova-senha-ok")
   })
@@ -114,6 +115,7 @@ describe("assertUserCanAuthenticate", () => {
     emailVerified: true,
     image: null,
     phone: null,
+    mustChangePassword: false,
   }
 
   it("allows active users", () => {
@@ -149,6 +151,7 @@ describe("getPostAuthRedirect", () => {
       image: null,
       phone: null,
       status: "active",
+      mustChangePassword: false,
     },
     session: {
       id: "s1",
@@ -171,8 +174,59 @@ describe("getPostAuthRedirect", () => {
     )
   })
 
+  it("sends users with provisional password to change-password", () => {
+    assert.equal(
+      getPostAuthRedirect({
+        ...baseAuth,
+        user: { ...baseAuth.user, mustChangePassword: true },
+      }),
+      routes.changePassword,
+    )
+  })
+
+  it("preserves invite next when password change is required", () => {
+    assert.equal(
+      getPostAuthRedirect(
+        {
+          ...baseAuth,
+          user: { ...baseAuth.user, mustChangePassword: true },
+        },
+        `${routes.invite}?token=abc`,
+      ),
+      `${routes.changePassword}?next=${encodeURIComponent(`${routes.invite}?token=abc`)}`,
+    )
+  })
+
   it("sends verified users without membership to onboarding", () => {
     assert.equal(getPostAuthRedirect(baseAuth), routes.onboardingPlan)
+  })
+
+  it("honors invite next even without membership", () => {
+    assert.equal(
+      getPostAuthRedirect(baseAuth, `${routes.invite}?token=abc`),
+      `${routes.invite}?token=abc`,
+    )
+  })
+
+  it("ignores unsafe next paths", () => {
+    assert.equal(
+      getPostAuthRedirect(
+        {
+          ...baseAuth,
+          membership: {
+            id: "m1",
+            clinicId: "c1",
+            roleId: "r1",
+            roleKey: "owner",
+            roleName: "Owner",
+            status: "active",
+            isDefault: true,
+          },
+        },
+        "https://evil.example",
+      ),
+      routes.dashboard,
+    )
   })
 
   it("sends verified users with membership to dashboard", () => {

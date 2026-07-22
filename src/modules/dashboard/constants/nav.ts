@@ -4,6 +4,7 @@ import {
   GearIcon,
   HouseIcon,
   UsersIcon,
+  UsersThreeIcon,
 } from "@phosphor-icons/react"
 
 import type { PermissionKey } from "@/config/permissions"
@@ -38,6 +39,13 @@ export const NAV_ITEMS: NavItem[] = [
     enabled: true,
   },
   {
+    title: "Equipe",
+    href: routes.users,
+    icon: UsersThreeIcon,
+    permissions: [Permission.MEMBERS_INVITE],
+    enabled: true,
+  },
+  {
     title: "Pacientes",
     href: routes.patients,
     icon: UsersIcon,
@@ -66,7 +74,14 @@ export const NAV_ITEMS: NavItem[] = [
 const PAGE_META: Record<string, PageMeta> = {
   [routes.dashboard]: {
     title: "Dashboard",
-    breadcrumbs: [{ label: "Início", href: routes.dashboard }, { label: "Dashboard" }],
+    breadcrumbs: [{ label: "Dashboard" }],
+  },
+  [routes.users]: {
+    title: "Equipe",
+    breadcrumbs: [
+      { label: "Início", href: routes.dashboard },
+      { label: "Equipe" },
+    ],
   },
   [routes.settings]: {
     title: "Configurações",

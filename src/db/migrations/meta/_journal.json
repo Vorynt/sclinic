@@ -21,6 +21,13 @@
       "when": 1784741869771,
       "tag": "0002_fancy_zarda",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1784761556307,
+      "tag": "0003_must_change_password",
+      "breakpoints": true
     }
   ],
   "version": "7"

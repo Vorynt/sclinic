@@ -2,6 +2,7 @@ export {
   requireAnyPermission,
   requireAuth,
   requireClinic,
+  requirePasswordReady,
   requirePermission,
   type AuthContextWithClinic,
 } from "@/modules/authentication/permissions/guards"

@@ -42,6 +42,7 @@ export function toAuthUser(row: {
   image: string | null
   phone: string | null
   status: unknown
+  mustChangePassword?: boolean | null
 }): AuthUser {
   return {
     id: row.id,
@@ -51,6 +52,7 @@ export function toAuthUser(row: {
     image: row.image,
     phone: row.phone,
     status: toUserStatus(row.status),
+    mustChangePassword: Boolean(row.mustChangePassword),
   }
 }
 

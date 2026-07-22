@@ -16,6 +16,7 @@ export type AuthUser = {
   image: string | null
   phone: string | null
   status: UserStatus
+  mustChangePassword: boolean
 }
 
 export type AuthSession = {

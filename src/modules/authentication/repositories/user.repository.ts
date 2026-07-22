@@ -1,7 +1,9 @@
+import { randomUUID } from "node:crypto"
+
 import { eq } from "drizzle-orm"
 
 import { db } from "@/db"
-import { user } from "@/db/schema"
+import { account, user } from "@/db/schema"
 import { withDbError } from "@/db/with-db-error"
 import { toAuthUser } from "@/modules/authentication/mappers/auth.mapper"
 import type { AuthUser, UserStatus } from "@/modules/authentication/types/auth"
@@ -25,6 +27,47 @@ export const userRepository = {
     })
   },
 
+  /**
+   * Creates a credential user without opening a session (invite provisioning).
+   * Password must already be hashed with Better Auth's hasher.
+   */
+  async createWithCredential(params: {
+    name: string
+    email: string
+    passwordHash: string
+  }): Promise<AuthUser> {
+    return withDbError(async () => {
+      const id = randomUUID()
+      const email = params.email.toLowerCase()
+
+      const [row] = await db
+        .insert(user)
+        .values({
+          id,
+          name: params.name,
+          email,
+          emailVerified: false,
+          status: "active",
+          mustChangePassword: true,
+        })
+        .returning()
+
+      if (!row) {
+        throw new Error("Failed to create user")
+      }
+
+      await db.insert(account).values({
+        id: randomUUID(),
+        accountId: id,
+        providerId: "credential",
+        userId: id,
+        password: params.passwordHash,
+      })
+
+      return toAuthUser(row)
+    })
+  },
+
   async updateLastLoginAt(id: string, at: Date = new Date()): Promise<void> {
     return withDbError(async () => {
       await db.update(user).set({ lastLoginAt: at }).where(eq(user.id, id))
@@ -39,6 +82,18 @@ export const userRepository = {
         .where(eq(user.id, id))
         .returning()
       return row ? toAuthUser(row) : null
+    })
+  },
+
+  async setMustChangePassword(
+    id: string,
+    mustChangePassword: boolean,
+  ): Promise<void> {
+    return withDbError(async () => {
+      await db
+        .update(user)
+        .set({ mustChangePassword })
+        .where(eq(user.id, id))
     })
   },
 }

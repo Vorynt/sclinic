@@ -25,6 +25,13 @@ const clientMessages: Record<string, string> = {
   [ErrorCode.MEMBERSHIP_INACTIVE]: "Seu acesso a esta clínica está inativo.",
   [ErrorCode.INVALID_TOKEN]: "Token inválido.",
   [ErrorCode.TOKEN_EXPIRED]: "Token expirado. Solicite um novo.",
+  [ErrorCode.PASSWORD_CHANGE_REQUIRED]:
+    "Altere sua senha provisória para continuar.",
+  [ErrorCode.INVITATION_NOT_FOUND]: "Convite não encontrado.",
+  [ErrorCode.INVITATION_REVOKED]: "Este convite foi cancelado.",
+  [ErrorCode.INVITATION_ALREADY_ACCEPTED]: "Este convite já foi aceito.",
+  [ErrorCode.INVITE_EMAIL_MISMATCH]:
+    "Faça login com o e-mail que recebeu o convite.",
 }
 
 /**

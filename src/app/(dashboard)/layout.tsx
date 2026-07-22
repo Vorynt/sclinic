@@ -23,6 +23,10 @@ export default async function DashboardLayout({
     redirect(routes.verifyEmail)
   }
 
+  if (session.user.mustChangePassword) {
+    redirect(routes.changePassword)
+  }
+
   if (!session.membership) {
     redirect(routes.onboardingPlan)
   }

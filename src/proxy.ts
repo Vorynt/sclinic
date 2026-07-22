@@ -9,7 +9,7 @@ import { routes } from "@/config/routes"
  * Always re-validate with requireAuth / requireClinic on pages and actions.
  */
 export function proxy(request: NextRequest) {
-  const { pathname } = request.nextUrl
+  const { pathname, search } = request.nextUrl
   const sessionCookie = getSessionCookie(request)
 
   const isAuthRoute =
@@ -20,17 +20,18 @@ export function proxy(request: NextRequest) {
 
   const isPublicRoute =
     pathname === routes.home ||
+    pathname === routes.invite ||
     pathname.startsWith("/api/auth") ||
     isAuthRoute
 
   if (!sessionCookie && !isPublicRoute) {
     const loginUrl = new URL(routes.login, request.url)
-    loginUrl.searchParams.set("next", pathname)
+    loginUrl.searchParams.set("next", `${pathname}${search}`)
     return NextResponse.redirect(loginUrl)
   }
 
   // Cookie present on auth pages → app entry; pages decide onboarding vs dashboard.
-  // /verify-email is intentionally excluded (authenticated but unverified gate).
+  // /verify-email, /change-password and /invite are intentionally excluded.
   if (sessionCookie && isAuthRoute) {
     return NextResponse.redirect(new URL(routes.dashboard, request.url))
   }

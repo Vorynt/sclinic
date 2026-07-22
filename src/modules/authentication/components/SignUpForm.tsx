@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -29,6 +29,8 @@ type SignUpOutput = z.output<typeof signUpSchema>;
 
 export function SignUpForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const next = searchParams.get("next");
   const [formError, setFormError] = useState<{
     message: string;
     code: string;
@@ -51,7 +53,7 @@ export function SignUpForm() {
   const signUp = useSignUpMutation({
     onSuccess: (data) => {
       toast.success("Conta criada com sucesso");
-      router.replace(getPostAuthRedirect(data));
+      router.replace(getPostAuthRedirect(data, next));
     },
     onError: (error) => {
       console.error(error);

@@ -21,12 +21,27 @@ export async function requireAuth(
 }
 
 /**
+ * Blocks app usage until the user replaces a provisional password.
+ */
+export async function requirePasswordReady(
+  ctx: AuthRequestContext,
+): Promise<AuthContext> {
+  const authContext = await requireAuth(ctx)
+
+  if (authContext.user.mustChangePassword) {
+    throw new AppError(ErrorCode.PASSWORD_CHANGE_REQUIRED)
+  }
+
+  return authContext
+}
+
+/**
  * Requires auth + an active clinic membership on the session.
  */
 export async function requireClinic(
   ctx: AuthRequestContext,
 ): Promise<AuthContextWithClinic> {
-  const authContext = await requireAuth(ctx)
+  const authContext = await requirePasswordReady(ctx)
 
   if (!authContext.membership || !authContext.session.activeClinicId) {
     throw new AppError(ErrorCode.CLINIC_REQUIRED)

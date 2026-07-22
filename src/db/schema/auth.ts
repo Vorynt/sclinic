@@ -14,7 +14,7 @@ import { primaryTextId, timestamps } from "./helpers"
  * Better Auth core tables (singular names — BA default).
  * Configure adapter with schema mapping or modelName if you rename.
  *
- * Domain extensions on `user`: phone, status, lastLoginAt.
+ * Domain extensions on `user`: phone, status, lastLoginAt, mustChangePassword.
  * Password lives on `account.password` (credential provider), not on user.
  */
 export const user = pgTable("user", {
@@ -26,6 +26,8 @@ export const user = pgTable("user", {
   phone: text("phone"),
   status: userStatusEnum("status").default("active").notNull(),
   lastLoginAt: timestamp("last_login_at", { withTimezone: true, mode: "date" }),
+  /** When true, user must set a new password before using the app. */
+  mustChangePassword: boolean("must_change_password").default(false).notNull(),
   ...timestamps,
 })
 

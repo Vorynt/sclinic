@@ -119,3 +119,21 @@ export function useResendVerificationEmailMutation({
     },
   });
 }
+
+export function useChangePasswordMutation({
+  onSuccess,
+  onError,
+}: MutationCallbacks<AuthContext> = {}) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    ...authMutations.changePassword(),
+    onSuccess: async (data) => {
+      await queryClient.invalidateQueries({ queryKey: authQueryKeys.all });
+      onSuccess?.(data);
+    },
+    onError: (error) => {
+      onError?.(toAppError(error));
+    },
+  });
+}

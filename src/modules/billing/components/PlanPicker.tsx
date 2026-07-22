@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -11,38 +11,39 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
-import { Spinner } from "@/components/ui/spinner"
-import { routes } from "@/config/routes"
-import { usePlans } from "@/modules/billing/hooks/use-plans"
-import type { Plan } from "@/modules/billing/types/billing"
-import { cn } from "@/lib/utils"
+} from "@/components/ui/card";
+import { Spinner } from "@/components/ui/spinner";
+import { routes } from "@/config/routes";
+import { cn } from "@/lib/utils";
+import { usePlans } from "@/modules/billing/hooks/use-plans";
+import type { Plan } from "@/modules/billing/types/billing";
+import { CheckCircleIcon } from "@phosphor-icons/react";
 
 function formatPrice(plan: Plan): string {
-  const value = plan.priceCents / 100
+  const value = plan.priceCents / 100;
   return new Intl.NumberFormat("pt-BR", {
     style: "currency",
     currency: plan.currency || "BRL",
-  }).format(value)
+  }).format(value);
 }
 
 function cycleLabel(cycle: Plan["billingCycle"]): string {
-  return cycle === "yearly" ? "/ano" : "/mês"
+  return cycle === "yearly" ? "/ano" : "/mês";
 }
 
 export function PlanPicker() {
-  const router = useRouter()
-  const { data: plans, isLoading, isError } = usePlans()
-  const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null)
+  const router = useRouter();
+  const { data: plans, isLoading, isError } = usePlans();
+  const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
 
   const onContinue = () => {
-    if (!selectedPlanId) return
+    if (!selectedPlanId) return;
     // TODO(stripe): open Checkout Session for selectedPlanId, then return
     // to clinic onboarding on success webhook / return_url.
     router.push(
       `${routes.onboardingClinic}?planId=${encodeURIComponent(selectedPlanId)}`,
-    )
-  }
+    );
+  };
 
   if (isLoading) {
     return (
@@ -50,7 +51,7 @@ export function PlanPicker() {
         <Spinner />
         <p className="text-sm text-muted-foreground">Carregando planos…</p>
       </div>
-    )
+    );
   }
 
   if (isError || !plans?.length) {
@@ -60,7 +61,7 @@ export function PlanPicker() {
           Nenhum plano disponível no momento. Tente novamente em instantes.
         </p>
       </div>
-    )
+    );
   }
 
   return (
@@ -77,7 +78,7 @@ export function PlanPicker() {
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {plans.map((plan) => {
-          const selected = selectedPlanId === plan.id
+          const selected = selectedPlanId === plan.id;
           return (
             <Card
               key={plan.id}
@@ -88,8 +89,8 @@ export function PlanPicker() {
               onClick={() => setSelectedPlanId(plan.id)}
               onKeyDown={(event) => {
                 if (event.key === "Enter" || event.key === " ") {
-                  event.preventDefault()
-                  setSelectedPlanId(plan.id)
+                  event.preventDefault();
+                  setSelectedPlanId(plan.id);
                 }
               }}
               className={cn(
@@ -124,9 +125,10 @@ export function PlanPicker() {
                 <span className="text-xs font-medium text-primary">
                   {selected ? "Selecionado" : "Selecionar"}
                 </span>
+                {selected && <CheckCircleIcon fill="currentColor" />}
               </CardFooter>
             </Card>
-          )
+          );
         })}
       </div>
 
@@ -139,5 +141,5 @@ export function PlanPicker() {
         Continuar para a clínica
       </Button>
     </div>
-  )
+  );
 }

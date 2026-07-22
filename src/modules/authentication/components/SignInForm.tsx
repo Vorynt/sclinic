@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -29,6 +29,8 @@ type SignInOutput = z.output<typeof signInSchema>;
 
 export function SignInForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const next = searchParams.get("next");
   const [formError, setFormError] = useState<{
     message: string;
     code: string;
@@ -37,7 +39,7 @@ export function SignInForm() {
   const signIn = useSignInMutation({
     onSuccess: (data) => {
       toast.success("Login realizado com sucesso");
-      router.replace(getPostAuthRedirect(data));
+      router.replace(getPostAuthRedirect(data, next));
     },
     onError: (error) => {
       console.error(error);
