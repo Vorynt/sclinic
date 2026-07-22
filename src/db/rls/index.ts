@@ -2,4 +2,4 @@ export {
   setTenantContext,
   withTenantContext,
   type TenantContext,
-} from "./set-tenant-context"
+} from "./set-tenant-context";

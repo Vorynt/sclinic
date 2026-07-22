@@ -1,7 +1,15 @@
 /**
- * AuthStore — apenas estado de cliente global.
- * Dados de servidor pertencem ao React Query / Server Components.
+ * AuthStore — client-only UI flags (sidebar/clinic switcher open, etc.).
+ * Session/membership data lives in TanStack Query (authQueries).
  */
-export const authStorePlaceholder = {
-  name: "AuthStore",
-} as const
+import { create } from "zustand"
+
+type AuthUiState = {
+  clinicSwitcherOpen: boolean
+  setClinicSwitcherOpen: (open: boolean) => void
+}
+
+export const useAuthUiStore = create<AuthUiState>((set) => ({
+  clinicSwitcherOpen: false,
+  setClinicSwitcherOpen: (open) => set({ clinicSwitcherOpen: open }),
+}))

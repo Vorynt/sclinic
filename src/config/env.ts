@@ -20,4 +20,10 @@ export const env = {
   get DATABASE_URL() {
     return requireEnv("DATABASE_URL");
   },
+  get BETTER_AUTH_SECRET() {
+    return requireEnv("BETTER_AUTH_SECRET");
+  },
+  get BETTER_AUTH_URL() {
+    return requireEnv("BETTER_AUTH_URL");
+  },
 };
