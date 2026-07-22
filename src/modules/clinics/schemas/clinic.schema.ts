@@ -43,3 +43,16 @@ export const createClinicSchema = z.object({
 })
 
 export type CreateClinicInput = z.infer<typeof createClinicSchema>
+
+export const getClinicSchema = z.object({
+  clinicId: z.string().uuid("ID da clínica inválido"),
+})
+
+export const listClinicsByIdsSchema = z.object({
+  clinicIds: z
+    .array(z.string().uuid("ID da clínica inválido"))
+    .max(50, "Máximo de 50 clínicas por consulta"),
+})
+
+export type GetClinicInput = z.infer<typeof getClinicSchema>
+export type ListClinicsByIdsInput = z.infer<typeof listClinicsByIdsSchema>

@@ -1,0 +1,27 @@
+import { redirect } from "next/navigation"
+import type { ReactNode } from "react"
+
+import { routes } from "@/config/routes"
+import { AppShell } from "@/modules/dashboard/components/AppShell"
+import { getAuthRequestContext } from "@/modules/authentication/utils/request-context"
+import { authService } from "@/modules/authentication/services/auth.service"
+
+type DashboardLayoutProps = {
+  children: ReactNode
+}
+
+export default async function DashboardLayout({
+  children,
+}: DashboardLayoutProps) {
+  const session = await authService.getSession(await getAuthRequestContext())
+
+  if (!session) {
+    redirect(routes.login)
+  }
+
+  if (!session.membership) {
+    redirect(routes.onboardingPlan)
+  }
+
+  return <AppShell>{children}</AppShell>
+}
