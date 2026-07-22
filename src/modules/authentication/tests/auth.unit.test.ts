@@ -14,6 +14,7 @@ import {
 import { assertUserCanAuthenticate } from "@/modules/authentication/utils/assert-user"
 import { AppError } from "@/shared/errors/app-error"
 import { ErrorCode } from "@/shared/errors/codes"
+import { parseForm } from "@/shared/validators"
 import { hasAllPermissions, hasAnyPermission } from "@/core/permissions"
 import { Permission } from "@/config/permissions"
 
@@ -55,6 +56,31 @@ describe("auth schemas", () => {
       newPassword: "nova-senha-ok",
     })
     assert.equal(parsed.newPassword, "nova-senha-ok")
+  })
+
+  it("parseForm returns first field error for invalid sign-in", () => {
+    const result = parseForm(signInSchema, {
+      email: "",
+      password: "",
+    })
+    assert.equal(result.success, false)
+    if (!result.success) {
+      assert.equal(typeof result.fieldErrors.email, "string")
+      assert.equal(typeof result.fieldErrors.password, "string")
+    }
+  })
+
+  it("parseForm returns normalized data for valid sign-up", () => {
+    const result = parseForm(signUpSchema, {
+      name: " Ana ",
+      email: "Ana@Clinic.COM",
+      password: "senha-forte",
+    })
+    assert.equal(result.success, true)
+    if (result.success) {
+      assert.equal(result.data.name, "Ana")
+      assert.equal(result.data.email, "ana@clinic.com")
+    }
   })
 })
 

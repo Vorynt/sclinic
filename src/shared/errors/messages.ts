@@ -18,7 +18,8 @@ const clientMessages: Record<string, string> = {
   [ErrorCode.USER_SUSPENDED]: "Sua conta está suspensa. Contate o suporte.",
   [ErrorCode.EMAIL_NOT_VERIFIED]: "Verifique seu e-mail antes de continuar.",
   [ErrorCode.SESSION_EXPIRED]: "Sua sessão expirou. Faça login novamente.",
-  [ErrorCode.CLINIC_REQUIRED]: "Selecione uma clínica para continuar.",
+  [ErrorCode.CLINIC_REQUIRED]:
+    "Complete o cadastro da clínica para continuar.",
   [ErrorCode.MEMBERSHIP_NOT_FOUND]: "Você não pertence a esta clínica.",
   [ErrorCode.MEMBERSHIP_INACTIVE]: "Seu acesso a esta clínica está inativo.",
   [ErrorCode.INVALID_TOKEN]: "Token inválido.",

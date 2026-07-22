@@ -32,6 +32,8 @@ type BaSessionResult = NonNullable<
   Awaited<ReturnType<typeof auth.api.getSession>>
 >;
 
+type BaAuthUser = BaSessionResult["user"];
+
 async function resolvePermissions(
   membership: AuthMembership | null,
 ): Promise<AuthContext["permissions"]> {
@@ -71,7 +73,7 @@ async function ensureActiveClinic(
   };
 }
 
-function mapBaUser(baUser: BaSessionResult["user"]): AuthUser {
+function mapBaUser(baUser: BaAuthUser): AuthUser {
   return toAuthUser({
     id: baUser.id,
     name: baUser.name,
@@ -94,11 +96,14 @@ function mapBaSession(baSession: BaSessionResult["session"]): AuthSession {
   });
 }
 
-async function buildAuthContext(ba: BaSessionResult): Promise<AuthContext> {
-  const user = mapBaUser(ba.user);
+/** Domain AuthContext from resolved user + session (memberships/permissions). */
+async function buildAuthContextFromParts(
+  user: AuthUser,
+  sessionInput: AuthSession,
+): Promise<AuthContext> {
   assertUserCanAuthenticate(user);
 
-  let session = mapBaSession(ba.session);
+  let session = sessionInput;
   let membership = await resolveMembership(user.id, session.activeClinicId);
 
   const ensured = await ensureActiveClinic(session, membership);
@@ -124,13 +129,29 @@ async function buildAuthContext(ba: BaSessionResult): Promise<AuthContext> {
   return { user, session, membership, permissions };
 }
 
-async function loadDomainUser(userId: string): Promise<AuthUser> {
-  const user = await userRepository.findById(userId);
-  if (!user) {
+async function buildAuthContext(ba: BaSessionResult): Promise<AuthContext> {
+  return buildAuthContextFromParts(mapBaUser(ba.user), mapBaSession(ba.session));
+}
+
+/**
+ * After signInEmail/signUpEmail, nextCookies sets Set-Cookie on the response,
+ * but request headers still lack the new cookie — so getSession(headers) is null.
+ * Use the returned token and load the session from the DB instead.
+ */
+async function buildAuthContextFromBaResult(result: {
+  user: BaAuthUser;
+  token: string | null;
+}): Promise<AuthContext> {
+  if (!result.user || !result.token) {
     throw new AppError(ErrorCode.UNAUTHORIZED);
   }
-  assertUserCanAuthenticate(user);
-  return user;
+
+  const session = await sessionRepository.findByToken(result.token);
+  if (!session) {
+    throw new AppError(ErrorCode.UNAUTHORIZED);
+  }
+
+  return buildAuthContextFromParts(mapBaUser(result.user), session);
 }
 
 export const authService = {
@@ -146,24 +167,16 @@ export const authService = {
         headers: ctx.headers,
       });
 
-      if (!result?.user) {
-        throw new AppError(ErrorCode.INTERNAL_ERROR);
-      }
-
-      const session = await auth.api.getSession({ headers: ctx.headers });
-      if (!session) {
-        throw new AppError(ErrorCode.UNAUTHORIZED);
-      }
-
-      return buildAuthContext(session);
+      return buildAuthContextFromBaResult(result);
     } catch (error) {
+      if (error instanceof AppError) throw error;
       mapBetterAuthError(error);
     }
   },
 
   async signIn(data: SignInDto, ctx: AuthRequestContext): Promise<AuthContext> {
     try {
-      await auth.api.signInEmail({
+      const result = await auth.api.signInEmail({
         body: {
           email: data.email,
           password: data.password,
@@ -171,15 +184,10 @@ export const authService = {
         headers: ctx.headers,
       });
 
-      const session = await auth.api.getSession({ headers: ctx.headers });
-      if (!session) {
-        throw new AppError(ErrorCode.INVALID_CREDENTIALS);
-      }
+      const authContext = await buildAuthContextFromBaResult(result);
+      await userRepository.updateLastLoginAt(authContext.user.id);
 
-      const user = await loadDomainUser(session.user.id);
-      await userRepository.updateLastLoginAt(user.id);
-
-      return buildAuthContext(session);
+      return authContext;
     } catch (error) {
       if (error instanceof AppError) throw error;
       mapBetterAuthError(error);
@@ -261,6 +269,49 @@ export const authService = {
       membership,
       permissions,
     };
+  },
+
+  /**
+   * Public contract for clinics onboarding: create owner membership
+   * and set the session active clinic.
+   */
+  async createOwnerMembership(input: {
+    userId: string;
+    clinicId: string;
+    sessionId: string;
+  }): Promise<AuthMembership> {
+    const existing = await membershipRepository.listActiveByUser(input.userId);
+    if (existing.length > 0) {
+      throw new AppError(ErrorCode.CONFLICT, {
+        message: "Você já possui uma clínica vinculada.",
+      });
+    }
+
+    const ownerRoleId =
+      await membershipRepository.findSystemRoleIdByKey("owner");
+    if (!ownerRoleId) {
+      throw new AppError(ErrorCode.INTERNAL_ERROR, {
+        message: "Papel owner não configurado. Execute o seed RBAC.",
+      });
+    }
+
+    const membership = await membershipRepository.create({
+      userId: input.userId,
+      clinicId: input.clinicId,
+      roleId: ownerRoleId,
+      isDefault: true,
+    });
+
+    const updatedSession = await sessionRepository.updateActiveClinicId(
+      input.sessionId,
+      input.clinicId,
+    );
+
+    if (!updatedSession) {
+      throw new AppError(ErrorCode.INTERNAL_ERROR);
+    }
+
+    return membership;
   },
 
   async requestPasswordReset(

@@ -1,11 +1,11 @@
-import { betterAuth } from "better-auth"
-import { drizzleAdapter } from "better-auth/adapters/drizzle"
-import { nextCookies } from "better-auth/next-js"
+import { betterAuth } from "better-auth";
+import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { nextCookies } from "better-auth/next-js";
 
-import { env } from "@/config/env"
-import { db } from "@/db"
-import { account, session, user, verification } from "@/db/schema"
-import { logger } from "@/core/logger"
+import { env } from "@/config/env";
+import { logger } from "@/core/logger";
+import { db } from "@/db";
+import { account, session, user, verification } from "@/db/schema";
 
 /**
  * Better Auth instance (platform).
@@ -36,6 +36,7 @@ export const auth = betterAuth({
     minPasswordLength: 8,
     maxPasswordLength: 128,
     requireEmailVerification: false,
+    autoSignIn: true,
     sendResetPassword: async ({ user: targetUser, url }) => {
       // Wire a real mail provider later — never log the raw token URL in prod.
       logger.info(
@@ -45,7 +46,7 @@ export const auth = betterAuth({
           hasResetUrl: Boolean(url),
         },
         "Password reset requested",
-      )
+      );
     },
   },
   user: {
@@ -84,6 +85,6 @@ export const auth = betterAuth({
     },
   },
   plugins: [nextCookies()],
-})
+});
 
-export type BetterAuthSession = typeof auth.$Infer.Session
+export type BetterAuthSession = typeof auth.$Infer.Session;

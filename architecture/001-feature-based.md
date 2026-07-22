@@ -17,6 +17,7 @@ Cada módulo é um mini-projeto autocontido. Não espalhe arquivos de um domíni
 - `settings`
 - `users`
 - `authentication`
+- `clinics`
 
 ## Estrutura obrigatória de um módulo
 

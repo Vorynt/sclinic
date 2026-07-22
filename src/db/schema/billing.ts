@@ -95,6 +95,16 @@ export const subscriptions = pgTable(
       using: clinicIsolation(t.clinicId),
       withCheck: clinicIsolation(t.clinicId),
     }),
+    /**
+     * Onboarding attaches a plan before tenant GUC is reliably set (Neon HTTP).
+     * Permissive OR with tenant isolation above.
+     */
+    pgPolicy("subscriptions_insert_onboarding", {
+      as: "permissive",
+      to: sclinicAppRole,
+      for: "insert",
+      withCheck: sql`true`,
+    }),
   ],
 )
 

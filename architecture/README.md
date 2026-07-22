@@ -14,6 +14,7 @@ Documentos obrigatórios do projeto. Cada arquivo define uma regra que o código
 | 008 | [error-handling](./008-error-handling.md) | Erros |
 | 009 | [testing](./009-testing.md) | Testes |
 | 010 | [design-system](./010-design-system.md) | UI / Storybook |
+| 011 | [form-validation](./011-form-validation.md) | Zod + React Hook Form |
 
 ## Fluxo de camadas
 

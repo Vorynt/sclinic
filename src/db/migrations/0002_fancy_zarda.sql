@@ -1,0 +1,3 @@
+CREATE POLICY "clinics_insert_onboarding" ON "clinics" AS PERMISSIVE FOR INSERT TO "sclinic_app" WITH CHECK (true);--> statement-breakpoint
+CREATE POLICY "clinic_memberships_insert_onboarding" ON "clinic_memberships" AS PERMISSIVE FOR INSERT TO "sclinic_app" WITH CHECK (true);--> statement-breakpoint
+CREATE POLICY "subscriptions_insert_onboarding" ON "subscriptions" AS PERMISSIVE FOR INSERT TO "sclinic_app" WITH CHECK (true);

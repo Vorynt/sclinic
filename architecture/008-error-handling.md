@@ -40,7 +40,7 @@ Repository throws TechnicalError
 ## Arquivos
 
 - `shared/errors/` — `AppError`, `TechnicalError`, `ValidationError`, `ErrorCode`, `toActionResult`
-- `shared/validators/` — `parseOrThrow` (Zod → `ValidationError` com `fields`)
+- `shared/validators/` — `parseOrThrow` (Zod → `ValidationError` com `fields`); forms no client usam RHF + `zodResolver` (ver [011](./011-form-validation.md))
 - `db/with-db-error.ts` — mapeia Neon/Postgres/Drizzle → `TechnicalError` (`withDbError`)
 - `shared/api/` — `apiClient`, `mapHttpError`
 - `types/api.ts` — `ApiResponse`

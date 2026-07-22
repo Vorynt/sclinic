@@ -29,6 +29,7 @@ export function proxy(request: NextRequest) {
     return NextResponse.redirect(loginUrl)
   }
 
+  // Cookie present on auth pages → app entry; pages decide onboarding vs dashboard.
   if (sessionCookie && isAuthRoute) {
     return NextResponse.redirect(new URL(routes.dashboard, request.url))
   }

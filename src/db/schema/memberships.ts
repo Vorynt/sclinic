@@ -102,5 +102,33 @@ export const clinicsTenantWritePolicy = pgPolicy("clinics_tenant_write", {
   withCheck: sql`${clinics.id} = ${tenantClinicId()}`,
 }).link(clinics)
 
+/**
+ * First-clinic onboarding: authenticated app role may insert a clinic.
+ * Tighten when Neon Pool + tenant GUCs are used for all writes.
+ */
+export const clinicsInsertOnboardingPolicy = pgPolicy(
+  "clinics_insert_onboarding",
+  {
+    as: "permissive",
+    to: sclinicAppRole,
+    for: "insert",
+    withCheck: sql`true`,
+  },
+).link(clinics)
+
+/**
+ * Owner membership bootstrap during onboarding (before tenant GUC is set).
+ * Permissive policies OR with the existing tenant isolation policy.
+ */
+export const clinicMembershipsInsertOnboardingPolicy = pgPolicy(
+  "clinic_memberships_insert_onboarding",
+  {
+    as: "permissive",
+    to: sclinicAppRole,
+    for: "insert",
+    withCheck: sql`true`,
+  },
+).link(clinicMemberships)
+
 export type ClinicMembership = typeof clinicMemberships.$inferSelect
 export type NewClinicMembership = typeof clinicMemberships.$inferInsert

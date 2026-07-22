@@ -1,9 +1,12 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, type FormEvent } from "react";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import type { z } from "zod";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -12,52 +15,69 @@ import {
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field";
+import { FormErrorAlert } from "@/components/ui/form-error-alert";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { routes } from "@/config/routes";
 import { useSignInMutation } from "@/modules/authentication/hooks/use-auth";
-import { AppError } from "@/shared/errors";
+import { signInSchema } from "@/modules/authentication/schemas/auth.schema";
+import { ErrorCode, getClientMessage, isAppError } from "@/shared/errors";
+
+type SignInValues = z.input<typeof signInSchema>;
+type SignInOutput = z.output<typeof signInSchema>;
 
 export function SignInForm() {
   const router = useRouter();
-  const signIn = useSignInMutation();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [fieldErrors, setFieldErrors] = useState<{
-    email?: string;
-    password?: string;
-  }>({});
+  const [formError, setFormError] = useState<{
+    message: string;
+    code: string;
+  } | null>(null);
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setFieldErrors({});
-
-    try {
-      await signIn.mutateAsync({ email, password });
+  const signIn = useSignInMutation({
+    onSuccess: (data) => {
       toast.success("Login realizado com sucesso");
-      router.push(routes.dashboard);
-      router.refresh();
-    } catch (error) {
-      const message =
-        error instanceof AppError
-          ? error.message
-          : "Não foi possível entrar. Tente novamente.";
-
-      toast.error(message);
-
-      if (error instanceof AppError && error.meta?.fields) {
-        const fields = error.meta.fields as Record<string, string[]>;
-        setFieldErrors({
-          email: fields.email?.[0],
-          password: fields.password?.[0],
-        });
+      if (!data.membership) {
+        router.replace(routes.onboardingPlan);
+        return;
       }
-    }
-  }
+      router.replace(routes.dashboard);
+    },
+    onError: (error) => {
+      console.error(error);
+      if (isAppError(error)) {
+        setFormError({
+          message: error.message,
+          code: error.code,
+        });
+        return;
+      }
+      setFormError({
+        message: getClientMessage(ErrorCode.INTERNAL_ERROR),
+        code: ErrorCode.INTERNAL_ERROR,
+      });
+    },
+  });
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<SignInValues, unknown, SignInOutput>({
+    resolver: zodResolver(signInSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
+
+  const onSubmit = handleSubmit((data) => {
+    setFormError(null);
+    signIn.mutate(data);
+  });
 
   return (
     <form
-      onSubmit={handleSubmit}
+      onSubmit={onSubmit}
       className="flex w-full max-w-sm flex-col gap-8"
       noValidate>
       <div className="flex flex-col gap-2 text-center">
@@ -69,37 +89,37 @@ export function SignInForm() {
         </p>
       </div>
 
+      {formError ? (
+        <FormErrorAlert message={formError.message} code={formError.code} />
+      ) : null}
+
       <FieldGroup className="gap-4">
-        <Field data-invalid={Boolean(fieldErrors.email) || undefined}>
+        <Field data-invalid={Boolean(errors.email) || undefined}>
           <FieldLabel htmlFor="sign-in-email">E-mail</FieldLabel>
           <Input
             id="sign-in-email"
             type="email"
-            name="email"
             autoComplete="email"
             placeholder="voce@clinica.com"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            aria-invalid={Boolean(fieldErrors.email) || undefined}
+            aria-invalid={Boolean(errors.email) || undefined}
             disabled={signIn.isPending}
+            {...register("email")}
           />
-          <FieldError>{fieldErrors.email}</FieldError>
+          <FieldError errors={[errors.email]} />
         </Field>
 
-        <Field data-invalid={Boolean(fieldErrors.password) || undefined}>
+        <Field data-invalid={Boolean(errors.password) || undefined}>
           <FieldLabel htmlFor="sign-in-password">Senha</FieldLabel>
           <Input
             id="sign-in-password"
             type="password"
-            name="password"
             autoComplete="current-password"
             placeholder="••••••••"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            aria-invalid={Boolean(fieldErrors.password) || undefined}
+            aria-invalid={Boolean(errors.password) || undefined}
             disabled={signIn.isPending}
+            {...register("password")}
           />
-          <FieldError>{fieldErrors.password}</FieldError>
+          <FieldError errors={[errors.password]} />
         </Field>
 
         <div className="flex justify-end">

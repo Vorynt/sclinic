@@ -24,6 +24,7 @@ Antes de criar pastas, camadas ou padrões novos, leia:
 | Erros | `architecture/008-error-handling.md` |
 | Testes | `architecture/009-testing.md` |
 | Design system | `architecture/010-design-system.md` |
+| Validação de forms (Zod + RHF) | `architecture/011-form-validation.md` |
 
 Visão geral: `architecture/README.md`.
 
@@ -67,7 +68,7 @@ Page / Component
 | Zustand (só client state global) | `src/stores/` — **nunca** dados de domínio |
 | Server state | TanStack Query em `queries/` / `mutations/` do módulo |
 
-Módulos: `patients`, `appointments`, `medical-records`, `billing`, `inventory`, `dashboard`, `settings`, `users`, `authentication`.
+Módulos: `patients`, `appointments`, `medical-records`, `billing`, `inventory`, `dashboard`, `settings`, `users`, `authentication`, `clinics`.
 
 ## Boundaries e imports
 
@@ -106,12 +107,20 @@ Módulos: `patients`, `appointments`, `medical-records`, `billing`, `inventory`,
 1. Preferir Server Actions quando bastar.
 2. Se precisar de cache/interatividade: factories em `queries/` / `mutations/` + hook em `hooks/`.
 3. Não espalhar `useQuery(...)` solto em pages.
+4. Hooks de mutation: props opcionais `MutationCallbacks` (`src/types/mutation.ts`) — `onSuccess` / `onError` para UI; `invalidateQueries` sempre dentro do hook. No form use `mutate()`, sem `try/catch` (ver [007](architecture/007-api-pattern.md)).
 
 ### Componente UI
 
 1. Genérico? → Storybook → `src/components/`.
 2. De domínio? → `modules/<feature>/components/`.
 3. Reutilizar primitives do design system; não reinventar Button/Input/Dialog.
+
+### Form com validação
+
+1. Schema Zod em `modules/<feature>/schemas/` — **todas** as regras e mensagens ficam nele.
+2. Form com React Hook Form + `zodResolver(schema)` (`@hookform/resolvers`) — sem `useState` para valores de campo.
+3. Na action: `parseOrThrow(schema, data)` com o **mesmo** schema.
+4. Detalhes: `architecture/011-form-validation.md`.
 
 ## Checklist antes de considerar “pronto”
 
@@ -121,12 +130,17 @@ Módulos: `patients`, `appointments`, `medical-records`, `billing`, `inventory`,
 - [ ] Erros tipados / não engolidos (008)
 - [ ] Testes de domínio quando houver lógica (009)
 - [ ] UI genérica vs domínio no lugar certo (010)
+- [ ] Forms: RHF + `zodResolver` no client e `parseOrThrow` na action, mesmo schema (011)
+- [ ] Mutations: `MutationCallbacks` + `invalidateQueries` no hook; form usa `mutate()` sem try/catch (007)
 - [ ] Sem estado de domínio no Zustand
 - [ ] Docs de Next em `node_modules/next/dist/docs/` consultados se a API for incerta
 
 ## Anti-padrões (recusar / corrigir)
 
 - Lógica de negócio em components ou actions
+- Valores de form em `useState` / validação fora do schema Zod
+- `try/catch` no client em torno de mutation para feedback de UI (use `MutationCallbacks`)
+- Passar `invalidateQueries` / query keys por props da mutation hook
 - SQL/Drizzle fora de repositories / `src/db`
 - `shared/components`, `shared/hooks`, etc. (espelhar topo de `src/`)
 - Cross-import de internals entre módulos

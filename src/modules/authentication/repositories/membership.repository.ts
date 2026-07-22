@@ -96,4 +96,79 @@ export const membershipRepository = {
       return rows.map(toAuthMembership)
     })
   },
+
+  async findSystemRoleIdByKey(key: string): Promise<string | null> {
+    return withDbError(async () => {
+      const [row] = await db
+        .select({ id: roles.id })
+        .from(roles)
+        .where(
+          and(
+            eq(roles.key, key),
+            eq(roles.isSystem, true),
+            isNull(roles.clinicId),
+            isNull(roles.deletedAt),
+          ),
+        )
+        .limit(1)
+
+      return row?.id ?? null
+    })
+  },
+
+  async create({
+    userId,
+    clinicId,
+    roleId,
+    isDefault = true,
+  }: {
+    userId: string
+    clinicId: string
+    roleId: string
+    isDefault?: boolean
+  }): Promise<AuthMembership> {
+    return withDbError(async () => {
+      const [row] = await db
+        .insert(clinicMemberships)
+        .values({
+          userId,
+          clinicId,
+          roleId,
+          isDefault,
+          status: "active",
+        })
+        .returning({
+          id: clinicMemberships.id,
+          clinicId: clinicMemberships.clinicId,
+          roleId: clinicMemberships.roleId,
+          isDefault: clinicMemberships.isDefault,
+          status: clinicMemberships.status,
+        })
+
+      if (!row) {
+        throw new Error("Failed to create membership")
+      }
+
+      const [withRole] = await db
+        .select({
+          id: clinicMemberships.id,
+          clinicId: clinicMemberships.clinicId,
+          roleId: clinicMemberships.roleId,
+          roleKey: roles.key,
+          roleName: roles.name,
+          isDefault: clinicMemberships.isDefault,
+          status: clinicMemberships.status,
+        })
+        .from(clinicMemberships)
+        .innerJoin(roles, eq(roles.id, clinicMemberships.roleId))
+        .where(eq(clinicMemberships.id, row.id))
+        .limit(1)
+
+      if (!withRole) {
+        throw new Error("Failed to load membership after create")
+      }
+
+      return toAuthMembership(withRole)
+    })
+  },
 }
