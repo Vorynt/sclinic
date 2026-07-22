@@ -10,8 +10,9 @@ import {
 } from "drizzle-orm/pg-core"
 
 import { clinics } from "./clinics"
-import { patientStatusEnum } from "./enums"
+import { patientGenderEnum, patientStatusEnum } from "./enums"
 import {
+  addressFields,
   auditBy,
   clinicIsolation,
   primaryUuid,
@@ -28,11 +29,18 @@ export const patients = pgTable(
       .notNull()
       .references(() => clinics.id, { onDelete: "cascade" }),
     fullName: text("full_name").notNull(),
+    socialName: text("social_name"),
     document: text("document"),
     email: text("email"),
     phone: text("phone"),
     birthDate: date("birth_date"),
+    gender: patientGenderEnum("gender"),
+    emergencyContactName: text("emergency_contact_name"),
+    emergencyContactPhone: text("emergency_contact_phone"),
+    /** Administrative notes only — not a medical record. */
+    notes: text("notes"),
     status: patientStatusEnum("status").default("active").notNull(),
+    ...addressFields,
     ...timestamps,
     ...softDelete,
     ...auditBy,

@@ -33,6 +33,17 @@ export const auditBy = {
   updatedBy: text("updated_by"),
 }
 
+/** Brazilian postal address — reused by clinics and patients. */
+export const addressFields = {
+  addressStreet: text("address_street"),
+  addressNumber: text("address_number"),
+  addressComplement: text("address_complement"),
+  addressNeighborhood: text("address_neighborhood"),
+  addressCity: text("address_city"),
+  addressState: text("address_state"),
+  addressZip: text("address_zip"),
+}
+
 /**
  * Session GUCs used by RLS policies.
  * Set via `setTenantContext` before tenant-scoped queries.

@@ -14,8 +14,9 @@ export function proxy(request: NextRequest) {
 
   const isAuthRoute =
     pathname === routes.login ||
-    pathname.startsWith("/reset-password") ||
-    pathname.startsWith("/forgot-password")
+    pathname === routes.signUp ||
+    pathname === routes.forgotPassword ||
+    pathname.startsWith("/reset-password")
 
   const isPublicRoute =
     pathname === routes.home ||

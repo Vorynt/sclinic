@@ -7,6 +7,13 @@
       "when": 1784660291332,
       "tag": "0000_init_multitenant",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1784728675487,
+      "tag": "0001_glamorous_frog_thor",
+      "breakpoints": true
     }
   ],
   "version": "7"

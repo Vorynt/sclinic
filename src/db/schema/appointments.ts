@@ -8,7 +8,7 @@ import {
 } from "drizzle-orm/pg-core"
 
 import { clinics } from "./clinics"
-import { appointmentStatusEnum } from "./enums"
+import { appointmentStatusEnum, appointmentTypeEnum } from "./enums"
 import {
   auditBy,
   clinicIsolation,
@@ -35,8 +35,12 @@ export const appointments = pgTable(
     }),
     startsAt: timestamp("starts_at", { withTimezone: true, mode: "date" }).notNull(),
     endsAt: timestamp("ends_at", { withTimezone: true, mode: "date" }).notNull(),
+    type: appointmentTypeEnum("type").default("consultation").notNull(),
     status: appointmentStatusEnum("status").default("scheduled").notNull(),
+    reason: text("reason"),
     notes: text("notes"),
+    canceledAt: timestamp("canceled_at", { withTimezone: true, mode: "date" }),
+    canceledReason: text("canceled_reason"),
     ...timestamps,
     ...softDelete,
     ...auditBy,
@@ -49,6 +53,11 @@ export const appointments = pgTable(
       t.startsAt,
     ),
     index("appointments_clinic_patient_idx").on(t.clinicId, t.patientId),
+    index("appointments_clinic_status_starts_idx").on(
+      t.clinicId,
+      t.status,
+      t.startsAt,
+    ),
     pgPolicy("appointments_tenant_isolation", {
       as: "permissive",
       to: sclinicAppRole,

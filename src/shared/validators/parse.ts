@@ -1,6 +1,6 @@
-import { flattenError, type ZodType } from "zod"
+import { flattenError, type ZodType } from "zod";
 
-import { ValidationError } from "@/shared/errors/validation-error"
+import { ValidationError } from "@/shared/errors/validation-error";
 
 /**
  * Parses unknown input with a Zod schema.
@@ -10,24 +10,24 @@ export function parseOrThrow<TSchema extends ZodType>(
   schema: TSchema,
   input: unknown,
 ): TSchema["_output"] {
-  const result = schema.safeParse(input)
+  const result = schema.safeParse(input);
 
   if (result.success) {
-    return result.data
+    return result.data;
   }
 
-  const { fieldErrors, formErrors } = flattenError(result.error)
-  const fields: Record<string, string[]> = {}
+  const { fieldErrors, formErrors } = flattenError(result.error);
+  const fields: Record<string, string[]> = {};
 
   for (const [key, messages] of Object.entries(fieldErrors)) {
     if (Array.isArray(messages) && messages.length > 0) {
-      fields[key] = messages
+      fields[key] = messages;
     }
   }
 
   if (formErrors.length > 0) {
-    fields._form = formErrors
+    fields._form = formErrors;
   }
 
-  throw new ValidationError(fields, { cause: result.error })
+  throw new ValidationError(fields, { cause: result.error });
 }

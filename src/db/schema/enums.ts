@@ -81,3 +81,18 @@ export const patientStatusEnum = pgEnum("patient_status", [
   "inactive",
   "archived",
 ])
+
+export const patientGenderEnum = pgEnum("patient_gender", [
+  "female",
+  "male",
+  "other",
+  "undisclosed",
+])
+
+export const appointmentTypeEnum = pgEnum("appointment_type", [
+  "consultation",
+  "follow_up",
+  "procedure",
+  "evaluation",
+  "other",
+])

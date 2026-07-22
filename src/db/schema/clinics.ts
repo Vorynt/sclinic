@@ -8,6 +8,7 @@ import {
 
 import { clinicSubscriptionStatusEnum } from "./enums"
 import {
+  addressFields,
   auditBy,
   primaryUuid,
   softDelete,
@@ -28,10 +29,12 @@ export const clinics = pgTable(
     email: text("email"),
     phone: text("phone"),
     logoUrl: text("logo_url"),
+    website: text("website"),
     timezone: text("timezone").default("America/Sao_Paulo").notNull(),
     subscriptionStatus: clinicSubscriptionStatusEnum("subscription_status")
       .default("none")
       .notNull(),
+    ...addressFields,
     ...timestamps,
     ...softDelete,
     ...auditBy,
