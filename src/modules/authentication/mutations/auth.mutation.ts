@@ -2,6 +2,7 @@ import { mutationOptions } from "@tanstack/react-query"
 
 import { changePasswordAction } from "@/modules/authentication/actions/change-password"
 import { requestPasswordResetAction } from "@/modules/authentication/actions/request-password-reset"
+import { resendVerificationEmailAction } from "@/modules/authentication/actions/resend-verification-email"
 import { resetPasswordAction } from "@/modules/authentication/actions/reset-password"
 import { signInAction } from "@/modules/authentication/actions/sign-in"
 import { signOutAction } from "@/modules/authentication/actions/sign-out"
@@ -25,6 +26,10 @@ export const authMutationKeys = {
   requestPasswordReset: ["authentication", "request-password-reset"] as const,
   resetPassword: ["authentication", "reset-password"] as const,
   changePassword: ["authentication", "change-password"] as const,
+  resendVerificationEmail: [
+    "authentication",
+    "resend-verification-email",
+  ] as const,
 }
 
 export const authMutations = {
@@ -74,5 +79,12 @@ export const authMutations = {
       mutationKey: authMutationKeys.changePassword,
       mutationFn: async (data: ChangePasswordDto) =>
         unwrapActionResult(await changePasswordAction(data)),
+    }),
+
+  resendVerificationEmail: () =>
+    mutationOptions({
+      mutationKey: authMutationKeys.resendVerificationEmail,
+      mutationFn: async () =>
+        unwrapActionResult(await resendVerificationEmailAction()),
     }),
 }

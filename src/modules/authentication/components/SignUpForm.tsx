@@ -21,6 +21,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { routes } from "@/config/routes";
 import { useSignUpMutation } from "@/modules/authentication/hooks/use-auth";
 import { signUpSchema } from "@/modules/authentication/schemas/auth.schema";
+import { getPostAuthRedirect } from "@/modules/authentication/utils/post-auth-redirect";
 import { ErrorCode, getClientMessage, isAppError } from "@/shared/errors";
 
 type SignUpValues = z.input<typeof signUpSchema>;
@@ -50,11 +51,7 @@ export function SignUpForm() {
   const signUp = useSignUpMutation({
     onSuccess: (data) => {
       toast.success("Conta criada com sucesso");
-      if (!data.membership) {
-        router.replace(routes.onboardingPlan);
-        return;
-      }
-      router.replace(routes.dashboard);
+      router.replace(getPostAuthRedirect(data));
     },
     onError: (error) => {
       console.error(error);

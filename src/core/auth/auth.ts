@@ -3,6 +3,7 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
 
 import { env } from "@/config/env";
+import { email } from "@/core/email";
 import { logger } from "@/core/logger";
 import { db } from "@/db";
 import { account, session, user, verification } from "@/db/schema";
@@ -31,6 +32,39 @@ export const auth = betterAuth({
     // Neon HTTP driver has no interactive transactions.
     transaction: false,
   }),
+  emailVerification: {
+    sendOnSignUp: true,
+    sendOnSignIn: true,
+    sendVerificationEmail: async ({ user: targetUser, url }) => {
+      // Fire-and-forget to avoid timing side-channels (Better Auth guidance).
+      void email.messages
+        .emailVerification({
+          to: targetUser.email,
+          name: targetUser.name,
+          verifyUrl: url,
+        })
+        .then(() => {
+          logger.info(
+            {
+              email: targetUser.email,
+              userId: targetUser.id,
+              hasVerifyUrl: Boolean(url),
+            },
+            "Verification email sent",
+          );
+        })
+        .catch((error: unknown) => {
+          logger.error(
+            {
+              email: targetUser.email,
+              userId: targetUser.id,
+              error,
+            },
+            "Failed to send verification email",
+          );
+        });
+    },
+  },
   emailAndPassword: {
     enabled: true,
     minPasswordLength: 8,
@@ -38,14 +72,20 @@ export const auth = betterAuth({
     requireEmailVerification: false,
     autoSignIn: true,
     sendResetPassword: async ({ user: targetUser, url }) => {
-      // Wire a real mail provider later — never log the raw token URL in prod.
+      await email.messages.passwordReset({
+        to: targetUser.email,
+        name: targetUser.name,
+        resetUrl: url,
+      });
+
+      // Never log the raw token URL.
       logger.info(
         {
           email: targetUser.email,
           userId: targetUser.id,
           hasResetUrl: Boolean(url),
         },
-        "Password reset requested",
+        "Password reset email sent",
       );
     },
   },

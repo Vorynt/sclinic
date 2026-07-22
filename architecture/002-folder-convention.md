@@ -7,7 +7,7 @@
 | `app/` | Rotas e layouts (App Router) |
 | `modules/` | Domínios / features |
 | `shared/` | Infra compartilhada entre features (ver abaixo) |
-| `core/` | Plataforma (auth session, logger, cache, permissions, events, etc.) — banco fica em `db/` |
+| `core/` | Plataforma (auth session, logger, email, cache, permissions, events, etc.) — banco fica em `db/` |
 | `components/` | UI base / design system (shadcn) |
 | `lib/` | Helpers de bibliotecas (`cn`, etc.) |
 | `db/` | Schema Drizzle, migrations, client |
@@ -49,6 +49,7 @@ Apenas infra reutilizável entre módulos, **sem espelhar** pastas do topo:
 | ApiClient | `shared/api/` |
 | `AppError` | `shared/errors/` |
 | Logger | `core/logger/` |
+| Email (facade + provider) | `core/email/` — trocar provedor só em `core/email/index.ts` |
 | Schema Drizzle | `db/` |
 
 ## Nomenclatura

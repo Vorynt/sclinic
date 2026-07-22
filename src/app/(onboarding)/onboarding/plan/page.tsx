@@ -17,6 +17,10 @@ export default async function OnboardingPlanPage() {
     redirect(routes.login)
   }
 
+  if (!session.user.emailVerified) {
+    redirect(routes.verifyEmail)
+  }
+
   if (session.membership) {
     redirect(routes.dashboard)
   }

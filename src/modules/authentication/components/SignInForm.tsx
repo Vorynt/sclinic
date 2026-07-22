@@ -21,6 +21,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { routes } from "@/config/routes";
 import { useSignInMutation } from "@/modules/authentication/hooks/use-auth";
 import { signInSchema } from "@/modules/authentication/schemas/auth.schema";
+import { getPostAuthRedirect } from "@/modules/authentication/utils/post-auth-redirect";
 import { ErrorCode, getClientMessage, isAppError } from "@/shared/errors";
 
 type SignInValues = z.input<typeof signInSchema>;
@@ -36,11 +37,7 @@ export function SignInForm() {
   const signIn = useSignInMutation({
     onSuccess: (data) => {
       toast.success("Login realizado com sucesso");
-      if (!data.membership) {
-        router.replace(routes.onboardingPlan);
-        return;
-      }
-      router.replace(routes.dashboard);
+      router.replace(getPostAuthRedirect(data));
     },
     onError: (error) => {
       console.error(error);

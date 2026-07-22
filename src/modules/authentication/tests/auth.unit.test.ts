@@ -12,6 +12,9 @@ import {
   toUserStatus,
 } from "@/modules/authentication/mappers/auth.mapper"
 import { assertUserCanAuthenticate } from "@/modules/authentication/utils/assert-user"
+import { getPostAuthRedirect } from "@/modules/authentication/utils/post-auth-redirect"
+import type { AuthContext } from "@/modules/authentication/types/auth"
+import { routes } from "@/config/routes"
 import { AppError } from "@/shared/errors/app-error"
 import { ErrorCode } from "@/shared/errors/codes"
 import { parseForm } from "@/shared/validators"
@@ -132,6 +135,62 @@ describe("assertUserCanAuthenticate", () => {
       () => assertUserCanAuthenticate({ ...base, status: "inactive" }),
       (error: unknown) =>
         error instanceof AppError && error.code === ErrorCode.USER_INACTIVE,
+    )
+  })
+})
+
+describe("getPostAuthRedirect", () => {
+  const baseAuth: AuthContext = {
+    user: {
+      id: "1",
+      name: "Ana",
+      email: "ana@clinic.com",
+      emailVerified: true,
+      image: null,
+      phone: null,
+      status: "active",
+    },
+    session: {
+      id: "s1",
+      userId: "1",
+      token: "tok",
+      expiresAt: new Date("2099-01-01"),
+      activeClinicId: null,
+    },
+    membership: null,
+    permissions: [],
+  }
+
+  it("sends unverified users to verify-email", () => {
+    assert.equal(
+      getPostAuthRedirect({
+        ...baseAuth,
+        user: { ...baseAuth.user, emailVerified: false },
+      }),
+      routes.verifyEmail,
+    )
+  })
+
+  it("sends verified users without membership to onboarding", () => {
+    assert.equal(getPostAuthRedirect(baseAuth), routes.onboardingPlan)
+  })
+
+  it("sends verified users with membership to dashboard", () => {
+    assert.equal(
+      getPostAuthRedirect({
+        ...baseAuth,
+        membership: {
+          id: "m1",
+          clinicId: "c1",
+          roleId: "r1",
+          roleKey: "owner",
+          roleName: "Owner",
+          status: "active",
+          isDefault: true,
+        },
+        session: { ...baseAuth.session, activeClinicId: "c1" },
+      }),
+      routes.dashboard,
     )
   })
 })

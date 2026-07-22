@@ -30,6 +30,7 @@ export function proxy(request: NextRequest) {
   }
 
   // Cookie present on auth pages → app entry; pages decide onboarding vs dashboard.
+  // /verify-email is intentionally excluded (authenticated but unverified gate).
   if (sessionCookie && isAuthRoute) {
     return NextResponse.redirect(new URL(routes.dashboard, request.url))
   }

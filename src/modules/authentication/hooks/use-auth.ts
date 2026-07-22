@@ -104,3 +104,18 @@ export function useSwitchClinicMutation({
     },
   });
 }
+
+export function useResendVerificationEmailMutation({
+  onSuccess,
+  onError,
+}: MutationCallbacks = {}) {
+  return useMutation({
+    ...authMutations.resendVerificationEmail(),
+    onSuccess: (data) => {
+      onSuccess?.(data);
+    },
+    onError: (error) => {
+      onError?.(toAppError(error));
+    },
+  });
+}

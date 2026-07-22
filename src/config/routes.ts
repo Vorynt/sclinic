@@ -3,6 +3,7 @@ export const routes = {
   login: "/login",
   signUp: "/sign-up",
   forgotPassword: "/forgot-password",
+  verifyEmail: "/verify-email",
   onboardingPlan: "/onboarding/plan",
   onboardingClinic: "/onboarding/clinic",
   dashboard: "/dashboard",

@@ -23,6 +23,10 @@ export default async function OnboardingClinicPage({
     redirect(routes.login)
   }
 
+  if (!session.user.emailVerified) {
+    redirect(routes.verifyEmail)
+  }
+
   if (session.membership) {
     redirect(routes.dashboard)
   }

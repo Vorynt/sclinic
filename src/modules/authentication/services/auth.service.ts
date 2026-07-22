@@ -384,4 +384,41 @@ export const authService = {
       mapBetterAuthError(error);
     }
   },
+
+  async resendVerificationEmail(ctx: AuthRequestContext): Promise<void> {
+    const authContext = await this.requireSession(ctx);
+
+    if (authContext.user.emailVerified) {
+      return;
+    }
+
+    try {
+      await auth.api.sendVerificationEmail({
+        body: {
+          email: authContext.user.email,
+          callbackURL: AUTH_CONSTANTS.DEFAULT_EMAIL_VERIFICATION_CALLBACK,
+        },
+        headers: ctx.headers,
+      });
+    } catch (error) {
+      if (error instanceof AppError) throw error;
+
+      if (isBetterAuthError(error)) {
+        const code =
+          error.body &&
+          typeof error.body === "object" &&
+          "code" in error.body &&
+          typeof (error.body as { code?: unknown }).code === "string"
+            ? (error.body as { code: string }).code
+            : undefined;
+
+        // Race: verified between requireSession and BA call.
+        if (code === "EMAIL_ALREADY_VERIFIED") {
+          return;
+        }
+      }
+
+      mapBetterAuthError(error);
+    }
+  },
 };

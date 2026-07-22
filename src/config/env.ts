@@ -26,4 +26,11 @@ export const env = {
   get BETTER_AUTH_URL() {
     return requireEnv("BETTER_AUTH_URL");
   },
+  get RESEND_API_KEY() {
+    return requireEnv("RESEND_API_KEY");
+  },
+  /** Default From address, e.g. `sclinic <noreply@yourdomain.com>`. */
+  get EMAIL_FROM() {
+    return requireEnv("EMAIL_FROM");
+  },
 };

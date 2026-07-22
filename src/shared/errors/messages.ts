@@ -12,6 +12,7 @@ const clientMessages: Record<string, string> = {
   [ErrorCode.DB_FOREIGN_KEY_VIOLATION]: "Operação inválida por dependência de dados.",
   [ErrorCode.DB_NOT_NULL_VIOLATION]: "Verifique os campos e tente novamente.",
   [ErrorCode.DB_QUERY_FAILED]: "Algo deu errado. Tente novamente.",
+  [ErrorCode.EMAIL_SEND_FAILED]: "Não foi possível enviar o e-mail. Tente novamente.",
   [ErrorCode.INVALID_CREDENTIALS]: "E-mail ou senha inválidos.",
   [ErrorCode.EMAIL_ALREADY_EXISTS]: "Já existe uma conta com este e-mail.",
   [ErrorCode.USER_INACTIVE]: "Sua conta está inativa. Contate o suporte.",

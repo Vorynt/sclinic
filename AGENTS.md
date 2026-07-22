@@ -63,7 +63,7 @@ Page / Component
 | UI genérica (shadcn) | `src/components/` |
 | UI de domínio | `modules/<feature>/components/` |
 | ApiClient / erros tipados / validators genéricos | `src/shared/{api,errors,validators,auth}/` |
-| Auth session, logger, cache, events, permissions | `src/core/` |
+| Auth session, logger, email, cache, events, permissions | `src/core/` |
 | Schema/migrations Drizzle | `src/db/` |
 | Zustand (só client state global) | `src/stores/` — **nunca** dados de domínio |
 | Server state | TanStack Query em `queries/` / `mutations/` do módulo |
