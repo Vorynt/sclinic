@@ -5,6 +5,15 @@ const nextConfig: NextConfig = {
     // Enables next/navigation `forbidden()` → app/forbidden.tsx (403).
     authInterrupts: true,
   },
+  async redirects() {
+    return [
+      {
+        source: "/dashboard",
+        destination: "/home",
+        permanent: true,
+      },
+    ]
+  },
 };
 
 export default nextConfig;

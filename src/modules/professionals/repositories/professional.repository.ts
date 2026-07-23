@@ -235,6 +235,40 @@ export const professionalRepository = {
     });
   },
 
+  async findActiveForSchedulingByUserId(
+    userId: string,
+    clinicId: string,
+  ): Promise<ProfessionalSchedulingItem | null> {
+    return withDbError(async () => {
+      const [row] = await db
+        .select({
+          id: professionals.id,
+          fullName: professionals.fullName,
+          specialty: professionals.specialty,
+        })
+        .from(professionalClinics)
+        .innerJoin(
+          professionals,
+          and(
+            eq(professionals.id, professionalClinics.professionalId),
+            isNull(professionals.deletedAt),
+            eq(professionals.status, "active"),
+            eq(professionals.userId, userId),
+          ),
+        )
+        .where(
+          and(
+            eq(professionalClinics.clinicId, clinicId),
+            eq(professionalClinics.status, "active"),
+            isNull(professionalClinics.deletedAt),
+          ),
+        )
+        .limit(1);
+
+      return row ?? null;
+    });
+  },
+
   async findById(
     id: string,
     clinicId: string,

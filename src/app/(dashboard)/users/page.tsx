@@ -2,8 +2,8 @@ import type { Metadata } from "next"
 import { Suspense } from "react"
 
 import { ForbiddenBlock } from "@/components/status/ForbiddenBlock"
-import { Spinner } from "@/components/ui/spinner"
 import { Permission } from "@/config/permissions"
+import { TeamPageSkeleton } from "@/modules/users/components/TeamPageSkeleton"
 import { TeamPanel } from "@/modules/users/components/TeamPanel"
 import { PermissionProvider } from "@/providers/PermissionProvider"
 
@@ -17,13 +17,7 @@ export default function UsersPage() {
       permission={Permission.MEMBERS_INVITE}
       fallback={<ForbiddenBlock />}
     >
-      <Suspense
-        fallback={
-          <div className="flex justify-center py-10">
-            <Spinner className="size-6" />
-          </div>
-        }
-      >
+      <Suspense fallback={<TeamPageSkeleton />}>
         <TeamPanel />
       </Suspense>
     </PermissionProvider>

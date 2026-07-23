@@ -1,5 +1,5 @@
 export const routes = {
-  home: "/",
+  landing: "/",
   login: "/login",
   signUp: "/sign-up",
   forgotPassword: "/forgot-password",
@@ -10,7 +10,7 @@ export const routes = {
   onboardingPlan: "/onboarding/plan",
   onboardingClinic: "/onboarding/clinic",
   membershipInactive: "/membership-inactive",
-  dashboard: "/dashboard",
+  home: "/home",
   users: "/users",
   patients: "/patients",
   professionals: "/professionals",

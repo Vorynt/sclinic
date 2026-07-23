@@ -133,6 +133,16 @@ export const professionalService = {
       Permission.APPOINTMENTS_UPDATE,
       Permission.PROFESSIONALS_MANAGE,
     )
+
+    // Doctors may only schedule for themselves — narrow the selectable list.
+    if (auth.membership.roleKey === "doctor") {
+      const mine = await professionalRepository.findActiveForSchedulingByUserId(
+        auth.user.id,
+        auth.clinicId,
+      )
+      return mine ? [mine] : []
+    }
+
     return professionalRepository.listActiveForScheduling(auth.clinicId)
   },
 

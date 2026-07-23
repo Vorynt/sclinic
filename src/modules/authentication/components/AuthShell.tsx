@@ -42,7 +42,7 @@ export function AuthShell({ children, wide = false }: AuthShellProps) {
       <header className="relative z-10 border-b border-border/60 bg-background/70 backdrop-blur-xl supports-backdrop-filter:bg-background/55">
         <div className="flex items-center justify-between px-6 py-4 md:px-10">
           <Link
-            href={routes.home}
+            href={routes.landing}
             className="group inline-flex items-center gap-2.5">
             <span className="relative flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-[0_0_0_1px_color-mix(in_oklch,var(--primary)_40%,transparent),0_8px_20px_-8px_var(--primary)] transition-transform duration-300 group-hover:scale-105">
               <PulseIcon className="size-4" weight="bold" aria-hidden="true" />

@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { addMinutes } from "date-fns";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Controller, FormProvider, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -29,12 +29,16 @@ import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import { routes } from "@/config/routes";
 import { SuggestedAvailabilitySlots } from "@/modules/appointments/components/SuggestedAvailabilitySlots";
-import { APPOINTMENT_TYPE_LABELS } from "@/modules/appointments/constants/appointments";
+import {
+  APPOINTMENT_TYPE_LABELS,
+  isSelfScheduleOnlyRole,
+} from "@/modules/appointments/constants/appointments";
 import { useCreateAppointmentMutation } from "@/modules/appointments/hooks/use-appointment-mutations";
 import { appointmentTypeSchema } from "@/modules/appointments/schemas/appointment.schema";
 import type { AppointmentType } from "@/modules/appointments/types/appointment";
 import { APPOINTMENT_DURATION_OPTIONS } from "@/modules/appointments/utils/calendar-constants";
 import { readSuggestedSlotsFromMeta } from "@/modules/appointments/utils/suggested-slots";
+import { useAuthSession } from "@/modules/authentication/hooks/use-auth";
 import { PatientCombobox } from "@/modules/patients/components/PatientCombobox";
 import { PatientFormDialog } from "@/modules/patients/components/PatientFormDialog";
 import type { Patient } from "@/modules/patients/types/patient";
@@ -109,6 +113,10 @@ export function AppointmentForm({
   const isPatientLocked = Boolean(lockedPatient);
   const initialDate = roundToNextStep(defaultStartsAt ?? new Date(), 30);
 
+  const sessionQuery = useAuthSession();
+  const isProfessionalLocked = isSelfScheduleOnlyRole(
+    sessionQuery.data?.membership?.roleKey,
+  );
   const professionalsQuery = useProfessionalsForSchedulingQuery();
 
   const form = useForm<ScheduleFormValues, unknown, ScheduleFormOutput>({
@@ -133,6 +141,17 @@ export function AppointmentForm({
     setValue,
     formState: { errors },
   } = form;
+
+  const professionals = professionalsQuery.data ?? [];
+
+  useEffect(() => {
+    if (!isProfessionalLocked) return;
+    const selfProfessional = professionalsQuery.data?.[0];
+    if (!selfProfessional) return;
+    setValue("professionalId", selfProfessional.id, {
+      shouldValidate: true,
+    });
+  }, [isProfessionalLocked, professionalsQuery.data, setValue]);
 
   function clearAvailabilityFeedback() {
     setFormError(null);
@@ -196,7 +215,6 @@ export function AppointmentForm({
     });
   });
 
-  const professionals = professionalsQuery.data ?? [];
   const hasProfessionals = professionals.length > 0;
   const isProfessionalsEmpty =
     !professionalsQuery.isLoading && !hasProfessionals;
@@ -247,8 +265,10 @@ export function AppointmentForm({
                     onValueChange={field.onChange}
                     disabled={
                       isPending ||
+                      sessionQuery.isLoading ||
                       professionalsQuery.isLoading ||
-                      isProfessionalsEmpty
+                      isProfessionalsEmpty ||
+                      isProfessionalLocked
                     }>
                     <SelectTrigger
                       aria-invalid={
@@ -257,7 +277,9 @@ export function AppointmentForm({
                       <SelectValue
                         placeholder={
                           isProfessionalsEmpty
-                            ? "Nenhum profissional cadastrado"
+                            ? isProfessionalLocked
+                              ? "Perfil profissional não vinculado"
+                              : "Nenhum profissional cadastrado"
                             : "Selecione o profissional"
                         }
                       />
@@ -279,12 +301,18 @@ export function AppointmentForm({
               />
               {isProfessionalsEmpty ? (
                 <p className="text-sm text-muted-foreground">
-                  <Link
-                    href={routes.professionals}
-                    className="font-medium shimmer text-primary underline-offset-4 hover:underline">
-                    Convidar profissional
-                  </Link>{" "}
-                  para a clínica.
+                  {isProfessionalLocked ? (
+                    "Seu perfil profissional não está vinculado a esta clínica."
+                  ) : (
+                    <>
+                      <Link
+                        href={routes.professionals}
+                        className="font-medium shimmer text-primary underline-offset-4 hover:underline">
+                        Convidar profissional
+                      </Link>{" "}
+                      para a clínica.
+                    </>
+                  )}
                 </p>
               ) : null}
               <FieldError errors={[errors.professionalId]} />

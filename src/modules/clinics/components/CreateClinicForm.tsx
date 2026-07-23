@@ -62,7 +62,7 @@ export function CreateClinicForm({ planId }: CreateClinicFormProps) {
   const createClinic = useCreateClinicMutation({
     onSuccess: () => {
       toast.success("Clínica criada com sucesso");
-      router.replace(routes.dashboard);
+      router.replace(routes.home);
     },
     onError: (error) => {
       if (isAppError(error)) {

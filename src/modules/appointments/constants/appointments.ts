@@ -20,6 +20,18 @@ export const APPOINTMENT_TYPE_LABELS: Record<AppointmentType, string> = {
   other: "Outro",
 };
 
+/** Roles that may only schedule appointments for their own professional profile. */
+export const SELF_SCHEDULE_ONLY_ROLE_KEYS = ["doctor"] as const;
+
+export function isSelfScheduleOnlyRole(
+  roleKey: string | null | undefined,
+): boolean {
+  return (
+    roleKey != null &&
+    (SELF_SCHEDULE_ONLY_ROLE_KEYS as readonly string[]).includes(roleKey)
+  );
+}
+
 /** Palette of distinct soft calendar colors, one per professional. */
 export const PROFESSIONAL_CALENDAR_COLORS: string[] = [
   "#93C5FD",

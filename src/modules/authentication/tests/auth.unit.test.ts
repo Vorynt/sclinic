@@ -262,11 +262,11 @@ describe("getPostAuthRedirect", () => {
         },
         "https://evil.example",
       ),
-      routes.dashboard,
+      routes.home,
     )
   })
 
-  it("sends verified users with membership to dashboard", () => {
+  it("sends verified users with membership to home", () => {
     assert.equal(
       getPostAuthRedirect({
         ...baseAuth,
@@ -281,7 +281,7 @@ describe("getPostAuthRedirect", () => {
         },
         session: { ...baseAuth.session, activeClinicId: "c1" },
       }),
-      routes.dashboard,
+      routes.home,
     )
   })
 })

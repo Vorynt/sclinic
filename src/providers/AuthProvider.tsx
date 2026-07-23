@@ -1,10 +1,18 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { createContext, useContext, useMemo, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  type ReactNode,
+} from "react";
 
 import type { PermissionKey } from "@/config/permissions";
 import { hasAllPermissions, hasAnyPermission } from "@/core/permissions";
+import { setQueryClinicId } from "@/lib/query-clinic-scope";
 import { authQueries } from "@/modules/authentication/queries/auth.query";
 import type { AuthContext } from "@/shared/auth";
 
@@ -34,12 +42,23 @@ export function AuthProvider({
   children,
   initialSession = null,
 }: AuthProviderProps) {
+  // Seed clinic scope before the session query hashes its key (hydration).
+  const didSeedClinicScope = useRef(false);
+  if (!didSeedClinicScope.current) {
+    setQueryClinicId(initialSession?.session.activeClinicId ?? null);
+    didSeedClinicScope.current = true;
+  }
+
   const query = useQuery({
     ...authQueries.session(),
     initialData: initialSession ?? undefined,
   });
 
   const auth = query.data ?? null;
+
+  useEffect(() => {
+    setQueryClinicId(auth?.session.activeClinicId ?? null);
+  }, [auth?.session.activeClinicId]);
 
   const value = useMemo<AuthProviderValue>(
     () => ({

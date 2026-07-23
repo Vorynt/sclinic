@@ -4,12 +4,12 @@ import { PlusIcon } from "@phosphor-icons/react"
 import { useEffect, useMemo, useRef, useState } from "react"
 
 import { Button } from "@/components/ui/button"
-import { Skeleton } from "@/components/ui/skeleton"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { AppointmentDayView } from "@/modules/appointments/components/AppointmentDayView"
 import { AppointmentDetailDrawer } from "@/modules/appointments/components/AppointmentDetailDrawer"
 import { AppointmentFormDialog } from "@/modules/appointments/components/AppointmentFormDialog"
 import { AppointmentMonthView } from "@/modules/appointments/components/AppointmentMonthView"
+import { AppointmentsCalendarSkeleton } from "@/modules/appointments/components/AppointmentsPageSkeleton"
 import { AppointmentsToolbar } from "@/modules/appointments/components/AppointmentsToolbar"
 import { AppointmentWeekView } from "@/modules/appointments/components/AppointmentWeekView"
 import { useAppointmentsQuery } from "@/modules/appointments/hooks/use-appointments"
@@ -105,11 +105,7 @@ export function AppointmentsPanel() {
       />
 
       {appointmentsQuery.isLoading ? (
-        <div className="flex flex-col gap-2">
-          <Skeleton className="h-24 w-full" />
-          <Skeleton className="h-24 w-full" />
-          <Skeleton className="h-24 w-full" />
-        </div>
+        <AppointmentsCalendarSkeleton />
       ) : appointmentsQuery.isError ? (
         <p className="text-sm text-destructive">
           Não foi possível carregar os agendamentos.

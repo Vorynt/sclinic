@@ -19,7 +19,7 @@ export function proxy(request: NextRequest) {
     pathname.startsWith("/reset-password")
 
   const isPublicRoute =
-    pathname === routes.home ||
+    pathname === routes.landing ||
     pathname === routes.invite ||
     pathname === routes.professionalInvite ||
     pathname.startsWith(routes.professionalInvite) ||
@@ -32,10 +32,10 @@ export function proxy(request: NextRequest) {
     return NextResponse.redirect(loginUrl)
   }
 
-  // Cookie present on auth pages → app entry; pages decide onboarding vs dashboard.
+  // Cookie present on auth pages → app entry; pages decide onboarding vs home.
   // /verify-email, /change-password and /invite are intentionally excluded.
   if (sessionCookie && isAuthRoute) {
-    return NextResponse.redirect(new URL(routes.dashboard, request.url))
+    return NextResponse.redirect(new URL(routes.home, request.url))
   }
 
   return NextResponse.next()

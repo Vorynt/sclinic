@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { setQueryClinicId } from "@/lib/query-clinic-scope";
 import { authMutations } from "@/modules/authentication/mutations/auth.mutation";
 import {
   authQueries,
@@ -78,6 +79,7 @@ export function useSignOutMutation({
   return useMutation({
     ...authMutations.signOut(),
     onSuccess: async (data) => {
+      setQueryClinicId(null);
       await queryClient.invalidateQueries({ queryKey: authQueryKeys.all });
       onSuccess?.(data);
     },
@@ -96,6 +98,8 @@ export function useSwitchClinicMutation({
   return useMutation({
     ...authMutations.switchClinic(),
     onSuccess: async (data) => {
+      // Update hash scope before touching the cache so keys resolve to the new clinic.
+      setQueryClinicId(data.session.activeClinicId ?? null);
       queryClient.setQueryData(authQueryKeys.session, data);
       // Clinic-scoped domain caches (patients, members, …) must not leak.
       await queryClient.invalidateQueries();

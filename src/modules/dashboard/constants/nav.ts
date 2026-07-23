@@ -35,8 +35,8 @@ export type PageMeta = {
 
 export const NAV_ITEMS: NavItem[] = [
   {
-    title: "Dashboard",
-    href: routes.dashboard,
+    title: "Início",
+    href: routes.home,
     icon: HouseIcon,
     enabled: true,
   },
@@ -81,42 +81,42 @@ export const NAV_ITEMS: NavItem[] = [
 ]
 
 const PAGE_META: Record<string, PageMeta> = {
-  [routes.dashboard]: {
-    title: "Dashboard",
-    breadcrumbs: [{ label: "Dashboard" }],
+  [routes.home]: {
+    title: "Início",
+    breadcrumbs: [{ label: "Início" }],
   },
   [routes.users]: {
     title: "Equipe",
     breadcrumbs: [
-      { label: "Início", href: routes.dashboard },
+      { label: "Início", href: routes.home },
       { label: "Equipe" },
     ],
   },
   [routes.settings]: {
     title: "Configurações",
     breadcrumbs: [
-      { label: "Início", href: routes.dashboard },
+      { label: "Início", href: routes.home },
       { label: "Configurações" },
     ],
   },
   [routes.patients]: {
     title: "Pacientes",
     breadcrumbs: [
-      { label: "Início", href: routes.dashboard },
+      { label: "Início", href: routes.home },
       { label: "Pacientes" },
     ],
   },
   [routes.professionals]: {
     title: "Profissionais",
     breadcrumbs: [
-      { label: "Início", href: routes.dashboard },
+      { label: "Início", href: routes.home },
       { label: "Profissionais" },
     ],
   },
   [routes.appointments]: {
     title: "Agendamentos",
     breadcrumbs: [
-      { label: "Início", href: routes.dashboard },
+      { label: "Início", href: routes.home },
       { label: "Agendamentos" },
     ],
   },
@@ -124,7 +124,7 @@ const PAGE_META: Record<string, PageMeta> = {
 
 const DEFAULT_PAGE_META: PageMeta = {
   title: "sclinic",
-  breadcrumbs: [{ label: "Início", href: routes.dashboard }],
+  breadcrumbs: [{ label: "Início", href: routes.home }],
 }
 
 export function getPageMeta(pathname: string): PageMeta {
@@ -155,7 +155,7 @@ function findNavItem(pathname: string): NavItem | undefined {
 
   return NAV_ITEMS.find(
     (item) =>
-      item.href !== routes.dashboard &&
+      item.href !== routes.home &&
       (pathname === item.href || pathname.startsWith(`${item.href}/`)),
   )
 }

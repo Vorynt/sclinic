@@ -49,7 +49,7 @@ export function UserMenu() {
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
-          className=" gap-2 rounded-none px-2 py-1.5 h-auto border-l border-l-border"
+          className=" gap-2 rounded-none px-2 py-1.5 h-auto"
           aria-label="Menu da conta">
           <span className="hidden min-w-0 text-right leading-tight sm:block">
             <span className="block max-w-40 truncate text-sm font-medium">

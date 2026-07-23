@@ -27,8 +27,9 @@ export function AppointmentEventCard({
 
   const colorStyle: React.CSSProperties = {
     ...style,
-    backgroundColor: `color-mix(in srgb, ${color} 50%, white)`,
-    borderColor: `color-mix(in srgb, ${color} 100%, black)`,
+    color: `color-mix(in srgb, ${color} 25%, black)`,
+    backgroundColor: `color-mix(in srgb, ${color} 100%, transparent)`,
+    borderColor: `color-mix(in srgb, ${color} 100%, transparent)`,
   };
 
   if (variant === "chip") {

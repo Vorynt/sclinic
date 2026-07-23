@@ -3,6 +3,7 @@ import {
   requireAnyPermission,
   requirePermission,
 } from "@/modules/authentication/permissions/guards"
+import { isSelfScheduleOnlyRole } from "@/modules/appointments/constants/appointments"
 import type { CancelAppointmentDto } from "@/modules/appointments/dto/cancel-appointment.dto"
 import type { CreateAppointmentDto } from "@/modules/appointments/dto/create-appointment.dto"
 import type { ListAppointmentsDto } from "@/modules/appointments/dto/list-appointments.dto"
@@ -49,6 +50,25 @@ export const appointmentService = {
     ctx: AuthRequestContext,
   ): Promise<Appointment> {
     const auth = await requirePermission(ctx, Permission.APPOINTMENTS_CREATE)
+
+    if (isSelfScheduleOnlyRole(auth.membership.roleKey)) {
+      const ownProfessionalId =
+        await appointmentRepository.findActiveProfessionalIdByUserId(
+          auth.user.id,
+          auth.clinicId,
+        )
+      if (!ownProfessionalId) {
+        throw new AppError(ErrorCode.FORBIDDEN, {
+          message:
+            "Seu perfil profissional não está vinculado a esta clínica.",
+        })
+      }
+      if (data.professionalId !== ownProfessionalId) {
+        throw new AppError(ErrorCode.FORBIDDEN, {
+          message: "Você só pode criar agendamentos para si mesmo.",
+        })
+      }
+    }
 
     const patientExists = await appointmentRepository.patientExists(
       data.patientId,

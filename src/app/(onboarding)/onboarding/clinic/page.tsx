@@ -28,7 +28,7 @@ export default async function OnboardingClinicPage({
   }
 
   if (session.membership) {
-    redirect(routes.dashboard)
+    redirect(routes.home)
   }
 
   const { planId, intent } = await searchParams

@@ -21,7 +21,7 @@ export default async function MembershipInactivePage() {
   }
 
   if (session.membership) {
-    redirect(routes.dashboard)
+    redirect(routes.home)
   }
 
   if (!session.hasSuspendedMembershipOnly) {

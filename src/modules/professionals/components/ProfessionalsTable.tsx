@@ -22,7 +22,7 @@ import {
   EmptyHeader,
   EmptyTitle,
 } from "@/components/ui/empty";
-import { Skeleton } from "@/components/ui/skeleton";
+import { TableSkeleton } from "@/components/status/TableSkeleton";
 import {
   Table,
   TableBody,
@@ -86,13 +86,7 @@ export function ProfessionalsTable({ onEdit }: ProfessionalsTableProps) {
   });
 
   if (professionalsQuery.isLoading) {
-    return (
-      <div className="flex flex-col gap-2">
-        <Skeleton className="h-10 w-full" />
-        <Skeleton className="h-10 w-full" />
-        <Skeleton className="h-10 w-full" />
-      </div>
-    );
+    return <TableSkeleton columns={6} rows={8} />;
   }
 
   if (professionalsQuery.isError) {

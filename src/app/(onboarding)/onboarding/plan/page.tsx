@@ -30,7 +30,7 @@ export default async function OnboardingPlanPage({
   }
 
   if (session.membership) {
-    redirect(routes.dashboard);
+    redirect(routes.home);
   }
 
   const { intent } = await searchParams;

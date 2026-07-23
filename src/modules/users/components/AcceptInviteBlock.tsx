@@ -26,7 +26,7 @@ export function AcceptInviteBlock({ token }: AcceptInviteBlockProps) {
   const { mutate, isPending, isError } = useAcceptInvitationMutation({
     onSuccess: () => {
       toast.success("Convite aceito")
-      router.replace(routes.dashboard)
+      router.replace(routes.home)
     },
     onError: (error) => {
       toast.error(error.message)

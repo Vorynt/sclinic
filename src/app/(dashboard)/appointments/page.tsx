@@ -2,8 +2,8 @@ import type { Metadata } from "next"
 import { Suspense } from "react"
 
 import { ForbiddenBlock } from "@/components/status/ForbiddenBlock"
-import { Spinner } from "@/components/ui/spinner"
 import { Permission } from "@/config/permissions"
+import { AppointmentsPageSkeleton } from "@/modules/appointments/components/AppointmentsPageSkeleton"
 import { AppointmentsPanel } from "@/modules/appointments/components/AppointmentsPanel"
 import { PermissionProvider } from "@/providers/PermissionProvider"
 
@@ -18,13 +18,7 @@ export default function AppointmentsPage() {
       mode="any"
       fallback={<ForbiddenBlock />}
     >
-      <Suspense
-        fallback={
-          <div className="flex justify-center py-10">
-            <Spinner className="size-6" />
-          </div>
-        }
-      >
+      <Suspense fallback={<AppointmentsPageSkeleton />}>
         <AppointmentsPanel />
       </Suspense>
     </PermissionProvider>

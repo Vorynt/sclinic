@@ -18,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Skeleton } from "@/components/ui/skeleton"
+import { TableSkeleton } from "@/components/status/TableSkeleton"
 import {
   Table,
   TableBody,
@@ -78,13 +78,7 @@ export function MembersTable() {
   })
 
   if (membersQuery.isLoading || invitationsQuery.isLoading) {
-    return (
-      <div className="flex flex-col gap-2">
-        <Skeleton className="h-10 w-full" />
-        <Skeleton className="h-10 w-full" />
-        <Skeleton className="h-10 w-full" />
-      </div>
-    )
+    return <TableSkeleton columns={5} rows={6} />
   }
 
   if (membersQuery.isError || invitationsQuery.isError) {

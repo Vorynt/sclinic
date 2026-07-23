@@ -61,7 +61,7 @@ export function ClinicIndicator() {
       awaitingNavRef.current = true
       startTransition(() => {
         if (!canAccessPath(pathname, nextAuth.permissions)) {
-          router.push(routes.dashboard)
+          router.push(routes.home)
         } else {
           router.refresh()
         }

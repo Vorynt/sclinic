@@ -135,7 +135,7 @@ export function ProfessionalInviteOnboarding({
       setPendingAction(null)
       await queryClient.invalidateQueries({ queryKey: authQueryKeys.all })
       toast.success("Convite aceito")
-      router.push(routes.dashboard)
+      router.push(routes.home)
     },
     onError: (error) => {
       pendingActionRef.current = null

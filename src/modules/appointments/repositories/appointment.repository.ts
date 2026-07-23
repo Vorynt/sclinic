@@ -125,6 +125,39 @@ export const appointmentRepository = {
   },
 
   /**
+   * Active professional id linked to the user in this clinic, if any.
+   */
+  async findActiveProfessionalIdByUserId(
+    userId: string,
+    clinicId: string,
+  ): Promise<string | null> {
+    return withDbError(async () => {
+      const [row] = await db
+        .select({ id: professionals.id })
+        .from(professionalClinics)
+        .innerJoin(
+          professionals,
+          and(
+            eq(professionals.id, professionalClinics.professionalId),
+            isNull(professionals.deletedAt),
+            eq(professionals.status, "active"),
+            eq(professionals.userId, userId),
+          ),
+        )
+        .where(
+          and(
+            eq(professionalClinics.clinicId, clinicId),
+            eq(professionalClinics.status, "active"),
+            isNull(professionalClinics.deletedAt),
+          ),
+        )
+        .limit(1)
+
+      return row?.id ?? null
+    })
+  },
+
+  /**
    * True when the professional already has a non-canceled appointment
    * overlapping [startsAt, endsAt). Canceled (and soft-deleted) slots are ignored.
    */

@@ -37,7 +37,7 @@ export function NotFoundBlock({
 
         <div className="flex justify-center">
           <Button asChild size="lg">
-            <Link href={routes.dashboard}>Ir para o início</Link>
+            <Link href={routes.home}>Ir para o início</Link>
           </Button>
         </div>
       </div>

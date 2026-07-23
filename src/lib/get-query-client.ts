@@ -1,4 +1,6 @@
-import { isServer, QueryClient } from "@tanstack/react-query"
+import { hashKey, isServer, QueryClient } from "@tanstack/react-query"
+
+import { getQueryClinicId } from "@/lib/query-clinic-scope"
 
 function makeQueryClient() {
   return new QueryClient({
@@ -7,6 +9,9 @@ function makeQueryClient() {
         // Avoid immediate client refetch after SSR hydration
         staleTime: 60 * 1000,
         refetchOnWindowFocus: false,
+        // Append active clinicId so domain caches never leak across clinics.
+        queryKeyHashFn: (queryKey) =>
+          hashKey([...queryKey, getQueryClinicId()]),
       },
     },
   })

@@ -1,20 +1,20 @@
-"use client"
+"use client";
 
-import type { ReactNode } from "react"
+import type { ReactNode } from "react";
 
-import { LoadingScreen } from "@/components/status/LoadingScreen"
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
-import { AppHeader } from "@/modules/dashboard/components/AppHeader"
-import { AppSidebar } from "@/modules/dashboard/components/AppSidebar"
-import { useAuthUiStore } from "@/stores/auth.store"
+import { LoadingScreen } from "@/components/status/LoadingScreen";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { AppHeader } from "@/modules/dashboard/components/AppHeader";
+import { AppSidebar } from "@/modules/dashboard/components/AppSidebar";
+import { useAuthUiStore } from "@/stores/auth.store";
 
 type AppShellProps = {
-  children: ReactNode
-}
+  children: ReactNode;
+};
 
 export function AppShell({ children }: AppShellProps) {
-  const isSwitchingClinic = useAuthUiStore((s) => s.isSwitchingClinic)
-  const switchingClinicName = useAuthUiStore((s) => s.switchingClinicName)
+  const isSwitchingClinic = useAuthUiStore((s) => s.isSwitchingClinic);
+  const switchingClinicName = useAuthUiStore((s) => s.switchingClinicName);
 
   return (
     <SidebarProvider>
@@ -35,5 +35,5 @@ export function AppShell({ children }: AppShellProps) {
         />
       ) : null}
     </SidebarProvider>
-  )
+  );
 }

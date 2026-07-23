@@ -6,8 +6,8 @@ import { routes } from "@/config/routes"
 import { canAccessPath } from "@/modules/dashboard/constants/nav"
 
 describe("canAccessPath", () => {
-  it("allows dashboard for any granted set", () => {
-    assert.equal(canAccessPath(routes.dashboard, []), true)
+  it("allows home for any granted set", () => {
+    assert.equal(canAccessPath(routes.home, []), true)
   })
 
   it("allows path when role has required permission", () => {

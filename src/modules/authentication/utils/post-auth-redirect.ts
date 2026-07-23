@@ -49,5 +49,5 @@ export function getPostAuthRedirect(
     return routes.onboardingPlan
   }
 
-  return safeNext ?? routes.dashboard
+  return safeNext ?? routes.home
 }

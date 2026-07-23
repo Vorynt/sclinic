@@ -46,7 +46,7 @@ export function ForbiddenBlock({
             Voltar
           </Button>
           <Button asChild size="lg" className="w-full sm:w-auto">
-            <Link href={routes.dashboard}>Ir para o início</Link>
+            <Link href={routes.home}>Ir para o início</Link>
           </Button>
         </div>
       </div>

@@ -1,7 +1,10 @@
 import assert from "node:assert/strict"
 import { describe, it } from "node:test"
 
-import { getProfessionalCalendarColor } from "@/modules/appointments/constants/appointments"
+import {
+  getProfessionalCalendarColor,
+  isSelfScheduleOnlyRole,
+} from "@/modules/appointments/constants/appointments"
 import { toAppointment } from "@/modules/appointments/mappers/appointment.mapper"
 import {
   cancelAppointmentSchema,
@@ -219,6 +222,16 @@ describe("getProfessionalCalendarColor", () => {
       getProfessionalCalendarColor("33333333-3333-4333-8333-333333333333"),
     ])
     assert.ok(colors.size >= 1)
+  })
+})
+
+describe("isSelfScheduleOnlyRole", () => {
+  it("is true only for doctor", () => {
+    assert.equal(isSelfScheduleOnlyRole("doctor"), true)
+    assert.equal(isSelfScheduleOnlyRole("nurse"), false)
+    assert.equal(isSelfScheduleOnlyRole("receptionist"), false)
+    assert.equal(isSelfScheduleOnlyRole(null), false)
+    assert.equal(isSelfScheduleOnlyRole(undefined), false)
   })
 })
 
