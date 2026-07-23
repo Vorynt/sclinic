@@ -15,46 +15,24 @@ const optionalTrimmed = z
   .transform((value) => (value.length === 0 ? undefined : value))
   .optional()
 
-const addressSchema = z.object({
-  addressStreet: optionalTrimmed,
-  addressNumber: optionalTrimmed,
-  addressComplement: optionalTrimmed,
-  addressNeighborhood: optionalTrimmed,
-  addressCity: optionalTrimmed,
-  addressState: z
-    .string()
-    .trim()
-    .length(2, "UF deve ter 2 caracteres")
-    .transform((value) => value.toUpperCase())
-    .optional()
-    .or(z.literal("").transform(() => undefined)),
-  addressZip: optionalTrimmed,
-})
+const optionalEmail = z
+  .string()
+  .trim()
+  .optional()
+  .transform((value) => (value && value.length > 0 ? value : undefined))
+  .pipe(z.string().email("E-mail inválido").optional())
 
-export const patientGenderSchema = z.enum([
-  "female",
-  "male",
-  "other",
-  "undisclosed",
-])
+export const patientIdSchema = z.string().uuid("ID inválido")
 
-export const patientIdSchema = z.string().trim().min(1, "ID inválido")
-
-const patientProfileFields = {
-  socialName: optionalTrimmed,
-  email: z.string().trim().email("E-mail inválido").optional().or(z.literal("")),
+const patientOptionalFields = {
   phone: optionalTrimmed,
+  email: optionalEmail,
   birthDate: z
     .string()
     .trim()
     .regex(/^\d{4}-\d{2}-\d{2}$/, "Data inválida (YYYY-MM-DD)")
     .optional()
-    .or(z.literal("")),
-  gender: patientGenderSchema.optional(),
-  emergencyContactName: optionalTrimmed,
-  emergencyContactPhone: optionalTrimmed,
-  notes: optionalTrimmed,
-  ...addressSchema.shape,
+    .or(z.literal("").transform(() => undefined)),
 }
 
 export const createPatientSchema = z.object({
@@ -64,7 +42,7 @@ export const createPatientSchema = z.object({
     .min(1, "Nome é obrigatório")
     .max(200, "Nome deve ter no máximo 200 caracteres"),
   cpf: cpfSchema,
-  ...patientProfileFields,
+  ...patientOptionalFields,
 })
 
 export const updatePatientSchema = z
@@ -77,19 +55,25 @@ export const updatePatientSchema = z
       .max(200, "Nome deve ter no máximo 200 caracteres")
       .optional(),
     cpf: cpfSchema.optional(),
-    ...patientProfileFields,
+    ...patientOptionalFields,
   })
   .refine(
-    (data) => {
-      const { id: _id, ...rest } = data
-      return Object.values(rest).some((value) => value !== undefined)
-    },
+    (data) =>
+      data.name !== undefined ||
+      data.cpf !== undefined ||
+      data.phone !== undefined ||
+      data.email !== undefined ||
+      data.birthDate !== undefined,
     {
       message: "Informe ao menos um campo para atualizar",
       path: ["_form"],
     },
   )
 
+export const listPatientsSchema = z.object({
+  q: optionalTrimmed,
+})
+
 export type CreatePatientInput = z.infer<typeof createPatientSchema>
 export type UpdatePatientInput = z.infer<typeof updatePatientSchema>
-export type PatientGender = z.infer<typeof patientGenderSchema>
+export type ListPatientsInput = z.infer<typeof listPatientsSchema>

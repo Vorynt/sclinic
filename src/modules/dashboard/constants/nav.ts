@@ -50,7 +50,7 @@ export const NAV_ITEMS: NavItem[] = [
     href: routes.patients,
     icon: UsersIcon,
     permissions: [Permission.PATIENTS_READ],
-    enabled: false,
+    enabled: true,
   },
   {
     title: "Agendamentos",

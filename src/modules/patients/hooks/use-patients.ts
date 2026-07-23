@@ -1,11 +1,9 @@
 "use client"
 
-/**
- * Listagem de pacientes — aguarda action/list no service.
- * Use `patientsQueryKeys.list()` + `queryOptions` quando o endpoint existir.
- */
-export function usePatients() {
-  throw new Error(
-    "Not implemented: usePatients — create listPatientsAction + patientsQueries.list first",
-  )
+import { useQuery } from "@tanstack/react-query"
+
+import { patientsQueries } from "@/modules/patients/queries/patients.query"
+
+export function usePatientsQuery(filters?: { q?: string }) {
+  return useQuery(patientsQueries.list(filters))
 }

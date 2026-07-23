@@ -1,5 +1,6 @@
 "use server"
 
+import { getAuthRequestContext } from "@/modules/authentication/utils/request-context"
 import { patientIdSchema } from "@/modules/patients/schemas/patient.schema"
 import { patientService } from "@/modules/patients/services/patient.service"
 import { toActionResult } from "@/shared/errors"
@@ -11,6 +12,6 @@ export async function deletePatientAction(
 ): Promise<ApiResponse<void>> {
   return toActionResult(async () => {
     const parsedId = parseOrThrow(patientIdSchema, id)
-    return patientService.delete(parsedId)
+    return patientService.delete(parsedId, await getAuthRequestContext())
   })
 }
