@@ -2,11 +2,13 @@
 
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useState } from "react"
-import { useForm } from "react-hook-form"
+import { Controller, useForm } from "react-hook-form"
 import { toast } from "sonner"
+import { useHookFormMask } from "use-mask-input"
 import type { z } from "zod"
 
 import { Button } from "@/components/ui/button"
+import { DatePicker } from "@/components/ui/date-picker"
 import {
   Field,
   FieldError,
@@ -23,6 +25,7 @@ import {
 import { createPatientSchema } from "@/modules/patients/schemas/patient.schema"
 import type { Patient } from "@/modules/patients/types/patient"
 import { ErrorCode, getClientMessage, isAppError } from "@/shared/errors"
+import { MASK_INPUT_OPTIONS, MASKS } from "@/utils/mask"
 
 type PatientFormValues = z.input<typeof createPatientSchema>
 type PatientFormOutput = z.output<typeof createPatientSchema>
@@ -42,6 +45,7 @@ export function PatientForm({ patient, onSuccess, onCancel }: PatientFormProps) 
 
   const {
     register,
+    control,
     handleSubmit,
     formState: { errors },
   } = useForm<PatientFormValues, unknown, PatientFormOutput>({
@@ -54,6 +58,8 @@ export function PatientForm({ patient, onSuccess, onCancel }: PatientFormProps) 
       birthDate: patient?.birthDate ?? "",
     },
   })
+
+  const registerWithMask = useHookFormMask(register)
 
   function handleError(error: unknown) {
     if (isAppError(error)) {
@@ -120,9 +126,10 @@ export function PatientForm({ patient, onSuccess, onCancel }: PatientFormProps) 
           <Input
             id="patient-cpf"
             placeholder="000.000.000-00"
+            inputMode="numeric"
             aria-invalid={Boolean(errors.cpf) || undefined}
             disabled={isPending}
-            {...register("cpf")}
+            {...registerWithMask("cpf", MASKS.cpf, MASK_INPUT_OPTIONS)}
           />
           <FieldError errors={[errors.cpf]} />
         </Field>
@@ -134,10 +141,11 @@ export function PatientForm({ patient, onSuccess, onCancel }: PatientFormProps) 
               id="patient-phone"
               type="tel"
               autoComplete="tel"
-              placeholder="Opcional"
+              placeholder="(00) 00000-0000"
+              inputMode="numeric"
               aria-invalid={Boolean(errors.phone) || undefined}
               disabled={isPending}
-              {...register("phone")}
+              {...registerWithMask("phone", MASKS.phone, MASK_INPUT_OPTIONS)}
             />
             <FieldError errors={[errors.phone]} />
           </Field>
@@ -161,12 +169,24 @@ export function PatientForm({ patient, onSuccess, onCancel }: PatientFormProps) 
           <FieldLabel htmlFor="patient-birth-date">
             Data de nascimento
           </FieldLabel>
-          <Input
-            id="patient-birth-date"
-            type="date"
-            aria-invalid={Boolean(errors.birthDate) || undefined}
-            disabled={isPending}
-            {...register("birthDate")}
+          <Controller
+            name="birthDate"
+            control={control}
+            render={({ field }) => (
+              <DatePicker
+                id="patient-birth-date"
+                value={field.value ?? ""}
+                onChange={field.onChange}
+                onBlur={field.onBlur}
+                placeholder="Selecione a data"
+                aria-invalid={Boolean(errors.birthDate) || undefined}
+                disabled={isPending}
+                captionLayout="dropdown"
+                startMonth={new Date(1900, 0)}
+                endMonth={new Date()}
+                disabledDates={{ after: new Date() }}
+              />
+            )}
           />
           <FieldError errors={[errors.birthDate]} />
         </Field>

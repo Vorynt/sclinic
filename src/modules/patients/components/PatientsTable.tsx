@@ -33,6 +33,7 @@ import { useDeletePatientMutation } from "@/modules/patients/hooks/use-patient-m
 import { usePatientsQuery } from "@/modules/patients/hooks/use-patients"
 import type { Patient } from "@/modules/patients/types/patient"
 import { formatCpf } from "@/utils/cpf"
+import { formatPhone } from "@/utils/phone"
 
 type PatientsTableProps = {
   searchQuery?: string
@@ -102,7 +103,9 @@ export function PatientsTable({ searchQuery, onEdit }: PatientsTableProps) {
             <TableRow key={patient.id}>
               <TableCell className="font-medium">{patient.name}</TableCell>
               <TableCell>{formatCpf(patient.cpf)}</TableCell>
-              <TableCell>{patient.phone || "—"}</TableCell>
+              <TableCell>
+                {patient.phone ? formatPhone(patient.phone) : "—"}
+              </TableCell>
               <TableCell>{patient.email || "—"}</TableCell>
               <TableCell className="text-right">
                 <div className="flex justify-end gap-2">
