@@ -35,9 +35,9 @@ import {
   USERS_CONSTANTS,
 } from "@/modules/users/constants/users"
 import {
-  useRemoveMemberMutation,
   useRevokeInvitationMutation,
   useUpdateMemberRoleMutation,
+  useUpdateMemberStatusMutation,
 } from "@/modules/users/hooks/use-user-mutations"
 import {
   useAssignableRolesQuery,
@@ -45,7 +45,7 @@ import {
   useMembersQuery,
 } from "@/modules/users/hooks/use-users"
 import { useAuth } from "@/providers/AuthProvider"
-import { ProhibitIcon, TrashIcon } from "@phosphor-icons/react"
+import { ArrowsClockwiseIcon, ProhibitIcon } from "@phosphor-icons/react"
 
 function statusBadgeVariant(
   status: TeamRowStatus,
@@ -64,8 +64,11 @@ export function MembersTable() {
     onError: (error) => toast.error(error.message),
   })
 
-  const removeMember = useRemoveMemberMutation({
-    onSuccess: () => toast.success("Membro removido"),
+  const updateStatus = useUpdateMemberStatusMutation({
+    onSuccess: (member) =>
+      toast.success(
+        member.status === "suspended" ? "Membro suspenso" : "Membro reativado",
+      ),
     onError: (error) => toast.error(error.message),
   })
 
@@ -168,15 +171,28 @@ export function MembersTable() {
                   <ButtonGroup>
                     <Button
                       type="button"
-                      variant="destructive"
+                      variant={status === "suspended" ? "outline" : "destructive"}
                       size="icon"
-                      disabled={removeMember.isPending}
+                      tooltip={
+                        status === "suspended" ? "Reativar" : "Suspender"
+                      }
+                      disabled={updateStatus.isPending}
                       onClick={() =>
-                        removeMember.mutate({ membershipId: member.id })
+                        updateStatus.mutate({
+                          membershipId: member.id,
+                          status:
+                            status === "suspended" ? "active" : "suspended",
+                        })
                       }
                     >
-                      <TrashIcon />
-                      <span className="sr-only">Remover</span>
+                      {status === "suspended" ? (
+                        <ArrowsClockwiseIcon />
+                      ) : (
+                        <ProhibitIcon />
+                      )}
+                      <span className="sr-only">
+                        {status === "suspended" ? "Reativar" : "Suspender"}
+                      </span>
                     </Button>
                   </ButtonGroup>
                 ) : null}
@@ -203,6 +219,7 @@ export function MembersTable() {
                   type="button"
                   variant="outline"
                   size="icon"
+                  tooltip="Cancelar convite"
                   disabled={revokeInvite.isPending}
                   onClick={() =>
                     revokeInvite.mutate({ invitationId: invitation.id })

@@ -90,13 +90,15 @@ export function useSignOutMutation({
 export function useSwitchClinicMutation({
   onSuccess,
   onError,
-}: MutationCallbacks = {}) {
+}: MutationCallbacks<AuthContext> = {}) {
   const queryClient = useQueryClient();
 
   return useMutation({
     ...authMutations.switchClinic(),
     onSuccess: async (data) => {
-      await queryClient.invalidateQueries({ queryKey: authQueryKeys.all });
+      queryClient.setQueryData(authQueryKeys.session, data);
+      // Clinic-scoped domain caches (patients, members, …) must not leak.
+      await queryClient.invalidateQueries();
       onSuccess?.(data);
     },
     onError: (error) => {

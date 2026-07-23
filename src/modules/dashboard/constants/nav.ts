@@ -11,6 +11,7 @@ import {
 import type { PermissionKey } from "@/config/permissions"
 import { Permission } from "@/config/permissions"
 import { routes } from "@/config/routes"
+import { hasAnyPermission } from "@/core/permissions"
 
 export type NavItem = {
   title: string
@@ -146,4 +147,28 @@ export function getVisibleNavItems(
     if (!item.permissions || item.permissions.length === 0) return true
     return canAny(...item.permissions)
   })
+}
+
+function findNavItem(pathname: string): NavItem | undefined {
+  const exact = NAV_ITEMS.find((item) => item.href === pathname)
+  if (exact) return exact
+
+  return NAV_ITEMS.find(
+    (item) =>
+      item.href !== routes.dashboard &&
+      (pathname === item.href || pathname.startsWith(`${item.href}/`)),
+  )
+}
+
+/**
+ * Whether the granted permissions allow the current dashboard path.
+ * Paths without a nav entry (or without required permissions) are allowed.
+ */
+export function canAccessPath(
+  pathname: string,
+  granted: readonly PermissionKey[],
+): boolean {
+  const item = findNavItem(pathname)
+  if (!item?.permissions || item.permissions.length === 0) return true
+  return hasAnyPermission(granted, item.permissions)
 }

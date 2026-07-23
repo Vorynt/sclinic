@@ -131,7 +131,17 @@ async function buildAuthContextFromParts(
 
   const permissions = await resolvePermissions(membership);
 
-  return { user, session, membership, permissions };
+  const hasSuspendedMembershipOnly =
+    !membership &&
+    (await membershipRepository.hasSuspendedByUser(user.id));
+
+  return {
+    user,
+    session,
+    membership,
+    permissions,
+    hasSuspendedMembershipOnly,
+  };
 }
 
 async function buildAuthContext(ba: BaSessionResult): Promise<AuthContext> {
@@ -319,7 +329,7 @@ export const authService = {
 
   async listMemberships(ctx: AuthRequestContext): Promise<AuthMembership[]> {
     const authContext = await this.requireSession(ctx);
-    return membershipRepository.listActiveByUser(authContext.user.id);
+    return membershipRepository.listForClinicSwitcher(authContext.user.id);
   },
 
   async switchClinic(
@@ -328,7 +338,7 @@ export const authService = {
   ): Promise<AuthContext> {
     const authContext = await this.requireSession(ctx);
 
-    const membership = await membershipRepository.findActiveByUserAndClinic(
+    const membership = await membershipRepository.findByUserAndClinic(
       authContext.user.id,
       data.clinicId,
     );
@@ -357,6 +367,7 @@ export const authService = {
       session: updatedSession,
       membership,
       permissions,
+      hasSuspendedMembershipOnly: false,
     };
   },
 

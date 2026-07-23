@@ -44,12 +44,15 @@ const meta = {
     asChild: {
       control: "boolean",
     },
+    tooltip: {
+      control: "text",
+    },
   },
   parameters: {
     docs: {
       description: {
         component:
-          "Botão reutilizável do design system com variantes visuais, tamanhos e suporte a ícones.",
+          "Botão reutilizável do design system com variantes visuais, tamanhos, ícones e tooltip opcional.",
       },
     },
   },
@@ -103,6 +106,38 @@ export const WithIcon: Story = {
       </Button>
       <Button size="icon" aria-label="Adicionar">
         <PlusIcon />
+      </Button>
+    </div>
+  ),
+};
+
+export const WithTooltip: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "Tooltip via prop `tooltip` — aceita string ou elemento React.",
+      },
+    },
+  },
+  render: () => (
+    <div className="flex flex-wrap items-center gap-2">
+      <Button tooltip="Salvar alterações">Salvar</Button>
+      <Button
+        variant="outline"
+        size="icon"
+        aria-label="Adicionar"
+        tooltip={
+          <span>
+            Adicionar item <kbd>⌘</kbd>
+            <kbd>N</kbd>
+          </span>
+        }
+      >
+        <PlusIcon />
+      </Button>
+      <Button disabled tooltip="Indisponível no momento">
+        Desabilitado
       </Button>
     </div>
   ),

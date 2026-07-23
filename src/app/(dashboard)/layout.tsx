@@ -28,6 +28,9 @@ export default async function DashboardLayout({
   }
 
   if (!session.membership) {
+    if (session.hasSuspendedMembershipOnly) {
+      redirect(routes.membershipInactive)
+    }
     redirect(routes.onboardingPlan)
   }
 

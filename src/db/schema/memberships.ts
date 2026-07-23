@@ -76,6 +76,7 @@ export const clinicMemberships = pgTable(
 
 /**
  * Linked after `clinic_memberships` exists so the EXISTS subquery is valid.
+ * Active and suspended members may read their clinic (switcher shows suspended as disabled).
  */
 export const clinicsMemberSelectPolicy = pgPolicy("clinics_member_access", {
   as: "permissive",
@@ -89,7 +90,7 @@ export const clinicsMemberSelectPolicy = pgPolicy("clinics_member_access", {
       WHERE m.clinic_id = ${clinics.id}
         AND m.user_id = ${tenantUserId()}
         AND m.deleted_at IS NULL
-        AND m.status = 'active'
+        AND m.status IN ('active', 'suspended')
     )
   )`,
 }).link(clinics)

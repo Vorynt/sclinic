@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import { Suspense } from "react"
 
+import { ForbiddenBlock } from "@/components/status/ForbiddenBlock"
 import { Spinner } from "@/components/ui/spinner"
 import { Permission } from "@/config/permissions"
 import { ProfessionalsPanel } from "@/modules/professionals/components/ProfessionalsPanel"
@@ -14,11 +15,7 @@ export default function ProfessionalsPage() {
   return (
     <PermissionProvider
       permission={Permission.PROFESSIONALS_MANAGE}
-      fallback={
-        <p className="text-sm text-muted-foreground">
-          Você não tem permissão para gerenciar profissionais.
-        </p>
-      }
+      fallback={<ForbiddenBlock />}
     >
       <Suspense
         fallback={

@@ -115,6 +115,7 @@ export function PatientsTable({ searchQuery, onEdit }: PatientsTableProps) {
                     type="button"
                     variant="secondary"
                     size="icon"
+                    tooltip="Editar"
                     onClick={() => onEdit(patient)}>
                     <PencilSimpleIcon />
                     <span className="sr-only">Editar</span>
@@ -123,6 +124,7 @@ export function PatientsTable({ searchQuery, onEdit }: PatientsTableProps) {
                     type="button"
                     variant="destructive"
                     size="icon"
+                    tooltip="Remover"
                     onClick={() => setPatientToDelete(patient)}>
                     <TrashIcon />
                     <span className="sr-only">Remover</span>

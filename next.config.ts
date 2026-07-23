@@ -1,7 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  experimental: {
+    // Enables next/navigation `forbidden()` → app/forbidden.tsx (403).
+    authInterrupts: true,
+  },
 };
 
 export default nextConfig;

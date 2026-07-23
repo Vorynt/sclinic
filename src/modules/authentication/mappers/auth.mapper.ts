@@ -80,6 +80,7 @@ export function toAuthMembership(row: {
   roleName: string
   isDefault: boolean
   status: unknown
+  clinicName?: string | null
 }): AuthMembership {
   return {
     id: row.id,
@@ -89,6 +90,9 @@ export function toAuthMembership(row: {
     roleName: row.roleName,
     isDefault: row.isDefault,
     status: toMembershipStatus(row.status),
+    ...(row.clinicName != null && row.clinicName !== ""
+      ? { clinicName: row.clinicName }
+      : {}),
   }
 }
 

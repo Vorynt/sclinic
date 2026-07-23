@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import { Suspense } from "react"
 
+import { ForbiddenBlock } from "@/components/status/ForbiddenBlock"
 import { Spinner } from "@/components/ui/spinner"
 import { Permission } from "@/config/permissions"
 import { PatientsPanel } from "@/modules/patients/components/PatientsPanel"
@@ -14,11 +15,7 @@ export default function PatientsPage() {
   return (
     <PermissionProvider
       permission={Permission.PATIENTS_READ}
-      fallback={
-        <p className="text-sm text-muted-foreground">
-          Você não tem permissão para visualizar pacientes.
-        </p>
-      }
+      fallback={<ForbiddenBlock />}
     >
       <Suspense
         fallback={

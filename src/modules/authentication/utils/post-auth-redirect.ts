@@ -43,6 +43,9 @@ export function getPostAuthRedirect(
   }
 
   if (!auth.membership) {
+    if (auth.hasSuspendedMembershipOnly) {
+      return routes.membershipInactive
+    }
     return routes.onboardingPlan
   }
 

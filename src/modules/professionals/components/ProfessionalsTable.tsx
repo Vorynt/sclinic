@@ -166,6 +166,7 @@ export function ProfessionalsTable({ onEdit }: ProfessionalsTableProps) {
                       type="button"
                       variant="secondary"
                       size="icon"
+                      tooltip="Editar"
                       onClick={() => onEdit(professional)}>
                       <PencilSimpleIcon />
                       <span className="sr-only">Editar</span>
@@ -174,6 +175,11 @@ export function ProfessionalsTable({ onEdit }: ProfessionalsTableProps) {
                       type="button"
                       variant="secondary"
                       size="icon"
+                      tooltip={
+                        professional.status === "active"
+                          ? "Desativar"
+                          : "Ativar"
+                      }
                       disabled={isTogglePending}
                       onClick={() =>
                         setStatus.mutate({
@@ -196,6 +202,7 @@ export function ProfessionalsTable({ onEdit }: ProfessionalsTableProps) {
                       type="button"
                       variant="destructive"
                       size="icon"
+                      tooltip="Remover"
                       onClick={() => setProfessionalToDelete(professional)}>
                       <TrashIcon />
                       <span className="sr-only">Remover</span>

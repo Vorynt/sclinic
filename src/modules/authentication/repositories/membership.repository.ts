@@ -1,7 +1,7 @@
-import { and, eq, isNull } from "drizzle-orm"
+import { and, eq, inArray, isNull } from "drizzle-orm"
 
 import { db } from "@/db"
-import { clinicMemberships, roles } from "@/db/schema"
+import { clinicMemberships, clinics, roles } from "@/db/schema"
 import { withDbError } from "@/db/with-db-error"
 import { toAuthMembership } from "@/modules/authentication/mappers/auth.mapper"
 import type { AuthMembership } from "@/modules/authentication/types/auth"
@@ -34,6 +34,40 @@ export const membershipRepository = {
             eq(clinicMemberships.userId, userId),
             eq(clinicMemberships.clinicId, clinicId),
             eq(clinicMemberships.status, "active"),
+            isNull(clinicMemberships.deletedAt),
+          ),
+        )
+        .limit(1)
+
+      return row ? toAuthMembership(row) : null
+    })
+  },
+
+  /**
+   * Any non-removed membership for the user+clinic pair (incl. suspended).
+   */
+  async findByUserAndClinic(
+    userId: string,
+    clinicId: string,
+  ): Promise<AuthMembership | null> {
+    return withDbError(async () => {
+      const [row] = await db
+        .select({
+          id: clinicMemberships.id,
+          clinicId: clinicMemberships.clinicId,
+          roleId: clinicMemberships.roleId,
+          roleKey: roles.key,
+          roleName: roles.name,
+          isDefault: clinicMemberships.isDefault,
+          status: clinicMemberships.status,
+        })
+        .from(clinicMemberships)
+        .innerJoin(roles, eq(roles.id, clinicMemberships.roleId))
+        .where(
+          and(
+            eq(clinicMemberships.userId, userId),
+            eq(clinicMemberships.clinicId, clinicId),
+            inArray(clinicMemberships.status, ["active", "suspended"]),
             isNull(clinicMemberships.deletedAt),
           ),
         )
@@ -94,6 +128,59 @@ export const membershipRepository = {
         )
 
       return rows.map(toAuthMembership)
+    })
+  },
+
+  /**
+   * Clinics shown in the switcher: active (selectable) + suspended (disabled).
+   * Left-joins clinic name (RLS may hide suspended tenants until policy allows).
+   */
+  async listForClinicSwitcher(userId: string): Promise<AuthMembership[]> {
+    return withDbError(async () => {
+      const rows = await db
+        .select({
+          id: clinicMemberships.id,
+          clinicId: clinicMemberships.clinicId,
+          roleId: clinicMemberships.roleId,
+          roleKey: roles.key,
+          roleName: roles.name,
+          isDefault: clinicMemberships.isDefault,
+          status: clinicMemberships.status,
+          clinicName: clinics.name,
+        })
+        .from(clinicMemberships)
+        .innerJoin(roles, eq(roles.id, clinicMemberships.roleId))
+        .leftJoin(
+          clinics,
+          and(eq(clinics.id, clinicMemberships.clinicId), isNull(clinics.deletedAt)),
+        )
+        .where(
+          and(
+            eq(clinicMemberships.userId, userId),
+            inArray(clinicMemberships.status, ["active", "suspended"]),
+            isNull(clinicMemberships.deletedAt),
+          ),
+        )
+
+      return rows.map(toAuthMembership)
+    })
+  },
+
+  async hasSuspendedByUser(userId: string): Promise<boolean> {
+    return withDbError(async () => {
+      const [row] = await db
+        .select({ id: clinicMemberships.id })
+        .from(clinicMemberships)
+        .where(
+          and(
+            eq(clinicMemberships.userId, userId),
+            eq(clinicMemberships.status, "suspended"),
+            isNull(clinicMemberships.deletedAt),
+          ),
+        )
+        .limit(1)
+
+      return Boolean(row)
     })
   },
 

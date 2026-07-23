@@ -82,6 +82,31 @@ export const memberService = {
       targetRoleKey: member.roleKey,
     })
 
+    // Soft-deactivate: keep the clinic link so the member sees the
+    // membership-inactive screen instead of owner onboarding.
     await memberRepository.softRemove(membershipId, auth.clinicId)
+  },
+
+  async setStatus(
+    membershipId: string,
+    status: "active" | "suspended",
+    ctx: AuthRequestContext,
+  ): Promise<ClinicMember> {
+    const auth = await requireTeamAccess(ctx)
+
+    const member = await memberRepository.findById(membershipId, auth.clinicId)
+    if (!member || member.status === "removed") {
+      throw new AppError(ErrorCode.NOT_FOUND, {
+        message: "Membro não encontrado.",
+      })
+    }
+
+    assertCanManageMember({
+      actorUserId: auth.user.id,
+      targetUserId: member.userId,
+      targetRoleKey: member.roleKey,
+    })
+
+    return memberRepository.setStatus(membershipId, auth.clinicId, status)
   },
 }

@@ -192,17 +192,78 @@ export const memberRepository = {
       await db
         .update(clinicMemberships)
         .set({
-          status: "removed",
-          deletedAt: new Date(),
+          status: "suspended",
           isDefault: false,
         })
         .where(
           and(
             eq(clinicMemberships.id, membershipId),
             eq(clinicMemberships.clinicId, clinicId),
+            ne(clinicMemberships.status, "removed"),
             isNull(clinicMemberships.deletedAt),
           ),
         );
+    });
+  },
+
+  async setStatus(
+    membershipId: string,
+    clinicId: string,
+    status: "active" | "suspended",
+  ): Promise<ClinicMember> {
+    return withDbError(async () => {
+      const [updated] = await db
+        .update(clinicMemberships)
+        .set({
+          status,
+          ...(status === "suspended" ? { isDefault: false } : {}),
+        })
+        .where(
+          and(
+            eq(clinicMemberships.id, membershipId),
+            eq(clinicMemberships.clinicId, clinicId),
+            ne(clinicMemberships.status, "removed"),
+            isNull(clinicMemberships.deletedAt),
+          ),
+        )
+        .returning({ id: clinicMemberships.id });
+
+      if (!updated) {
+        throw new Error("Membership not found for status update");
+      }
+
+      const member = await memberRepository.findById(membershipId, clinicId);
+      if (!member) {
+        throw new Error("Failed to load membership after status update");
+      }
+      return member;
+    });
+  },
+
+  /**
+   * Any non-removed membership for user+clinic (active or suspended).
+   */
+  async findByUserAndClinic(
+    userId: string,
+    clinicId: string,
+  ): Promise<ClinicMember | null> {
+    return withDbError(async () => {
+      const [row] = await db
+        .select(memberSelect)
+        .from(clinicMemberships)
+        .innerJoin(roles, eq(roles.id, clinicMemberships.roleId))
+        .innerJoin(user, eq(user.id, clinicMemberships.userId))
+        .where(
+          and(
+            eq(clinicMemberships.userId, userId),
+            eq(clinicMemberships.clinicId, clinicId),
+            inArray(clinicMemberships.status, ["active", "suspended"]),
+            isNull(clinicMemberships.deletedAt),
+          ),
+        )
+        .limit(1);
+
+      return row ? toClinicMember(row) : null;
     });
   },
 };

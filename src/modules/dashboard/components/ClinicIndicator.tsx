@@ -5,7 +5,8 @@ import {
   CaretUpDownIcon,
   CheckIcon,
 } from "@phosphor-icons/react"
-import { useMemo } from "react"
+import { usePathname, useRouter } from "next/navigation"
+import { useEffect, useRef, useTransition } from "react"
 import { toast } from "sonner"
 
 import {
@@ -23,16 +24,20 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { Skeleton } from "@/components/ui/skeleton"
+import { routes } from "@/config/routes"
 import {
   useAuthMemberships,
   useSwitchClinicMutation,
 } from "@/modules/authentication/hooks/use-auth"
-import { useClinic, useClinicsByIds } from "@/modules/clinics/hooks/use-clinic"
+import { useClinic } from "@/modules/clinics/hooks/use-clinic"
+import { canAccessPath } from "@/modules/dashboard/constants/nav"
 import { useAuth } from "@/providers/AuthProvider"
 import { getClientMessage } from "@/shared/errors"
 import { useAuthUiStore } from "@/stores/auth.store"
 
 export function ClinicIndicator() {
+  const router = useRouter()
+  const pathname = usePathname()
   const { auth } = useAuth()
   const { isMobile } = useSidebar()
   const activeClinicId = auth?.session.activeClinicId ?? null
@@ -42,28 +47,40 @@ export function ClinicIndicator() {
     useAuthMemberships()
 
   const canSwitch = memberships.length > 1
-  const clinicIds = useMemo(
-    () => memberships.map((m) => m.clinicId),
-    [memberships],
-  )
-  const { data: clinics = [] } = useClinicsByIds(canSwitch ? clinicIds : [])
-  const clinicsById = useMemo(
-    () => new Map(clinics.map((c) => [c.id, c])),
-    [clinics],
-  )
 
   const switcherOpen = useAuthUiStore((s) => s.clinicSwitcherOpen)
   const setSwitcherOpen = useAuthUiStore((s) => s.setClinicSwitcherOpen)
+  const beginClinicSwitch = useAuthUiStore((s) => s.beginClinicSwitch)
+  const endClinicSwitch = useAuthUiStore((s) => s.endClinicSwitch)
+
+  const [isNavPending, startTransition] = useTransition()
+  const awaitingNavRef = useRef(false)
 
   const switchClinic = useSwitchClinicMutation({
-    onSuccess: () => {
-      setSwitcherOpen(false)
-      toast.success("Clínica alterada")
+    onSuccess: (nextAuth) => {
+      awaitingNavRef.current = true
+      startTransition(() => {
+        if (!canAccessPath(pathname, nextAuth.permissions)) {
+          router.push(routes.dashboard)
+        } else {
+          router.refresh()
+        }
+      })
     },
     onError: (error) => {
+      awaitingNavRef.current = false
+      endClinicSwitch()
       toast.error(getClientMessage(error.code))
     },
   })
+
+  useEffect(() => {
+    if (!awaitingNavRef.current || isNavPending) return
+
+    awaitingNavRef.current = false
+    endClinicSwitch()
+    toast.success("Clínica alterada")
+  }, [isNavPending, endClinicSwitch])
 
   if (clinicLoading || membershipsLoading) {
     return (
@@ -130,23 +147,30 @@ export function ClinicIndicator() {
             <DropdownMenuLabel>Suas clínicas</DropdownMenuLabel>
             <DropdownMenuSeparator />
             {memberships.map((membership) => {
-              const name =
-                clinicsById.get(membership.clinicId)?.name ?? "Carregando…"
+              const name = membership.clinicName ?? "Clínica"
               const isActive = membership.clinicId === activeClinicId
+              const isSuspended = membership.status === "suspended"
 
               return (
                 <DropdownMenuItem
                   key={membership.id}
-                  disabled={isActive || switchClinic.isPending}
+                  disabled={isActive || isSuspended || switchClinic.isPending}
                   onSelect={() => {
+                    if (isSuspended) return
+                    beginClinicSwitch(name)
                     switchClinic.mutate({ clinicId: membership.clinicId })
                   }}
                   className="flex items-start justify-between gap-2"
+                  title={
+                    isSuspended
+                      ? "Seu acesso a esta clínica está suspenso"
+                      : undefined
+                  }
                 >
                   <span className="min-w-0 leading-tight">
                     <span className="block truncate font-medium">{name}</span>
                     <span className="block truncate text-xs text-muted-foreground">
-                      {membership.roleName}
+                      {isSuspended ? "Suspenso" : membership.roleName}
                     </span>
                   </span>
                   {isActive ? (

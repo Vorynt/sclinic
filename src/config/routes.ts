@@ -9,6 +9,7 @@ export const routes = {
   professionalInvite: "/invite/professional",
   onboardingPlan: "/onboarding/plan",
   onboardingClinic: "/onboarding/clinic",
+  membershipInactive: "/membership-inactive",
   dashboard: "/dashboard",
   users: "/users",
   patients: "/patients",

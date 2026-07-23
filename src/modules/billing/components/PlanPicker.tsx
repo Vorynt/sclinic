@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -33,6 +33,7 @@ function cycleLabel(cycle: Plan["billingCycle"]): string {
 
 export function PlanPicker() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { data: plans, isLoading, isError } = usePlans();
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
 
@@ -40,9 +41,14 @@ export function PlanPicker() {
     if (!selectedPlanId) return;
     // TODO(stripe): open Checkout Session for selectedPlanId, then return
     // to clinic onboarding on success webhook / return_url.
-    router.push(
-      `${routes.onboardingClinic}?planId=${encodeURIComponent(selectedPlanId)}`,
-    );
+    const params = new URLSearchParams({
+      planId: selectedPlanId,
+    });
+    const intent = searchParams.get("intent");
+    if (intent) {
+      params.set("intent", intent);
+    }
+    router.push(`${routes.onboardingClinic}?${params.toString()}`);
   };
 
   if (isLoading) {

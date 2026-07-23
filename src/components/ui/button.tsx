@@ -1,7 +1,14 @@
+"use client";
+
 import { cva, type VariantProps } from "class-variance-authority";
 import { Slot } from "radix-ui";
 import * as React from "react";
 
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
@@ -46,14 +53,16 @@ function Button({
   variant = "default",
   size = "default",
   asChild = false,
+  tooltip,
   ...props
 }: React.ComponentProps<"button"> &
   VariantProps<typeof buttonVariants> & {
     asChild?: boolean;
+    tooltip?: React.ReactNode;
   }) {
   const Comp = asChild ? Slot.Root : "button";
 
-  return (
+  const button = (
     <Comp
       data-slot="button"
       data-variant={variant}
@@ -61,6 +70,25 @@ function Button({
       className={cn(buttonVariants({ variant, size, className }))}
       {...props}
     />
+  );
+
+  if (!tooltip) {
+    return button;
+  }
+
+  // Disabled buttons ignore pointer events; wrap so the tooltip still opens.
+  const trigger =
+    props.disabled && !asChild ? (
+      <span className="inline-flex">{button}</span>
+    ) : (
+      button
+    );
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>{trigger}</TooltipTrigger>
+      <TooltipContent>{tooltip}</TooltipContent>
+    </Tooltip>
   );
 }
 

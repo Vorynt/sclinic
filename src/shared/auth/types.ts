@@ -35,6 +35,8 @@ export type AuthMembership = {
   roleName: string
   isDefault: boolean
   status: MembershipStatus
+  /** Present when loaded for the clinic switcher. */
+  clinicName?: string
 }
 
 /**
@@ -45,6 +47,11 @@ export type AuthContext = {
   session: AuthSession
   membership: AuthMembership | null
   permissions: PermissionKey[]
+  /**
+   * User has suspended clinic link(s) but no active membership.
+   * Used to send them to the membership-inactive screen instead of onboarding.
+   */
+  hasSuspendedMembershipOnly: boolean
 }
 
 export type AuthRequestContext = {

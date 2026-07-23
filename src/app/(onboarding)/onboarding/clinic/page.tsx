@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 }
 
 type OnboardingClinicPageProps = {
-  searchParams: Promise<{ planId?: string }>
+  searchParams: Promise<{ planId?: string; intent?: string }>
 }
 
 export default async function OnboardingClinicPage({
@@ -31,10 +31,21 @@ export default async function OnboardingClinicPage({
     redirect(routes.dashboard)
   }
 
-  const { planId } = await searchParams
+  const { planId, intent } = await searchParams
+
+  if (
+    session.hasSuspendedMembershipOnly &&
+    intent !== "create-clinic"
+  ) {
+    redirect(routes.membershipInactive)
+  }
 
   if (!planId) {
-    redirect(routes.onboardingPlan)
+    redirect(
+      session.hasSuspendedMembershipOnly
+        ? `${routes.onboardingPlan}?intent=create-clinic`
+        : routes.onboardingPlan,
+    )
   }
 
   return <CreateClinicForm planId={planId} />

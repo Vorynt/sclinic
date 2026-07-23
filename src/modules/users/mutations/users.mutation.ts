@@ -7,13 +7,17 @@ import { removeMemberAction } from "@/modules/users/actions/remove-member"
 import { revokeInvitationAction } from "@/modules/users/actions/revoke-invitation"
 import { setPasswordFromInviteAction } from "@/modules/users/actions/set-password-from-invite"
 import { updateMemberRoleAction } from "@/modules/users/actions/update-member-role"
+import { updateMemberStatusAction } from "@/modules/users/actions/update-member-status"
 import type {
   AcceptInvitationDto,
   InviteMemberDto,
   RevokeInvitationDto,
   SetPasswordFromInviteDto,
 } from "@/modules/users/dto/invitation.dto"
-import type { UpdateMemberRoleDto } from "@/modules/users/dto/member.dto"
+import type {
+  UpdateMemberRoleDto,
+  UpdateMemberStatusDto,
+} from "@/modules/users/dto/member.dto"
 import { unwrapActionResult } from "@/shared/errors"
 
 export const usersMutationKeys = {
@@ -22,6 +26,7 @@ export const usersMutationKeys = {
   acceptInvitation: ["users", "accept-invitation"] as const,
   setPasswordFromInvite: ["users", "set-password-from-invite"] as const,
   updateRole: ["users", "update-role"] as const,
+  updateStatus: ["users", "update-status"] as const,
   removeMember: ["users", "remove-member"] as const,
 }
 
@@ -59,6 +64,13 @@ export const usersMutations = {
       mutationKey: usersMutationKeys.updateRole,
       mutationFn: async (data: UpdateMemberRoleDto) =>
         unwrapActionResult(await updateMemberRoleAction(data)),
+    }),
+
+  updateStatus: () =>
+    mutationOptions({
+      mutationKey: usersMutationKeys.updateStatus,
+      mutationFn: async (data: UpdateMemberStatusDto) =>
+        unwrapActionResult(await updateMemberStatusAction(data)),
     }),
 
   removeMember: () =>

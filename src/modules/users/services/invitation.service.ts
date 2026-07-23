@@ -243,14 +243,24 @@ export const invitationService = {
       })
     }
 
-    const existing = await memberRepository.findActiveByUserAndClinic(
+    const existing = await memberRepository.findByUserAndClinic(
       auth.user.id,
       invitation.clinicId,
     )
     if (existing) {
+      const member =
+        existing.status === "suspended"
+          ? await memberRepository.setStatus(
+              existing.id,
+              invitation.clinicId,
+              "active",
+            )
+          : existing
+
       await invitationRepository.markAccepted(invitation.id)
       await authService.markEmailVerifiedFromInvite(auth.user.id)
-      return existing
+      await authService.switchClinic({ clinicId: invitation.clinicId }, ctx)
+      return member
     }
 
     const member = await memberRepository.create({

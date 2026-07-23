@@ -162,6 +162,7 @@ describe("getPostAuthRedirect", () => {
     },
     membership: null,
     permissions: [],
+    hasSuspendedMembershipOnly: false,
   }
 
   it("sends unverified users to verify-email", () => {
@@ -225,6 +226,16 @@ describe("getPostAuthRedirect", () => {
 
   it("sends verified users without membership to onboarding", () => {
     assert.equal(getPostAuthRedirect(baseAuth), routes.onboardingPlan)
+  })
+
+  it("sends users with only suspended memberships to membership-inactive", () => {
+    assert.equal(
+      getPostAuthRedirect({
+        ...baseAuth,
+        hasSuspendedMembershipOnly: true,
+      }),
+      routes.membershipInactive,
+    )
   })
 
   it("honors invite next even without membership", () => {

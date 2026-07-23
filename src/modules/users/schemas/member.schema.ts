@@ -13,5 +13,11 @@ export const removeMemberSchema = z.object({
   membershipId: z.string().uuid("ID do membro inválido"),
 })
 
+export const updateMemberStatusSchema = z.object({
+  membershipId: z.string().uuid("ID do membro inválido"),
+  status: z.enum(["active", "suspended"]),
+})
+
 export type UpdateMemberRoleInput = z.infer<typeof updateMemberRoleSchema>
 export type RemoveMemberInput = z.infer<typeof removeMemberSchema>
+export type UpdateMemberStatusInput = z.infer<typeof updateMemberStatusSchema>

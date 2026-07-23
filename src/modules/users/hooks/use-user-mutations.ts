@@ -136,3 +136,21 @@ export function useRemoveMemberMutation({
     },
   })
 }
+
+export function useUpdateMemberStatusMutation({
+  onSuccess,
+  onError,
+}: MutationCallbacks<ClinicMember> = {}) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    ...usersMutations.updateStatus(),
+    onSuccess: async (data) => {
+      await queryClient.invalidateQueries({ queryKey: usersQueryKeys.members() })
+      onSuccess?.(data)
+    },
+    onError: (error) => {
+      onError?.(toAppError(error))
+    },
+  })
+}

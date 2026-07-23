@@ -35,6 +35,13 @@
       "when": 1784778675673,
       "tag": "0004_giant_vermin",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1784827383899,
+      "tag": "0006_colossal_mikhail_rasputin",
+      "breakpoints": true
     }
   ],
   "version": "7"

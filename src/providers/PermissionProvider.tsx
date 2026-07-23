@@ -37,12 +37,12 @@ function resolveRequired(
  *
  * @example
  * ```tsx
- * // app/(dashboard)/patients/layout.tsx
- * export default function PatientsLayout({ children }) {
+ * // app/(dashboard)/patients/page.tsx
+ * export default function PatientsPage() {
  *   return (
  *     <PermissionProvider
  *       permission={Permission.PATIENTS_READ}
- *       fallback={<p>Sem permissão para pacientes.</p>}
+ *       fallback={<ForbiddenBlock />}
  *     >
  *       {children}
  *     </PermissionProvider>
