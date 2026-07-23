@@ -32,7 +32,7 @@ type PatientFormOutput = z.output<typeof createPatientSchema>
 
 type PatientFormProps = {
   patient?: Patient | null
-  onSuccess?: () => void
+  onSuccess?: (patient?: Patient) => void
   onCancel?: () => void
 }
 
@@ -73,19 +73,19 @@ export function PatientForm({ patient, onSuccess, onCancel }: PatientFormProps) 
   }
 
   const createPatient = useCreatePatientMutation({
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast.success("Paciente cadastrado com sucesso")
       setFormError(null)
-      onSuccess?.()
+      onSuccess?.(data)
     },
     onError: handleError,
   })
 
   const updatePatient = useUpdatePatientMutation({
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast.success("Paciente atualizado com sucesso")
       setFormError(null)
-      onSuccess?.()
+      onSuccess?.(data)
     },
     onError: handleError,
   })

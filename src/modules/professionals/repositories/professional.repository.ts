@@ -19,6 +19,7 @@ import type {
   AffiliationType,
   CouncilType,
   ProfessionalListItem,
+  ProfessionalSchedulingItem,
   ProfessionalStatus,
 } from "@/modules/professionals/types/professional";
 
@@ -199,6 +200,38 @@ export const professionalRepository = {
       return mapRows(rows as ProfessionalListRow[]).sort((a, b) =>
         a.fullName.localeCompare(b.fullName, "pt-BR"),
       );
+    });
+  },
+
+  async listActiveForScheduling(
+    clinicId: string,
+  ): Promise<ProfessionalSchedulingItem[]> {
+    return withDbError(async () => {
+      const rows = await db
+        .select({
+          id: professionals.id,
+          fullName: professionals.fullName,
+          specialty: professionals.specialty,
+        })
+        .from(professionalClinics)
+        .innerJoin(
+          professionals,
+          and(
+            eq(professionals.id, professionalClinics.professionalId),
+            isNull(professionals.deletedAt),
+            eq(professionals.status, "active"),
+          ),
+        )
+        .where(
+          and(
+            eq(professionalClinics.clinicId, clinicId),
+            eq(professionalClinics.status, "active"),
+            isNull(professionalClinics.deletedAt),
+          ),
+        )
+        .orderBy(professionals.fullName);
+
+      return rows;
     });
   },
 

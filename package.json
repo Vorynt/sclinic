@@ -15,7 +15,7 @@
     "db:seed:plans": "tsx src/db/seed/plans.ts",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "test": "node --import tsx --test src/modules/authentication/tests/*.test.ts src/modules/clinics/tests/*.test.ts src/modules/dashboard/tests/*.test.ts src/modules/users/tests/*.test.ts src/modules/professionals/tests/*.test.ts"
+    "test": "node --import tsx --test src/modules/authentication/tests/*.test.ts src/modules/clinics/tests/*.test.ts src/modules/dashboard/tests/*.test.ts src/modules/users/tests/*.test.ts src/modules/professionals/tests/*.test.ts src/modules/appointments/tests/*.test.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.4.0",
@@ -26,6 +26,7 @@
     "better-auth": "^1.6.24",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "cmdk": "^1.1.1",
     "date-fns": "^4.4.0",
     "dotenv": "^17.4.2",
     "drizzle-orm": "^0.45.2",

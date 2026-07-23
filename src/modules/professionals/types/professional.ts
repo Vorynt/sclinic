@@ -36,6 +36,12 @@ export type ProfessionalListItem = {
   updatedAt: Date
 }
 
+export type ProfessionalSchedulingItem = {
+  id: string
+  fullName: string
+  specialty: string | null
+}
+
 export type ProfessionalInvitePreview = {
   tokenValid: true
   fullName: string

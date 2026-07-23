@@ -1,69 +1,69 @@
-"use client"
+"use client";
 
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useState } from "react"
-import { Controller, useForm } from "react-hook-form"
-import { toast } from "sonner"
-import type { z } from "zod"
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useState } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { toast } from "sonner";
+import type { z } from "zod";
 
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
 import {
   Field,
   FieldError,
   FieldGroup,
   FieldLabel,
-} from "@/components/ui/field"
-import { FormErrorAlert } from "@/components/ui/form-error-alert"
-import { Input } from "@/components/ui/input"
+} from "@/components/ui/field";
+import { FormErrorAlert } from "@/components/ui/form-error-alert";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { Spinner } from "@/components/ui/spinner"
-import { Textarea } from "@/components/ui/textarea"
+} from "@/components/ui/select";
+import { Spinner } from "@/components/ui/spinner";
+import { Textarea } from "@/components/ui/textarea";
 import {
   AFFILIATION_TYPE_LABELS,
   BRAZILIAN_STATES,
   COUNCIL_TYPE_LABELS,
   PROFESSIONAL_ROLE_KEYS,
   PROFESSIONAL_ROLE_LABELS,
-} from "@/modules/professionals/constants/professionals"
+} from "@/modules/professionals/constants/professionals";
 import {
   useCreateProfessionalMutation,
   useUpdateProfessionalMutation,
-} from "@/modules/professionals/hooks/use-professional-mutations"
+} from "@/modules/professionals/hooks/use-professional-mutations";
 import {
   createProfessionalSchema,
   updateProfessionalSchema,
-} from "@/modules/professionals/schemas/professional.schema"
-import type { ProfessionalListItem } from "@/modules/professionals/types/professional"
-import { ErrorCode, getClientMessage, isAppError } from "@/shared/errors"
+} from "@/modules/professionals/schemas/professional.schema";
+import type { ProfessionalListItem } from "@/modules/professionals/types/professional";
+import { ErrorCode, getClientMessage, isAppError } from "@/shared/errors";
 
-type CreateValues = z.input<typeof createProfessionalSchema>
-type CreateOutput = z.output<typeof createProfessionalSchema>
+type CreateValues = z.input<typeof createProfessionalSchema>;
+type CreateOutput = z.output<typeof createProfessionalSchema>;
 
-type EditValues = z.input<typeof updateProfessionalSchema>
-type EditOutput = z.output<typeof updateProfessionalSchema>
+type EditValues = z.input<typeof updateProfessionalSchema>;
+type EditOutput = z.output<typeof updateProfessionalSchema>;
 
 type ProfessionalFormProps = {
-  professional?: ProfessionalListItem | null
-  onSuccess?: () => void
-  onCancel?: () => void
-}
+  professional?: ProfessionalListItem | null;
+  onSuccess?: () => void;
+  onCancel?: () => void;
+};
 
 export function ProfessionalForm({
   professional,
   onSuccess,
   onCancel,
 }: ProfessionalFormProps) {
-  const isEditing = Boolean(professional)
+  const isEditing = Boolean(professional);
   const [formError, setFormError] = useState<{
-    message: string
-    code: string
-  } | null>(null)
+    message: string;
+    code: string;
+  } | null>(null);
 
   const createForm = useForm<CreateValues, unknown, CreateOutput>({
     resolver: zodResolver(createProfessionalSchema),
@@ -73,7 +73,7 @@ export function ProfessionalForm({
       roleKey: "doctor",
       affiliationType: "attending",
     },
-  })
+  });
 
   const editForm = useForm<EditValues, unknown, EditOutput>({
     resolver: zodResolver(updateProfessionalSchema),
@@ -89,39 +89,39 @@ export function ProfessionalForm({
       biography: professional?.biography ?? "",
       status: professional?.status ?? "active",
     },
-  })
+  });
 
   function handleError(error: unknown) {
     if (isAppError(error)) {
-      setFormError({ message: error.message, code: error.code })
-      return
+      setFormError({ message: error.message, code: error.code });
+      return;
     }
     setFormError({
       message: getClientMessage(ErrorCode.INTERNAL_ERROR),
       code: ErrorCode.INTERNAL_ERROR,
-    })
+    });
   }
 
   const createProfessional = useCreateProfessionalMutation({
     onSuccess: () => {
-      toast.success("Profissional convidado por e-mail.")
-      setFormError(null)
-      onSuccess?.()
+      toast.success("Profissional convidado por e-mail.");
+      setFormError(null);
+      onSuccess?.();
     },
     onError: handleError,
-  })
+  });
 
   const updateProfessional = useUpdateProfessionalMutation({
     onSuccess: () => {
-      toast.success("Profissional atualizado com sucesso")
-      setFormError(null)
-      onSuccess?.()
+      toast.success("Profissional atualizado com sucesso");
+      setFormError(null);
+      onSuccess?.();
     },
     onError: handleError,
-  })
+  });
 
   const isPending =
-    createProfessional.isPending || updateProfessional.isPending
+    createProfessional.isPending || updateProfessional.isPending;
 
   if (isEditing) {
     const {
@@ -129,12 +129,12 @@ export function ProfessionalForm({
       control,
       handleSubmit,
       formState: { errors },
-    } = editForm
+    } = editForm;
 
     const onSubmit = handleSubmit((data) => {
-      setFormError(null)
-      updateProfessional.mutate(data)
-    })
+      setFormError(null);
+      updateProfessional.mutate(data);
+    });
 
     return (
       <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
@@ -165,11 +165,9 @@ export function ProfessionalForm({
                 <Select
                   value={field.value}
                   onValueChange={field.onChange}
-                  disabled={isPending}
-                >
+                  disabled={isPending}>
                   <SelectTrigger
-                    aria-invalid={Boolean(errors.affiliationType) || undefined}
-                  >
+                    aria-invalid={Boolean(errors.affiliationType) || undefined}>
                     <SelectValue placeholder="Selecione" />
                   </SelectTrigger>
                   <SelectContent>
@@ -211,11 +209,9 @@ export function ProfessionalForm({
                   <Select
                     value={field.value ?? undefined}
                     onValueChange={field.onChange}
-                    disabled={isPending}
-                  >
+                    disabled={isPending}>
                     <SelectTrigger
-                      aria-invalid={Boolean(errors.councilType) || undefined}
-                    >
+                      aria-invalid={Boolean(errors.councilType) || undefined}>
                       <SelectValue placeholder="Tipo" />
                     </SelectTrigger>
                     <SelectContent>
@@ -256,11 +252,9 @@ export function ProfessionalForm({
                   <Select
                     value={field.value ?? undefined}
                     onValueChange={field.onChange}
-                    disabled={isPending}
-                  >
+                    disabled={isPending}>
                     <SelectTrigger
-                      aria-invalid={Boolean(errors.councilState) || undefined}
-                    >
+                      aria-invalid={Boolean(errors.councilState) || undefined}>
                       <SelectValue placeholder="UF" />
                     </SelectTrigger>
                     <SelectContent>
@@ -298,11 +292,9 @@ export function ProfessionalForm({
                 <Select
                   value={field.value}
                   onValueChange={field.onChange}
-                  disabled={isPending}
-                >
+                  disabled={isPending}>
                   <SelectTrigger
-                    aria-invalid={Boolean(errors.status) || undefined}
-                  >
+                    aria-invalid={Boolean(errors.status) || undefined}>
                     <SelectValue placeholder="Selecione" />
                   </SelectTrigger>
                   <SelectContent>
@@ -322,8 +314,7 @@ export function ProfessionalForm({
               type="button"
               variant="outline"
               onClick={onCancel}
-              disabled={isPending}
-            >
+              disabled={isPending}>
               Cancelar
             </Button>
           ) : null}
@@ -333,7 +324,7 @@ export function ProfessionalForm({
           </Button>
         </div>
       </form>
-    )
+    );
   }
 
   const {
@@ -341,12 +332,12 @@ export function ProfessionalForm({
     control,
     handleSubmit,
     formState: { errors },
-  } = createForm
+  } = createForm;
 
   const onSubmit = handleSubmit((data) => {
-    setFormError(null)
-    createProfessional.mutate(data)
-  })
+    setFormError(null);
+    createProfessional.mutate(data);
+  });
 
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
@@ -391,11 +382,9 @@ export function ProfessionalForm({
               <Select
                 value={field.value}
                 onValueChange={field.onChange}
-                disabled={isPending}
-              >
+                disabled={isPending}>
                 <SelectTrigger
-                  aria-invalid={Boolean(errors.roleKey) || undefined}
-                >
+                  aria-invalid={Boolean(errors.roleKey) || undefined}>
                   <SelectValue placeholder="Selecione" />
                 </SelectTrigger>
                 <SelectContent>
@@ -420,11 +409,9 @@ export function ProfessionalForm({
               <Select
                 value={field.value}
                 onValueChange={field.onChange}
-                disabled={isPending}
-              >
+                disabled={isPending}>
                 <SelectTrigger
-                  aria-invalid={Boolean(errors.affiliationType) || undefined}
-                >
+                  aria-invalid={Boolean(errors.affiliationType) || undefined}>
                   <SelectValue placeholder="Selecione" />
                 </SelectTrigger>
                 <SelectContent>
@@ -449,8 +436,7 @@ export function ProfessionalForm({
             type="button"
             variant="outline"
             onClick={onCancel}
-            disabled={isPending}
-          >
+            disabled={isPending}>
             Cancelar
           </Button>
         ) : null}
@@ -460,5 +446,5 @@ export function ProfessionalForm({
         </Button>
       </div>
     </form>
-  )
+  );
 }

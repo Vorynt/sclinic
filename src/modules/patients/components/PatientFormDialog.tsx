@@ -14,12 +14,14 @@ type PatientFormDialogProps = {
   patient?: Patient | null
   open: boolean
   onOpenChange: (open: boolean) => void
+  onSuccess?: (patient: Patient) => void
 }
 
 export function PatientFormDialog({
   patient,
   open,
   onOpenChange,
+  onSuccess,
 }: PatientFormDialogProps) {
   const isEditing = Boolean(patient)
 
@@ -40,7 +42,12 @@ export function PatientFormDialog({
         <PatientForm
           key={patient?.id ?? "create"}
           patient={patient}
-          onSuccess={() => onOpenChange(false)}
+          onSuccess={(updatedPatient) => {
+            if (updatedPatient) {
+              onSuccess?.(updatedPatient)
+            }
+            onOpenChange(false)
+          }}
           onCancel={() => onOpenChange(false)}
         />
       </DialogContent>

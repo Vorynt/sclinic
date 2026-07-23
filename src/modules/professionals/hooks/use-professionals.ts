@@ -7,3 +7,7 @@ import { professionalsQueries } from "@/modules/professionals/queries/profession
 export function useProfessionalsQuery() {
   return useQuery(professionalsQueries.list())
 }
+
+export function useProfessionalsForSchedulingQuery() {
+  return useQuery(professionalsQueries.scheduling())
+}

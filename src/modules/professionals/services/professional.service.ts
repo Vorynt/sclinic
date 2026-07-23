@@ -3,6 +3,7 @@ import { Permission } from "@/config/permissions"
 import { routes } from "@/config/routes"
 import { email } from "@/core/email"
 import {
+  requireAnyPermission,
   requireAuth,
   requirePasswordReady,
   requirePermission,
@@ -26,6 +27,7 @@ import { professionalRepository } from "@/modules/professionals/repositories/pro
 import type {
   ProfessionalInvitePreview,
   ProfessionalListItem,
+  ProfessionalSchedulingItem,
 } from "@/modules/professionals/types/professional"
 import { getRoleLabel } from "@/modules/users/constants/users"
 import { invitationRepository } from "@/modules/users/repositories/invitation.repository"
@@ -120,6 +122,18 @@ export const professionalService = {
   async list(ctx: AuthRequestContext): Promise<ProfessionalListItem[]> {
     const auth = await requirePermission(ctx, Permission.PROFESSIONALS_MANAGE)
     return professionalRepository.listByClinic(auth.clinicId)
+  },
+
+  async listForScheduling(
+    ctx: AuthRequestContext,
+  ): Promise<ProfessionalSchedulingItem[]> {
+    const auth = await requireAnyPermission(
+      ctx,
+      Permission.APPOINTMENTS_CREATE,
+      Permission.APPOINTMENTS_UPDATE,
+      Permission.PROFESSIONALS_MANAGE,
+    )
+    return professionalRepository.listActiveForScheduling(auth.clinicId)
   },
 
   async getById(

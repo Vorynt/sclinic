@@ -32,6 +32,10 @@ const clientMessages: Record<string, string> = {
   [ErrorCode.INVITATION_ALREADY_ACCEPTED]: "Este convite já foi aceito.",
   [ErrorCode.INVITE_EMAIL_MISMATCH]:
     "Faça login com o e-mail que recebeu o convite.",
+  [ErrorCode.APPOINTMENT_SLOT_UNAVAILABLE]:
+    "O profissional já possui um agendamento neste horário.",
+  [ErrorCode.PROFESSIONAL_OUTSIDE_WORKING_HOURS]:
+    "Horário fora da disponibilidade do profissional.",
 }
 
 /**

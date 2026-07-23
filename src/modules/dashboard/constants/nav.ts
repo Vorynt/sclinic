@@ -69,7 +69,7 @@ export const NAV_ITEMS: NavItem[] = [
       Permission.APPOINTMENTS_CREATE,
       Permission.APPOINTMENTS_UPDATE,
     ],
-    enabled: false,
+    enabled: true,
   },
   {
     title: "Configurações",

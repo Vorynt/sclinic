@@ -22,6 +22,7 @@ function toErrorPayload(error: unknown): ApiErrorPayload {
     return {
       code: error.code,
       message: getClientMessage(error.code),
+      ...(error.meta ? { meta: error.meta } : {}),
     };
   }
 
@@ -82,8 +83,13 @@ export function unwrapActionResult<T>(result: ApiResponse<T>): T {
     return result.data;
   }
 
+  const meta = {
+    ...(result.error.meta ?? {}),
+    ...(result.error.fields ? { fields: result.error.fields } : {}),
+  };
+
   throw new AppError(result.error.code, {
     message: result.error.message,
-    meta: result.error.fields ? { fields: result.error.fields } : undefined,
+    meta: Object.keys(meta).length > 0 ? meta : undefined,
   });
 }
