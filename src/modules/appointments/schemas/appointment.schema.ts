@@ -6,7 +6,7 @@ const optionalTrimmed = z
   .transform((value) => (value.length === 0 ? undefined : value))
   .optional()
 
-const appointmentTypeSchema = z.enum([
+export const appointmentTypeSchema = z.enum([
   "consultation",
   "follow_up",
   "procedure",

@@ -29,7 +29,10 @@ import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import { routes } from "@/config/routes";
 import { SuggestedAvailabilitySlots } from "@/modules/appointments/components/SuggestedAvailabilitySlots";
+import { APPOINTMENT_TYPE_LABELS } from "@/modules/appointments/constants/appointments";
 import { useCreateAppointmentMutation } from "@/modules/appointments/hooks/use-appointment-mutations";
+import { appointmentTypeSchema } from "@/modules/appointments/schemas/appointment.schema";
+import type { AppointmentType } from "@/modules/appointments/types/appointment";
 import { APPOINTMENT_DURATION_OPTIONS } from "@/modules/appointments/utils/calendar-constants";
 import { readSuggestedSlotsFromMeta } from "@/modules/appointments/utils/suggested-slots";
 import { PatientCombobox } from "@/modules/patients/components/PatientCombobox";
@@ -39,9 +42,15 @@ import { useProfessionalsForSchedulingQuery } from "@/modules/professionals/hook
 import { ErrorCode, getClientMessage, isAppError } from "@/shared/errors";
 import { parseISODate, toISODate } from "@/utils/date";
 
+const appointmentTypeOptions = Object.entries(APPOINTMENT_TYPE_LABELS) as [
+  AppointmentType,
+  string,
+][];
+
 const scheduleFormSchema = z.object({
   patientId: z.string().uuid("Selecione um paciente"),
   professionalId: z.string().uuid("Selecione um profissional"),
+  type: appointmentTypeSchema,
   date: z.string().trim().min(1, "Selecione a data"),
   startTime: z
     .string()
@@ -58,8 +67,15 @@ const scheduleFormSchema = z.object({
 type ScheduleFormValues = z.input<typeof scheduleFormSchema>;
 type ScheduleFormOutput = z.output<typeof scheduleFormSchema>;
 
+type LockedPatient = {
+  id: string;
+  name: string;
+};
+
 type AppointmentFormProps = {
   defaultStartsAt?: Date;
+  /** When set, patient is pre-selected and the combobox is disabled. */
+  lockedPatient?: LockedPatient;
   onSuccess?: () => void;
   onCancel?: () => void;
 };
@@ -76,6 +92,7 @@ function roundToNextStep(date: Date, stepMinutes: number): Date {
 
 export function AppointmentForm({
   defaultStartsAt,
+  lockedPatient,
   onSuccess,
   onCancel,
 }: AppointmentFormProps) {
@@ -87,8 +104,9 @@ export function AppointmentForm({
   const [patientDialogOpen, setPatientDialogOpen] = useState(false);
   const [selectedPatientLabel, setSelectedPatientLabel] = useState<
     string | null
-  >(null);
+  >(lockedPatient?.name ?? null);
 
+  const isPatientLocked = Boolean(lockedPatient);
   const initialDate = roundToNextStep(defaultStartsAt ?? new Date(), 30);
 
   const professionalsQuery = useProfessionalsForSchedulingQuery();
@@ -96,8 +114,9 @@ export function AppointmentForm({
   const form = useForm<ScheduleFormValues, unknown, ScheduleFormOutput>({
     resolver: zodResolver(scheduleFormSchema),
     defaultValues: {
-      patientId: "",
+      patientId: lockedPatient?.id ?? "",
       professionalId: "",
+      type: "consultation",
       date: toISODate(initialDate),
       startTime: `${String(initialDate.getHours()).padStart(2, "0")}:${String(
         initialDate.getMinutes(),
@@ -172,7 +191,7 @@ export function AppointmentForm({
       professionalId: data.professionalId,
       startsAt,
       endsAt,
-      type: "consultation",
+      type: data.type,
       reason: data.reason,
     });
   });
@@ -204,8 +223,12 @@ export function AppointmentForm({
                       field.onChange(patientId);
                     }}
                     displayLabel={selectedPatientLabel}
-                    onCreatePatient={() => setPatientDialogOpen(true)}
-                    disabled={isPending}
+                    onCreatePatient={
+                      isPatientLocked
+                        ? undefined
+                        : () => setPatientDialogOpen(true)
+                    }
+                    disabled={isPending || isPatientLocked}
                     aria-invalid={Boolean(errors.patientId) || undefined}
                   />
                 )}
@@ -265,6 +288,33 @@ export function AppointmentForm({
                 </p>
               ) : null}
               <FieldError errors={[errors.professionalId]} />
+            </Field>
+
+            <Field data-invalid={Boolean(errors.type) || undefined}>
+              <FieldLabel>Tipo da consulta</FieldLabel>
+              <Controller
+                name="type"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    value={field.value}
+                    onValueChange={field.onChange}
+                    disabled={isPending}>
+                    <SelectTrigger
+                      aria-invalid={Boolean(errors.type) || undefined}>
+                      <SelectValue placeholder="Selecione o tipo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {appointmentTypeOptions.map(([value, label]) => (
+                        <SelectItem key={value} value={value}>
+                          {label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+              <FieldError errors={[errors.type]} />
             </Field>
 
             <div className="grid gap-4 sm:grid-cols-3">
@@ -372,11 +422,13 @@ export function AppointmentForm({
         </form>
       </FormProvider>
 
-      <PatientFormDialog
-        open={patientDialogOpen}
-        onOpenChange={setPatientDialogOpen}
-        onSuccess={handlePatientCreated}
-      />
+      {isPatientLocked ? null : (
+        <PatientFormDialog
+          open={patientDialogOpen}
+          onOpenChange={setPatientDialogOpen}
+          onSuccess={handlePatientCreated}
+        />
+      )}
     </>
   );
 }

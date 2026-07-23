@@ -4,8 +4,9 @@ import { Suspense } from "react"
 import { ForbiddenBlock } from "@/components/status/ForbiddenBlock"
 import { Spinner } from "@/components/ui/spinner"
 import { Permission } from "@/config/permissions"
-import { PatientsPanel } from "@/modules/patients/components/PatientsPanel"
 import { PermissionProvider } from "@/providers/PermissionProvider"
+
+import { PatientsPageClient } from "./patients-page-client"
 
 export const metadata: Metadata = {
   title: "Pacientes · sclinic",
@@ -24,7 +25,7 @@ export default function PatientsPage() {
           </div>
         }
       >
-        <PatientsPanel />
+        <PatientsPageClient />
       </Suspense>
     </PermissionProvider>
   )

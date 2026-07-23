@@ -8,7 +8,11 @@ import { PatientFormDialog } from "@/modules/patients/components/PatientFormDial
 import { PatientsTable } from "@/modules/patients/components/PatientsTable"
 import type { Patient } from "@/modules/patients/types/patient"
 
-export function PatientsPanel() {
+type PatientsPanelProps = {
+  onSchedulePatient?: (patient: Patient) => void
+}
+
+export function PatientsPanel({ onSchedulePatient }: PatientsPanelProps) {
   const [q, setQ] = useState("")
   const [debouncedQ, setDebouncedQ] = useState("")
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -52,7 +56,11 @@ export function PatientsPanel() {
         className="max-w-sm"
       />
 
-      <PatientsTable searchQuery={debouncedQ} onEdit={handleEditPatient} />
+      <PatientsTable
+        searchQuery={debouncedQ}
+        onEdit={handleEditPatient}
+        onSchedule={onSchedulePatient}
+      />
 
       <PatientFormDialog
         patient={editingPatient}
