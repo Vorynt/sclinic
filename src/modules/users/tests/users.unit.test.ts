@@ -5,7 +5,10 @@ import {
   ASSIGNABLE_ROLE_KEYS,
   getRoleLabel,
 } from "@/modules/users/constants/users"
-import { inviteMemberSchema } from "@/modules/users/schemas/invitation.schema"
+import {
+  inviteMemberSchema,
+  setPasswordFromInviteSchema,
+} from "@/modules/users/schemas/invitation.schema"
 import { updateMemberRoleSchema } from "@/modules/users/schemas/member.schema"
 import {
   createInviteToken,
@@ -82,36 +85,39 @@ describe("users member rules", () => {
 })
 
 describe("users schemas", () => {
-  it("normalizes invite email and keeps provisional password", () => {
+  it("normalizes invite email", () => {
     const parsed = inviteMemberSchema.parse({
       name: " Ana ",
       email: "Ana@Clinic.COM",
-      temporaryPassword: "senha-forte",
-      roleKey: "doctor",
+      roleKey: "receptionist",
     })
     assert.equal(parsed.email, "ana@clinic.com")
     assert.equal(parsed.name, "Ana")
-    assert.equal(parsed.temporaryPassword, "senha-forte")
   })
 
   it("rejects owner on invite schema", () => {
     const result = inviteMemberSchema.safeParse({
       name: "Ana",
       email: "ana@clinic.com",
-      temporaryPassword: "senha-forte",
       roleKey: "owner",
     })
     assert.equal(result.success, false)
   })
 
-  it("rejects short provisional password", () => {
-    const result = inviteMemberSchema.safeParse({
-      name: "Ana",
-      email: "ana@clinic.com",
-      temporaryPassword: "curta",
-      roleKey: "admin",
+  it("requires matching passwords on set-password-from-invite", () => {
+    const ok = setPasswordFromInviteSchema.safeParse({
+      token: "abc",
+      newPassword: "senha-forte",
+      confirmPassword: "senha-forte",
     })
-    assert.equal(result.success, false)
+    assert.equal(ok.success, true)
+
+    const mismatch = setPasswordFromInviteSchema.safeParse({
+      token: "abc",
+      newPassword: "senha-forte",
+      confirmPassword: "outra-senha",
+    })
+    assert.equal(mismatch.success, false)
   })
 
   it("requires membership id uuid for role update", () => {

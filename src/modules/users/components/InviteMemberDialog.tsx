@@ -41,12 +41,6 @@ import { ErrorCode, getClientMessage, isAppError } from "@/shared/errors"
 type InviteMemberValues = z.input<typeof inviteMemberSchema>
 type InviteMemberOutput = z.output<typeof inviteMemberSchema>
 
-function generateTemporaryPassword(): string {
-  const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789"
-  const bytes = crypto.getRandomValues(new Uint8Array(12))
-  return Array.from(bytes, (byte) => alphabet[byte % alphabet.length]).join("")
-}
-
 export function InviteMemberDialog() {
   const [open, setOpen] = useState(false)
   const [formError, setFormError] = useState<{
@@ -61,27 +55,22 @@ export function InviteMemberDialog() {
     control,
     handleSubmit,
     reset,
-    setValue,
     formState: { errors },
   } = useForm<InviteMemberValues, unknown, InviteMemberOutput>({
     resolver: zodResolver(inviteMemberSchema),
     defaultValues: {
       name: "",
       email: "",
-      temporaryPassword: "",
       roleKey: "receptionist",
     },
   })
 
   const invite = useInviteMemberMutation({
     onSuccess: () => {
-      toast.success(
-        "Convite enviado. Comunique a senha provisória ao colaborador.",
-      )
+      toast.success("Convite enviado por e-mail.")
       reset({
         name: "",
         email: "",
-        temporaryPassword: "",
         roleKey: "receptionist",
       })
       setFormError(null)
@@ -122,8 +111,8 @@ export function InviteMemberDialog() {
         <DialogHeader>
           <DialogTitle>Convidar colaborador</DialogTitle>
           <DialogDescription>
-            Defina nome, e-mail, senha provisória e cargo. A senha não é enviada
-            no e-mail — compartilhe com o colaborador por um canal seguro.
+            Informe nome, e-mail e cargo. A pessoa receberá um link para criar a
+            própria senha e aceitar o convite.
           </DialogDescription>
         </DialogHeader>
 
@@ -156,33 +145,6 @@ export function InviteMemberDialog() {
                 {...register("email")}
               />
               <FieldError>{errors.email?.message}</FieldError>
-            </Field>
-
-            <Field data-invalid={Boolean(errors.temporaryPassword)}>
-              <FieldLabel htmlFor="invite-password">Senha provisória</FieldLabel>
-              <div className="flex gap-2">
-                <Input
-                  id="invite-password"
-                  type="text"
-                  autoComplete="new-password"
-                  placeholder="Mínimo 8 caracteres"
-                  aria-invalid={Boolean(errors.temporaryPassword)}
-                  {...register("temporaryPassword")}
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() =>
-                    setValue("temporaryPassword", generateTemporaryPassword(), {
-                      shouldValidate: true,
-                      shouldDirty: true,
-                    })
-                  }
-                >
-                  Gerar
-                </Button>
-              </div>
-              <FieldError>{errors.temporaryPassword?.message}</FieldError>
             </Field>
 
             <Field data-invalid={Boolean(errors.roleKey)}>

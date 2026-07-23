@@ -6,11 +6,13 @@ export const routes = {
   verifyEmail: "/verify-email",
   changePassword: "/change-password",
   invite: "/invite",
+  professionalInvite: "/invite/professional",
   onboardingPlan: "/onboarding/plan",
   onboardingClinic: "/onboarding/clinic",
   dashboard: "/dashboard",
   users: "/users",
   patients: "/patients",
+  professionals: "/professionals",
   appointments: "/appointments",
   settings: "/settings",
 } as const

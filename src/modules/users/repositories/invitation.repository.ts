@@ -1,4 +1,4 @@
-import { and, eq, inArray, isNull } from "drizzle-orm"
+import { and, desc, eq, inArray, isNull } from "drizzle-orm"
 
 import { db } from "@/db"
 import { invitations, roles, user } from "@/db/schema"
@@ -15,11 +15,14 @@ const invitationSelect = {
   roleName: roles.name,
   invitedBy: invitations.invitedBy,
   invitedByName: user.name,
+  professionalId: invitations.professionalId,
   status: invitations.status,
   expiresAt: invitations.expiresAt,
   acceptedAt: invitations.acceptedAt,
   createdAt: invitations.createdAt,
 }
+
+const OPEN_INVITE_STATUSES = ["pending", "resent"] as const
 
 export const invitationRepository = {
   async listPendingByClinic(clinicId: string): Promise<ClinicInvitation[]> {
@@ -33,6 +36,7 @@ export const invitationRepository = {
           and(
             eq(invitations.clinicId, clinicId),
             eq(invitations.status, "pending"),
+            isNull(invitations.professionalId),
           ),
         )
 
@@ -85,12 +89,31 @@ export const invitationRepository = {
     })
   },
 
-  async findByTokenHash(tokenHash: string): Promise<
-    | (ClinicInvitation & {
-        roleId: string
-      })
-    | null
-  > {
+  async findPendingByProfessionalId(
+    professionalId: string,
+    clinicId: string,
+  ): Promise<ClinicInvitation | null> {
+    return withDbError(async () => {
+      const [row] = await db
+        .select(invitationSelect)
+        .from(invitations)
+        .innerJoin(roles, eq(roles.id, invitations.roleId))
+        .innerJoin(user, eq(user.id, invitations.invitedBy))
+        .where(
+          and(
+            eq(invitations.professionalId, professionalId),
+            eq(invitations.clinicId, clinicId),
+            inArray(invitations.status, [...OPEN_INVITE_STATUSES]),
+          ),
+        )
+        .orderBy(desc(invitations.createdAt))
+        .limit(1)
+
+      return row ? toClinicInvitation(row) : null
+    })
+  },
+
+  async findByTokenHash(tokenHash: string): Promise<ClinicInvitation | null> {
     return withDbError(async () => {
       const [row] = await db
         .select(invitationSelect)
@@ -111,6 +134,7 @@ export const invitationRepository = {
     invitedBy: string
     tokenHash: string
     expiresAt: Date
+    professionalId?: string
   }): Promise<ClinicInvitation> {
     return withDbError(async () => {
       const [row] = await db
@@ -122,6 +146,7 @@ export const invitationRepository = {
           invitedBy: params.invitedBy,
           tokenHash: params.tokenHash,
           expiresAt: params.expiresAt,
+          professionalId: params.professionalId ?? null,
           status: "pending",
         })
         .returning({ id: invitations.id })
@@ -149,6 +174,24 @@ export const invitationRepository = {
         .where(
           and(
             eq(invitations.id, invitationId),
+            eq(invitations.clinicId, clinicId),
+            inArray(invitations.status, ["pending", "resent"]),
+          ),
+        )
+    })
+  },
+
+  async revokePendingByProfessionalId(
+    professionalId: string,
+    clinicId: string,
+  ): Promise<void> {
+    return withDbError(async () => {
+      await db
+        .update(invitations)
+        .set({ status: "revoked" })
+        .where(
+          and(
+            eq(invitations.professionalId, professionalId),
             eq(invitations.clinicId, clinicId),
             inArray(invitations.status, ["pending", "resent"]),
           ),

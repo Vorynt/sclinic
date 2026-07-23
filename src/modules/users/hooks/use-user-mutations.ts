@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 
 import { authQueryKeys } from "@/modules/authentication/queries/auth.query"
+import type { AuthContext } from "@/modules/authentication/types/auth"
 import { usersMutations } from "@/modules/users/mutations/users.mutation"
 import { usersQueryKeys } from "@/modules/users/queries/users.query"
 import type { ClinicInvitation } from "@/modules/users/types/invitation"
@@ -70,6 +71,25 @@ export function useAcceptInvitationMutation({
 
   return useMutation({
     ...usersMutations.acceptInvitation(),
+    onSuccess: async (data) => {
+      await queryClient.invalidateQueries({ queryKey: authQueryKeys.all })
+      await queryClient.invalidateQueries({ queryKey: usersQueryKeys.all })
+      onSuccess?.(data)
+    },
+    onError: (error) => {
+      onError?.(toAppError(error))
+    },
+  })
+}
+
+export function useSetPasswordFromInviteMutation({
+  onSuccess,
+  onError,
+}: MutationCallbacks<AuthContext> = {}) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    ...usersMutations.setPasswordFromInvite(),
     onSuccess: async (data) => {
       await queryClient.invalidateQueries({ queryKey: authQueryKeys.all })
       await queryClient.invalidateQueries({ queryKey: usersQueryKeys.all })

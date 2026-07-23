@@ -9,6 +9,7 @@ Cada módulo é um mini-projeto autocontido. Não espalhe arquivos de um domíni
 ## Módulos previstos
 
 - `patients`
+- `professionals`
 - `appointments`
 - `medical-records`
 - `billing`

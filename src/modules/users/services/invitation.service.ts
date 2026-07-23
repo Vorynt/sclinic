@@ -7,11 +7,14 @@ import {
   type AuthContextWithClinic,
 } from "@/modules/authentication/permissions/guards"
 import { authService } from "@/modules/authentication/services/auth.service"
+import type { AuthContext } from "@/modules/authentication/types/auth"
+import { clinicRepository } from "@/modules/clinics/repositories/clinic.repository"
 import { clinicService } from "@/modules/clinics/services/clinic.service"
 import { getRoleLabel, USERS_CONSTANTS } from "@/modules/users/constants/users"
 import type {
   AcceptInvitationDto,
   InviteMemberDto,
+  SetPasswordFromInviteDto,
 } from "@/modules/users/dto/invitation.dto"
 import { invitationRepository } from "@/modules/users/repositories/invitation.repository"
 import { memberRepository } from "@/modules/users/repositories/member.repository"
@@ -19,6 +22,7 @@ import { roleRepository } from "@/modules/users/repositories/role.repository"
 import type {
   AssignableRole,
   ClinicInvitation,
+  InviteAccess,
 } from "@/modules/users/types/invitation"
 import type { ClinicMember } from "@/modules/users/types/member"
 import {
@@ -33,6 +37,40 @@ async function requireTeamAccess(
   ctx: AuthRequestContext,
 ): Promise<AuthContextWithClinic> {
   return requirePermission(ctx, Permission.MEMBERS_INVITE)
+}
+
+async function loadOpenInvitation(token: string): Promise<ClinicInvitation> {
+  const invitation = await invitationRepository.findByTokenHash(
+    hashInviteToken(token),
+  )
+
+  if (!invitation) {
+    throw new AppError(ErrorCode.INVALID_TOKEN, {
+      message: "Convite inválido.",
+    })
+  }
+
+  if (invitation.status === "revoked") {
+    throw new AppError(ErrorCode.INVITATION_REVOKED)
+  }
+
+  if (invitation.status === "accepted") {
+    throw new AppError(ErrorCode.INVITATION_ALREADY_ACCEPTED)
+  }
+
+  if (
+    (invitation.status !== "pending" && invitation.status !== "resent") ||
+    invitation.expiresAt.getTime() <= Date.now()
+  ) {
+    if (invitation.status === "pending" || invitation.status === "resent") {
+      await invitationRepository.markExpired(invitation.id)
+    }
+    throw new AppError(ErrorCode.TOKEN_EXPIRED, {
+      message: "Este convite expirou. Peça um novo à clínica.",
+    })
+  }
+
+  return invitation
 }
 
 export const invitationService = {
@@ -61,6 +99,44 @@ export const invitationService = {
     }
 
     return open
+  },
+
+  async getInviteAccess(token: string): Promise<InviteAccess> {
+    const invitation = await loadOpenInvitation(token)
+    const clinic = await clinicRepository.findById(invitation.clinicId)
+    if (!clinic) {
+      throw new AppError(ErrorCode.NOT_FOUND, {
+        message: "Clínica não encontrada.",
+      })
+    }
+
+    const needsPasswordSetup = await authService.requiresPasswordSetup(
+      invitation.email,
+    )
+
+    return {
+      email: invitation.email,
+      clinicName: clinic.name,
+      roleName: getRoleLabel(invitation.roleKey, invitation.roleName),
+      needsPasswordSetup,
+      isProfessionalInvite: Boolean(invitation.professionalId),
+      expiresAt: invitation.expiresAt,
+    }
+  },
+
+  async setPasswordFromInvite(
+    data: SetPasswordFromInviteDto,
+    ctx: AuthRequestContext,
+  ): Promise<AuthContext> {
+    const invitation = await loadOpenInvitation(data.token)
+
+    return authService.setPasswordAndSignIn(
+      {
+        email: invitation.email,
+        newPassword: data.newPassword,
+      },
+      ctx,
+    )
   },
 
   async invite(
@@ -100,11 +176,10 @@ export const invitationService = {
       })
     }
 
-    // New accounts get the provisional password; existing ones keep theirs.
+    // New accounts get an opaque provisional password; invitees set theirs via token.
     await authService.provisionInvitedUser({
       name: data.name,
       email: data.email,
-      password: data.temporaryPassword,
     })
 
     const clinic = await clinicService.getById(auth.clinicId, ctx)
@@ -159,35 +234,7 @@ export const invitationService = {
     ctx: AuthRequestContext,
   ): Promise<ClinicMember> {
     const auth = await requirePasswordReady(ctx)
-    const invitation = await invitationRepository.findByTokenHash(
-      hashInviteToken(data.token),
-    )
-
-    if (!invitation) {
-      throw new AppError(ErrorCode.INVALID_TOKEN, {
-        message: "Convite inválido.",
-      })
-    }
-
-    if (invitation.status === "revoked") {
-      throw new AppError(ErrorCode.INVITATION_REVOKED)
-    }
-
-    if (invitation.status === "accepted") {
-      throw new AppError(ErrorCode.INVITATION_ALREADY_ACCEPTED)
-    }
-
-    if (
-      invitation.status !== "pending" ||
-      invitation.expiresAt.getTime() <= Date.now()
-    ) {
-      if (invitation.status === "pending") {
-        await invitationRepository.markExpired(invitation.id)
-      }
-      throw new AppError(ErrorCode.TOKEN_EXPIRED, {
-        message: "Este convite expirou. Peça um novo à clínica.",
-      })
-    }
+    const invitation = await loadOpenInvitation(data.token)
 
     if (auth.user.email.toLowerCase() !== invitation.email.toLowerCase()) {
       throw new AppError(ErrorCode.INVITE_EMAIL_MISMATCH, {

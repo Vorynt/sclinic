@@ -21,6 +21,8 @@ export function proxy(request: NextRequest) {
   const isPublicRoute =
     pathname === routes.home ||
     pathname === routes.invite ||
+    pathname === routes.professionalInvite ||
+    pathname.startsWith(routes.professionalInvite) ||
     pathname.startsWith("/api/auth") ||
     isAuthRoute
 

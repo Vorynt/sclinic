@@ -7,7 +7,9 @@ import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 import { routes } from "@/config/routes"
+import { SetInvitePasswordForm } from "@/modules/users/components/SetInvitePasswordForm"
 import { useAcceptInvitationMutation } from "@/modules/users/hooks/use-user-mutations"
+import { useInviteAccessQuery } from "@/modules/users/hooks/use-users"
 import { useAuth } from "@/providers/AuthProvider"
 
 type AcceptInviteBlockProps = {
@@ -18,6 +20,8 @@ export function AcceptInviteBlock({ token }: AcceptInviteBlockProps) {
   const router = useRouter()
   const { auth, isLoading, isAuthenticated } = useAuth()
   const started = useRef(false)
+
+  const accessQuery = useInviteAccessQuery(token)
 
   const { mutate, isPending, isError } = useAcceptInvitationMutation({
     onSuccess: () => {
@@ -31,7 +35,6 @@ export function AcceptInviteBlock({ token }: AcceptInviteBlockProps) {
 
   const invitePath = `${routes.invite}?token=${token}`
   const loginHref = `${routes.login}?next=${encodeURIComponent(invitePath)}`
-  const signUpHref = `${routes.signUp}?next=${encodeURIComponent(invitePath)}`
 
   useEffect(() => {
     if (isLoading || started.current) return
@@ -41,26 +44,48 @@ export function AcceptInviteBlock({ token }: AcceptInviteBlockProps) {
     }
 
     if (auth.user.mustChangePassword) {
-      router.replace(
-        `${routes.changePassword}?next=${encodeURIComponent(invitePath)}`,
-      )
       return
     }
 
     started.current = true
     mutate({ token })
-  }, [auth, invitePath, isAuthenticated, isLoading, mutate, router, token])
+  }, [auth, isAuthenticated, isLoading, mutate, token])
 
-  if (isLoading) {
+  if (isLoading || accessQuery.isLoading) {
     return (
       <div className="flex flex-col items-center gap-3 text-center">
         <Spinner className="size-6" />
-        <p className="text-sm text-muted-foreground">Verificando sua sessão…</p>
+        <p className="text-sm text-muted-foreground">Verificando seu convite…</p>
       </div>
     )
   }
 
+  if (accessQuery.isError || !accessQuery.data) {
+    return (
+      <div className="flex max-w-sm flex-col gap-2 text-center">
+        <h1 className="font-heading text-2xl font-semibold tracking-tight">
+          Convite inválido
+        </h1>
+        <p className="text-sm text-muted-foreground">
+          Não foi possível validar este convite. Peça um novo link à clínica.
+        </p>
+      </div>
+    )
+  }
+
+  const access = accessQuery.data
+
   if (!isAuthenticated) {
+    if (access.needsPasswordSetup) {
+      return (
+        <SetInvitePasswordForm
+          token={token}
+          email={access.email}
+          clinicName={access.clinicName}
+        />
+      )
+    }
+
     return (
       <div className="flex w-full max-w-sm flex-col items-center gap-4 text-center">
         <div className="flex flex-col gap-2">
@@ -68,16 +93,13 @@ export function AcceptInviteBlock({ token }: AcceptInviteBlockProps) {
             Convite para a clínica
           </h1>
           <p className="text-sm text-muted-foreground">
-            Entre com o e-mail do convite e a senha provisória que a clínica
-            definiu para você.
+            Entre com a conta <strong>{access.email}</strong> para aceitar o
+            convite de <strong>{access.clinicName}</strong>.
           </p>
         </div>
         <div className="flex w-full flex-col gap-2">
           <Button asChild>
             <a href={loginHref}>Entrar</a>
-          </Button>
-          <Button asChild variant="outline">
-            <a href={signUpHref}>Não tenho senha ainda</a>
           </Button>
         </div>
       </div>
@@ -85,13 +107,28 @@ export function AcceptInviteBlock({ token }: AcceptInviteBlockProps) {
   }
 
   if (auth?.user.mustChangePassword) {
+    if (
+      access.email.toLowerCase() !== auth.user.email.toLowerCase()
+    ) {
+      return (
+        <div className="flex max-w-sm flex-col gap-2 text-center">
+          <h1 className="font-heading text-2xl font-semibold tracking-tight">
+            Conta diferente
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Este convite é para <strong>{access.email}</strong>. Saia da conta
+            atual e abra o link novamente.
+          </p>
+        </div>
+      )
+    }
+
     return (
-      <div className="flex flex-col items-center gap-3 text-center">
-        <Spinner className="size-6" />
-        <p className="text-sm text-muted-foreground">
-          Redirecionando para alterar a senha…
-        </p>
-      </div>
+      <SetInvitePasswordForm
+        token={token}
+        email={access.email}
+        clinicName={access.clinicName}
+      />
     )
   }
 

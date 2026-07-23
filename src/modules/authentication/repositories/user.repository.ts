@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto"
 
-import { eq } from "drizzle-orm"
+import { and, eq } from "drizzle-orm"
 
 import { db } from "@/db"
 import { account, user } from "@/db/schema"
@@ -94,6 +94,27 @@ export const userRepository = {
         .update(user)
         .set({ mustChangePassword })
         .where(eq(user.id, id))
+    })
+  },
+
+  /**
+   * Updates the credential account password hash (Better Auth hasher).
+   * No-op if the user has no credential account.
+   */
+  async updateCredentialPassword(
+    userId: string,
+    passwordHash: string,
+  ): Promise<boolean> {
+    return withDbError(async () => {
+      const updated = await db
+        .update(account)
+        .set({ password: passwordHash })
+        .where(
+          and(eq(account.userId, userId), eq(account.providerId, "credential")),
+        )
+        .returning({ id: account.id })
+
+      return updated.length > 0
     })
   },
 }

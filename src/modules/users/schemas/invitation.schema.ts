@@ -21,7 +21,6 @@ export const inviteMemberSchema = z.object({
     .min(1, "E-mail é obrigatório")
     .email("E-mail inválido")
     .transform((value) => value.toLowerCase()),
-  temporaryPassword: passwordSchema,
   roleKey: assignableRoleKeySchema,
 })
 
@@ -33,6 +32,25 @@ export const acceptInvitationSchema = z.object({
   token: z.string().trim().min(1, "Token é obrigatório"),
 })
 
+export const inviteAccessTokenSchema = z.object({
+  token: z.string().trim().min(1, "Token é obrigatório"),
+})
+
+export const setPasswordFromInviteSchema = z
+  .object({
+    token: z.string().trim().min(1, "Token é obrigatório"),
+    newPassword: passwordSchema,
+    confirmPassword: z.string().min(1, "Confirme a nova senha"),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: "As senhas não coincidem",
+    path: ["confirmPassword"],
+  })
+
 export type InviteMemberInput = z.infer<typeof inviteMemberSchema>
 export type RevokeInvitationInput = z.infer<typeof revokeInvitationSchema>
 export type AcceptInvitationInput = z.infer<typeof acceptInvitationSchema>
+export type InviteAccessTokenInput = z.infer<typeof inviteAccessTokenSchema>
+export type SetPasswordFromInviteInput = z.infer<
+  typeof setPasswordFromInviteSchema
+>

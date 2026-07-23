@@ -1,5 +1,6 @@
 import { queryOptions } from "@tanstack/react-query"
 
+import { getInviteAccessAction } from "@/modules/users/actions/get-invite-access"
 import { listAssignableRolesAction } from "@/modules/users/actions/list-assignable-roles"
 import { listInvitationsAction } from "@/modules/users/actions/list-invitations"
 import { listMembersAction } from "@/modules/users/actions/list-members"
@@ -10,6 +11,7 @@ export const usersQueryKeys = {
   members: () => ["users", "members"] as const,
   invitations: () => ["users", "invitations"] as const,
   roles: () => ["users", "roles"] as const,
+  inviteAccess: (token: string) => ["users", "invite-access", token] as const,
 }
 
 export const usersQueries = {
@@ -30,5 +32,12 @@ export const usersQueries = {
       queryKey: usersQueryKeys.roles(),
       queryFn: async () =>
         unwrapActionResult(await listAssignableRolesAction()),
+    }),
+
+  inviteAccess: (token: string) =>
+    queryOptions({
+      queryKey: usersQueryKeys.inviteAccess(token),
+      queryFn: async () =>
+        unwrapActionResult(await getInviteAccessAction({ token })),
     }),
 }

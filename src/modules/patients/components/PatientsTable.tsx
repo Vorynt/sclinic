@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { toast } from "sonner"
+import { useState } from "react";
+import { toast } from "sonner";
 
 import {
   AlertDialog,
@@ -12,15 +12,16 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
-import { Button } from "@/components/ui/button"
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import { ButtonGroup } from "@/components/ui/button-group";
 import {
   Empty,
   EmptyDescription,
   EmptyHeader,
   EmptyTitle,
-} from "@/components/ui/empty"
-import { Skeleton } from "@/components/ui/skeleton"
+} from "@/components/ui/empty";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -28,30 +29,31 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
-import { useDeletePatientMutation } from "@/modules/patients/hooks/use-patient-mutations"
-import { usePatientsQuery } from "@/modules/patients/hooks/use-patients"
-import type { Patient } from "@/modules/patients/types/patient"
-import { formatCpf } from "@/utils/cpf"
-import { formatPhone } from "@/utils/phone"
+} from "@/components/ui/table";
+import { useDeletePatientMutation } from "@/modules/patients/hooks/use-patient-mutations";
+import { usePatientsQuery } from "@/modules/patients/hooks/use-patients";
+import type { Patient } from "@/modules/patients/types/patient";
+import { formatCpf } from "@/utils/cpf";
+import { formatPhone } from "@/utils/phone";
+import { PencilSimpleIcon, TrashIcon } from "@phosphor-icons/react";
 
 type PatientsTableProps = {
-  searchQuery?: string
-  onEdit: (patient: Patient) => void
-}
+  searchQuery?: string;
+  onEdit: (patient: Patient) => void;
+};
 
 export function PatientsTable({ searchQuery, onEdit }: PatientsTableProps) {
-  const [patientToDelete, setPatientToDelete] = useState<Patient | null>(null)
+  const [patientToDelete, setPatientToDelete] = useState<Patient | null>(null);
 
-  const patientsQuery = usePatientsQuery({ q: searchQuery })
+  const patientsQuery = usePatientsQuery({ q: searchQuery });
 
   const deletePatient = useDeletePatientMutation({
     onSuccess: () => {
-      toast.success("Paciente removido")
-      setPatientToDelete(null)
+      toast.success("Paciente removido");
+      setPatientToDelete(null);
     },
     onError: (error) => toast.error(error.message),
-  })
+  });
 
   if (patientsQuery.isLoading) {
     return (
@@ -60,7 +62,7 @@ export function PatientsTable({ searchQuery, onEdit }: PatientsTableProps) {
         <Skeleton className="h-10 w-full" />
         <Skeleton className="h-10 w-full" />
       </div>
-    )
+    );
   }
 
   if (patientsQuery.isError) {
@@ -68,10 +70,10 @@ export function PatientsTable({ searchQuery, onEdit }: PatientsTableProps) {
       <p className="text-sm text-destructive">
         Não foi possível carregar os pacientes.
       </p>
-    )
+    );
   }
 
-  const patients = patientsQuery.data ?? []
+  const patients = patientsQuery.data ?? [];
 
   if (patients.length === 0) {
     return (
@@ -83,7 +85,7 @@ export function PatientsTable({ searchQuery, onEdit }: PatientsTableProps) {
           </EmptyDescription>
         </EmptyHeader>
       </Empty>
-    )
+    );
   }
 
   return (
@@ -107,25 +109,25 @@ export function PatientsTable({ searchQuery, onEdit }: PatientsTableProps) {
                 {patient.phone ? formatPhone(patient.phone) : "—"}
               </TableCell>
               <TableCell>{patient.email || "—"}</TableCell>
-              <TableCell className="text-right">
-                <div className="flex justify-end gap-2">
+              <TableCell className="text-right flex justify-end items-end">
+                <ButtonGroup>
                   <Button
                     type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onEdit(patient)}
-                  >
-                    Editar
+                    variant="secondary"
+                    size="icon"
+                    onClick={() => onEdit(patient)}>
+                    <PencilSimpleIcon />
+                    <span className="sr-only">Editar</span>
                   </Button>
                   <Button
                     type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setPatientToDelete(patient)}
-                  >
-                    Remover
+                    variant="destructive"
+                    size="icon"
+                    onClick={() => setPatientToDelete(patient)}>
+                    <TrashIcon />
+                    <span className="sr-only">Remover</span>
                   </Button>
-                </div>
+                </ButtonGroup>
               </TableCell>
             </TableRow>
           ))}
@@ -135,9 +137,8 @@ export function PatientsTable({ searchQuery, onEdit }: PatientsTableProps) {
       <AlertDialog
         open={Boolean(patientToDelete)}
         onOpenChange={(open) => {
-          if (!open) setPatientToDelete(null)
-        }}
-      >
+          if (!open) setPatientToDelete(null);
+        }}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Remover paciente</AlertDialogTitle>
@@ -152,18 +153,18 @@ export function PatientsTable({ searchQuery, onEdit }: PatientsTableProps) {
               Cancelar
             </AlertDialogCancel>
             <AlertDialogAction
+              variant={"destructive"}
               disabled={deletePatient.isPending}
               onClick={() => {
                 if (patientToDelete) {
-                  deletePatient.mutate(patientToDelete.id)
+                  deletePatient.mutate(patientToDelete.id);
                 }
-              }}
-            >
+              }}>
               Remover
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </>
-  )
+  );
 }

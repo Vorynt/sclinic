@@ -3,6 +3,7 @@ import {
   CalendarBlankIcon,
   GearIcon,
   HouseIcon,
+  StethoscopeIcon,
   UsersIcon,
   UsersThreeIcon,
 } from "@phosphor-icons/react"
@@ -53,6 +54,13 @@ export const NAV_ITEMS: NavItem[] = [
     enabled: true,
   },
   {
+    title: "Profissionais",
+    href: routes.professionals,
+    icon: StethoscopeIcon,
+    permissions: [Permission.PROFESSIONALS_MANAGE],
+    enabled: true,
+  },
+  {
     title: "Agendamentos",
     href: routes.appointments,
     icon: CalendarBlankIcon,
@@ -95,6 +103,13 @@ const PAGE_META: Record<string, PageMeta> = {
     breadcrumbs: [
       { label: "Início", href: routes.dashboard },
       { label: "Pacientes" },
+    ],
+  },
+  [routes.professionals]: {
+    title: "Profissionais",
+    breadcrumbs: [
+      { label: "Início", href: routes.dashboard },
+      { label: "Profissionais" },
     ],
   },
   [routes.appointments]: {

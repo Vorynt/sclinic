@@ -28,6 +28,13 @@
       "when": 1784761556307,
       "tag": "0003_must_change_password",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1784778675673,
+      "tag": "0004_giant_vermin",
+      "breakpoints": true
     }
   ],
   "version": "7"

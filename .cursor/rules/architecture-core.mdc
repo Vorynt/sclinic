@@ -19,7 +19,7 @@ Nunca Page → DB / Page → Repository.
 
 - Código de domínio em `src/modules/<feature>/`.
 - Referência canônica: `src/modules/patients/`.
-- Módulos: patients, appointments, medical-records, billing, inventory, dashboard, settings, users, authentication, clinics.
+- Módulos: patients, professionals, appointments, medical-records, billing, inventory, dashboard, settings, users, authentication, clinics.
 
 ## Estado
 

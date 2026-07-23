@@ -1,3 +1,5 @@
+import { randomBytes } from "node:crypto";
+
 import { auth, isBetterAuthError, mapBetterAuthError } from "@/core/auth";
 import { AUTH_CONSTANTS } from "@/modules/authentication/constants/auth";
 import type {
@@ -160,16 +162,20 @@ async function buildAuthContextFromBaResult(result: {
   return buildAuthContextFromParts(mapBaUser(result.user), session);
 }
 
+function generateOpaquePassword(): string {
+  return randomBytes(32).toString("base64url");
+}
+
 export const authService = {
   /**
    * Provisions a credential account for an invited collaborator.
-   * Does not create a session. If the email already exists, returns that user
-   * and leaves the existing password unchanged.
+   * Does not create a session. New users get an opaque provisional password
+   * (never shown to admins) and mustChangePassword=true — they set a real
+   * password via the invite token. Existing users keep their password.
    */
   async provisionInvitedUser(params: {
     name: string;
     email: string;
-    password: string;
   }): Promise<{ user: AuthUser; created: boolean }> {
     const existing = await userRepository.findByEmail(params.email);
     if (existing) {
@@ -177,7 +183,7 @@ export const authService = {
     }
 
     const { hashPassword } = await import("better-auth/crypto");
-    const passwordHash = await hashPassword(params.password);
+    const passwordHash = await hashPassword(generateOpaquePassword());
     const created = await userRepository.createWithCredential({
       name: params.name,
       email: params.email,
@@ -185,6 +191,56 @@ export const authService = {
     });
 
     return { user: created, created: true };
+  },
+
+  async requiresPasswordSetup(email: string): Promise<boolean> {
+    const existing = await userRepository.findByEmail(email);
+    if (!existing) return true;
+    return existing.mustChangePassword;
+  },
+
+  /**
+   * Sets the first password for an invited user (mustChangePassword) and
+   * opens a session. Callers must have already validated the invite token.
+   */
+  async setPasswordAndSignIn(
+    params: { email: string; newPassword: string },
+    ctx: AuthRequestContext,
+  ): Promise<AuthContext> {
+    const existing = await userRepository.findByEmail(params.email);
+    if (!existing) {
+      throw new AppError(ErrorCode.NOT_FOUND, {
+        message: "Conta não encontrada para este convite.",
+      });
+    }
+
+    if (!existing.mustChangePassword) {
+      throw new AppError(ErrorCode.FORBIDDEN, {
+        message:
+          "Esta conta já possui senha. Entre com seu e-mail e senha para continuar.",
+      });
+    }
+
+    assertUserCanAuthenticate(existing);
+
+    const { hashPassword } = await import("better-auth/crypto");
+    const passwordHash = await hashPassword(params.newPassword);
+    const updated = await userRepository.updateCredentialPassword(
+      existing.id,
+      passwordHash,
+    );
+    if (!updated) {
+      throw new AppError(ErrorCode.INTERNAL_ERROR, {
+        message: "Não foi possível atualizar a senha.",
+      });
+    }
+
+    await userRepository.setMustChangePassword(existing.id, false);
+
+    return this.signIn(
+      { email: params.email, password: params.newPassword },
+      ctx,
+    );
   },
 
   async signUp(data: SignUpDto, ctx: AuthRequestContext): Promise<AuthContext> {

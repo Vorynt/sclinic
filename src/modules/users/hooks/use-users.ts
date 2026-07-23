@@ -13,3 +13,10 @@ export function useInvitationsQuery() {
 export function useAssignableRolesQuery() {
   return useQuery(usersQueries.assignableRoles())
 }
+
+export function useInviteAccessQuery(token: string) {
+  return useQuery({
+    ...usersQueries.inviteAccess(token),
+    enabled: Boolean(token),
+  })
+}

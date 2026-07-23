@@ -31,6 +31,7 @@ export function toClinicInvitation(row: {
   roleName: string
   invitedBy: string
   invitedByName: string | null
+  professionalId: string | null
   status: unknown
   expiresAt: Date
   acceptedAt: Date | null
@@ -45,6 +46,7 @@ export function toClinicInvitation(row: {
     roleName: row.roleName,
     invitedBy: row.invitedBy,
     invitedByName: row.invitedByName,
+    professionalId: row.professionalId,
     status: toInvitationStatus(row.status),
     expiresAt: row.expiresAt,
     acceptedAt: row.acceptedAt,

@@ -16,6 +16,7 @@ import {
   primaryUuid,
   timestamps,
 } from "./helpers"
+import { professionals } from "./professionals"
 import { roles } from "./rbac"
 import { sclinicAppRole } from "./rls"
 
@@ -33,6 +34,10 @@ export const invitations = pgTable(
     invitedBy: text("invited_by")
       .notNull()
       .references(() => user.id, { onDelete: "restrict" }),
+    /** When set, this invite belongs to a professional onboarding flow. */
+    professionalId: uuid("professional_id").references(() => professionals.id, {
+      onDelete: "set null",
+    }),
     /** SHA-256 (or similar) of the invite token — never store raw tokens. */
     tokenHash: text("token_hash").notNull(),
     expiresAt: timestamp("expires_at", { withTimezone: true, mode: "date" }).notNull(),
@@ -46,6 +51,10 @@ export const invitations = pgTable(
       t.clinicId,
       t.email,
       t.status,
+    ),
+    index("invitations_clinic_professional_idx").on(
+      t.clinicId,
+      t.professionalId,
     ),
     index("invitations_expires_at_idx").on(t.expiresAt),
     pgPolicy("invitations_tenant_isolation", {
