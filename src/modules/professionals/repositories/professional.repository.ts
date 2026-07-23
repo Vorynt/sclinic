@@ -1,14 +1,7 @@
-import {
-  and,
-  desc,
-  eq,
-  inArray,
-  isNull,
-  sql,
-} from "drizzle-orm"
-import { alias } from "drizzle-orm/pg-core"
+import { and, desc, eq, inArray, isNull, sql } from "drizzle-orm";
+import { alias } from "drizzle-orm/pg-core";
 
-import { db } from "@/db"
+import { db } from "@/db";
 import {
   clinicMemberships,
   invitations,
@@ -16,35 +9,39 @@ import {
   professionals,
   roles,
   user,
-} from "@/db/schema"
-import { withDbError } from "@/db/with-db-error"
+} from "@/db/schema";
+import { withDbError } from "@/db/with-db-error";
 import {
   toProfessionalListItem,
   type ProfessionalListRow,
-} from "@/modules/professionals/mappers/professional.mapper"
+} from "@/modules/professionals/mappers/professional.mapper";
 import type {
   AffiliationType,
   CouncilType,
   ProfessionalListItem,
   ProfessionalStatus,
-} from "@/modules/professionals/types/professional"
+} from "@/modules/professionals/types/professional";
 
-const invitationRoles = alias(roles, "invitation_roles")
-const membershipRoles = alias(roles, "membership_roles")
+const invitationRoles = alias(roles, "invitation_roles");
+const membershipRoles = alias(roles, "membership_roles");
 
 const INVITE_LIST_STATUSES = [
   "pending",
   "resent",
   "expired",
   "revoked",
-] as const
+] as const;
 
 const listSelect = {
   id: professionals.id,
   fullName: professionals.fullName,
   email: sql<string | null>`coalesce(${invitations.email}, ${user.email})`,
-  roleKey: sql<string | null>`coalesce(${invitationRoles.key}, ${membershipRoles.key})`,
-  roleName: sql<string | null>`coalesce(${invitationRoles.name}, ${membershipRoles.name})`,
+  roleKey: sql<
+    string | null
+  >`coalesce(${invitationRoles.key}, ${membershipRoles.key})`,
+  roleName: sql<
+    string | null
+  >`coalesce(${invitationRoles.name}, ${membershipRoles.name})`,
   affiliationType: professionalClinics.affiliationType,
   affiliationId: professionalClinics.id,
   affiliationStatus: professionalClinics.status,
@@ -60,16 +57,16 @@ const listSelect = {
   userId: professionals.userId,
   createdAt: professionals.createdAt,
   updatedAt: professionals.updatedAt,
-}
+};
 
 function mapRows(rows: ProfessionalListRow[]): ProfessionalListItem[] {
-  return rows.map(toProfessionalListItem)
+  return rows.map(toProfessionalListItem);
 }
 
 export const professionalRepository = {
   async create(params: {
-    fullName: string
-    status?: ProfessionalStatus
+    fullName: string;
+    status?: ProfessionalStatus;
   }): Promise<{ id: string; fullName: string; status: ProfessionalStatus }> {
     return withDbError(async () => {
       const [row] = await db
@@ -82,25 +79,25 @@ export const professionalRepository = {
           id: professionals.id,
           fullName: professionals.fullName,
           status: professionals.status,
-        })
+        });
 
       if (!row) {
-        throw new Error("Failed to create professional")
+        throw new Error("Failed to create professional");
       }
 
       return {
         id: row.id,
         fullName: row.fullName,
         status: (row.status as ProfessionalStatus) ?? "inactive",
-      }
-    })
+      };
+    });
   },
 
   async createAffiliation(params: {
-    professionalId: string
-    clinicId: string
-    affiliationType: AffiliationType
-    status?: "active" | "inactive"
+    professionalId: string;
+    clinicId: string;
+    affiliationType: AffiliationType;
+    status?: "active" | "inactive";
   }): Promise<{ id: string }> {
     return withDbError(async () => {
       const [row] = await db
@@ -111,20 +108,24 @@ export const professionalRepository = {
           affiliationType: params.affiliationType,
           status: params.status ?? "inactive",
         })
-        .returning({ id: professionalClinics.id })
+        .returning({ id: professionalClinics.id });
 
       if (!row) {
-        throw new Error("Failed to create professional affiliation")
+        throw new Error("Failed to create professional affiliation");
       }
 
-      return row
-    })
+      return row;
+    });
   },
 
   async findByProfessionalAndClinic(
     professionalId: string,
     clinicId: string,
-  ): Promise<{ id: string; affiliationType: AffiliationType; status: string } | null> {
+  ): Promise<{
+    id: string;
+    affiliationType: AffiliationType;
+    status: string;
+  } | null> {
     return withDbError(async () => {
       const [row] = await db
         .select({
@@ -140,16 +141,16 @@ export const professionalRepository = {
             isNull(professionalClinics.deletedAt),
           ),
         )
-        .limit(1)
+        .limit(1);
 
-      if (!row) return null
+      if (!row) return null;
 
       return {
         id: row.id,
         affiliationType: row.affiliationType as AffiliationType,
         status: row.status,
-      }
-    })
+      };
+    });
   },
 
   async listByClinic(clinicId: string): Promise<ProfessionalListItem[]> {
@@ -172,10 +173,7 @@ export const professionalRepository = {
             inArray(invitations.status, [...INVITE_LIST_STATUSES]),
           ),
         )
-        .leftJoin(
-          invitationRoles,
-          eq(invitationRoles.id, invitations.roleId),
-        )
+        .leftJoin(invitationRoles, eq(invitationRoles.id, invitations.roleId))
         .leftJoin(user, eq(user.id, professionals.userId))
         .leftJoin(
           clinicMemberships,
@@ -196,12 +194,12 @@ export const professionalRepository = {
             isNull(professionalClinics.deletedAt),
           ),
         )
-        .orderBy(professionalClinics.id, desc(invitations.createdAt))
+        .orderBy(professionalClinics.id, desc(invitations.createdAt));
 
       return mapRows(rows as ProfessionalListRow[]).sort((a, b) =>
         a.fullName.localeCompare(b.fullName, "pt-BR"),
-      )
-    })
+      );
+    });
   },
 
   async findById(
@@ -227,10 +225,7 @@ export const professionalRepository = {
             inArray(invitations.status, [...INVITE_LIST_STATUSES]),
           ),
         )
-        .leftJoin(
-          invitationRoles,
-          eq(invitationRoles.id, invitations.roleId),
-        )
+        .leftJoin(invitationRoles, eq(invitationRoles.id, invitations.roleId))
         .leftJoin(user, eq(user.id, professionals.userId))
         .leftJoin(
           clinicMemberships,
@@ -253,33 +248,34 @@ export const professionalRepository = {
           ),
         )
         .orderBy(professionalClinics.id, desc(invitations.createdAt))
-        .limit(1)
+        .limit(1);
 
-      return row ? toProfessionalListItem(row as ProfessionalListRow) : null
-    })
+      return row ? toProfessionalListItem(row as ProfessionalListRow) : null;
+    });
   },
 
   async update(params: {
-    id: string
-    clinicId: string
+    id: string;
+    clinicId: string;
     data: {
-      fullName?: string
-      specialty?: string | null
-      affiliationType?: AffiliationType
-      status?: ProfessionalStatus
-      councilType?: CouncilType | null
-      councilNumber?: string | null
-      councilState?: string | null
-      biography?: string | null
-    }
+      fullName?: string;
+      specialty?: string | null;
+      affiliationType?: AffiliationType;
+      status?: ProfessionalStatus;
+      councilType?: CouncilType | null;
+      councilNumber?: string | null;
+      councilState?: string | null;
+      biography?: string | null;
+    };
   }): Promise<ProfessionalListItem> {
     return withDbError(async () => {
-      const affiliation = await professionalRepository.findByProfessionalAndClinic(
-        params.id,
-        params.clinicId,
-      )
+      const affiliation =
+        await professionalRepository.findByProfessionalAndClinic(
+          params.id,
+          params.clinicId,
+        );
       if (!affiliation) {
-        throw new Error("Professional not found for update")
+        throw new Error("Professional not found for update");
       }
 
       const {
@@ -291,7 +287,7 @@ export const professionalRepository = {
         councilNumber,
         councilState,
         biography,
-      } = params.data
+      } = params.data;
 
       const hasProfessionalFields =
         fullName !== undefined ||
@@ -300,7 +296,7 @@ export const professionalRepository = {
         councilType !== undefined ||
         councilNumber !== undefined ||
         councilState !== undefined ||
-        biography !== undefined
+        biography !== undefined;
 
       if (hasProfessionalFields) {
         const [row] = await db
@@ -320,10 +316,10 @@ export const professionalRepository = {
               isNull(professionals.deletedAt),
             ),
           )
-          .returning({ id: professionals.id })
+          .returning({ id: professionals.id });
 
         if (!row) {
-          throw new Error("Professional not found for update")
+          throw new Error("Professional not found for update");
         }
       }
 
@@ -339,30 +335,30 @@ export const professionalRepository = {
               eq(professionalClinics.id, affiliation.id),
               isNull(professionalClinics.deletedAt),
             ),
-          )
+          );
       }
 
       const updated = await professionalRepository.findById(
         params.id,
         params.clinicId,
-      )
+      );
       if (!updated) {
-        throw new Error("Failed to load professional after update")
+        throw new Error("Failed to load professional after update");
       }
-      return updated
-    })
+      return updated;
+    });
   },
 
   async setStatus(params: {
-    id: string
-    clinicId: string
-    status: ProfessionalStatus
+    id: string;
+    clinicId: string;
+    status: ProfessionalStatus;
   }): Promise<ProfessionalListItem> {
     return professionalRepository.update({
       id: params.id,
       clinicId: params.clinicId,
       data: { status: params.status },
-    })
+    });
   },
 
   async linkUserId(professionalId: string, userId: string): Promise<void> {
@@ -376,20 +372,17 @@ export const professionalRepository = {
             isNull(professionals.deletedAt),
           ),
         )
-        .returning({ id: professionals.id })
+        .returning({ id: professionals.id });
 
       if (!row) {
-        throw new Error("Professional not found for linkUserId")
+        throw new Error("Professional not found for linkUserId");
       }
-    })
+    });
   },
 
-  async softDelete(params: {
-    id: string
-    clinicId: string
-  }): Promise<void> {
+  async softDelete(params: { id: string; clinicId: string }): Promise<void> {
     return withDbError(async () => {
-      const now = new Date()
+      const now = new Date();
 
       const [affiliation] = await db
         .update(professionalClinics)
@@ -405,10 +398,10 @@ export const professionalRepository = {
             isNull(professionalClinics.deletedAt),
           ),
         )
-        .returning({ id: professionalClinics.id })
+        .returning({ id: professionalClinics.id });
 
       if (!affiliation) {
-        throw new Error("Professional affiliation not found for delete")
+        throw new Error("Professional affiliation not found for delete");
       }
 
       await db
@@ -418,18 +411,15 @@ export const professionalRepository = {
           status: "inactive",
         })
         .where(
-          and(
-            eq(professionals.id, params.id),
-            isNull(professionals.deletedAt),
-          ),
-        )
-    })
+          and(eq(professionals.id, params.id), isNull(professionals.deletedAt)),
+        );
+    });
   },
 
   async activateAfterAccept(params: {
-    professionalId: string
-    clinicId: string
-    userId: string
+    professionalId: string;
+    clinicId: string;
+    userId: string;
   }): Promise<void> {
     return withDbError(async () => {
       await db
@@ -443,7 +433,7 @@ export const professionalRepository = {
             eq(professionals.id, params.professionalId),
             isNull(professionals.deletedAt),
           ),
-        )
+        );
 
       await db
         .update(professionalClinics)
@@ -454,7 +444,7 @@ export const professionalRepository = {
             eq(professionalClinics.clinicId, params.clinicId),
             isNull(professionalClinics.deletedAt),
           ),
-        )
-    })
+        );
+    });
   },
-}
+};
