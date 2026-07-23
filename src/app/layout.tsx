@@ -46,6 +46,7 @@ export default async function RootLayout({
   return (
     <html
       lang="pt-BR"
+      data-theme="system"
       suppressHydrationWarning
       className={cn(
         "h-full",

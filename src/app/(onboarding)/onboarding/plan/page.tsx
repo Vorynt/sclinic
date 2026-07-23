@@ -1,29 +1,29 @@
-import type { Metadata } from "next"
-import { redirect } from "next/navigation"
+import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 
-import { routes } from "@/config/routes"
-import { PlanPicker } from "@/modules/billing/components/PlanPicker"
-import { getAuthRequestContext } from "@/modules/authentication/utils/request-context"
-import { authService } from "@/modules/authentication/services/auth.service"
+import { routes } from "@/config/routes";
+import { authService } from "@/modules/authentication/services/auth.service";
+import { getAuthRequestContext } from "@/modules/authentication/utils/request-context";
+import { PlanPicker } from "@/modules/billing/components/PlanPicker";
 
 export const metadata: Metadata = {
   title: "Escolher plano · sclinic",
-}
+};
 
 export default async function OnboardingPlanPage() {
-  const session = await authService.getSession(await getAuthRequestContext())
+  const session = await authService.getSession(await getAuthRequestContext());
 
   if (!session) {
-    redirect(routes.login)
+    redirect(routes.login);
   }
 
   if (!session.user.emailVerified) {
-    redirect(routes.verifyEmail)
+    redirect(routes.verifyEmail);
   }
 
   if (session.membership) {
-    redirect(routes.dashboard)
+    redirect(routes.dashboard);
   }
 
-  return <PlanPicker />
+  return <PlanPicker />;
 }

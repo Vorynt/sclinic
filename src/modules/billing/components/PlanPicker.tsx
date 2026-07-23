@@ -94,13 +94,15 @@ export function PlanPicker() {
                 }
               }}
               className={cn(
-                "cursor-pointer transition-shadow outline-none",
+                "group/card cursor-pointer transition-shadow outline-none",
                 selected
                   ? "ring-2 ring-primary shadow-md"
                   : "hover:ring-foreground/20",
               )}>
               <CardHeader>
-                <CardTitle>{plan.name}</CardTitle>
+                <CardTitle className="group-hover/card:shimmer group-hover/card:shimmer-once transition-colors group-hover/card:text-primary">
+                  {plan.name}
+                </CardTitle>
                 <CardDescription>
                   {plan.description ?? "Plano sclinic"}
                 </CardDescription>
@@ -121,11 +123,22 @@ export function PlanPicker() {
                   ) : null}
                 </ul>
               </CardContent>
-              <CardFooter>
-                <span className="text-xs font-medium text-primary">
-                  {selected ? "Selecionado" : "Selecionar"}
-                </span>
-                {selected && <CheckCircleIcon fill="currentColor" />}
+              <CardFooter className={cn(selected && "justify-between shimmer")}>
+                {selected ? (
+                  <>
+                    <span className="text-xs font-medium text-primary shimmer">
+                      Selecionado
+                    </span>
+                    <CheckCircleIcon
+                      weight="fill"
+                      className="ml-auto text-primary size-4"
+                    />
+                  </>
+                ) : (
+                  <span className="text-xs font-medium text-primary">
+                    Selecionar
+                  </span>
+                )}
               </CardFooter>
             </Card>
           );

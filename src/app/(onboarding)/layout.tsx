@@ -1,21 +1,21 @@
-import { redirect } from "next/navigation"
-import type { ReactNode } from "react"
+import { redirect } from "next/navigation";
+import type { ReactNode } from "react";
 
-import { AuthShell } from "@/modules/authentication/components/AuthShell"
-import { authService } from "@/modules/authentication/services/auth.service"
-import { getAuthRequestContext } from "@/modules/authentication/utils/request-context"
-import { routes } from "@/config/routes"
+import { routes } from "@/config/routes";
+import { AuthShell } from "@/modules/authentication/components/AuthShell";
+import { authService } from "@/modules/authentication/services/auth.service";
+import { getAuthRequestContext } from "@/modules/authentication/utils/request-context";
 
 export default async function OnboardingLayout({
   children,
 }: Readonly<{
-  children: ReactNode
+  children: ReactNode;
 }>) {
-  const session = await authService.getSession(await getAuthRequestContext())
+  const session = await authService.getSession(await getAuthRequestContext());
 
   if (session?.user.mustChangePassword) {
-    redirect(routes.changePassword)
+    redirect(routes.changePassword);
   }
 
-  return <AuthShell wide>{children}</AuthShell>
+  return <AuthShell wide>{children}</AuthShell>;
 }
