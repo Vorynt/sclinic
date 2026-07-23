@@ -480,6 +480,14 @@ export const authService = {
     return this.requireSession(ctx);
   },
 
+  /**
+   * Marks the user's email as verified after invite acceptance.
+   * Owning the invite token (delivered by email) is proof of address ownership.
+   */
+  async markEmailVerifiedFromInvite(userId: string): Promise<void> {
+    await userRepository.setEmailVerified(userId, true);
+  },
+
   async resendVerificationEmail(ctx: AuthRequestContext): Promise<void> {
     const authContext = await this.requireSession(ctx);
 

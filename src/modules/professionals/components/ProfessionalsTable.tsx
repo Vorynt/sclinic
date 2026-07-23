@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { toast } from "sonner"
+import { useState } from "react";
+import { toast } from "sonner";
 
 import {
   AlertDialog,
@@ -12,17 +12,17 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { ButtonGroup } from "@/components/ui/button-group"
+} from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { ButtonGroup } from "@/components/ui/button-group";
 import {
   Empty,
   EmptyDescription,
   EmptyHeader,
   EmptyTitle,
-} from "@/components/ui/empty"
-import { Skeleton } from "@/components/ui/skeleton"
+} from "@/components/ui/empty";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -30,60 +30,60 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
+} from "@/components/ui/table";
 import {
   ACCOUNT_STATUS_LABELS,
   getAffiliationTypeLabel,
   getProfessionalRoleLabel,
-} from "@/modules/professionals/constants/professionals"
+} from "@/modules/professionals/constants/professionals";
 import {
   useDeleteProfessionalMutation,
   useSetProfessionalStatusMutation,
-} from "@/modules/professionals/hooks/use-professional-mutations"
-import { useProfessionalsQuery } from "@/modules/professionals/hooks/use-professionals"
+} from "@/modules/professionals/hooks/use-professional-mutations";
+import { useProfessionalsQuery } from "@/modules/professionals/hooks/use-professionals";
 import type {
   ProfessionalAccountStatus,
   ProfessionalListItem,
-} from "@/modules/professionals/types/professional"
+} from "@/modules/professionals/types/professional";
 import {
+  CheckCircleIcon,
   PencilSimpleIcon,
   ProhibitIcon,
-  CheckCircleIcon,
   TrashIcon,
-} from "@phosphor-icons/react"
+} from "@phosphor-icons/react";
 
 type ProfessionalsTableProps = {
-  onEdit: (professional: ProfessionalListItem) => void
-}
+  onEdit: (professional: ProfessionalListItem) => void;
+};
 
 function accountStatusBadgeVariant(
   status: ProfessionalAccountStatus,
 ): "secondary" | "outline" {
-  return status === "active" ? "secondary" : "outline"
+  return status === "active" ? "secondary" : "outline";
 }
 
 function accountStatusLabel(status: ProfessionalAccountStatus): string {
-  return ACCOUNT_STATUS_LABELS[status] ?? status
+  return ACCOUNT_STATUS_LABELS[status] ?? status;
 }
 
 export function ProfessionalsTable({ onEdit }: ProfessionalsTableProps) {
   const [professionalToDelete, setProfessionalToDelete] =
-    useState<ProfessionalListItem | null>(null)
+    useState<ProfessionalListItem | null>(null);
 
-  const professionalsQuery = useProfessionalsQuery()
+  const professionalsQuery = useProfessionalsQuery();
 
   const setStatus = useSetProfessionalStatusMutation({
     onSuccess: () => toast.success("Status atualizado"),
     onError: (error) => toast.error(error.message),
-  })
+  });
 
   const deleteProfessional = useDeleteProfessionalMutation({
     onSuccess: () => {
-      toast.success("Profissional removido")
-      setProfessionalToDelete(null)
+      toast.success("Profissional removido");
+      setProfessionalToDelete(null);
     },
     onError: (error) => toast.error(error.message),
-  })
+  });
 
   if (professionalsQuery.isLoading) {
     return (
@@ -92,7 +92,7 @@ export function ProfessionalsTable({ onEdit }: ProfessionalsTableProps) {
         <Skeleton className="h-10 w-full" />
         <Skeleton className="h-10 w-full" />
       </div>
-    )
+    );
   }
 
   if (professionalsQuery.isError) {
@@ -100,10 +100,10 @@ export function ProfessionalsTable({ onEdit }: ProfessionalsTableProps) {
       <p className="text-sm text-destructive">
         Não foi possível carregar os profissionais.
       </p>
-    )
+    );
   }
 
-  const professionals = professionalsQuery.data ?? []
+  const professionals = professionalsQuery.data ?? [];
 
   if (professionals.length === 0) {
     return (
@@ -115,7 +115,7 @@ export function ProfessionalsTable({ onEdit }: ProfessionalsTableProps) {
           </EmptyDescription>
         </EmptyHeader>
       </Empty>
-    )
+    );
   }
 
   return (
@@ -134,8 +134,8 @@ export function ProfessionalsTable({ onEdit }: ProfessionalsTableProps) {
         <TableBody>
           {professionals.map((professional) => {
             const nextStatus =
-              professional.status === "active" ? "inactive" : "active"
-            const isTogglePending = setStatus.isPending
+              professional.status === "active" ? "inactive" : "active";
+            const isTogglePending = setStatus.isPending;
 
             return (
               <TableRow key={professional.id}>
@@ -156,8 +156,7 @@ export function ProfessionalsTable({ onEdit }: ProfessionalsTableProps) {
                   <Badge
                     variant={accountStatusBadgeVariant(
                       professional.accountStatus,
-                    )}
-                  >
+                    )}>
                     {accountStatusLabel(professional.accountStatus)}
                   </Badge>
                 </TableCell>
@@ -167,14 +166,13 @@ export function ProfessionalsTable({ onEdit }: ProfessionalsTableProps) {
                       type="button"
                       variant="secondary"
                       size="icon"
-                      onClick={() => onEdit(professional)}
-                    >
+                      onClick={() => onEdit(professional)}>
                       <PencilSimpleIcon />
                       <span className="sr-only">Editar</span>
                     </Button>
                     <Button
                       type="button"
-                      variant="outline"
+                      variant="secondary"
                       size="icon"
                       disabled={isTogglePending}
                       onClick={() =>
@@ -182,8 +180,7 @@ export function ProfessionalsTable({ onEdit }: ProfessionalsTableProps) {
                           id: professional.id,
                           status: nextStatus,
                         })
-                      }
-                    >
+                      }>
                       {professional.status === "active" ? (
                         <ProhibitIcon />
                       ) : (
@@ -199,15 +196,14 @@ export function ProfessionalsTable({ onEdit }: ProfessionalsTableProps) {
                       type="button"
                       variant="destructive"
                       size="icon"
-                      onClick={() => setProfessionalToDelete(professional)}
-                    >
+                      onClick={() => setProfessionalToDelete(professional)}>
                       <TrashIcon />
                       <span className="sr-only">Remover</span>
                     </Button>
                   </ButtonGroup>
                 </TableCell>
               </TableRow>
-            )
+            );
           })}
         </TableBody>
       </Table>
@@ -215,9 +211,8 @@ export function ProfessionalsTable({ onEdit }: ProfessionalsTableProps) {
       <AlertDialog
         open={Boolean(professionalToDelete)}
         onOpenChange={(open) => {
-          if (!open) setProfessionalToDelete(null)
-        }}
-      >
+          if (!open) setProfessionalToDelete(null);
+        }}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Remover profissional</AlertDialogTitle>
@@ -236,15 +231,14 @@ export function ProfessionalsTable({ onEdit }: ProfessionalsTableProps) {
               disabled={deleteProfessional.isPending}
               onClick={() => {
                 if (professionalToDelete) {
-                  deleteProfessional.mutate(professionalToDelete.id)
+                  deleteProfessional.mutate(professionalToDelete.id);
                 }
-              }}
-            >
+              }}>
               Remover
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </>
-  )
+  );
 }

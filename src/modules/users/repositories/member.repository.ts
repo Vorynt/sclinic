@@ -1,10 +1,10 @@
-import { and, eq, inArray, isNull, ne } from "drizzle-orm"
+import { and, eq, inArray, isNull, ne } from "drizzle-orm";
 
-import { db } from "@/db"
-import { clinicMemberships, roles, user } from "@/db/schema"
-import { withDbError } from "@/db/with-db-error"
-import { toClinicMember } from "@/modules/users/mappers/member.mapper"
-import type { ClinicMember } from "@/modules/users/types/member"
+import { db } from "@/db";
+import { clinicMemberships, roles, user } from "@/db/schema";
+import { withDbError } from "@/db/with-db-error";
+import { toClinicMember } from "@/modules/users/mappers/member.mapper";
+import type { ClinicMember } from "@/modules/users/types/member";
 
 const memberSelect = {
   id: clinicMemberships.id,
@@ -19,7 +19,7 @@ const memberSelect = {
   userName: user.name,
   userEmail: user.email,
   userImage: user.image,
-}
+};
 
 export const memberRepository = {
   async listByClinic(clinicId: string): Promise<ClinicMember[]> {
@@ -35,10 +35,10 @@ export const memberRepository = {
             inArray(clinicMemberships.status, ["active", "suspended"]),
             isNull(clinicMemberships.deletedAt),
           ),
-        )
+        );
 
-      return rows.map(toClinicMember)
-    })
+      return rows.map(toClinicMember);
+    });
   },
 
   async findById(
@@ -58,10 +58,10 @@ export const memberRepository = {
             isNull(clinicMemberships.deletedAt),
           ),
         )
-        .limit(1)
+        .limit(1);
 
-      return row ? toClinicMember(row) : null
-    })
+      return row ? toClinicMember(row) : null;
+    });
   },
 
   async findActiveByUserAndClinic(
@@ -82,10 +82,10 @@ export const memberRepository = {
             isNull(clinicMemberships.deletedAt),
           ),
         )
-        .limit(1)
+        .limit(1);
 
-      return row ? toClinicMember(row) : null
-    })
+      return row ? toClinicMember(row) : null;
+    });
   },
 
   async findActiveByEmailAndClinic(
@@ -106,17 +106,17 @@ export const memberRepository = {
             isNull(clinicMemberships.deletedAt),
           ),
         )
-        .limit(1)
+        .limit(1);
 
-      return row ? toClinicMember(row) : null
-    })
+      return row ? toClinicMember(row) : null;
+    });
   },
 
   async create(params: {
-    userId: string
-    clinicId: string
-    roleId: string
-    isDefault?: boolean
+    userId: string;
+    clinicId: string;
+    roleId: string;
+    isDefault?: boolean;
   }): Promise<ClinicMember> {
     return withDbError(async () => {
       const hasDefault = await db
@@ -129,9 +129,9 @@ export const memberRepository = {
             isNull(clinicMemberships.deletedAt),
           ),
         )
-        .limit(1)
+        .limit(1);
 
-      const isDefault = params.isDefault ?? hasDefault.length === 0
+      const isDefault = params.isDefault ?? hasDefault.length === 0;
 
       const [row] = await db
         .insert(clinicMemberships)
@@ -142,18 +142,18 @@ export const memberRepository = {
           isDefault,
           status: "active",
         })
-        .returning({ id: clinicMemberships.id })
+        .returning({ id: clinicMemberships.id });
 
       if (!row) {
-        throw new Error("Failed to create membership")
+        throw new Error("Failed to create membership");
       }
 
-      const created = await memberRepository.findById(row.id, params.clinicId)
+      const created = await memberRepository.findById(row.id, params.clinicId);
       if (!created) {
-        throw new Error("Failed to load membership after create")
+        throw new Error("Failed to load membership after create");
       }
-      return created
-    })
+      return created;
+    });
   },
 
   async updateRole(
@@ -173,18 +173,18 @@ export const memberRepository = {
             isNull(clinicMemberships.deletedAt),
           ),
         )
-        .returning({ id: clinicMemberships.id })
+        .returning({ id: clinicMemberships.id });
 
       if (!updated) {
-        throw new Error("Membership not found for role update")
+        throw new Error("Membership not found for role update");
       }
 
-      const member = await memberRepository.findById(membershipId, clinicId)
+      const member = await memberRepository.findById(membershipId, clinicId);
       if (!member) {
-        throw new Error("Failed to load membership after role update")
+        throw new Error("Failed to load membership after role update");
       }
-      return member
-    })
+      return member;
+    });
   },
 
   async softRemove(membershipId: string, clinicId: string): Promise<void> {
@@ -202,7 +202,7 @@ export const memberRepository = {
             eq(clinicMemberships.clinicId, clinicId),
             isNull(clinicMemberships.deletedAt),
           ),
-        )
-    })
+        );
+    });
   },
-}
+};

@@ -249,6 +249,7 @@ export const invitationService = {
     )
     if (existing) {
       await invitationRepository.markAccepted(invitation.id)
+      await authService.markEmailVerifiedFromInvite(auth.user.id)
       return existing
     }
 
@@ -259,6 +260,7 @@ export const invitationService = {
     })
 
     await invitationRepository.markAccepted(invitation.id)
+    await authService.markEmailVerifiedFromInvite(auth.user.id)
 
     await authService.switchClinic({ clinicId: invitation.clinicId }, ctx)
 

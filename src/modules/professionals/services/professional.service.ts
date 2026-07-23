@@ -426,6 +426,7 @@ export const professionalService = {
     })
 
     await invitationRepository.markAccepted(invitation.id)
+    await authService.markEmailVerifiedFromInvite(auth.user.id)
     await authService.switchClinic({ clinicId: invitation.clinicId }, ctx)
 
     return { success: true }

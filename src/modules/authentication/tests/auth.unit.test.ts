@@ -174,6 +174,32 @@ describe("getPostAuthRedirect", () => {
     )
   })
 
+  it("honors invite next for unverified users", () => {
+    assert.equal(
+      getPostAuthRedirect(
+        {
+          ...baseAuth,
+          user: { ...baseAuth.user, emailVerified: false },
+        },
+        `${routes.invite}?token=abc`,
+      ),
+      `${routes.invite}?token=abc`,
+    )
+  })
+
+  it("honors professional invite next for unverified users", () => {
+    assert.equal(
+      getPostAuthRedirect(
+        {
+          ...baseAuth,
+          user: { ...baseAuth.user, emailVerified: false },
+        },
+        `${routes.professionalInvite}?token=abc`,
+      ),
+      `${routes.professionalInvite}?token=abc`,
+    )
+  })
+
   it("sends users with provisional password to change-password", () => {
     assert.equal(
       getPostAuthRedirect({

@@ -97,6 +97,15 @@ export const userRepository = {
     })
   },
 
+  async setEmailVerified(
+    id: string,
+    emailVerified: boolean,
+  ): Promise<void> {
+    return withDbError(async () => {
+      await db.update(user).set({ emailVerified }).where(eq(user.id, id))
+    })
+  },
+
   /**
    * Updates the credential account password hash (Better Auth hasher).
    * No-op if the user has no credential account.
