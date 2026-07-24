@@ -39,6 +39,7 @@ export const appointmentRepository = {
     clinicId: string
     from: Date
     to: Date
+    professionalId?: string
   }): Promise<Appointment[]> {
     return withDbError(async () => {
       const rows = await appointmentJoin()
@@ -48,6 +49,9 @@ export const appointmentRepository = {
             isNull(appointments.deletedAt),
             lt(appointments.startsAt, params.to),
             gt(appointments.endsAt, params.from),
+            params.professionalId
+              ? eq(appointments.professionalId, params.professionalId)
+              : undefined,
           ),
         )
         .orderBy(asc(appointments.startsAt))

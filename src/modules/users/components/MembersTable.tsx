@@ -1,24 +1,24 @@
-"use client"
+"use client";
 
-import { toast } from "sonner"
+import { toast } from "sonner";
 
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { ButtonGroup } from "@/components/ui/button-group"
+import { TableSkeleton } from "@/components/status/TableSkeleton";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { ButtonGroup } from "@/components/ui/button-group";
 import {
   Empty,
   EmptyDescription,
   EmptyHeader,
   EmptyTitle,
-} from "@/components/ui/empty"
+} from "@/components/ui/empty";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { TableSkeleton } from "@/components/status/TableSkeleton"
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -26,43 +26,42 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
+} from "@/components/ui/table";
 import {
   type AssignableRoleKey,
   getRoleLabel,
   getTeamStatusLabel,
   type TeamRowStatus,
   USERS_CONSTANTS,
-} from "@/modules/users/constants/users"
+} from "@/modules/users/constants/users";
 import {
   useRevokeInvitationMutation,
   useUpdateMemberRoleMutation,
   useUpdateMemberStatusMutation,
-} from "@/modules/users/hooks/use-user-mutations"
+} from "@/modules/users/hooks/use-user-mutations";
 import {
   useAssignableRolesQuery,
   useInvitationsQuery,
   useMembersQuery,
-} from "@/modules/users/hooks/use-users"
-import { useAuth } from "@/providers/AuthProvider"
-import { ArrowsClockwiseIcon, ProhibitIcon } from "@phosphor-icons/react"
+} from "@/modules/users/hooks/use-users";
+import { isAssignableRoleKey } from "@/modules/users/utils/member-rules";
+import { useAuth } from "@/providers/AuthProvider";
+import { ArrowsClockwiseIcon, ProhibitIcon } from "@phosphor-icons/react";
 
-function statusBadgeVariant(
-  status: TeamRowStatus,
-): "secondary" | "outline" {
-  return status === "active" ? "secondary" : "outline"
+function statusBadgeVariant(status: TeamRowStatus): "secondary" | "outline" {
+  return status === "active" ? "secondary" : "outline";
 }
 
 export function MembersTable() {
-  const { auth } = useAuth()
-  const membersQuery = useMembersQuery()
-  const invitationsQuery = useInvitationsQuery()
-  const rolesQuery = useAssignableRolesQuery()
+  const { auth } = useAuth();
+  const membersQuery = useMembersQuery();
+  const invitationsQuery = useInvitationsQuery();
+  const rolesQuery = useAssignableRolesQuery();
 
   const updateRole = useUpdateMemberRoleMutation({
     onSuccess: () => toast.success("Papel atualizado"),
     onError: (error) => toast.error(error.message),
-  })
+  });
 
   const updateStatus = useUpdateMemberStatusMutation({
     onSuccess: (member) =>
@@ -70,15 +69,15 @@ export function MembersTable() {
         member.status === "suspended" ? "Membro suspenso" : "Membro reativado",
       ),
     onError: (error) => toast.error(error.message),
-  })
+  });
 
   const revokeInvite = useRevokeInvitationMutation({
     onSuccess: () => toast.success("Convite cancelado"),
     onError: (error) => toast.error(error.message),
-  })
+  });
 
   if (membersQuery.isLoading || invitationsQuery.isLoading) {
-    return <TableSkeleton columns={5} rows={6} />
+    return <TableSkeleton columns={5} rows={6} />;
   }
 
   if (membersQuery.isError || invitationsQuery.isError) {
@@ -86,11 +85,11 @@ export function MembersTable() {
       <p className="text-sm text-destructive">
         Não foi possível carregar a equipe.
       </p>
-    )
+    );
   }
 
-  const members = membersQuery.data ?? []
-  const invitations = invitationsQuery.data ?? []
+  const members = membersQuery.data ?? [];
+  const invitations = invitationsQuery.data ?? [];
 
   if (members.length === 0 && invitations.length === 0) {
     return (
@@ -102,7 +101,7 @@ export function MembersTable() {
           </EmptyDescription>
         </EmptyHeader>
       </Empty>
-    )
+    );
   }
 
   return (
@@ -118,18 +117,21 @@ export function MembersTable() {
       </TableHeader>
       <TableBody>
         {members.map((member) => {
-          const isSelf = member.userId === auth?.user.id
-          const isOwner = member.roleKey === USERS_CONSTANTS.OWNER_ROLE_KEY
-          const canManage = !isSelf && !isOwner
+          const isSelf = member.userId === auth?.user.id;
+          const isOwner = member.roleKey === USERS_CONSTANTS.OWNER_ROLE_KEY;
+          const canManage = !isSelf && !isOwner;
+          const canChangeRole =
+            canManage && isAssignableRoleKey(member.roleKey);
+          const roleLabel = getRoleLabel(member.roleKey, member.roleName);
           const status: TeamRowStatus =
-            member.status === "suspended" ? "suspended" : "active"
+            member.status === "suspended" ? "suspended" : "active";
 
           return (
             <TableRow key={member.id}>
               <TableCell className="font-medium">{member.userName}</TableCell>
               <TableCell>{member.userEmail}</TableCell>
               <TableCell>
-                {canManage ? (
+                {canChangeRole ? (
                   <Select
                     value={member.roleKey}
                     onValueChange={(roleKey) =>
@@ -138,8 +140,7 @@ export function MembersTable() {
                         roleKey: roleKey as AssignableRoleKey,
                       })
                     }
-                    disabled={updateRole.isPending}
-                  >
+                    disabled={updateRole.isPending}>
                     <SelectTrigger size="sm" className="w-40">
                       <SelectValue />
                     </SelectTrigger>
@@ -152,7 +153,9 @@ export function MembersTable() {
                     </SelectContent>
                   </Select>
                 ) : (
-                  getRoleLabel(member.roleKey, member.roleName)
+                  <div className="flex flex-col gap-0.5">
+                    <span>{roleLabel}</span>
+                  </div>
                 )}
               </TableCell>
               <TableCell>
@@ -165,7 +168,9 @@ export function MembersTable() {
                   <ButtonGroup>
                     <Button
                       type="button"
-                      variant={status === "suspended" ? "outline" : "destructive"}
+                      variant={
+                        status === "suspended" ? "outline" : "destructive"
+                      }
                       size="icon"
                       tooltip={
                         status === "suspended" ? "Reativar" : "Suspender"
@@ -177,8 +182,7 @@ export function MembersTable() {
                           status:
                             status === "suspended" ? "active" : "suspended",
                         })
-                      }
-                    >
+                      }>
                       {status === "suspended" ? (
                         <ArrowsClockwiseIcon />
                       ) : (
@@ -192,7 +196,7 @@ export function MembersTable() {
                 ) : null}
               </TableCell>
             </TableRow>
-          )
+          );
         })}
 
         {invitations.map((invitation) => (
@@ -217,8 +221,7 @@ export function MembersTable() {
                   disabled={revokeInvite.isPending}
                   onClick={() =>
                     revokeInvite.mutate({ invitationId: invitation.id })
-                  }
-                >
+                  }>
                   <ProhibitIcon />
                   <span className="sr-only">Cancelar convite</span>
                 </Button>
@@ -228,5 +231,5 @@ export function MembersTable() {
         ))}
       </TableBody>
     </Table>
-  )
+  );
 }

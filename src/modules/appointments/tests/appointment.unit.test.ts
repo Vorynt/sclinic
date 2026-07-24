@@ -226,10 +226,11 @@ describe("getProfessionalCalendarColor", () => {
 })
 
 describe("isSelfScheduleOnlyRole", () => {
-  it("is true only for doctor", () => {
+  it("is true for professional roles (doctor and nurse)", () => {
     assert.equal(isSelfScheduleOnlyRole("doctor"), true)
-    assert.equal(isSelfScheduleOnlyRole("nurse"), false)
+    assert.equal(isSelfScheduleOnlyRole("nurse"), true)
     assert.equal(isSelfScheduleOnlyRole("receptionist"), false)
+    assert.equal(isSelfScheduleOnlyRole("owner"), false)
     assert.equal(isSelfScheduleOnlyRole(null), false)
     assert.equal(isSelfScheduleOnlyRole(undefined), false)
   })

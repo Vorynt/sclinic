@@ -20,8 +20,11 @@ export const APPOINTMENT_TYPE_LABELS: Record<AppointmentType, string> = {
   other: "Outro",
 };
 
-/** Roles that may only schedule appointments for their own professional profile. */
-export const SELF_SCHEDULE_ONLY_ROLE_KEYS = ["doctor"] as const;
+/**
+ * Professional roles that may only view/schedule appointments for their own
+ * profile. Other roles with appointment permissions see the full clinic agenda.
+ */
+export const SELF_SCHEDULE_ONLY_ROLE_KEYS = ["doctor", "nurse"] as const;
 
 export function isSelfScheduleOnlyRole(
   roleKey: string | null | undefined,
