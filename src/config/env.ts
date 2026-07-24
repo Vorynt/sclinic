@@ -24,6 +24,13 @@ export const env = {
     return requireEnv("BETTER_AUTH_SECRET");
   },
   get BETTER_AUTH_URL() {
+    if (process.env.BETTER_AUTH_URL) {
+      return process.env.BETTER_AUTH_URL;
+    }
+    // Preview deployments: Vercel injects the deployment host.
+    if (process.env.VERCEL_URL) {
+      return `https://${process.env.VERCEL_URL}`;
+    }
     return requireEnv("BETTER_AUTH_URL");
   },
   get RESEND_API_KEY() {
