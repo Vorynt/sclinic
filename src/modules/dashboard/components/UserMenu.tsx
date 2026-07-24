@@ -1,6 +1,6 @@
 "use client";
 
-import { GearIcon, SignOutIcon, UserIcon } from "@phosphor-icons/react";
+import { SignOutIcon, UserIcon } from "@phosphor-icons/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -15,7 +15,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Permission } from "@/config/permissions";
 import { routes } from "@/config/routes";
 import { useSignOutMutation } from "@/modules/authentication/hooks/use-auth";
 import { useAuth } from "@/providers/AuthProvider";
@@ -30,9 +29,8 @@ function initialsFromName(name: string): string {
 
 export function UserMenu() {
   const router = useRouter();
-  const { auth, can } = useAuth();
+  const { auth } = useAuth();
   const user = auth?.user;
-  const canManageSettings = can(Permission.SETTINGS_MANAGE);
 
   const signOut = useSignOutMutation({
     onSuccess: () => {
@@ -85,14 +83,7 @@ export function UserMenu() {
             Minha conta
           </Link>
         </DropdownMenuItem>
-        {canManageSettings ? (
-          <DropdownMenuItem asChild>
-            <Link href={routes.settings}>
-              <GearIcon />
-              Configurações
-            </Link>
-          </DropdownMenuItem>
-        ) : null}
+
         <DropdownMenuSeparator />
         <DropdownMenuItem
           variant="destructive"

@@ -17,17 +17,10 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { UserMenu } from "@/modules/dashboard/components/UserMenu";
 import { getPageMeta } from "@/modules/dashboard/constants/nav";
-import { useTheme } from "next-themes";
 
 export function AppHeader() {
   const pathname = usePathname();
   const { title, breadcrumbs } = getPageMeta(pathname);
-
-  const { theme, setTheme } = useTheme();
-
-  function handleThemeToggle() {
-    setTheme(theme === "dark" ? "light" : "dark");
-  }
 
   return (
     <header className="flex h-12 shrink-0 items-center gap-2 border-b border-border/70 px-4">
