@@ -1,7 +1,7 @@
 "use client"
 
 import { ArrowLeftIcon, StethoscopeIcon } from "@phosphor-icons/react"
-import { useRouter } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
 import { useState } from "react"
 
 import {
@@ -16,20 +16,36 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
+import { canCompleteAttendance } from "@/modules/appointments/constants/appointments"
 import { useAgendaReturnHref } from "@/modules/appointments/hooks/use-agenda-return-href"
+import { useAppointmentQuery } from "@/modules/appointments/hooks/use-appointment"
 import { useAttendanceUiStore } from "@/stores/attendance.store"
 
 export function AttendanceShellHeader() {
   const router = useRouter()
+  const params = useParams<{ appointmentId: string }>()
   const agendaHref = useAgendaReturnHref()
+  const appointmentQuery = useAppointmentQuery(params.appointmentId)
   const endPreparingAttendance = useAttendanceUiStore(
     (state) => state.endPreparingAttendance,
   )
   const [leaveConfirmOpen, setLeaveConfirmOpen] = useState(false)
 
+  const isInProgress =
+    appointmentQuery.data != null &&
+    canCompleteAttendance(appointmentQuery.data.status)
+
   function goToAgenda() {
     endPreparingAttendance()
     router.push(agendaHref)
+  }
+
+  function handleBackClick() {
+    if (isInProgress) {
+      setLeaveConfirmOpen(true)
+      return
+    }
+    goToAgenda()
   }
 
   return (
@@ -42,7 +58,7 @@ export function AttendanceShellHeader() {
               variant="ghost"
               size="sm"
               className="-ml-2"
-              onClick={() => setLeaveConfirmOpen(true)}
+              onClick={handleBackClick}
             >
               <ArrowLeftIcon />
               Voltar à agenda
@@ -71,8 +87,7 @@ export function AttendanceShellHeader() {
           <AlertDialogHeader>
             <AlertDialogTitle>Voltar à agenda?</AlertDialogTitle>
             <AlertDialogDescription>
-              Se o atendimento ainda estiver em andamento, ele permanecerá
-              aberto até que você o conclua.
+              O atendimento continuará em andamento até que você o conclua.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
