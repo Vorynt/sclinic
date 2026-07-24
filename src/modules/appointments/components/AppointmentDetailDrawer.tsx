@@ -58,6 +58,7 @@ import type {
   AppointmentStatus,
 } from "@/modules/appointments/types/appointment";
 import { buildAttendanceHref } from "@/modules/appointments/utils/agenda-href";
+import { PatientCompactSummary } from "@/modules/patients/components/PatientCompactSummary";
 import { useAttendanceUiStore } from "@/stores/attendance.store";
 
 type DrawerMode = "view" | "reschedule" | "edit-details";
@@ -395,36 +396,40 @@ function AppointmentDetailContent({
           </div>
         </div>
 
-        {hasSecondaryDetails ? (
-          <div className="flex-1 overflow-y-auto px-4 py-4">
-            <dl className="flex flex-col gap-3 text-sm">
-              {appointment.reason ? (
-                <div className="flex flex-col gap-0.5">
-                  <dt className="text-xs text-muted-foreground">Motivo</dt>
-                  <dd className="text-foreground">{appointment.reason}</dd>
-                </div>
-              ) : null}
+        <div className="flex-1 overflow-y-auto px-4 py-4">
+          <div className="flex flex-col gap-4">
+            <PatientCompactSummary patientId={appointment.patientId} />
 
-              {appointment.notes ? (
-                <div className="flex flex-col gap-0.5">
-                  <dt className="text-xs text-muted-foreground">Observações</dt>
-                  <dd className="text-foreground">{appointment.notes}</dd>
-                </div>
-              ) : null}
+            {hasSecondaryDetails ? (
+              <dl className="flex flex-col gap-3 text-sm">
+                {appointment.reason ? (
+                  <div className="flex flex-col gap-0.5">
+                    <dt className="text-xs text-muted-foreground">Motivo</dt>
+                    <dd className="text-foreground">{appointment.reason}</dd>
+                  </div>
+                ) : null}
 
-              {isCanceled && appointment.canceledReason ? (
-                <div className="flex flex-col gap-0.5">
-                  <dt className="text-xs text-muted-foreground">
-                    Motivo do cancelamento
-                  </dt>
-                  <dd className="text-foreground">
-                    {appointment.canceledReason}
-                  </dd>
-                </div>
-              ) : null}
-            </dl>
+                {appointment.notes ? (
+                  <div className="flex flex-col gap-0.5">
+                    <dt className="text-xs text-muted-foreground">Observações</dt>
+                    <dd className="text-foreground">{appointment.notes}</dd>
+                  </div>
+                ) : null}
+
+                {isCanceled && appointment.canceledReason ? (
+                  <div className="flex flex-col gap-0.5">
+                    <dt className="text-xs text-muted-foreground">
+                      Motivo do cancelamento
+                    </dt>
+                    <dd className="text-foreground">
+                      {appointment.canceledReason}
+                    </dd>
+                  </div>
+                ) : null}
+              </dl>
+            ) : null}
           </div>
-        ) : null}
+        </div>
       </div>
 
       <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>

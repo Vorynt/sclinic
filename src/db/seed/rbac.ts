@@ -18,17 +18,17 @@ const SYSTEM_ROLES = [
     key: "owner",
     name: "Proprietário",
     description:
-      "Proprietário do clínico — acesso completo incluindo faturamento e membros",
+      "Proprietário da clínica — acesso completo incluindo faturamento e membros",
   },
   {
     key: "admin",
     name: "Administrador",
-    description: "Administrador do clínico",
+    description: "Administrador da clínica",
   },
   {
     key: "manager",
-    name: "Gerente",
-    description: "Gerente operacional",
+    name: "Gestor",
+    description: "Gestor operacional",
   },
   {
     key: "receptionist",
@@ -37,12 +37,12 @@ const SYSTEM_ROLES = [
   },
   {
     key: "doctor",
-    name: "Médico",
-    description: "Profissional de saúde com acesso de escrita clínico",
+    name: "Médico(a)",
+    description: "Profissional de saúde com acesso de escrita clínica",
   },
   {
     key: "nurse",
-    name: "Enfermeiro",
+    name: "Enfermeiro(a)",
     description: "Equipe de enfermagem",
   },
   {
@@ -169,7 +169,17 @@ async function ensureSystemRoles() {
         isSystem: true,
         clinicId: null,
       });
+      continue;
     }
+
+    // Keep display name/description in Portuguese even if the row already exists.
+    await db
+      .update(roles)
+      .set({
+        name: role.name,
+        description: role.description,
+      })
+      .where(eq(roles.id, existing.id));
   }
 }
 

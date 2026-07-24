@@ -1,6 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRef } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 import type { z } from "zod";
@@ -14,6 +15,7 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
+import { cn } from "@/lib/utils";
 import { VitalSignsHistoryPanel } from "@/modules/medical-records/components/VitalSignsHistoryPanel";
 import {
   usePatientVitalSignsQuery,
@@ -27,6 +29,16 @@ import type {
 } from "@/modules/medical-records/types/vital-signs";
 import { calculateBmi } from "@/modules/medical-records/utils/bmi";
 import { formatVitalSignsSummary } from "@/modules/medical-records/utils/format-vital-signs";
+
+/** Hides native number input spinners (Chrome/Safari/Firefox). */
+const numericInputClassName =
+  "[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none";
+
+const bloodPressureSegmentClassName = cn(
+  "h-full min-w-0 flex-1 rounded-none border-0 bg-transparent shadow-none",
+  "focus-visible:border-0 focus-visible:ring-0 dark:bg-transparent",
+  numericInputClassName,
+);
 
 type VitalSignsPanelProps = {
   appointmentId: string;
@@ -50,6 +62,10 @@ function toFormDefaults(
     heightCm: vitals?.heightCm ?? "",
     spo2Percent: vitals?.spo2Percent ?? "",
   };
+}
+
+function digitsOnly(value: string, maxLength: number): string {
+  return value.replace(/\D/g, "").slice(0, maxLength);
 }
 
 export function VitalSignsPanel({ appointmentId }: VitalSignsPanelProps) {
@@ -109,6 +125,8 @@ function VitalSignsPanelContent({
   const hasVitals = data.vitals != null;
   const showEmptyReadonly = !editable && !hasVitals;
 
+  const diastolicInputRef = useRef<HTMLInputElement | null>(null);
+
   const {
     register,
     handleSubmit,
@@ -118,6 +136,17 @@ function VitalSignsPanelContent({
     resolver: zodResolver(upsertVitalSignsSchema),
     defaultValues: toFormDefaults(appointmentId, data.vitals),
   });
+
+  const {
+    ref: systolicRegisterRef,
+    onChange: onSystolicChange,
+    ...systolicRegister
+  } = register("systolicMmHg");
+  const {
+    ref: diastolicRegisterRef,
+    onChange: onDiastolicChange,
+    ...diastolicRegister
+  } = register("diastolicMmHg");
 
   const weightKg = useWatch({ control, name: "weightKg" });
   const heightCm = useWatch({ control, name: "heightCm" });
@@ -130,6 +159,9 @@ function VitalSignsPanelContent({
     onSuccess: () => toast.success("Sinais vitais salvos"),
     onError: (error) => toast.error(error.message),
   });
+
+  const bloodPressureInvalid =
+    Boolean(errors.systolicMmHg) || Boolean(errors.diastolicMmHg);
 
   return (
     <div className="flex flex-col gap-6">
@@ -166,33 +198,80 @@ function VitalSignsPanelContent({
             <input type="hidden" {...register("appointmentId")} />
 
             <FieldGroup className="grid gap-3 sm:grid-cols-2">
-              <Field data-invalid={Boolean(errors.systolicMmHg) || undefined}>
-                <FieldLabel>PA sistólica (mmHg)</FieldLabel>
-                <Input
-                  type="number"
-                  inputMode="numeric"
-                  aria-invalid={Boolean(errors.systolicMmHg) || undefined}
-                  {...register("systolicMmHg")}
+              <Field
+                className="sm:col-span-2"
+                data-invalid={bloodPressureInvalid || undefined}>
+                <FieldLabel htmlFor="vital-systolic">
+                  Pressão arterial
+                </FieldLabel>
+                <div
+                  className={cn(
+                    "flex h-8 w-full min-w-0 items-stretch overflow-hidden rounded-lg border border-input bg-transparent transition-colors",
+                    "focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50",
+                    "dark:bg-input/30",
+                    bloodPressureInvalid &&
+                      "border-destructive ring-3 ring-destructive/20 dark:border-destructive/50 dark:ring-destructive/40",
+                  )}>
+                  <Input
+                    id="vital-systolic"
+                    type="text"
+                    inputMode="numeric"
+                    autoComplete="off"
+                    maxLength={3}
+                    placeholder="Sistólica"
+                    aria-label="Pressão sistólica (mmHg)"
+                    aria-invalid={Boolean(errors.systolicMmHg) || undefined}
+                    className={bloodPressureSegmentClassName}
+                    {...systolicRegister}
+                    ref={systolicRegisterRef}
+                    onChange={(event) => {
+                      const value = digitsOnly(event.target.value, 3);
+                      event.target.value = value;
+                      void onSystolicChange(event);
+                      if (value.length === 3) {
+                        diastolicInputRef.current?.focus();
+                        diastolicInputRef.current?.select();
+                      }
+                    }}
+                  />
+                  <span
+                    aria-hidden
+                    className="flex shrink-0 items-center px-1 text-sm text-muted-foreground select-none">
+                    /
+                  </span>
+                  <Input
+                    id="vital-diastolic"
+                    type="text"
+                    inputMode="numeric"
+                    autoComplete="off"
+                    maxLength={3}
+                    placeholder="Diastólica"
+                    aria-label="Pressão diastólica (mmHg)"
+                    aria-invalid={Boolean(errors.diastolicMmHg) || undefined}
+                    className={bloodPressureSegmentClassName}
+                    {...diastolicRegister}
+                    ref={(element) => {
+                      diastolicRegisterRef(element);
+                      diastolicInputRef.current = element;
+                    }}
+                    onChange={(event) => {
+                      const value = digitsOnly(event.target.value, 3);
+                      event.target.value = value;
+                      void onDiastolicChange(event);
+                    }}
+                  />
+                </div>
+                <FieldError
+                  errors={[errors.systolicMmHg, errors.diastolicMmHg]}
                 />
-                <FieldError errors={[errors.systolicMmHg]} />
-              </Field>
-
-              <Field data-invalid={Boolean(errors.diastolicMmHg) || undefined}>
-                <FieldLabel>PA diastólica (mmHg)</FieldLabel>
-                <Input
-                  type="number"
-                  inputMode="numeric"
-                  aria-invalid={Boolean(errors.diastolicMmHg) || undefined}
-                  {...register("diastolicMmHg")}
-                />
-                <FieldError errors={[errors.diastolicMmHg]} />
               </Field>
 
               <Field data-invalid={Boolean(errors.heartRateBpm) || undefined}>
-                <FieldLabel>FC (bpm)</FieldLabel>
+                <FieldLabel>Frequência cardíaca (bpm)</FieldLabel>
                 <Input
                   type="number"
                   inputMode="numeric"
+                  className={numericInputClassName}
                   aria-invalid={Boolean(errors.heartRateBpm) || undefined}
                   {...register("heartRateBpm")}
                 />
@@ -201,10 +280,11 @@ function VitalSignsPanelContent({
 
               <Field
                 data-invalid={Boolean(errors.respiratoryRate) || undefined}>
-                <FieldLabel>FR (rpm)</FieldLabel>
+                <FieldLabel>Frequência respiratória (rpm)</FieldLabel>
                 <Input
                   type="number"
                   inputMode="numeric"
+                  className={numericInputClassName}
                   aria-invalid={Boolean(errors.respiratoryRate) || undefined}
                   {...register("respiratoryRate")}
                 />
@@ -217,6 +297,7 @@ function VitalSignsPanelContent({
                   type="number"
                   inputMode="decimal"
                   step="0.1"
+                  className={numericInputClassName}
                   aria-invalid={Boolean(errors.temperatureC) || undefined}
                   {...register("temperatureC")}
                 />
@@ -228,6 +309,7 @@ function VitalSignsPanelContent({
                 <Input
                   type="number"
                   inputMode="numeric"
+                  className={numericInputClassName}
                   aria-invalid={Boolean(errors.spo2Percent) || undefined}
                   {...register("spo2Percent")}
                 />
@@ -240,6 +322,7 @@ function VitalSignsPanelContent({
                   type="number"
                   inputMode="decimal"
                   step="0.1"
+                  className={numericInputClassName}
                   aria-invalid={Boolean(errors.weightKg) || undefined}
                   {...register("weightKg")}
                 />
@@ -252,6 +335,7 @@ function VitalSignsPanelContent({
                   type="number"
                   inputMode="decimal"
                   step="0.1"
+                  className={numericInputClassName}
                   aria-invalid={Boolean(errors.heightCm) || undefined}
                   {...register("heightCm")}
                 />

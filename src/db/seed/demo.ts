@@ -29,10 +29,13 @@ import { db } from "@/db"
 import {
   account,
   appointments,
+  auditLogs,
   clinicBusinessHours,
   clinicMemberships,
   clinics,
+  clinicalNotes,
   invitations,
+  patientClinicalAlerts,
   patients,
   permissions,
   plans,
@@ -44,9 +47,15 @@ import {
   subscriptions,
   user,
   verification,
+  vitalSigns,
 } from "@/db/schema"
+import { AUDIT_ACTIONS, AUDIT_ENTITY_TYPES } from "@/modules/audit/constants/audit"
 import { buildOnboardingHoursDraft } from "@/modules/clinics/constants/default-hours"
 import { toDbTime } from "@/modules/clinics/mappers/clinic-hours.mapper"
+import {
+  createInviteToken,
+  hashInviteToken,
+} from "@/modules/users/utils/invite-token"
 
 const DEMO_PASSWORD = "senha123" as const
 
@@ -71,6 +80,8 @@ type DemoTeamMemberSeed = {
   roleKey: DemoTeamRoleKey
   /** Membership status — default active. */
   status?: "active" | "suspended"
+  /** When set, links this user to a professional profile by full name. */
+  professionalFullName?: string
 }
 
 /** Staff users (besides owner). Fits Profissional plan maxUsers = 10. */
@@ -104,18 +115,21 @@ const DEMO_TEAM_MEMBERS: readonly DemoTeamMemberSeed[] = [
     email: "ana.nogueira@sclinic.local",
     phone: "11990010005",
     roleKey: "doctor",
+    professionalFullName: "Dra. Ana Beatriz Nogueira",
   },
   {
     name: "Dr. Carlos Eduardo Mendes",
     email: "carlos.mendes@sclinic.local",
     phone: "11990010006",
     roleKey: "doctor",
+    professionalFullName: "Dr. Carlos Eduardo Mendes",
   },
   {
     name: "Enf. Patricia Souza Almeida",
     email: "patricia.almeida@sclinic.local",
     phone: "11990010007",
     roleKey: "nurse",
+    professionalFullName: "Enf. Patricia Souza Almeida",
   },
   {
     name: "Helena Barbosa",
@@ -133,6 +147,10 @@ const DEMO_TEAM_MEMBERS: readonly DemoTeamMemberSeed[] = [
 ] as const
 
 const RLS_TABLES = [
+  "audit_logs",
+  "vital_signs",
+  "patient_clinical_alerts",
+  "clinical_notes",
   "appointments",
   "patients",
   "professional_clinics",
@@ -143,41 +161,43 @@ const RLS_TABLES = [
   "clinics",
 ] as const
 
+/** Role `key` stays in English; `name` is Portuguese for UI/DB display. */
 const SYSTEM_ROLES = [
   {
     key: "owner",
-    name: "Owner",
-    description: "Clinic owner — full access including billing and members",
+    name: "Proprietário",
+    description:
+      "Proprietário da clínica — acesso completo incluindo faturamento e membros",
   },
   {
     key: "admin",
-    name: "Admin",
-    description: "Clinic administrator",
+    name: "Administrador",
+    description: "Administrador da clínica",
   },
   {
     key: "manager",
-    name: "Manager",
-    description: "Operational manager",
+    name: "Gestor",
+    description: "Gestor operacional",
   },
   {
     key: "receptionist",
-    name: "Receptionist",
-    description: "Front desk — patients and appointments",
+    name: "Recepcionista",
+    description: "Recepcionista — pacientes e agendamentos",
   },
   {
     key: "doctor",
-    name: "Doctor",
-    description: "Health professional with clinical write access",
+    name: "Médico(a)",
+    description: "Profissional de saúde com acesso de escrita clínica",
   },
   {
     key: "nurse",
-    name: "Nurse",
-    description: "Nursing staff",
+    name: "Enfermeiro(a)",
+    description: "Equipe de enfermagem",
   },
   {
     key: "financial",
-    name: "Financial",
-    description: "Billing and financial views",
+    name: "Financeiro",
+    description: "Faturamento e visualização financeira",
   },
 ] as const
 
@@ -222,6 +242,11 @@ const PERMISSIONS = [
     name: "Write medical records",
     module: "medical-records",
   },
+  {
+    key: "audit.read",
+    name: "Read clinic audit logs",
+    module: "audit",
+  },
 ] as const
 
 const ROLE_PERMISSION_MATRIX: Record<string, readonly string[]> = {
@@ -239,6 +264,7 @@ const ROLE_PERMISSION_MATRIX: Record<string, readonly string[]> = {
     "members.invite",
     "records.read",
     "records.write",
+    "audit.read",
   ],
   manager: [
     "patients.read",
@@ -420,6 +446,21 @@ const FIRST_NAMES = [
   "Monica",
   "Sergio",
   "Luciana",
+  "Renata",
+  "Mauricio",
+  "Claudia",
+  "Otavio",
+  "Helena",
+  "Igor",
+  "Bianca",
+  "Caio",
+  "Denise",
+  "Everton",
+  "Flavia",
+  "Gilberto",
+  "Heloisa",
+  "Jonas",
+  "Jessica",
 ]
 
 const LAST_NAMES = [
@@ -455,6 +496,8 @@ const LAST_NAMES = [
   "Pinto",
 ]
 
+const PATIENT_COUNT = 90
+
 const REASONS = [
   "Consulta de rotina",
   "Retorno de exames",
@@ -466,6 +509,10 @@ const REASONS = [
   "Renovação de receita",
   "Dor articular",
   "Orientação nutricional",
+  "Controle de pressão arterial",
+  "Avaliação dermatológica",
+  "Acompanhamento pediátrico",
+  "Queixa gastrointestinal",
 ]
 
 const APPOINTMENT_TYPES = [
@@ -490,6 +537,80 @@ const FUTURE_STATUSES = [
   "confirmed",
   "confirmed",
   "checked_in",
+] as const
+
+const CLINICAL_NOTE_TEXTS = [
+  "Paciente em bom estado geral. Negou febre, tosse ou dispneia. Exame físico sem alterações relevantes. Conduta: manter acompanhamento e retornar em 30 dias.",
+  "Queixa de cefaleia há 5 dias, sem sinais de alarme. Orientado hidratação, analgesia e observação. Solicitados exames laboratoriais de rotina.",
+  "Retorno com exames. Resultados dentro da normalidade. Ajuste de posologia da medicação em uso. Paciente compreendeu as orientações.",
+  "Avaliação cardiológica: PA controlada, FC regular. ECG sem alterações agudas. Manter anti-hipertensivo e dieta hipossódica.",
+  "Paciente refere melhora parcial da dor articular. Prescrito anti-inflamatório por 5 dias e fisioterapia. Reavaliar em duas semanas.",
+  "Consulta pediátrica de rotina. Crescimento e desenvolvimento adequados para a idade. Vacinação em dia. Orientações alimentares reforçadas.",
+  "Dermatite em região de cotovelo com melhora após corticoide tópico. Manter hidratação cutânea. Alta do episódio atual.",
+  "Renovação de receita de uso contínuo. Sem efeitos adversos relatados. Exames recentes estáveis. Próximo retorno em 90 dias.",
+]
+
+const CLINICAL_ALERT_SEEDS = [
+  {
+    kind: "allergy" as const,
+    label: "Alergia a penicilina",
+    severity: "high" as const,
+    notes: "Histórico de urticária e edema de glote. Evitar betalactâmicos.",
+  },
+  {
+    kind: "allergy" as const,
+    label: "Alergia a dipirona",
+    severity: "medium" as const,
+    notes: "Reação cutânea leve em uso prévio.",
+  },
+  {
+    kind: "allergy" as const,
+    label: "Alergia a frutos do mar",
+    severity: "high" as const,
+    notes: null,
+  },
+  {
+    kind: "restriction" as const,
+    label: "Restrição a contraste iodado",
+    severity: "high" as const,
+    notes: "Reação prévia em exame de imagem. Avaliar pré-medicação.",
+  },
+  {
+    kind: "restriction" as const,
+    label: "Jejum prolongado contraindicado",
+    severity: "medium" as const,
+    notes: "Paciente diabético — atenção em preparos de exame.",
+  },
+  {
+    kind: "attention" as const,
+    label: "Risco de queda",
+    severity: "medium" as const,
+    notes: "Histórico de tontura ortostática.",
+  },
+  {
+    kind: "attention" as const,
+    label: "Gestante",
+    severity: "high" as const,
+    notes: "Confirmar idade gestacional antes de prescrições e exames.",
+  },
+  {
+    kind: "attention" as const,
+    label: "Uso contínuo de anticoagulante",
+    severity: "high" as const,
+    notes: "Warfarin — monitorar INR em procedimentos invasivos.",
+  },
+  {
+    kind: "other" as const,
+    label: "Preferência por atendimento matutino",
+    severity: "low" as const,
+    notes: "Disponibilidade reduzida após as 14h.",
+  },
+  {
+    kind: "other" as const,
+    label: "Necessita acompanhante",
+    severity: "low" as const,
+    notes: "Déficit visual — orientar equipe de recepção.",
+  },
 ] as const
 
 function cpfCheckDigit(base: string, factor: number): number {
@@ -526,6 +647,25 @@ function atLocalTime(date: Date, hour: number, minute: number): Date {
   return next
 }
 
+function tiptapDoc(plainText: string) {
+  return {
+    type: "doc",
+    content: [
+      {
+        type: "paragraph",
+        content: [{ type: "text", text: plainText }],
+      },
+    ],
+  }
+}
+
+function slugifyEmailPart(value: string): string {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+}
+
 async function disableRls() {
   for (const table of RLS_TABLES) {
     await db.execute(
@@ -548,6 +688,10 @@ async function enableRls() {
 async function wipeAllData() {
   await db.execute(sql`
     TRUNCATE TABLE
+      audit_logs,
+      vital_signs,
+      patient_clinical_alerts,
+      clinical_notes,
       appointments,
       patients,
       professional_clinics,
@@ -666,7 +810,14 @@ async function seedTeamMembers(params: {
   passwordHash: string
 }) {
   const { clinicId, rolesByKey, passwordHash } = params
-  const seeded: { email: string; roleKey: string; status: string }[] = []
+  const seeded: {
+    userId: string
+    email: string
+    name: string
+    roleKey: string
+    status: string
+    professionalFullName?: string
+  }[] = []
 
   for (const member of DEMO_TEAM_MEMBERS) {
     const roleId = rolesByKey.get(member.roleKey)
@@ -692,9 +843,12 @@ async function seedTeamMembers(params: {
     })
 
     seeded.push({
+      userId,
       email: member.email,
+      name: member.name,
       roleKey: member.roleKey,
       status,
+      professionalFullName: member.professionalFullName,
     })
   }
 
@@ -785,7 +939,12 @@ async function seedMembership(
   })
 }
 
-async function seedProfessionals(clinicId: string) {
+async function seedProfessionals(params: {
+  clinicId: string
+  userIdByProfessionalName: Map<string, string>
+}) {
+  const { clinicId, userIdByProfessionalName } = params
+
   const inserted = await db
     .insert(professionals)
     .values(
@@ -797,6 +956,7 @@ async function seedProfessionals(clinicId: string) {
         councilState: p.councilState,
         status: "active" as const,
         biography: `Atendimento em ${p.specialty.toLowerCase()} na Clínica Horizonte Saúde.`,
+        userId: userIdByProfessionalName.get(p.fullName) ?? null,
       })),
     )
     .returning()
@@ -805,7 +965,14 @@ async function seedProfessionals(clinicId: string) {
     inserted.map((professional, index) => ({
       professionalId: professional.id,
       clinicId,
-      affiliationType: index === 0 ? ("coordinator" as const) : ("attending" as const),
+      affiliationType:
+        index === 0
+          ? ("coordinator" as const)
+          : index === inserted.length - 1
+            ? ("locum" as const)
+            : index === 3
+              ? ("resident" as const)
+              : ("attending" as const),
       status: "active" as const,
     })),
   )
@@ -814,31 +981,59 @@ async function seedProfessionals(clinicId: string) {
 }
 
 async function seedPatients(clinicId: string, ownerId: string) {
-  const rows = FIRST_NAMES.map((firstName, index) => {
+  const rows = Array.from({ length: PATIENT_COUNT }, (_, index) => {
+    const firstName = FIRST_NAMES[index % FIRST_NAMES.length]!
     const lastName = LAST_NAMES[index % LAST_NAMES.length]!
+    const secondLast =
+      LAST_NAMES[(index * 3 + 7) % LAST_NAMES.length]!
     const gender =
-      index % 3 === 0 ? ("female" as const) : index % 3 === 1 ? ("male" as const) : ("undisclosed" as const)
-    const birthYear = 1955 + (index % 50)
+      index % 4 === 0
+        ? ("female" as const)
+        : index % 4 === 1
+          ? ("male" as const)
+          : index % 4 === 2
+            ? ("other" as const)
+            : ("undisclosed" as const)
+    const birthYear = 1948 + (index % 55)
     const birthMonth = String((index % 12) + 1).padStart(2, "0")
     const birthDay = String((index % 28) + 1).padStart(2, "0")
+    const status =
+      index % 23 === 0
+        ? ("inactive" as const)
+        : index % 31 === 0
+          ? ("archived" as const)
+          : ("active" as const)
+
+    const fullName = `${firstName} ${lastName} ${secondLast}`
+    const emailLocal = slugifyEmailPart(`${firstName}.${lastName}${index}`)
 
     return {
       clinicId,
-      fullName: `${firstName} ${lastName}`,
+      fullName,
+      socialName:
+        index % 11 === 0 ? `${firstName.split(" ")[0]} ${lastName}` : null,
       document: cpfFromIndex(index + 1),
-      email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}${index}@email.local`
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, ""),
+      email: `${emailLocal}@email.local`,
       phone: phoneFromIndex(index),
       birthDate: `${birthYear}-${birthMonth}-${birthDay}`,
       gender,
-      status: index % 17 === 0 ? ("inactive" as const) : ("active" as const),
+      status,
+      addressStreet: index % 2 === 0 ? "Rua das Flores" : "Av. Brasil",
+      addressNumber: String(100 + index),
+      addressComplement: index % 5 === 0 ? `Apto ${index + 10}` : null,
       addressCity: "São Paulo",
       addressState: "SP",
-      addressNeighborhood: index % 2 === 0 ? "Pinheiros" : "Moema",
+      addressZip: `0131${String(index % 10)}-1${String(index % 10).padStart(2, "0")}`,
+      addressNeighborhood:
+        index % 3 === 0 ? "Pinheiros" : index % 3 === 1 ? "Moema" : "Brooklin",
       emergencyContactName: `Contato ${firstName}`,
       emergencyContactPhone: phoneFromIndex(index + 200),
-      notes: index % 5 === 0 ? "Paciente preferencial — retorno frequente." : null,
+      notes:
+        index % 5 === 0
+          ? "Paciente preferencial — retorno frequente."
+          : index % 9 === 0
+            ? "Prefere contato por WhatsApp."
+            : null,
       createdBy: ownerId,
       updatedBy: ownerId,
     }
@@ -863,7 +1058,7 @@ async function seedAppointments(params: {
     minute: number
   }[] = []
 
-  for (let dayOffset = -21; dayOffset <= 21; dayOffset += 1) {
+  for (let dayOffset = -35; dayOffset <= 28; dayOffset += 1) {
     const weekday = addDays(today, dayOffset).getDay()
     if (weekday === 0) continue
 
@@ -874,17 +1069,21 @@ async function seedAppointments(params: {
 
     for (const hour of hours) {
       slots.push({ dayOffset, hour, minute: 0 })
-      if (weekday !== 6 && (hour === 9 || hour === 15)) {
+      if (weekday !== 6 && (hour === 9 || hour === 15 || hour === 11)) {
         slots.push({ dayOffset, hour, minute: 30 })
       }
     }
   }
 
-  // ~90 appointments — dense enough for calendar/list demos
-  const selected = slots.filter((_, index) => index % 3 !== 0).slice(0, 90)
+  // ~180 appointments — dense calendar + list demos
+  const selected = slots.filter((_, index) => index % 2 !== 0).slice(0, 180)
 
   const rows = selected.map((slot, index) => {
-    const startsAt = atLocalTime(addDays(today, slot.dayOffset), slot.hour, slot.minute)
+    const startsAt = atLocalTime(
+      addDays(today, slot.dayOffset),
+      slot.hour,
+      slot.minute,
+    )
     const endsAt = new Date(startsAt.getTime() + 30 * 60 * 1000)
     const isPast = startsAt.getTime() < Date.now()
     const status = isPast
@@ -900,15 +1099,422 @@ async function seedAppointments(params: {
       type: APPOINTMENT_TYPES[index % APPOINTMENT_TYPES.length]!,
       status,
       reason: REASONS[index % REASONS.length]!,
-      notes: index % 7 === 0 ? "Observação administrativa do agendamento." : null,
+      notes:
+        index % 7 === 0 ? "Observação administrativa do agendamento." : null,
       canceledAt: status === "canceled" ? startsAt : null,
-      canceledReason: status === "canceled" ? "Paciente solicitou remarcação." : null,
+      canceledReason:
+        status === "canceled" ? "Paciente solicitou remarcação." : null,
       createdBy: ownerId,
       updatedBy: ownerId,
     }
   })
 
-  await db.insert(appointments).values(rows)
+  return db.insert(appointments).values(rows).returning()
+}
+
+async function seedClinicalNotesAndVitals(params: {
+  clinicId: string
+  ownerId: string
+  appointments: Array<{
+    id: string
+    patientId: string
+    professionalId: string | null
+    status: string
+  }>
+}) {
+  const { clinicId, ownerId, appointments: appointmentRows } = params
+  const completed = appointmentRows.filter((row) => row.status === "completed")
+
+  const noteRows = completed.map((appointment, index) => {
+    const plainText =
+      CLINICAL_NOTE_TEXTS[index % CLINICAL_NOTE_TEXTS.length]!
+    return {
+      clinicId,
+      patientId: appointment.patientId,
+      appointmentId: appointment.id,
+      professionalId: appointment.professionalId,
+      content: tiptapDoc(plainText),
+      plainText,
+      createdBy: ownerId,
+      updatedBy: ownerId,
+    }
+  })
+
+  const vitalRows = completed.map((appointment, index) => {
+    const systolic = 110 + (index % 35)
+    const diastolic = 70 + (index % 20)
+    return {
+      clinicId,
+      patientId: appointment.patientId,
+      appointmentId: appointment.id,
+      professionalId: appointment.professionalId,
+      systolicMmHg: systolic,
+      diastolicMmHg: diastolic,
+      heartRateBpm: 62 + (index % 40),
+      respiratoryRate: 12 + (index % 8),
+      temperatureC: Number((36.1 + (index % 15) * 0.1).toFixed(1)),
+      weightKg: Number((55 + (index % 40) + (index % 10) * 0.3).toFixed(1)),
+      heightCm: 155 + (index % 30),
+      spo2Percent: 95 + (index % 5),
+      createdBy: ownerId,
+      updatedBy: ownerId,
+    }
+  })
+
+  if (noteRows.length > 0) {
+    await db.insert(clinicalNotes).values(noteRows)
+  }
+  if (vitalRows.length > 0) {
+    await db.insert(vitalSigns).values(vitalRows)
+  }
+
+  return { notes: noteRows.length, vitals: vitalRows.length }
+}
+
+async function seedClinicalAlerts(params: {
+  clinicId: string
+  ownerId: string
+  patientIds: string[]
+}) {
+  const { clinicId, ownerId, patientIds } = params
+  const rows: {
+    clinicId: string
+    patientId: string
+    kind: (typeof CLINICAL_ALERT_SEEDS)[number]["kind"]
+    label: string
+    severity: (typeof CLINICAL_ALERT_SEEDS)[number]["severity"]
+    notes: string | null
+    createdBy: string
+    updatedBy: string
+  }[] = []
+
+  // ~25 patients with 1–3 alerts each
+  const patientsWithAlerts = patientIds.filter((_, index) => index % 3 === 0).slice(0, 25)
+
+  for (const [patientIndex, patientId] of patientsWithAlerts.entries()) {
+    const alertCount = 1 + (patientIndex % 3)
+    for (let offset = 0; offset < alertCount; offset += 1) {
+      const seed =
+        CLINICAL_ALERT_SEEDS[
+          (patientIndex + offset) % CLINICAL_ALERT_SEEDS.length
+        ]!
+      rows.push({
+        clinicId,
+        patientId,
+        kind: seed.kind,
+        label: seed.label,
+        severity: seed.severity,
+        notes: seed.notes,
+        createdBy: ownerId,
+        updatedBy: ownerId,
+      })
+    }
+  }
+
+  if (rows.length > 0) {
+    await db.insert(patientClinicalAlerts).values(rows)
+  }
+
+  return rows.length
+}
+
+async function seedInvitations(params: {
+  clinicId: string
+  ownerId: string
+  rolesByKey: Map<string, string>
+  professionals: Array<{ id: string; fullName: string; userId: string | null }>
+}) {
+  const { clinicId, ownerId, rolesByKey, professionals: professionalRows } =
+    params
+
+  const receptionistRoleId = rolesByKey.get("receptionist")
+  const doctorRoleId = rolesByKey.get("doctor")
+  const nurseRoleId = rolesByKey.get("nurse")
+  if (!receptionistRoleId || !doctorRoleId || !nurseRoleId) {
+    throw new Error("Required roles missing for invitation seed")
+  }
+
+  const unlinkedProfessional = professionalRows.find(
+    (professional) =>
+      professional.userId === null &&
+      professional.fullName.includes("Fernanda"),
+  )
+
+  const now = new Date()
+  const rows = [
+    {
+      clinicId,
+      email: "nova.recepcao@sclinic.local",
+      roleId: receptionistRoleId,
+      invitedBy: ownerId,
+      professionalId: null,
+      tokenHash: hashInviteToken(createInviteToken()),
+      expiresAt: addDays(now, 7),
+      status: "pending" as const,
+      acceptedAt: null,
+    },
+    {
+      clinicId,
+      email: "fernanda.lima@sclinic.local",
+      roleId: doctorRoleId,
+      invitedBy: ownerId,
+      professionalId: unlinkedProfessional?.id ?? null,
+      tokenHash: hashInviteToken(createInviteToken()),
+      expiresAt: addDays(now, 7),
+      status: "pending" as const,
+      acceptedAt: null,
+    },
+    {
+      clinicId,
+      email: "enfermeira.convidada@sclinic.local",
+      roleId: nurseRoleId,
+      invitedBy: ownerId,
+      professionalId: null,
+      tokenHash: hashInviteToken(createInviteToken()),
+      expiresAt: addDays(now, -3),
+      status: "expired" as const,
+      acceptedAt: null,
+    },
+    {
+      clinicId,
+      email: "financeiro.temp@sclinic.local",
+      roleId: rolesByKey.get("financial")!,
+      invitedBy: ownerId,
+      professionalId: null,
+      tokenHash: hashInviteToken(createInviteToken()),
+      expiresAt: addDays(now, 5),
+      status: "revoked" as const,
+      acceptedAt: null,
+    },
+  ]
+
+  await db.insert(invitations).values(rows)
+  return rows.length
+}
+
+async function seedAuditLogs(params: {
+  clinicId: string
+  owner: { id: string; name: string; email: string }
+  team: Array<{ userId: string; name: string; email: string }>
+  patientIds: string[]
+  appointmentIds: string[]
+}) {
+  const { clinicId, owner, team, patientIds, appointmentIds } = params
+  const actors = [
+    owner,
+    ...team.map((member) => ({
+      id: member.userId,
+      name: member.name,
+      email: member.email,
+    })),
+  ]
+
+  const actionSpecs: Array<{
+    action: string
+    entityType: string
+    status: "success" | "error"
+    changes: Record<string, unknown> | null
+    errorMessage?: string
+    errorCode?: string
+  }> = [
+    {
+      action: AUDIT_ACTIONS.CLINIC_CREATE,
+      entityType: AUDIT_ENTITY_TYPES.CLINIC,
+      status: "success",
+      changes: {
+        after: { name: "Clínica Horizonte Saúde" },
+      },
+    },
+    {
+      action: AUDIT_ACTIONS.CLINIC_HOURS_UPSERT,
+      entityType: AUDIT_ENTITY_TYPES.CLINIC_HOURS,
+      status: "success",
+      changes: {
+        before: { monday: "closed" },
+        after: { monday: "08:00-18:00" },
+      },
+    },
+    {
+      action: AUDIT_ACTIONS.CLINIC_UPDATE,
+      entityType: AUDIT_ENTITY_TYPES.CLINIC,
+      status: "success",
+      changes: {
+        before: { phone: "1133330000" },
+        after: { phone: "1133334444" },
+      },
+    },
+    {
+      action: AUDIT_ACTIONS.INVITATION_CREATE,
+      entityType: AUDIT_ENTITY_TYPES.INVITATION,
+      status: "success",
+      changes: { after: { email: "nova.recepcao@sclinic.local" } },
+    },
+    {
+      action: AUDIT_ACTIONS.INVITATION_REVOKE,
+      entityType: AUDIT_ENTITY_TYPES.INVITATION,
+      status: "success",
+      changes: { after: { status: "revoked" } },
+    },
+    {
+      action: AUDIT_ACTIONS.MEMBER_STATUS_UPDATE,
+      entityType: AUDIT_ENTITY_TYPES.MEMBER,
+      status: "success",
+      changes: {
+        before: { status: "active" },
+        after: { status: "suspended" },
+      },
+    },
+    {
+      action: AUDIT_ACTIONS.PATIENT_CREATE,
+      entityType: AUDIT_ENTITY_TYPES.PATIENT,
+      status: "error",
+      changes: null,
+      errorMessage: "Documento já cadastrado nesta clínica.",
+      errorCode: "PATIENT_DOCUMENT_CONFLICT",
+    },
+  ]
+
+  const rows = Array.from({ length: 60 }, (_, index) => {
+    const actor = actors[index % actors.length]!
+    const createdAt = addDays(new Date(), -(index % 40))
+    createdAt.setHours(8 + (index % 10), (index * 7) % 60, 0, 0)
+
+    if (index < actionSpecs.length) {
+      const spec = actionSpecs[index]!
+      return {
+        clinicId,
+        actorUserId: actor.id,
+        actorName: actor.name,
+        actorEmail: actor.email,
+        action: spec.action,
+        status: spec.status,
+        entityType: spec.entityType,
+        entityId: clinicId,
+        changes: spec.changes,
+        errorMessage: spec.errorMessage ?? null,
+        errorCode: spec.errorCode ?? null,
+        createdAt,
+      }
+    }
+
+    const patientId = patientIds[index % patientIds.length]!
+    const appointmentId = appointmentIds[index % appointmentIds.length]!
+    const cycle = index % 6
+
+    if (cycle === 0) {
+      return {
+        clinicId,
+        actorUserId: actor.id,
+        actorName: actor.name,
+        actorEmail: actor.email,
+        action: AUDIT_ACTIONS.PATIENT_CREATE,
+        status: "success" as const,
+        entityType: AUDIT_ENTITY_TYPES.PATIENT,
+        entityId: patientId,
+        changes: { after: { id: patientId } },
+        errorMessage: null,
+        errorCode: null,
+        createdAt,
+      }
+    }
+
+    if (cycle === 1) {
+      return {
+        clinicId,
+        actorUserId: actor.id,
+        actorName: actor.name,
+        actorEmail: actor.email,
+        action: AUDIT_ACTIONS.PATIENT_UPDATE,
+        status: "success" as const,
+        entityType: AUDIT_ENTITY_TYPES.PATIENT,
+        entityId: patientId,
+        changes: {
+          before: { phone: phoneFromIndex(index) },
+          after: { phone: phoneFromIndex(index + 1) },
+        },
+        errorMessage: null,
+        errorCode: null,
+        createdAt,
+      }
+    }
+
+    if (cycle === 2) {
+      return {
+        clinicId,
+        actorUserId: actor.id,
+        actorName: actor.name,
+        actorEmail: actor.email,
+        action: AUDIT_ACTIONS.APPOINTMENT_CREATE,
+        status: "success" as const,
+        entityType: AUDIT_ENTITY_TYPES.APPOINTMENT,
+        entityId: appointmentId,
+        changes: { after: { id: appointmentId, status: "scheduled" } },
+        errorMessage: null,
+        errorCode: null,
+        createdAt,
+      }
+    }
+
+    if (cycle === 3) {
+      return {
+        clinicId,
+        actorUserId: actor.id,
+        actorName: actor.name,
+        actorEmail: actor.email,
+        action: AUDIT_ACTIONS.APPOINTMENT_STATUS_UPDATE,
+        status: "success" as const,
+        entityType: AUDIT_ENTITY_TYPES.APPOINTMENT,
+        entityId: appointmentId,
+        changes: {
+          before: { status: "scheduled" },
+          after: { status: "confirmed" },
+        },
+        errorMessage: null,
+        errorCode: null,
+        createdAt,
+      }
+    }
+
+    if (cycle === 4) {
+      return {
+        clinicId,
+        actorUserId: actor.id,
+        actorName: actor.name,
+        actorEmail: actor.email,
+        action: AUDIT_ACTIONS.APPOINTMENT_RESCHEDULE,
+        status: "success" as const,
+        entityType: AUDIT_ENTITY_TYPES.APPOINTMENT,
+        entityId: appointmentId,
+        changes: {
+          before: { startsAt: createdAt.toISOString() },
+          after: { startsAt: addDays(createdAt, 2).toISOString() },
+        },
+        errorMessage: null,
+        errorCode: null,
+        createdAt,
+      }
+    }
+
+    return {
+      clinicId,
+      actorUserId: actor.id,
+      actorName: actor.name,
+      actorEmail: actor.email,
+      action: AUDIT_ACTIONS.APPOINTMENT_CANCEL,
+      status: "success" as const,
+      entityType: AUDIT_ENTITY_TYPES.APPOINTMENT,
+      entityId: appointmentId,
+      changes: {
+        before: { status: "scheduled" },
+        after: { status: "canceled", canceledReason: "Remarcação" },
+      },
+      errorMessage: null,
+      errorCode: null,
+      createdAt,
+    }
+  })
+
+  await db.insert(auditLogs).values(rows)
   return rows.length
 }
 
@@ -943,29 +1549,82 @@ async function seed() {
       passwordHash,
     })
 
+    const userIdByProfessionalName = new Map(
+      teamMembers
+        .filter((member) => member.professionalFullName)
+        .map((member) => [member.professionalFullName!, member.userId]),
+    )
+
     console.log("Seeding professionals…")
-    const professionalRows = await seedProfessionals(clinicId)
+    const professionalRows = await seedProfessionals({
+      clinicId,
+      userIdByProfessionalName,
+    })
 
     console.log("Seeding patients…")
     const patientRows = await seedPatients(clinicId, ownerId)
 
     console.log("Seeding appointments…")
-    const appointmentCount = await seedAppointments({
+    const appointmentRows = await seedAppointments({
       clinicId,
       ownerId,
       patientIds: patientRows.map((p) => p.id),
       professionalIds: professionalRows.map((p) => p.id),
     })
 
+    console.log("Seeding clinical notes + vital signs…")
+    const clinicalCounts = await seedClinicalNotesAndVitals({
+      clinicId,
+      ownerId,
+      appointments: appointmentRows,
+    })
+
+    console.log("Seeding clinical alerts…")
+    const alertCount = await seedClinicalAlerts({
+      clinicId,
+      ownerId,
+      patientIds: patientRows.map((p) => p.id),
+    })
+
+    console.log("Seeding invitations…")
+    const invitationCount = await seedInvitations({
+      clinicId,
+      ownerId,
+      rolesByKey,
+      professionals: professionalRows,
+    })
+
+    console.log("Seeding audit logs…")
+    const auditCount = await seedAuditLogs({
+      clinicId,
+      owner: {
+        id: ownerId,
+        name: DEMO_OWNER.name,
+        email: DEMO_OWNER.email,
+      },
+      team: teamMembers,
+      patientIds: patientRows.map((p) => p.id),
+      appointmentIds: appointmentRows.map((a) => a.id),
+    })
+
     console.log("\nDemo seed completed.")
     console.log(`  Clinic: Clínica Horizonte Saúde (${clinicId})`)
     console.log(`  Team members: ${teamMembers.length + 1} (incl. owner)`)
     for (const member of teamMembers) {
-      console.log(`    - ${member.email} (${member.roleKey}, ${member.status})`)
+      console.log(
+        `    - ${member.email} (${member.roleKey}, ${member.status})`,
+      )
     }
-    console.log(`  Professionals: ${professionalRows.length}`)
+    console.log(
+      `  Professionals: ${professionalRows.length} (3 linked to login users)`,
+    )
     console.log(`  Patients: ${patientRows.length}`)
-    console.log(`  Appointments: ${appointmentCount}`)
+    console.log(`  Appointments: ${appointmentRows.length}`)
+    console.log(`  Clinical notes: ${clinicalCounts.notes}`)
+    console.log(`  Vital signs: ${clinicalCounts.vitals}`)
+    console.log(`  Clinical alerts: ${alertCount}`)
+    console.log(`  Invitations: ${invitationCount}`)
+    console.log(`  Audit logs: ${auditCount}`)
     console.log(`  Password (all): ${DEMO_PASSWORD}`)
     console.log(`  Owner login: ${DEMO_OWNER.email} / ${DEMO_PASSWORD}`)
   } finally {
