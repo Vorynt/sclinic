@@ -13,6 +13,7 @@ import {
 } from "@/modules/appointments/constants/appointments"
 import { useAppointmentQuery } from "@/modules/appointments/hooks/use-appointment"
 import { PatientQuickCard } from "@/modules/patients/components/PatientQuickCard"
+import { PatientClinicalAlertsPanel } from "@/modules/medical-records/components/PatientClinicalAlertsPanel"
 
 type AttendanceOverviewPanelProps = {
   appointmentId: string
@@ -107,6 +108,8 @@ export function AttendanceOverviewPanel({
       ) : null}
 
       <PatientQuickCard patientId={appointment.patientId} />
+
+      <PatientClinicalAlertsPanel patientId={appointment.patientId} />
 
       <PatientAppointmentHistory
         patientId={appointment.patientId}

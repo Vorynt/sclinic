@@ -98,3 +98,17 @@ export const appointmentTypeEnum = pgEnum("appointment_type", [
 ])
 
 export const auditStatusEnum = pgEnum("audit_status", ["success", "error"])
+
+/** Clinical alert categories on the patient chart. */
+export const clinicalAlertKindEnum = pgEnum("clinical_alert_kind", [
+  "allergy",
+  "restriction",
+  "attention",
+  "other",
+])
+
+export const clinicalAlertSeverityEnum = pgEnum("clinical_alert_severity", [
+  "low",
+  "medium",
+  "high",
+])

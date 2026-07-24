@@ -30,6 +30,7 @@ import type {
   Appointment,
   AppointmentStatus,
 } from "@/modules/appointments/types/appointment";
+import { PatientClinicalAlertBadges } from "@/modules/medical-records/components/PatientClinicalAlertBadges";
 
 type AttendanceHeaderProps = {
   appointment: Appointment;
@@ -74,6 +75,8 @@ export function AttendanceHeader({ appointment }: AttendanceHeaderProps) {
               {APPOINTMENT_TYPE_LABELS[appointment.type]}
             </Badge>
           </div>
+
+          <PatientClinicalAlertBadges patientId={appointment.patientId} />
 
           <p className="text-sm text-muted-foreground">
             {format(appointment.startsAt, "EEEE, dd 'de' MMMM 'de' yyyy", {
