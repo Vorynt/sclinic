@@ -3,6 +3,7 @@ import {
   CalendarBlankIcon,
   GearIcon,
   HouseIcon,
+  QuestionIcon,
   StethoscopeIcon,
   UsersIcon,
   UsersThreeIcon,
@@ -21,6 +22,22 @@ export type NavItem = {
   permissions?: PermissionKey[]
   /** Hidden until the module page exists. */
   enabled: boolean
+  /** Nested links (rendered as SidebarMenuSub when present and visible). */
+  children?: NavItem[]
+}
+
+export type NavGroup = {
+  id: string
+  label: string
+  collapsible?: boolean
+  defaultOpen?: boolean
+  items: NavItem[]
+}
+
+export type NavConfig = {
+  primary: NavItem[]
+  groups: NavGroup[]
+  secondary: NavItem[]
 }
 
 export type BreadcrumbSegment = {
@@ -33,52 +50,80 @@ export type PageMeta = {
   breadcrumbs: BreadcrumbSegment[]
 }
 
-export const NAV_ITEMS: NavItem[] = [
-  {
-    title: "Início",
-    href: routes.home,
-    icon: HouseIcon,
-    enabled: true,
-  },
-  {
-    title: "Equipe",
-    href: routes.users,
-    icon: UsersThreeIcon,
-    permissions: [Permission.MEMBERS_INVITE],
-    enabled: true,
-  },
-  {
-    title: "Pacientes",
-    href: routes.patients,
-    icon: UsersIcon,
-    permissions: [Permission.PATIENTS_READ],
-    enabled: true,
-  },
-  {
-    title: "Profissionais",
-    href: routes.professionals,
-    icon: StethoscopeIcon,
-    permissions: [Permission.PROFESSIONALS_MANAGE],
-    enabled: true,
-  },
-  {
-    title: "Agendamentos",
-    href: routes.appointments,
-    icon: CalendarBlankIcon,
-    permissions: [
-      Permission.APPOINTMENTS_CREATE,
-      Permission.APPOINTMENTS_UPDATE,
-    ],
-    enabled: true,
-  },
-  {
-    title: "Configurações",
-    href: routes.settings,
-    icon: GearIcon,
-    permissions: [Permission.SETTINGS_MANAGE],
-    enabled: true,
-  },
-]
+export const NAV_CONFIG: NavConfig = {
+  primary: [
+    {
+      title: "Início",
+      href: routes.home,
+      icon: HouseIcon,
+      enabled: true,
+    },
+  ],
+  groups: [
+    {
+      id: "operation",
+      label: "Operação",
+      collapsible: true,
+      defaultOpen: true,
+      items: [
+        {
+          title: "Pacientes",
+          href: routes.patients,
+          icon: UsersIcon,
+          permissions: [Permission.PATIENTS_READ],
+          enabled: true,
+        },
+        {
+          title: "Profissionais",
+          href: routes.professionals,
+          icon: StethoscopeIcon,
+          permissions: [Permission.PROFESSIONALS_MANAGE],
+          enabled: true,
+        },
+        {
+          title: "Agendamentos",
+          href: routes.appointments,
+          icon: CalendarBlankIcon,
+          permissions: [
+            Permission.APPOINTMENTS_CREATE,
+            Permission.APPOINTMENTS_UPDATE,
+          ],
+          enabled: true,
+        },
+      ],
+    },
+    {
+      id: "management",
+      label: "Gestão",
+      collapsible: true,
+      defaultOpen: true,
+      items: [
+        {
+          title: "Equipe",
+          href: routes.users,
+          icon: UsersThreeIcon,
+          permissions: [Permission.MEMBERS_INVITE],
+          enabled: true,
+        },
+      ],
+    },
+  ],
+  secondary: [
+    {
+      title: "Configurações",
+      href: routes.settings,
+      icon: GearIcon,
+      permissions: [Permission.SETTINGS_MANAGE],
+      enabled: true,
+    },
+    {
+      title: "Ajuda",
+      href: routes.help,
+      icon: QuestionIcon,
+      enabled: false,
+    },
+  ],
+}
 
 const PAGE_META: Record<string, PageMeta> = {
   [routes.home]: {
@@ -151,6 +196,66 @@ const DEFAULT_PAGE_META: PageMeta = {
   breadcrumbs: [{ label: "Início", href: routes.home }],
 }
 
+function isItemVisible(
+  item: NavItem,
+  canAny: (...permissions: PermissionKey[]) => boolean,
+): boolean {
+  if (!item.enabled) return false
+  if (!item.permissions || item.permissions.length === 0) return true
+  return canAny(...item.permissions)
+}
+
+/** Recursively keep enabled items the user can access; prune empty children. */
+export function filterVisibleItems(
+  items: NavItem[],
+  canAny: (...permissions: PermissionKey[]) => boolean,
+): NavItem[] {
+  return items.flatMap((item) => {
+    if (!isItemVisible(item, canAny)) return []
+
+    const children = item.children
+      ? filterVisibleItems(item.children, canAny)
+      : undefined
+
+    return [
+      {
+        ...item,
+        ...(children && children.length > 0 ? { children } : { children: undefined }),
+      },
+    ]
+  })
+}
+
+export function getVisibleNavConfig(
+  canAny: (...permissions: PermissionKey[]) => boolean,
+): NavConfig {
+  return {
+    primary: filterVisibleItems(NAV_CONFIG.primary, canAny),
+    groups: NAV_CONFIG.groups
+      .map((group) => ({
+        ...group,
+        items: filterVisibleItems(group.items, canAny),
+      }))
+      .filter((group) => group.items.length > 0),
+    secondary: filterVisibleItems(NAV_CONFIG.secondary, canAny),
+  }
+}
+
+function flattenNavItems(items: NavItem[]): NavItem[] {
+  return items.flatMap((item) => [
+    item,
+    ...(item.children ? flattenNavItems(item.children) : []),
+  ])
+}
+
+function allNavItems(): NavItem[] {
+  return [
+    ...flattenNavItems(NAV_CONFIG.primary),
+    ...NAV_CONFIG.groups.flatMap((group) => flattenNavItems(group.items)),
+    ...flattenNavItems(NAV_CONFIG.secondary),
+  ]
+}
+
 export function getPageMeta(pathname: string): PageMeta {
   if (PAGE_META[pathname]) {
     return PAGE_META[pathname]
@@ -163,21 +268,12 @@ export function getPageMeta(pathname: string): PageMeta {
   return match?.[1] ?? DEFAULT_PAGE_META
 }
 
-export function getVisibleNavItems(
-  canAny: (...permissions: PermissionKey[]) => boolean,
-): NavItem[] {
-  return NAV_ITEMS.filter((item) => {
-    if (!item.enabled) return false
-    if (!item.permissions || item.permissions.length === 0) return true
-    return canAny(...item.permissions)
-  })
-}
-
 function findNavItem(pathname: string): NavItem | undefined {
-  const exact = NAV_ITEMS.find((item) => item.href === pathname)
+  const items = allNavItems()
+  const exact = items.find((item) => item.href === pathname)
   if (exact) return exact
 
-  return NAV_ITEMS.find(
+  return items.find(
     (item) =>
       item.href !== routes.home &&
       (pathname === item.href || pathname.startsWith(`${item.href}/`)),

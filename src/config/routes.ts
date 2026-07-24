@@ -20,4 +20,6 @@ export const routes = {
   settingsGeneral: "/settings/general",
   settingsHours: "/settings/hours",
   settingsDanger: "/settings/danger",
+  /** Placeholder until the help page exists. */
+  help: "/help",
 } as const
