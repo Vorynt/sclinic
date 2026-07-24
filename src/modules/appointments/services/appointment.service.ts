@@ -8,10 +8,20 @@ import {
   AUDIT_ENTITY_TYPES,
 } from "@/modules/audit/constants/audit"
 import { auditActorFromAuth } from "@/modules/audit/utils/audit-actor"
-import { isSelfScheduleOnlyRole } from "@/modules/appointments/constants/appointments"
+import {
+  canCompleteAttendance,
+  canConfirmAppointment,
+  canMarkAppointmentNoShow,
+  canStartAttendance,
+  isAppointmentScheduleEditable,
+  isSelfScheduleOnlyRole,
+} from "@/modules/appointments/constants/appointments"
 import type { CancelAppointmentDto } from "@/modules/appointments/dto/cancel-appointment.dto"
 import type { CreateAppointmentDto } from "@/modules/appointments/dto/create-appointment.dto"
 import type { ListAppointmentsDto } from "@/modules/appointments/dto/list-appointments.dto"
+import type { RescheduleAppointmentDto } from "@/modules/appointments/dto/reschedule-appointment.dto"
+import type { UpdateAppointmentDetailsDto } from "@/modules/appointments/dto/update-appointment-details.dto"
+import type { UpdateAppointmentStatusDto } from "@/modules/appointments/dto/update-appointment-status.dto"
 import { appointmentRepository } from "@/modules/appointments/repositories/appointment.repository"
 import { professionalAvailabilityService } from "@/modules/appointments/services/professional-availability.service"
 import type { Appointment } from "@/modules/appointments/types/appointment"
@@ -69,7 +79,41 @@ function appointmentSnapshot(appointment: Appointment) {
     endsAt: appointment.endsAt.toISOString(),
     type: appointment.type,
     status: appointment.status,
+    reason: appointment.reason,
+    notes: appointment.notes,
     canceledReason: appointment.canceledReason,
+  }
+}
+
+function assertScheduleEditable(appointment: Appointment): void {
+  if (!isAppointmentScheduleEditable(appointment.status)) {
+    throw new AppError(ErrorCode.CONFLICT, {
+      message:
+        "Este agendamento não pode ser alterado no status atual.",
+    })
+  }
+}
+
+async function assertActiveProfessionalInClinic(
+  professionalId: string,
+  clinicId: string,
+): Promise<void> {
+  const affiliation = await appointmentRepository.findProfessionalAffiliation(
+    professionalId,
+    clinicId,
+  )
+  if (!affiliation) {
+    throw new AppError(ErrorCode.NOT_FOUND, {
+      message: "Profissional não encontrado nesta clínica.",
+    })
+  }
+  if (
+    affiliation.professionalStatus !== "active" ||
+    affiliation.affiliationStatus !== "active"
+  ) {
+    throw new AppError(ErrorCode.CONFLICT, {
+      message: "Profissional inativo nesta clínica.",
+    })
   }
 }
 
@@ -156,23 +200,10 @@ export const appointmentService = {
         })
       }
 
-      const affiliation = await appointmentRepository.findProfessionalAffiliation(
+      await assertActiveProfessionalInClinic(
         data.professionalId,
         auth.clinicId,
       )
-      if (!affiliation) {
-        throw new AppError(ErrorCode.NOT_FOUND, {
-          message: "Profissional não encontrado nesta clínica.",
-        })
-      }
-      if (
-        affiliation.professionalStatus !== "active" ||
-        affiliation.affiliationStatus !== "active"
-      ) {
-        throw new AppError(ErrorCode.CONFLICT, {
-          message: "Profissional inativo nesta clínica.",
-        })
-      }
 
       await professionalAvailabilityService.ensureAvailable({
         clinicId: auth.clinicId,
@@ -274,6 +305,239 @@ export const appointmentService = {
       recordAudit({
         ...actor,
         action: AUDIT_ACTIONS.APPOINTMENT_CANCEL,
+        status: "error",
+        entityType: AUDIT_ENTITY_TYPES.APPOINTMENT,
+        entityId: data.id,
+        changes: { before: appointmentSnapshot(existing) },
+        ...auditErrorFields(error),
+      })
+      throw error
+    }
+  },
+
+  async reschedule(
+    data: RescheduleAppointmentDto,
+    ctx: AuthRequestContext,
+  ): Promise<Appointment> {
+    const auth = await requirePermission(ctx, Permission.APPOINTMENTS_UPDATE)
+    const actor = auditActorFromAuth(auth)
+
+    const existing = await appointmentRepository.findById(
+      data.id,
+      auth.clinicId,
+    )
+    if (!existing) {
+      throw new AppError(ErrorCode.NOT_FOUND, {
+        message: "Agendamento não encontrado.",
+      })
+    }
+
+    try {
+      if (isSelfScheduleOnlyRole(auth.membership.roleKey)) {
+        const ownProfessionalId = await resolveOwnProfessionalId(auth)
+        assertOwnsAppointment(existing, ownProfessionalId)
+        if (data.professionalId !== ownProfessionalId) {
+          throw new AppError(ErrorCode.FORBIDDEN, {
+            message: "Você só pode remarcar agendamentos para si mesmo.",
+          })
+        }
+      }
+
+      assertScheduleEditable(existing)
+
+      await assertActiveProfessionalInClinic(
+        data.professionalId,
+        auth.clinicId,
+      )
+
+      await professionalAvailabilityService.ensureAvailable({
+        clinicId: auth.clinicId,
+        professionalId: data.professionalId,
+        startsAt: data.startsAt,
+        endsAt: data.endsAt,
+        excludeAppointmentId: data.id,
+      })
+
+      const appointment = await appointmentRepository.reschedule({
+        id: data.id,
+        clinicId: auth.clinicId,
+        updatedBy: auth.user.id,
+        professionalId: data.professionalId,
+        startsAt: data.startsAt,
+        endsAt: data.endsAt,
+      })
+
+      recordAudit({
+        ...actor,
+        action: AUDIT_ACTIONS.APPOINTMENT_RESCHEDULE,
+        status: "success",
+        entityType: AUDIT_ENTITY_TYPES.APPOINTMENT,
+        entityId: appointment.id,
+        changes: {
+          before: appointmentSnapshot(existing),
+          after: appointmentSnapshot(appointment),
+        },
+      })
+
+      return appointment
+    } catch (error) {
+      recordAudit({
+        ...actor,
+        action: AUDIT_ACTIONS.APPOINTMENT_RESCHEDULE,
+        status: "error",
+        entityType: AUDIT_ENTITY_TYPES.APPOINTMENT,
+        entityId: data.id,
+        changes: { before: appointmentSnapshot(existing) },
+        ...auditErrorFields(error),
+      })
+      throw error
+    }
+  },
+
+  async updateDetails(
+    data: UpdateAppointmentDetailsDto,
+    ctx: AuthRequestContext,
+  ): Promise<Appointment> {
+    const auth = await requirePermission(ctx, Permission.APPOINTMENTS_UPDATE)
+    const actor = auditActorFromAuth(auth)
+
+    const existing = await appointmentRepository.findById(
+      data.id,
+      auth.clinicId,
+    )
+    if (!existing) {
+      throw new AppError(ErrorCode.NOT_FOUND, {
+        message: "Agendamento não encontrado.",
+      })
+    }
+
+    try {
+      if (isSelfScheduleOnlyRole(auth.membership.roleKey)) {
+        assertOwnsAppointment(existing, await resolveOwnProfessionalId(auth))
+      }
+
+      assertScheduleEditable(existing)
+
+      const appointment = await appointmentRepository.updateDetails({
+        id: data.id,
+        clinicId: auth.clinicId,
+        updatedBy: auth.user.id,
+        type: data.type,
+        reason: data.reason ?? null,
+        notes: data.notes ?? null,
+      })
+
+      recordAudit({
+        ...actor,
+        action: AUDIT_ACTIONS.APPOINTMENT_UPDATE,
+        status: "success",
+        entityType: AUDIT_ENTITY_TYPES.APPOINTMENT,
+        entityId: appointment.id,
+        changes: {
+          before: appointmentSnapshot(existing),
+          after: appointmentSnapshot(appointment),
+        },
+      })
+
+      return appointment
+    } catch (error) {
+      recordAudit({
+        ...actor,
+        action: AUDIT_ACTIONS.APPOINTMENT_UPDATE,
+        status: "error",
+        entityType: AUDIT_ENTITY_TYPES.APPOINTMENT,
+        entityId: data.id,
+        changes: { before: appointmentSnapshot(existing) },
+        ...auditErrorFields(error),
+      })
+      throw error
+    }
+  },
+
+  async updateStatus(
+    data: UpdateAppointmentStatusDto,
+    ctx: AuthRequestContext,
+  ): Promise<Appointment> {
+    const auth = await requirePermission(ctx, Permission.APPOINTMENTS_UPDATE)
+    const actor = auditActorFromAuth(auth)
+
+    const existing = await appointmentRepository.findById(
+      data.id,
+      auth.clinicId,
+    )
+    if (!existing) {
+      throw new AppError(ErrorCode.NOT_FOUND, {
+        message: "Agendamento não encontrado.",
+      })
+    }
+
+    try {
+      if (isSelfScheduleOnlyRole(auth.membership.roleKey)) {
+        assertOwnsAppointment(existing, await resolveOwnProfessionalId(auth))
+      }
+
+      if (data.status === "confirmed") {
+        if (!canConfirmAppointment(existing.status)) {
+          throw new AppError(ErrorCode.CONFLICT, {
+            message:
+              existing.status === "confirmed"
+                ? "Este agendamento já está confirmado."
+                : "Este agendamento não pode ser confirmado no status atual.",
+          })
+        }
+      } else if (data.status === "no_show") {
+        if (!canMarkAppointmentNoShow(existing.status)) {
+          throw new AppError(ErrorCode.CONFLICT, {
+            message:
+              "Não é possível marcar falta neste status do agendamento.",
+          })
+        }
+      } else if (data.status === "checked_in") {
+        if (!canStartAttendance(existing.status)) {
+          throw new AppError(ErrorCode.CONFLICT, {
+            message:
+              existing.status === "checked_in"
+                ? "Este atendimento já foi iniciado."
+                : "Não é possível iniciar o atendimento neste status.",
+          })
+        }
+      } else if (data.status === "completed") {
+        if (!canCompleteAttendance(existing.status)) {
+          throw new AppError(ErrorCode.CONFLICT, {
+            message:
+              "Só é possível concluir um atendimento em andamento.",
+          })
+        }
+      } else {
+        throw new AppError(ErrorCode.VALIDATION_FAILED, {
+          message: "Transição de status não suportada.",
+        })
+      }
+
+      const appointment = await appointmentRepository.updateStatus({
+        id: data.id,
+        clinicId: auth.clinicId,
+        updatedBy: auth.user.id,
+        status: data.status,
+      })
+
+      recordAudit({
+        ...actor,
+        action: AUDIT_ACTIONS.APPOINTMENT_STATUS_UPDATE,
+        status: "success",
+        entityType: AUDIT_ENTITY_TYPES.APPOINTMENT,
+        entityId: appointment.id,
+        changes: {
+          before: appointmentSnapshot(existing),
+          after: appointmentSnapshot(appointment),
+        },
+      })
+
+      return appointment
+    } catch (error) {
+      recordAudit({
+        ...actor,
+        action: AUDIT_ACTIONS.APPOINTMENT_STATUS_UPDATE,
         status: "error",
         entityType: AUDIT_ENTITY_TYPES.APPOINTMENT,
         entityId: data.id,

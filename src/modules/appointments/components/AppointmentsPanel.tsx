@@ -166,6 +166,7 @@ export function AppointmentsPanel() {
         onOpenChange={(open) => {
           if (!open) setDetailAppointment(null)
         }}
+        onAppointmentChange={setDetailAppointment}
       />
 
       <AppointmentFormDialog

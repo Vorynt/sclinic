@@ -63,3 +63,63 @@ export function useCancelAppointmentMutation({
     },
   })
 }
+
+export function useRescheduleAppointmentMutation({
+  onSuccess,
+  onError,
+}: MutationCallbacks<Appointment> = {}) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    ...appointmentsMutations.reschedule(),
+    onSuccess: async (data) => {
+      await queryClient.invalidateQueries({
+        queryKey: appointmentsQueryKeys.all,
+      })
+      onSuccess?.(data)
+    },
+    onError: (error) => {
+      onError?.(toAppError(error))
+    },
+  })
+}
+
+export function useUpdateAppointmentDetailsMutation({
+  onSuccess,
+  onError,
+}: MutationCallbacks<Appointment> = {}) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    ...appointmentsMutations.updateDetails(),
+    onSuccess: async (data) => {
+      await queryClient.invalidateQueries({
+        queryKey: appointmentsQueryKeys.all,
+      })
+      onSuccess?.(data)
+    },
+    onError: (error) => {
+      onError?.(toAppError(error))
+    },
+  })
+}
+
+export function useUpdateAppointmentStatusMutation({
+  onSuccess,
+  onError,
+}: MutationCallbacks<Appointment> = {}) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    ...appointmentsMutations.updateStatus(),
+    onSuccess: async (data) => {
+      await queryClient.invalidateQueries({
+        queryKey: appointmentsQueryKeys.all,
+      })
+      onSuccess?.(data)
+    },
+    onError: (error) => {
+      onError?.(toAppError(error))
+    },
+  })
+}

@@ -21,6 +21,58 @@ export const APPOINTMENT_TYPE_LABELS: Record<AppointmentType, string> = {
 };
 
 /**
+ * Statuses that still allow reschedule / edit details.
+ * Terminal outcomes (completed, canceled, no_show) are read-only.
+ */
+export const APPOINTMENT_SCHEDULE_EDITABLE_STATUSES = [
+  "scheduled",
+  "confirmed",
+  "checked_in",
+] as const satisfies readonly AppointmentStatus[];
+
+export function isAppointmentScheduleEditable(
+  status: AppointmentStatus,
+): boolean {
+  return (
+    APPOINTMENT_SCHEDULE_EDITABLE_STATUSES as readonly AppointmentStatus[]
+  ).includes(status);
+}
+
+/** Confirm is only meaningful from the initial scheduled state. */
+export function canConfirmAppointment(status: AppointmentStatus): boolean {
+  return status === "scheduled";
+}
+
+/** No-show applies before the patient is checked in. */
+export function canMarkAppointmentNoShow(status: AppointmentStatus): boolean {
+  return status === "scheduled" || status === "confirmed";
+}
+
+/** Start attendance moves the appointment into checked_in. */
+export function canStartAttendance(status: AppointmentStatus): boolean {
+  return status === "scheduled" || status === "confirmed";
+}
+
+/** Resume opens the workspace when already in progress. */
+export function canResumeAttendance(status: AppointmentStatus): boolean {
+  return status === "checked_in";
+}
+
+/** Drawer / agenda can open the attendance workspace. */
+export function canOpenAttendance(status: AppointmentStatus): boolean {
+  return (
+    canStartAttendance(status) ||
+    canResumeAttendance(status) ||
+    status === "completed"
+  );
+}
+
+/** Complete finishes an in-progress attendance. */
+export function canCompleteAttendance(status: AppointmentStatus): boolean {
+  return status === "checked_in";
+}
+
+/**
  * Professional roles that may only view/schedule appointments for their own
  * profile. Other roles with appointment permissions see the full clinic agenda.
  */

@@ -3,6 +3,7 @@ import { Geist, Geist_Mono, Inter, Space_Grotesk } from "next/font/google";
 import { headers } from "next/headers";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 
+import { AttendancePreparingOverlay } from "@/components/status/AttendancePreparingOverlay";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { authService } from "@/modules/authentication/services/auth.service";
@@ -64,6 +65,7 @@ export default async function RootLayout({
               <AuthProvider initialSession={initialSession}>
                 <TooltipProvider>
                   {children}
+                  <AttendancePreparingOverlay />
                   <Toaster richColors />
                 </TooltipProvider>
               </AuthProvider>

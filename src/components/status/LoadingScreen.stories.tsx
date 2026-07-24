@@ -28,3 +28,10 @@ export const ClinicSwitch: Story = {
     description: "Aguarde enquanto preparamos o ambiente da nova clínica.",
   },
 }
+
+export const AttendancePreparing: Story = {
+  args: {
+    message: "Preparando atendimento…",
+    description: "Aguarde enquanto preparamos o ambiente de atendimento.",
+  },
+}

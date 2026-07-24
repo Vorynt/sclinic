@@ -5,7 +5,11 @@ import { appointments, patients, professionalClinics, professionals } from "@/db
 import { withDbError } from "@/db/with-db-error"
 import type { CreateAppointmentDto } from "@/modules/appointments/dto/create-appointment.dto"
 import { toAppointment } from "@/modules/appointments/mappers/appointment.mapper"
-import type { Appointment } from "@/modules/appointments/types/appointment"
+import type {
+  Appointment,
+  AppointmentStatus,
+  AppointmentType,
+} from "@/modules/appointments/types/appointment"
 
 const appointmentSelect = {
   id: appointments.id,
@@ -304,6 +308,131 @@ export const appointmentRepository = {
       }
 
       return canceled
+    })
+  },
+
+  async reschedule(params: {
+    id: string
+    clinicId: string
+    updatedBy: string
+    professionalId: string
+    startsAt: Date
+    endsAt: Date
+  }): Promise<Appointment> {
+    return withDbError(async () => {
+      const [row] = await db
+        .update(appointments)
+        .set({
+          professionalId: params.professionalId,
+          startsAt: params.startsAt,
+          endsAt: params.endsAt,
+          updatedBy: params.updatedBy,
+        })
+        .where(
+          and(
+            eq(appointments.id, params.id),
+            eq(appointments.clinicId, params.clinicId),
+            isNull(appointments.deletedAt),
+          ),
+        )
+        .returning({ id: appointments.id })
+
+      if (!row) {
+        throw new Error("Appointment not found for reschedule")
+      }
+
+      const updated = await appointmentRepository.findById(
+        row.id,
+        params.clinicId,
+      )
+      if (!updated) {
+        throw new Error("Failed to load appointment after reschedule")
+      }
+
+      return updated
+    })
+  },
+
+  async updateDetails(params: {
+    id: string
+    clinicId: string
+    updatedBy: string
+    type: AppointmentType
+    reason: string | null
+    notes: string | null
+  }): Promise<Appointment> {
+    return withDbError(async () => {
+      const [row] = await db
+        .update(appointments)
+        .set({
+          type: params.type,
+          reason: params.reason,
+          notes: params.notes,
+          updatedBy: params.updatedBy,
+        })
+        .where(
+          and(
+            eq(appointments.id, params.id),
+            eq(appointments.clinicId, params.clinicId),
+            isNull(appointments.deletedAt),
+          ),
+        )
+        .returning({ id: appointments.id })
+
+      if (!row) {
+        throw new Error("Appointment not found for update details")
+      }
+
+      const updated = await appointmentRepository.findById(
+        row.id,
+        params.clinicId,
+      )
+      if (!updated) {
+        throw new Error("Failed to load appointment after update details")
+      }
+
+      return updated
+    })
+  },
+
+  async updateStatus(params: {
+    id: string
+    clinicId: string
+    updatedBy: string
+    status: Extract<
+      AppointmentStatus,
+      "confirmed" | "no_show" | "checked_in" | "completed"
+    >
+  }): Promise<Appointment> {
+    return withDbError(async () => {
+      const [row] = await db
+        .update(appointments)
+        .set({
+          status: params.status,
+          updatedBy: params.updatedBy,
+        })
+        .where(
+          and(
+            eq(appointments.id, params.id),
+            eq(appointments.clinicId, params.clinicId),
+            isNull(appointments.deletedAt),
+          ),
+        )
+        .returning({ id: appointments.id })
+
+      if (!row) {
+        throw new Error("Appointment not found for status update")
+      }
+
+      const updated = await appointmentRepository.findById(
+        row.id,
+        params.clinicId,
+      )
+      if (!updated) {
+        throw new Error("Failed to load appointment after status update")
+      }
+
+      return updated
     })
   },
 }

@@ -1,0 +1,30 @@
+import { routes } from "@/config/routes"
+
+/**
+ * Sections of the attendance workspace.
+ * Add module sections here as clinical features land (notes, documents, etc.).
+ */
+export type AttendanceNavItem = {
+  id: string
+  title: string
+  description: string
+  href: string
+  /** Exact match only (overview). Nested sections use prefix match. */
+  match: "exact" | "prefix"
+}
+
+export function getAttendanceNavItems(
+  appointmentId: string,
+): AttendanceNavItem[] {
+  const overviewHref = routes.appointmentAttendance(appointmentId)
+
+  return [
+    {
+      id: "overview",
+      title: "Resumo",
+      description: "Contexto do agendamento e do paciente",
+      href: overviewHref,
+      match: "exact",
+    },
+  ]
+}

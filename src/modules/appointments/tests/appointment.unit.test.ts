@@ -2,7 +2,14 @@ import assert from "node:assert/strict"
 import { describe, it } from "node:test"
 
 import {
+  canCompleteAttendance,
+  canConfirmAppointment,
+  canMarkAppointmentNoShow,
+  canOpenAttendance,
+  canResumeAttendance,
+  canStartAttendance,
   getProfessionalCalendarColor,
+  isAppointmentScheduleEditable,
   isSelfScheduleOnlyRole,
 } from "@/modules/appointments/constants/appointments"
 import { toAppointment } from "@/modules/appointments/mappers/appointment.mapper"
@@ -10,6 +17,9 @@ import {
   cancelAppointmentSchema,
   createAppointmentSchema,
   listAppointmentsSchema,
+  rescheduleAppointmentSchema,
+  updateAppointmentDetailsSchema,
+  updateAppointmentStatusSchema,
 } from "@/modules/appointments/schemas/appointment.schema"
 import {
   checkProfessionalAvailability,
@@ -21,6 +31,11 @@ import {
   isWithinOpenClinicMinutes,
   resolveVisibleHourRange,
 } from "@/modules/appointments/utils/calendar-clinic-hours"
+import {
+  agendaLocationFromSearchParams,
+  buildAgendaHref,
+  buildAttendanceHref,
+} from "@/modules/appointments/utils/agenda-href"
 import {
   findNextAvailableStarts,
   formatSuggestedSlotLabel,
@@ -171,6 +186,157 @@ describe("cancelAppointmentSchema", () => {
       canceledReason: "   ",
     })
     assert.equal(parsed.canceledReason, undefined)
+  })
+})
+
+describe("rescheduleAppointmentSchema", () => {
+  it("accepts a valid reschedule payload", () => {
+    const { startsAt, endsAt } = futureRange()
+    const parsed = rescheduleAppointmentSchema.parse({
+      id: VALID_UUID,
+      professionalId: OTHER_UUID,
+      startsAt: startsAt.toISOString(),
+      endsAt: endsAt.toISOString(),
+    })
+    assert.equal(parsed.id, VALID_UUID)
+    assert.equal(parsed.professionalId, OTHER_UUID)
+  })
+
+  it("rejects a startsAt in the past", () => {
+    const startsAt = new Date(Date.now() - 60 * 60 * 1000)
+    const endsAt = new Date(startsAt.getTime() + 30 * 60 * 1000)
+    const result = rescheduleAppointmentSchema.safeParse({
+      id: VALID_UUID,
+      professionalId: OTHER_UUID,
+      startsAt: startsAt.toISOString(),
+      endsAt: endsAt.toISOString(),
+    })
+    assert.equal(result.success, false)
+  })
+
+  it("rejects when endsAt is not after startsAt", () => {
+    const { startsAt } = futureRange()
+    const result = rescheduleAppointmentSchema.safeParse({
+      id: VALID_UUID,
+      professionalId: OTHER_UUID,
+      startsAt: startsAt.toISOString(),
+      endsAt: startsAt.toISOString(),
+    })
+    assert.equal(result.success, false)
+  })
+})
+
+describe("updateAppointmentDetailsSchema", () => {
+  it("accepts type with optional reason/notes", () => {
+    const parsed = updateAppointmentDetailsSchema.parse({
+      id: VALID_UUID,
+      type: "follow_up",
+      reason: "  Retorno  ",
+      notes: "Obs",
+    })
+    assert.equal(parsed.type, "follow_up")
+    assert.equal(parsed.reason, "Retorno")
+    assert.equal(parsed.notes, "Obs")
+  })
+
+  it("clears empty reason/notes to null", () => {
+    const parsed = updateAppointmentDetailsSchema.parse({
+      id: VALID_UUID,
+      type: "consultation",
+      reason: "   ",
+      notes: "",
+    })
+    assert.equal(parsed.reason, null)
+    assert.equal(parsed.notes, null)
+  })
+
+  it("requires a valid appointment type", () => {
+    const result = updateAppointmentDetailsSchema.safeParse({
+      id: VALID_UUID,
+      type: "invalid",
+    })
+    assert.equal(result.success, false)
+  })
+})
+
+describe("isAppointmentScheduleEditable", () => {
+  it("is true for scheduled, confirmed and checked_in", () => {
+    assert.equal(isAppointmentScheduleEditable("scheduled"), true)
+    assert.equal(isAppointmentScheduleEditable("confirmed"), true)
+    assert.equal(isAppointmentScheduleEditable("checked_in"), true)
+  })
+
+  it("is false for terminal statuses", () => {
+    assert.equal(isAppointmentScheduleEditable("completed"), false)
+    assert.equal(isAppointmentScheduleEditable("canceled"), false)
+    assert.equal(isAppointmentScheduleEditable("no_show"), false)
+  })
+})
+
+describe("appointment status transition helpers", () => {
+  it("allows confirm only from scheduled", () => {
+    assert.equal(canConfirmAppointment("scheduled"), true)
+    assert.equal(canConfirmAppointment("confirmed"), false)
+    assert.equal(canConfirmAppointment("checked_in"), false)
+  })
+
+  it("allows no-show from scheduled or confirmed", () => {
+    assert.equal(canMarkAppointmentNoShow("scheduled"), true)
+    assert.equal(canMarkAppointmentNoShow("confirmed"), true)
+    assert.equal(canMarkAppointmentNoShow("checked_in"), false)
+    assert.equal(canMarkAppointmentNoShow("completed"), false)
+  })
+
+  it("allows start attendance from scheduled or confirmed", () => {
+    assert.equal(canStartAttendance("scheduled"), true)
+    assert.equal(canStartAttendance("confirmed"), true)
+    assert.equal(canStartAttendance("checked_in"), false)
+  })
+
+  it("allows resume only while checked_in", () => {
+    assert.equal(canResumeAttendance("checked_in"), true)
+    assert.equal(canResumeAttendance("scheduled"), false)
+  })
+
+  it("allows opening attendance for active and completed visits", () => {
+    assert.equal(canOpenAttendance("scheduled"), true)
+    assert.equal(canOpenAttendance("checked_in"), true)
+    assert.equal(canOpenAttendance("completed"), true)
+    assert.equal(canOpenAttendance("canceled"), false)
+    assert.equal(canOpenAttendance("no_show"), false)
+  })
+
+  it("allows complete only from checked_in", () => {
+    assert.equal(canCompleteAttendance("checked_in"), true)
+    assert.equal(canCompleteAttendance("confirmed"), false)
+    assert.equal(canCompleteAttendance("completed"), false)
+  })
+})
+
+describe("updateAppointmentStatusSchema", () => {
+  it("accepts confirmed, no_show, checked_in and completed", () => {
+    for (const status of [
+      "confirmed",
+      "no_show",
+      "checked_in",
+      "completed",
+    ] as const) {
+      assert.equal(
+        updateAppointmentStatusSchema.parse({
+          id: VALID_UUID,
+          status,
+        }).status,
+        status,
+      )
+    }
+  })
+
+  it("rejects unsupported status transitions", () => {
+    const result = updateAppointmentStatusSchema.safeParse({
+      id: VALID_UUID,
+      status: "canceled",
+    })
+    assert.equal(result.success, false)
   })
 })
 
@@ -488,5 +654,32 @@ describe("calendar clinic hours utils", () => {
       isWithinOpenClinicMinutes(splitDayWeek, monday, 13 * 60),
       false,
     )
+  })
+})
+
+describe("agenda href round-trip", () => {
+  it("builds agenda href with mode and date", () => {
+    assert.equal(
+      buildAgendaHref({ mode: "week", date: "2026-07-20" }),
+      "/appointments?mode=week&date=2026-07-20",
+    )
+  })
+
+  it("preserves agenda location on attendance href", () => {
+    assert.equal(
+      buildAttendanceHref(VALID_UUID, {
+        mode: "day",
+        date: new Date(2026, 6, 24),
+      }),
+      `/appointments/${VALID_UUID}/attendance?mode=day&date=2026-07-24`,
+    )
+  })
+
+  it("reads agenda location from search params", () => {
+    const params = new URLSearchParams("mode=month&date=2026-07-01")
+    assert.deepEqual(agendaLocationFromSearchParams(params), {
+      mode: "month",
+      date: "2026-07-01",
+    })
   })
 })
