@@ -52,6 +52,11 @@ export type AuthContext = {
    * Used to send them to the membership-inactive screen instead of onboarding.
    */
   hasSuspendedMembershipOnly: boolean
+  /**
+   * User has 2+ active clinic memberships, none default, and no activeClinicId.
+   * Used to send them to the clinic selector before the dashboard.
+   */
+  needsClinicSelection: boolean
 }
 
 export type AuthRequestContext = {

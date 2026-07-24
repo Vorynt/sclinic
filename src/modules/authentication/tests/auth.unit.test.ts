@@ -163,6 +163,7 @@ describe("getPostAuthRedirect", () => {
     membership: null,
     permissions: [],
     hasSuspendedMembershipOnly: false,
+    needsClinicSelection: false,
   }
 
   it("sends unverified users to verify-email", () => {
@@ -235,6 +236,29 @@ describe("getPostAuthRedirect", () => {
         hasSuspendedMembershipOnly: true,
       }),
       routes.membershipInactive,
+    )
+  })
+
+  it("sends users who need clinic selection to select-clinic", () => {
+    assert.equal(
+      getPostAuthRedirect({
+        ...baseAuth,
+        needsClinicSelection: true,
+      }),
+      routes.selectClinic,
+    )
+  })
+
+  it("preserves next when redirecting to select-clinic", () => {
+    assert.equal(
+      getPostAuthRedirect(
+        {
+          ...baseAuth,
+          needsClinicSelection: true,
+        },
+        routes.patients,
+      ),
+      `${routes.selectClinic}?next=${encodeURIComponent(routes.patients)}`,
     )
   })
 

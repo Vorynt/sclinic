@@ -41,6 +41,10 @@ export default async function OnboardingPlanPage({
     redirect(routes.membershipInactive);
   }
 
+  if (session.needsClinicSelection && intent !== "create-clinic") {
+    redirect(routes.selectClinic);
+  }
+
   return (
     <Suspense
       fallback={

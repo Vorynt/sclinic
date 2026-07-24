@@ -11,6 +11,7 @@ export const routes = {
   onboardingClinic: "/onboarding/clinic",
   onboardingHours: "/onboarding/hours",
   membershipInactive: "/membership-inactive",
+  selectClinic: "/select-clinic",
   home: "/home",
   users: "/users",
   patients: "/patients",

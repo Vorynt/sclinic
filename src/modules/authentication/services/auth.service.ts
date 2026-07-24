@@ -43,17 +43,42 @@ async function resolvePermissions(
   return permissionRepository.listKeysByRoleId(membership.roleId);
 }
 
+type MembershipResolution = {
+  membership: AuthMembership | null;
+  needsClinicSelection: boolean;
+};
+
+/**
+ * Resolves the clinic membership for the session.
+ * Priority: activeClinicId → isDefault → sole active membership → selector (2+).
+ */
 async function resolveMembership(
   userId: string,
   activeClinicId: string | null,
-): Promise<AuthMembership | null> {
+): Promise<MembershipResolution> {
   if (activeClinicId) {
-    return membershipRepository.findActiveByUserAndClinic(
+    const membership = await membershipRepository.findActiveByUserAndClinic(
       userId,
       activeClinicId,
     );
+    return { membership, needsClinicSelection: false };
   }
-  return membershipRepository.findDefaultByUser(userId);
+
+  const defaultMembership =
+    await membershipRepository.findDefaultByUser(userId);
+  if (defaultMembership) {
+    return { membership: defaultMembership, needsClinicSelection: false };
+  }
+
+  const active = await membershipRepository.listActiveByUser(userId);
+  if (active.length === 1) {
+    return { membership: active[0]!, needsClinicSelection: false };
+  }
+  if (active.length > 1) {
+    return { membership: null, needsClinicSelection: true };
+  }
+
+  return { membership: null, needsClinicSelection: false };
 }
 
 async function ensureActiveClinic(
@@ -109,30 +134,35 @@ async function buildAuthContextFromParts(
   assertUserCanAuthenticate(user);
 
   let session = sessionInput;
-  let membership = await resolveMembership(user.id, session.activeClinicId);
+  let { membership, needsClinicSelection } = await resolveMembership(
+    user.id,
+    session.activeClinicId,
+  );
 
   const ensured = await ensureActiveClinic(session, membership);
   session = ensured.session;
   membership = ensured.membership;
 
-  // Stale activeClinicId (removed membership) → clear and fall back to default
+  // Stale activeClinicId (removed membership) → clear and re-resolve without it
   if (session.activeClinicId && !membership) {
-    const fallback = await membershipRepository.findDefaultByUser(user.id);
+    const fallback = await resolveMembership(user.id, null);
     const updated = await sessionRepository.updateActiveClinicId(
       session.id,
-      fallback?.clinicId ?? null,
+      fallback.membership?.clinicId ?? null,
     );
     session = updated ?? {
       ...session,
-      activeClinicId: fallback?.clinicId ?? null,
+      activeClinicId: fallback.membership?.clinicId ?? null,
     };
-    membership = fallback;
+    membership = fallback.membership;
+    needsClinicSelection = fallback.needsClinicSelection;
   }
 
   const permissions = await resolvePermissions(membership);
 
   const hasSuspendedMembershipOnly =
     !membership &&
+    !needsClinicSelection &&
     (await membershipRepository.hasSuspendedByUser(user.id));
 
   return {
@@ -141,6 +171,7 @@ async function buildAuthContextFromParts(
     membership,
     permissions,
     hasSuspendedMembershipOnly,
+    needsClinicSelection: !membership && needsClinicSelection,
   };
 }
 
@@ -368,6 +399,7 @@ export const authService = {
       membership,
       permissions,
       hasSuspendedMembershipOnly: false,
+      needsClinicSelection: false,
     };
   },
 

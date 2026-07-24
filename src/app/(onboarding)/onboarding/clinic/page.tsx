@@ -40,6 +40,10 @@ export default async function OnboardingClinicPage({
     redirect(routes.membershipInactive)
   }
 
+  if (session.needsClinicSelection && intent !== "create-clinic") {
+    redirect(routes.selectClinic)
+  }
+
   if (!planId) {
     redirect(
       session.hasSuspendedMembershipOnly
