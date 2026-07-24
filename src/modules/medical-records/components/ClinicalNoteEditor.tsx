@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import {
   ListBulletsIcon,
@@ -6,26 +6,26 @@ import {
   TextBIcon,
   TextHTwoIcon,
   TextItalicIcon,
-} from "@phosphor-icons/react"
-import Placeholder from "@tiptap/extension-placeholder"
-import { EditorContent, useEditor, type JSONContent } from "@tiptap/react"
-import StarterKit from "@tiptap/starter-kit"
-import { useEffect, type ReactNode } from "react"
+} from "@phosphor-icons/react";
+import Placeholder from "@tiptap/extension-placeholder";
+import { EditorContent, useEditor, type JSONContent } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import { useEffect, type ReactNode } from "react";
 
-import { Button } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 const EMPTY_DOC: JSONContent = {
   type: "doc",
   content: [{ type: "paragraph" }],
-}
+};
 
 type ClinicalNoteEditorProps = {
-  initialContent?: JSONContent | Record<string, unknown> | null
-  editable: boolean
-  onChange?: (content: JSONContent, plainText: string) => void
-  className?: string
-}
+  initialContent?: JSONContent | Record<string, unknown> | null;
+  editable: boolean;
+  onChange?: (content: JSONContent, plainText: string) => void;
+  className?: string;
+};
 
 export function ClinicalNoteEditor({
   initialContent,
@@ -49,7 +49,7 @@ export function ClinicalNoteEditor({
       attributes: {
         class: cn(
           "clinical-note-tiptap px-3 py-3 focus:outline-none",
-          editable ? "min-h-[20rem]" : "min-h-0",
+          editable ? "min-h-80" : "min-h-0",
           "text-sm leading-relaxed text-foreground",
           "[&_p]:my-2 [&_ul]:my-2 [&_ol]:my-2 [&_ul]:list-disc [&_ul]:pl-5",
           "[&_ol]:list-decimal [&_ol]:pl-5",
@@ -58,36 +58,36 @@ export function ClinicalNoteEditor({
       },
     },
     onUpdate: ({ editor: current }) => {
-      onChange?.(current.getJSON(), current.getText().trim())
+      onChange?.(current.getJSON(), current.getText().trim());
     },
-  })
+  });
 
   useEffect(() => {
-    if (!editor) return
-    editor.setEditable(editable)
-  }, [editor, editable])
+    if (!editor) return;
+    editor.setEditable(editable);
+  }, [editor, editable]);
 
   useEffect(() => {
-    if (!editor || !initialContent) return
-    const current = JSON.stringify(editor.getJSON())
-    const next = JSON.stringify(initialContent)
+    if (!editor || !initialContent) return;
+    const current = JSON.stringify(editor.getJSON());
+    const next = JSON.stringify(initialContent);
     if (current !== next) {
       editor.commands.setContent(initialContent as JSONContent, {
         emitUpdate: false,
-      })
+      });
     }
-  }, [editor, initialContent])
+  }, [editor, initialContent]);
 
   if (!editor) {
     return (
       <div
         className={cn(
           "rounded-md border border-border bg-background",
-          editable ? "min-h-[22rem]" : "min-h-12",
+          editable ? "min-h-88" : "min-h-12",
           className,
         )}
       />
-    )
+    );
   }
 
   return (
@@ -95,8 +95,7 @@ export function ClinicalNoteEditor({
       className={cn(
         "clinical-note-editor flex flex-col overflow-hidden rounded-md border border-border bg-background",
         className,
-      )}
-    >
+      )}>
       <style>{`
         .clinical-note-editor .clinical-note-tiptap p.is-editor-empty:first-child::before {
           color: var(--muted-foreground);
@@ -112,15 +111,13 @@ export function ClinicalNoteEditor({
           <ToolbarButton
             label="Negrito"
             active={editor.isActive("bold")}
-            onClick={() => editor.chain().focus().toggleBold().run()}
-          >
+            onClick={() => editor.chain().focus().toggleBold().run()}>
             <TextBIcon />
           </ToolbarButton>
           <ToolbarButton
             label="Itálico"
             active={editor.isActive("italic")}
-            onClick={() => editor.chain().focus().toggleItalic().run()}
-          >
+            onClick={() => editor.chain().focus().toggleItalic().run()}>
             <TextItalicIcon />
           </ToolbarButton>
           <ToolbarButton
@@ -128,22 +125,19 @@ export function ClinicalNoteEditor({
             active={editor.isActive("heading", { level: 2 })}
             onClick={() =>
               editor.chain().focus().toggleHeading({ level: 2 }).run()
-            }
-          >
+            }>
             <TextHTwoIcon />
           </ToolbarButton>
           <ToolbarButton
             label="Lista"
             active={editor.isActive("bulletList")}
-            onClick={() => editor.chain().focus().toggleBulletList().run()}
-          >
+            onClick={() => editor.chain().focus().toggleBulletList().run()}>
             <ListBulletsIcon />
           </ToolbarButton>
           <ToolbarButton
             label="Lista numerada"
             active={editor.isActive("orderedList")}
-            onClick={() => editor.chain().focus().toggleOrderedList().run()}
-          >
+            onClick={() => editor.chain().focus().toggleOrderedList().run()}>
             <ListNumbersIcon />
           </ToolbarButton>
         </div>
@@ -151,7 +145,7 @@ export function ClinicalNoteEditor({
 
       <EditorContent editor={editor} />
     </div>
-  )
+  );
 }
 
 function ToolbarButton({
@@ -160,10 +154,10 @@ function ToolbarButton({
   onClick,
   children,
 }: {
-  label: string
-  active: boolean
-  onClick: () => void
-  children: ReactNode
+  label: string;
+  active: boolean;
+  onClick: () => void;
+  children: ReactNode;
 }) {
   return (
     <Button
@@ -172,11 +166,10 @@ function ToolbarButton({
       size="icon-sm"
       aria-label={label}
       aria-pressed={active}
-      onClick={onClick}
-    >
+      onClick={onClick}>
       {children}
     </Button>
-  )
+  );
 }
 
-export { EMPTY_DOC }
+export { EMPTY_DOC };

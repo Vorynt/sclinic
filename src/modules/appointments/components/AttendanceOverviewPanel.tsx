@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 import { routes } from "@/config/routes"
 import { PatientAppointmentHistory } from "@/modules/appointments/components/PatientAppointmentHistory"
+import { ScheduleNextAppointmentCard } from "@/modules/appointments/components/ScheduleNextAppointmentCard"
 import {
   APPOINTMENT_STATUS_LABELS,
   APPOINTMENT_TYPE_LABELS,
@@ -116,6 +117,12 @@ export function AttendanceOverviewPanel({
         excludeAppointmentId={appointment.id}
       />
 
+      <ScheduleNextAppointmentCard
+        patientId={appointment.patientId}
+        patientName={appointment.patientName}
+        professionalId={appointment.professionalId}
+      />
+
       <div className="flex flex-col gap-2 rounded-md border border-border px-4 py-4">
         <p className="text-sm font-medium text-foreground">Anotações clínicas</p>
         <p className="text-sm text-muted-foreground">
@@ -124,6 +131,18 @@ export function AttendanceOverviewPanel({
         <Button asChild variant="outline" className="w-fit">
           <Link href={routes.appointmentAttendanceNotes(appointmentId)}>
             Abrir anotações
+          </Link>
+        </Button>
+      </div>
+
+      <div className="flex flex-col gap-2 rounded-md border border-border px-4 py-4">
+        <p className="text-sm font-medium text-foreground">Sinais vitais</p>
+        <p className="text-sm text-muted-foreground">
+          Pressão, peso, temperatura e histórico de medições anteriores.
+        </p>
+        <Button asChild variant="outline" className="w-fit">
+          <Link href={routes.appointmentAttendanceVitals(appointmentId)}>
+            Abrir sinais vitais
           </Link>
         </Button>
       </div>

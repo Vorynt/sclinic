@@ -101,6 +101,12 @@ type AppointmentFormProps = {
   defaultStartsAt?: Date;
   /** When set, patient is pre-selected and the combobox is disabled. */
   lockedPatient?: LockedPatient;
+  /** Pre-select appointment type (e.g. follow_up from attendance). */
+  defaultType?: AppointmentType;
+  /** When set, only these types appear in the select. */
+  allowedTypes?: readonly AppointmentType[];
+  /** Pre-select professional when the user can choose any. */
+  defaultProfessionalId?: string | null;
   onSuccess?: () => void;
   onCancel?: () => void;
 };
@@ -128,6 +134,9 @@ function resolveInitialStartsAt(defaultStartsAt?: Date): Date {
 export function AppointmentForm({
   defaultStartsAt,
   lockedPatient,
+  defaultType = "consultation",
+  allowedTypes,
+  defaultProfessionalId = null,
   onSuccess,
   onCancel,
 }: AppointmentFormProps) {
@@ -144,6 +153,13 @@ export function AppointmentForm({
   const isPatientLocked = Boolean(lockedPatient);
   const today = startOfDay(new Date());
   const initialDate = resolveInitialStartsAt(defaultStartsAt);
+  const typeOptions = allowedTypes
+    ? appointmentTypeOptions.filter(([value]) => allowedTypes.includes(value))
+    : appointmentTypeOptions;
+  const resolvedDefaultType =
+    allowedTypes && !allowedTypes.includes(defaultType)
+      ? (allowedTypes[0] ?? defaultType)
+      : defaultType;
 
   const sessionQuery = useAuthSession();
   const isProfessionalLocked = isSelfScheduleOnlyRole(
@@ -155,8 +171,8 @@ export function AppointmentForm({
     resolver: zodResolver(scheduleFormSchema),
     defaultValues: {
       patientId: lockedPatient?.id ?? "",
-      professionalId: "",
-      type: "consultation",
+      professionalId: defaultProfessionalId ?? "",
+      type: resolvedDefaultType,
       date: toISODate(initialDate),
       startTime: `${String(initialDate.getHours()).padStart(2, "0")}:${String(
         initialDate.getMinutes(),
@@ -172,25 +188,32 @@ export function AppointmentForm({
     handleSubmit,
     setValue,
     formState: { errors },
-  } = form;
+  } = form
 
-  const professionals = professionalsQuery.data ?? [];
+  const professionals = professionalsQuery.data ?? []
   const lockedProfessionalLabel = isProfessionalLocked
-    ? (professionals[0]
-        ? professionals[0].specialty
-          ? `${professionals[0].fullName} · ${professionals[0].specialty}`
-          : professionals[0].fullName
-        : null)
-    : null;
+    ? professionals[0]
+      ? professionals[0].specialty
+        ? `${professionals[0].fullName} · ${professionals[0].specialty}`
+        : professionals[0].fullName
+      : null
+    : null
 
   useEffect(() => {
-    if (!isProfessionalLocked) return;
-    const selfProfessional = professionalsQuery.data?.[0];
-    if (!selfProfessional) return;
+    if (!isProfessionalLocked) return
+    const selfProfessional = professionalsQuery.data?.[0]
+    if (!selfProfessional) return
     setValue("professionalId", selfProfessional.id, {
       shouldValidate: true,
-    });
-  }, [isProfessionalLocked, professionalsQuery.data, setValue]);
+    })
+  }, [isProfessionalLocked, professionalsQuery.data, setValue])
+
+  useEffect(() => {
+    if (isProfessionalLocked || !defaultProfessionalId) return
+    setValue("professionalId", defaultProfessionalId, {
+      shouldValidate: true,
+    })
+  }, [defaultProfessionalId, isProfessionalLocked, setValue])
 
   function clearAvailabilityFeedback() {
     setFormError(null);
@@ -350,7 +373,7 @@ export function AppointmentForm({
                       <SelectValue placeholder="Selecione o tipo" />
                     </SelectTrigger>
                     <SelectContent>
-                      {appointmentTypeOptions.map(([value, label]) => (
+                      {typeOptions.map(([value, label]) => (
                         <SelectItem key={value} value={value}>
                           {label}
                         </SelectItem>

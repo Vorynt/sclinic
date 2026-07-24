@@ -33,5 +33,12 @@ export function getAttendanceNavItems(
       href: routes.appointmentAttendanceNotes(appointmentId),
       match: "prefix",
     },
+    {
+      id: "vitals",
+      title: "Sinais vitais",
+      description: "Medições e histórico do paciente",
+      href: routes.appointmentAttendanceVitals(appointmentId),
+      match: "prefix",
+    },
   ]
 }
