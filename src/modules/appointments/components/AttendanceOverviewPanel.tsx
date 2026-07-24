@@ -1,29 +1,32 @@
-"use client"
+"use client";
 
-import { format } from "date-fns"
+import { format } from "date-fns";
+import Link from "next/link";
 
-import { Spinner } from "@/components/ui/spinner"
+import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
+import { routes } from "@/config/routes";
 import {
   APPOINTMENT_STATUS_LABELS,
   APPOINTMENT_TYPE_LABELS,
-} from "@/modules/appointments/constants/appointments"
-import { useAppointmentQuery } from "@/modules/appointments/hooks/use-appointment"
+} from "@/modules/appointments/constants/appointments";
+import { useAppointmentQuery } from "@/modules/appointments/hooks/use-appointment";
 
 type AttendanceOverviewPanelProps = {
-  appointmentId: string
-}
+  appointmentId: string;
+};
 
 export function AttendanceOverviewPanel({
   appointmentId,
 }: AttendanceOverviewPanelProps) {
-  const appointmentQuery = useAppointmentQuery(appointmentId)
+  const appointmentQuery = useAppointmentQuery(appointmentId);
 
   if (appointmentQuery.isLoading) {
     return (
       <div className="flex justify-center py-12">
         <Spinner />
       </div>
-    )
+    );
   }
 
   if (appointmentQuery.isError || !appointmentQuery.data) {
@@ -31,10 +34,10 @@ export function AttendanceOverviewPanel({
       <p className="text-sm text-destructive">
         Não foi possível carregar o resumo do atendimento.
       </p>
-    )
+    );
   }
 
-  const appointment = appointmentQuery.data
+  const appointment = appointmentQuery.data;
 
   return (
     <div className="flex flex-col gap-6">
@@ -43,8 +46,8 @@ export function AttendanceOverviewPanel({
           Resumo
         </h2>
         <p className="text-sm text-muted-foreground">
-          Contexto do agendamento. Novos módulos clínicos aparecem na navegação
-          ao lado.
+          Contexto do agendamento. Use a navegação ao lado para abrir as seções
+          clínicas.
         </p>
       </div>
 
@@ -101,15 +104,19 @@ export function AttendanceOverviewPanel({
         </div>
       ) : null}
 
-      <div className="rounded-md border border-dashed border-border px-4 py-6">
+      <div className="flex flex-col gap-2 rounded-md border border-border px-4 py-4">
         <p className="text-sm font-medium text-foreground">
-          Espaço para módulos clínicos
+          Anotações clínicas
         </p>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Anotações, documentos e prontuário entram como seções nesta área,
-          sem alterar o cabeçalho nem a navegação lateral.
+        <p className="text-sm text-muted-foreground">
+          Registre e visualize a evolução clínica deste paciente.
         </p>
+        <Button asChild variant="outline" className="w-fit">
+          <Link href={routes.appointmentAttendanceNotes(appointmentId)}>
+            Abrir anotações
+          </Link>
+        </Button>
       </div>
     </div>
-  )
+  );
 }

@@ -26,5 +26,12 @@ export function getAttendanceNavItems(
       href: overviewHref,
       match: "exact",
     },
+    {
+      id: "notes",
+      title: "Anotações",
+      description: "Evolução clínica e histórico",
+      href: routes.appointmentAttendanceNotes(appointmentId),
+      match: "prefix",
+    },
   ]
 }

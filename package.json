@@ -16,7 +16,7 @@
     "db:seed:demo": "tsx src/db/seed/demo.ts",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "test": "node --import tsx --test src/modules/authentication/tests/*.test.ts src/modules/clinics/tests/*.test.ts src/modules/dashboard/tests/*.test.ts src/modules/users/tests/*.test.ts src/modules/professionals/tests/*.test.ts src/modules/appointments/tests/*.test.ts src/modules/patients/tests/*.test.ts src/modules/audit/tests/*.test.ts src/shared/validators/list-query.test.ts"
+    "test": "node --import tsx --test src/modules/authentication/tests/*.test.ts src/modules/clinics/tests/*.test.ts src/modules/dashboard/tests/*.test.ts src/modules/users/tests/*.test.ts src/modules/professionals/tests/*.test.ts src/modules/appointments/tests/*.test.ts src/modules/patients/tests/*.test.ts src/modules/medical-records/tests/*.test.ts src/modules/audit/tests/*.test.ts src/shared/validators/list-query.test.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.4.0",
@@ -24,6 +24,10 @@
     "@phosphor-icons/react": "^2.1.10",
     "@tanstack/react-query": "^5.101.4",
     "@tanstack/react-query-devtools": "^5.101.4",
+    "@tiptap/extension-placeholder": "^3.29.0",
+    "@tiptap/pm": "^3.29.0",
+    "@tiptap/react": "^3.29.0",
+    "@tiptap/starter-kit": "^3.29.0",
     "better-auth": "^1.6.24",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
