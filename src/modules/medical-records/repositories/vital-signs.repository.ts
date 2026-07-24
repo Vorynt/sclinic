@@ -71,7 +71,7 @@ export const vitalSignsRepository = {
   async listByPatient(params: {
     clinicId: string
     patientId: string
-    excludeAppointmentId: string
+    excludeAppointmentId?: string
   }): Promise<VitalSigns[]> {
     return withDbError(async () => {
       const rows = await vitalSignsJoin()
@@ -79,7 +79,9 @@ export const vitalSignsRepository = {
           and(
             eq(vitalSigns.clinicId, params.clinicId),
             eq(vitalSigns.patientId, params.patientId),
-            ne(vitalSigns.appointmentId, params.excludeAppointmentId),
+            params.excludeAppointmentId
+              ? ne(vitalSigns.appointmentId, params.excludeAppointmentId)
+              : undefined,
             isNull(vitalSigns.deletedAt),
             isNull(appointments.deletedAt),
           ),

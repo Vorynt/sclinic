@@ -18,5 +18,6 @@ export const upsertClinicalNoteSchema = z.object({
 })
 
 export const listPatientClinicalNotesSchema = z.object({
-  appointmentId: appointmentIdSchema,
+  patientId: z.string().uuid("Paciente inválido"),
+  excludeAppointmentId: appointmentIdSchema.optional(),
 })

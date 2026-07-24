@@ -15,6 +15,13 @@ export const routes = {
   home: "/home",
   users: "/users",
   patients: "/patients",
+  patientDetail: (patientId: string) => `/patients/${patientId}`,
+  patientDetailProfile: (patientId: string) =>
+    `/patients/${patientId}/profile`,
+  patientDetailAppointments: (patientId: string) =>
+    `/patients/${patientId}/appointments`,
+  patientDetailNotes: (patientId: string) => `/patients/${patientId}/notes`,
+  patientDetailVitals: (patientId: string) => `/patients/${patientId}/vitals`,
   professionals: "/professionals",
   appointments: "/appointments",
   appointmentAttendance: (appointmentId: string) =>

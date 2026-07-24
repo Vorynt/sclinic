@@ -63,16 +63,26 @@ describe("upsertVitalSignsSchema", () => {
 })
 
 describe("listPatientVitalSignsSchema", () => {
-  it("requires a valid appointment id", () => {
+  it("requires a valid patient id", () => {
     assert.equal(
       listPatientVitalSignsSchema.safeParse({
-        appointmentId: VALID_UUID,
+        patientId: VALID_UUID,
       }).success,
       true,
     )
     assert.equal(
-      listPatientVitalSignsSchema.safeParse({ appointmentId: "bad" }).success,
+      listPatientVitalSignsSchema.safeParse({ patientId: "bad" }).success,
       false,
+    )
+  })
+
+  it("accepts an optional exclude appointment id", () => {
+    assert.equal(
+      listPatientVitalSignsSchema.safeParse({
+        patientId: VALID_UUID,
+        excludeAppointmentId: VALID_UUID,
+      }).success,
+      true,
     )
   })
 })

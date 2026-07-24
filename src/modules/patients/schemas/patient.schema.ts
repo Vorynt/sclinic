@@ -34,6 +34,13 @@ const patientOptionalFields = {
     .regex(/^\d{4}-\d{2}-\d{2}$/, "Data inválida (YYYY-MM-DD)")
     .optional()
     .or(z.literal("").transform(() => undefined)),
+  emergencyContactName: z
+    .string()
+    .trim()
+    .max(200, "Nome deve ter no máximo 200 caracteres")
+    .transform((value) => (value.length === 0 ? undefined : value))
+    .optional(),
+  emergencyContactPhone: optionalTrimmed,
 }
 
 export const createPatientSchema = z.object({
@@ -64,7 +71,9 @@ export const updatePatientSchema = z
       data.cpf !== undefined ||
       data.phone !== undefined ||
       data.email !== undefined ||
-      data.birthDate !== undefined,
+      data.birthDate !== undefined ||
+      data.emergencyContactName !== undefined ||
+      data.emergencyContactPhone !== undefined,
     {
       message: "Informe ao menos um campo para atualizar",
       path: ["_form"],

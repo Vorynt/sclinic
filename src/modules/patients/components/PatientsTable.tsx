@@ -5,6 +5,7 @@ import {
   PencilSimpleIcon,
   TrashIcon,
 } from "@phosphor-icons/react";
+import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -37,6 +38,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Permission } from "@/config/permissions";
+import { routes } from "@/config/routes";
 import type { ListQueryParams } from "@/hooks/use-list-query-params";
 import { useDeletePatientMutation } from "@/modules/patients/hooks/use-patient-mutations";
 import { usePatientsQuery } from "@/modules/patients/hooks/use-patients";
@@ -118,7 +120,13 @@ export function PatientsTable({
         <TableBody>
           {patients.map((patient) => (
             <TableRow key={patient.id}>
-              <TableCell className="font-medium">{patient.name}</TableCell>
+              <TableCell className="font-medium">
+                <Link
+                  href={routes.patientDetail(patient.id)}
+                  className="text-foreground underline-offset-4 hover:underline">
+                  {patient.name}
+                </Link>
+              </TableCell>
               <TableCell>{formatCpf(patient.cpf)}</TableCell>
               <TableCell>
                 {patient.phone ? formatPhone(patient.phone) : "—"}

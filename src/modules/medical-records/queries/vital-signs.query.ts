@@ -4,12 +4,18 @@ import { getVitalSignsForAppointmentAction } from "@/modules/medical-records/act
 import { listPatientVitalSignsAction } from "@/modules/medical-records/actions/list-patient-vital-signs"
 import { unwrapActionResult } from "@/shared/errors"
 
+export type PatientVitalSignsFilters = {
+  patientId: string
+  excludeAppointmentId?: string
+}
+
 export const vitalSignsQueryKeys = {
   all: ["vital-signs"] as const,
   forAppointment: (appointmentId: string) =>
     [...vitalSignsQueryKeys.all, "appointment", appointmentId] as const,
-  patientHistory: (appointmentId: string) =>
-    [...vitalSignsQueryKeys.all, "history", appointmentId] as const,
+  patientHistories: () => [...vitalSignsQueryKeys.all, "history"] as const,
+  patientHistory: (filters: PatientVitalSignsFilters) =>
+    [...vitalSignsQueryKeys.patientHistories(), filters] as const,
 }
 
 export const vitalSignsQueries = {
@@ -22,12 +28,10 @@ export const vitalSignsQueries = {
         ),
     }),
 
-  patientHistory: (appointmentId: string) =>
+  patientHistory: (filters: PatientVitalSignsFilters) =>
     queryOptions({
-      queryKey: vitalSignsQueryKeys.patientHistory(appointmentId),
+      queryKey: vitalSignsQueryKeys.patientHistory(filters),
       queryFn: async () =>
-        unwrapActionResult(
-          await listPatientVitalSignsAction({ appointmentId }),
-        ),
+        unwrapActionResult(await listPatientVitalSignsAction(filters)),
     }),
 }

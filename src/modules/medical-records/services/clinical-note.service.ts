@@ -9,6 +9,7 @@ import type {
   ClinicalNote,
   ClinicalNoteForAppointment,
 } from "@/modules/medical-records/types/clinical-note"
+import { patientService } from "@/modules/patients/services/patient.service"
 import type { AuthRequestContext } from "@/shared/auth"
 import { AppError, ErrorCode } from "@/shared/errors"
 
@@ -36,16 +37,13 @@ export const clinicalNoteService = {
     data: ListPatientClinicalNotesDto,
     ctx: AuthRequestContext,
   ): Promise<ClinicalNote[]> {
-    await requirePermission(ctx, Permission.RECORDS_READ)
-    const appointment = await appointmentService.getById(
-      data.appointmentId,
-      ctx,
-    )
+    const auth = await requirePermission(ctx, Permission.RECORDS_READ)
+    await patientService.getById(data.patientId, ctx)
 
     return clinicalNoteRepository.listByPatient({
-      clinicId: appointment.clinicId,
-      patientId: appointment.patientId,
-      excludeAppointmentId: appointment.id,
+      clinicId: auth.clinicId,
+      patientId: data.patientId,
+      excludeAppointmentId: data.excludeAppointmentId,
     })
   },
 

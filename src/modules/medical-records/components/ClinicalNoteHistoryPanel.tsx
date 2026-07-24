@@ -19,22 +19,26 @@ type ClinicalNoteHistoryPanelProps = {
   notes: ClinicalNote[] | undefined
   isLoading: boolean
   isError: boolean
+  title?: string
+  description?: string
+  emptyMessage?: string
 }
 
 export function ClinicalNoteHistoryPanel({
   notes,
   isLoading,
   isError,
+  title = "Anotações anteriores",
+  description = "Histórico clínico do paciente em outros atendimentos.",
+  emptyMessage = "Nenhuma anotação anterior.",
 }: ClinicalNoteHistoryPanelProps) {
   return (
     <aside className="flex flex-col gap-3">
       <div className="flex flex-col gap-1">
         <h3 className="font-heading text-sm font-semibold tracking-tight text-foreground">
-          Anotações anteriores
+          {title}
         </h3>
-        <p className="text-xs text-muted-foreground">
-          Histórico clínico do paciente em outros atendimentos.
-        </p>
+        <p className="text-xs text-muted-foreground">{description}</p>
       </div>
 
       {isLoading ? (
@@ -51,7 +55,7 @@ export function ClinicalNoteHistoryPanel({
 
       {!isLoading && !isError && notes && notes.length === 0 ? (
         <p className="rounded-md border border-dashed border-border px-3 py-6 text-sm text-muted-foreground">
-          Nenhuma anotação anterior.
+          {emptyMessage}
         </p>
       ) : null}
 

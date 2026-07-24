@@ -28,7 +28,13 @@ type ClinicalNotesPanelProps = {
 
 export function ClinicalNotesPanel({ appointmentId }: ClinicalNotesPanelProps) {
   const noteQuery = useClinicalNoteForAppointmentQuery(appointmentId);
-  const historyQuery = usePatientClinicalNotesQuery(appointmentId);
+  const historyQuery = usePatientClinicalNotesQuery(
+    {
+      patientId: noteQuery.data?.patientId ?? "",
+      excludeAppointmentId: appointmentId,
+    },
+    Boolean(noteQuery.data?.patientId),
+  );
 
   if (noteQuery.isLoading) {
     return (

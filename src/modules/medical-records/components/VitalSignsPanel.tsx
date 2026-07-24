@@ -54,7 +54,13 @@ function toFormDefaults(
 
 export function VitalSignsPanel({ appointmentId }: VitalSignsPanelProps) {
   const vitalsQuery = useVitalSignsForAppointmentQuery(appointmentId);
-  const historyQuery = usePatientVitalSignsQuery(appointmentId);
+  const historyQuery = usePatientVitalSignsQuery(
+    {
+      patientId: vitalsQuery.data?.patientId ?? "",
+      excludeAppointmentId: appointmentId,
+    },
+    Boolean(vitalsQuery.data?.patientId),
+  );
 
   if (vitalsQuery.isLoading) {
     return (

@@ -59,7 +59,7 @@ export const clinicalNoteRepository = {
   async listByPatient(params: {
     clinicId: string
     patientId: string
-    excludeAppointmentId: string
+    excludeAppointmentId?: string
   }): Promise<ClinicalNote[]> {
     return withDbError(async () => {
       const rows = await clinicalNoteJoin()
@@ -67,7 +67,9 @@ export const clinicalNoteRepository = {
           and(
             eq(clinicalNotes.clinicId, params.clinicId),
             eq(clinicalNotes.patientId, params.patientId),
-            ne(clinicalNotes.appointmentId, params.excludeAppointmentId),
+            params.excludeAppointmentId
+              ? ne(clinicalNotes.appointmentId, params.excludeAppointmentId)
+              : undefined,
             isNull(clinicalNotes.deletedAt),
             isNull(appointments.deletedAt),
           ),

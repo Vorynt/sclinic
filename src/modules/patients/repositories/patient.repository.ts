@@ -38,6 +38,8 @@ export const patientRepository = {
           email: params.data.email ?? null,
           phone: params.data.phone ?? null,
           birthDate: params.data.birthDate ?? null,
+          emergencyContactName: params.data.emergencyContactName ?? null,
+          emergencyContactPhone: params.data.emergencyContactPhone ?? null,
           status: "active",
           createdBy: params.createdBy,
           updatedBy: params.createdBy,
@@ -112,7 +114,15 @@ export const patientRepository = {
     data: Omit<UpdatePatientDto, "id">
   }): Promise<Patient> {
     return withDbError(async () => {
-      const { name, cpf, email, phone, birthDate } = params.data
+      const {
+        name,
+        cpf,
+        email,
+        phone,
+        birthDate,
+        emergencyContactName,
+        emergencyContactPhone,
+      } = params.data
 
       const [row] = await db
         .update(patients)
@@ -122,6 +132,12 @@ export const patientRepository = {
           ...(email !== undefined ? { email } : {}),
           ...(phone !== undefined ? { phone } : {}),
           ...(birthDate !== undefined ? { birthDate } : {}),
+          ...(emergencyContactName !== undefined
+            ? { emergencyContactName }
+            : {}),
+          ...(emergencyContactPhone !== undefined
+            ? { emergencyContactPhone }
+            : {}),
           updatedBy: params.updatedBy,
         })
         .where(

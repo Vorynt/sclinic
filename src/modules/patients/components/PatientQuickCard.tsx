@@ -5,6 +5,7 @@ import { usePatient } from "@/modules/patients/hooks/use-patient"
 import type { Patient } from "@/modules/patients/types/patient"
 import { getPatientAgeYears } from "@/modules/patients/utils/patient-age"
 import { formatCpf } from "@/utils/cpf"
+import { formatPhone } from "@/utils/phone"
 
 type PatientQuickCardProps = {
   patientId: string
@@ -38,7 +39,12 @@ function PatientQuickCardContent({ patient }: { patient: Patient }) {
   const ageYears = getPatientAgeYears(patient.birthDate)
   const emergency =
     patient.emergencyContactName || patient.emergencyContactPhone
-      ? [patient.emergencyContactName, patient.emergencyContactPhone]
+      ? [
+          patient.emergencyContactName,
+          patient.emergencyContactPhone
+            ? formatPhone(patient.emergencyContactPhone)
+            : null,
+        ]
           .filter(Boolean)
           .join(" · ")
       : null
@@ -76,7 +82,9 @@ function PatientQuickCardContent({ patient }: { patient: Patient }) {
 
         <div className="flex flex-col gap-0.5">
           <dt className="text-xs text-muted-foreground">Telefone</dt>
-          <dd className="text-sm text-foreground">{patient.phone || "—"}</dd>
+          <dd className="text-sm text-foreground">
+            {patient.phone ? formatPhone(patient.phone) : "—"}
+          </dd>
         </div>
 
         <div className="flex flex-col gap-0.5">
@@ -84,10 +92,14 @@ function PatientQuickCardContent({ patient }: { patient: Patient }) {
           <dd className="text-sm text-foreground">{patient.email || "—"}</dd>
         </div>
 
-        <div className="flex flex-col gap-0.5 sm:col-span-2">
-          <dt className="text-xs text-muted-foreground">Contato de emergência</dt>
-          <dd className="text-sm text-foreground">{emergency || "—"}</dd>
-        </div>
+        {emergency ? (
+          <div className="flex flex-col gap-0.5 sm:col-span-2">
+            <dt className="text-xs text-muted-foreground">
+              Contato de emergência
+            </dt>
+            <dd className="text-sm text-foreground">{emergency}</dd>
+          </div>
+        ) : null}
       </dl>
 
       {patient.notes ? (

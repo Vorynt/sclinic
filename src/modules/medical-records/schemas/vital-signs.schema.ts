@@ -71,5 +71,6 @@ export const upsertVitalSignsSchema = z
   })
 
 export const listPatientVitalSignsSchema = z.object({
-  appointmentId: appointmentIdSchema,
+  patientId: z.string().uuid("Paciente inválido"),
+  excludeAppointmentId: appointmentIdSchema.optional(),
 })

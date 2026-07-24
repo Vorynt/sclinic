@@ -20,22 +20,26 @@ type VitalSignsHistoryPanelProps = {
   items: VitalSigns[] | undefined
   isLoading: boolean
   isError: boolean
+  title?: string
+  description?: string
+  emptyMessage?: string
 }
 
 export function VitalSignsHistoryPanel({
   items,
   isLoading,
   isError,
+  title = "Histórico de sinais vitais",
+  description = "Medições de outros atendimentos do paciente.",
+  emptyMessage = "Nenhum registro anterior.",
 }: VitalSignsHistoryPanelProps) {
   return (
     <aside className="flex flex-col gap-3">
       <div className="flex flex-col gap-1">
         <h3 className="font-heading text-sm font-semibold tracking-tight text-foreground">
-          Histórico de sinais vitais
+          {title}
         </h3>
-        <p className="text-xs text-muted-foreground">
-          Medições de outros atendimentos do paciente.
-        </p>
+        <p className="text-xs text-muted-foreground">{description}</p>
       </div>
 
       {isLoading ? (
@@ -52,7 +56,7 @@ export function VitalSignsHistoryPanel({
 
       {!isLoading && !isError && items && items.length === 0 ? (
         <p className="rounded-md border border-dashed border-border px-3 py-6 text-sm text-muted-foreground">
-          Nenhum registro anterior.
+          {emptyMessage}
         </p>
       ) : null}
 

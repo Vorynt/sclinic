@@ -52,17 +52,32 @@ describe("createPatientSchema", () => {
     assert.equal(parsed.birthDate, undefined)
   })
 
-  it("accepts optional phone, email and birthDate", () => {
+  it("accepts optional phone, email, birthDate and emergency contact", () => {
     const parsed = createPatientSchema.parse({
       name: "Maria Silva",
       cpf: VALID_CPF,
       phone: "11999998888",
       email: "maria@example.com",
       birthDate: "1990-05-20",
+      emergencyContactName: " João Silva ",
+      emergencyContactPhone: "11988887777",
     })
     assert.equal(parsed.phone, "11999998888")
     assert.equal(parsed.email, "maria@example.com")
     assert.equal(parsed.birthDate, "1990-05-20")
+    assert.equal(parsed.emergencyContactName, "João Silva")
+    assert.equal(parsed.emergencyContactPhone, "11988887777")
+  })
+
+  it("drops empty emergency contact fields", () => {
+    const parsed = createPatientSchema.parse({
+      name: "Maria Silva",
+      cpf: VALID_CPF,
+      emergencyContactName: "  ",
+      emergencyContactPhone: "",
+    })
+    assert.equal(parsed.emergencyContactName, undefined)
+    assert.equal(parsed.emergencyContactPhone, undefined)
   })
 
   it("rejects invalid email and birthDate format", () => {

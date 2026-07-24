@@ -61,6 +61,8 @@ export function PatientForm({
       phone: patient?.phone ?? "",
       email: patient?.email ?? "",
       birthDate: patient?.birthDate ?? "",
+      emergencyContactName: patient?.emergencyContactName ?? "",
+      emergencyContactPhone: patient?.emergencyContactPhone ?? "",
     },
   });
 
@@ -195,6 +197,50 @@ export function PatientForm({
           />
           <FieldError errors={[errors.birthDate]} />
         </Field>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field
+            data-invalid={Boolean(errors.emergencyContactName) || undefined}>
+            <FieldLabel htmlFor="patient-emergency-name">
+              Contato de emergência
+            </FieldLabel>
+            <Input
+              id="patient-emergency-name"
+              autoComplete="name"
+              placeholder="Nome (opcional)"
+              aria-invalid={
+                Boolean(errors.emergencyContactName) || undefined
+              }
+              disabled={isPending}
+              {...register("emergencyContactName")}
+            />
+            <FieldError errors={[errors.emergencyContactName]} />
+          </Field>
+
+          <Field
+            data-invalid={Boolean(errors.emergencyContactPhone) || undefined}>
+            <FieldLabel htmlFor="patient-emergency-phone">
+              Telefone de emergência
+            </FieldLabel>
+            <Input
+              id="patient-emergency-phone"
+              type="tel"
+              autoComplete="tel"
+              placeholder="(00) 00000-0000"
+              inputMode="numeric"
+              aria-invalid={
+                Boolean(errors.emergencyContactPhone) || undefined
+              }
+              disabled={isPending}
+              {...registerWithMask(
+                "emergencyContactPhone",
+                MASKS.phone,
+                MASK_INPUT_OPTIONS,
+              )}
+            />
+            <FieldError errors={[errors.emergencyContactPhone]} />
+          </Field>
+        </div>
       </FieldGroup>
 
       <DialogFooter className="flex justify-end gap-2">

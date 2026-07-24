@@ -74,18 +74,28 @@ describe("upsertClinicalNoteSchema", () => {
 })
 
 describe("listPatientClinicalNotesSchema", () => {
-  it("requires a valid appointment id", () => {
+  it("requires a valid patient id", () => {
     assert.equal(
       listPatientClinicalNotesSchema.safeParse({
-        appointmentId: VALID_UUID,
+        patientId: VALID_UUID,
       }).success,
       true,
     )
     assert.equal(
       listPatientClinicalNotesSchema.safeParse({
-        appointmentId: "bad",
+        patientId: "bad",
       }).success,
       false,
+    )
+  })
+
+  it("accepts an optional exclude appointment id", () => {
+    assert.equal(
+      listPatientClinicalNotesSchema.safeParse({
+        patientId: VALID_UUID,
+        excludeAppointmentId: OTHER_UUID,
+      }).success,
+      true,
     )
   })
 })

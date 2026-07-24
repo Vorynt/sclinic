@@ -13,28 +13,32 @@ import { usePatientAppointmentsQuery } from "@/modules/appointments/hooks/use-ap
 
 type PatientAppointmentHistoryProps = {
   patientId: string
-  excludeAppointmentId: string
+  excludeAppointmentId?: string
+  limit?: number
+  title?: string
+  description?: string
 }
 
 export function PatientAppointmentHistory({
   patientId,
   excludeAppointmentId,
+  limit = 10,
+  title = "Histórico de consultas",
+  description = "Atendimentos anteriores deste paciente na clínica.",
 }: PatientAppointmentHistoryProps) {
   const historyQuery = usePatientAppointmentsQuery({
     patientId,
     excludeAppointmentId,
-    limit: 10,
+    limit,
   })
 
   return (
     <section className="flex flex-col gap-3 rounded-md border border-border px-4 py-4">
       <div className="flex flex-col gap-0.5">
         <h3 className="font-heading text-sm font-semibold tracking-tight text-foreground">
-          Histórico de consultas
+          {title}
         </h3>
-        <p className="text-xs text-muted-foreground">
-          Atendimentos anteriores deste paciente na clínica.
-        </p>
+        <p className="text-xs text-muted-foreground">{description}</p>
       </div>
 
       {historyQuery.isLoading ? (
