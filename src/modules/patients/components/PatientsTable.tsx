@@ -38,11 +38,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Permission } from "@/config/permissions";
-import { routes } from "@/config/routes";
 import type { ListQueryParams } from "@/hooks/use-list-query-params";
 import { useDeletePatientMutation } from "@/modules/patients/hooks/use-patient-mutations";
 import { usePatientsQuery } from "@/modules/patients/hooks/use-patients";
 import type { Patient } from "@/modules/patients/types/patient";
+import { buildPatientDetailHref } from "@/modules/patients/utils/patients-list-href";
 import { useAuth } from "@/providers/AuthProvider";
 import { DEFAULT_LIST_PAGE_SIZE } from "@/shared/validators";
 import { formatCpf } from "@/utils/cpf";
@@ -122,7 +122,10 @@ export function PatientsTable({
             <TableRow key={patient.id}>
               <TableCell className="font-medium">
                 <Link
-                  href={routes.patientDetail(patient.id)}
+                  href={buildPatientDetailHref(patient.id, {
+                    q: filters.q,
+                    page: filters.page,
+                  })}
                   className="text-foreground underline-offset-4 hover:underline">
                   {patient.name}
                 </Link>

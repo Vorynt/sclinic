@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import { useSearchParams } from "next/navigation"
 
 import { Button } from "@/components/ui/button"
 import { Permission } from "@/config/permissions"
@@ -8,6 +9,10 @@ import { routes } from "@/config/routes"
 import { PatientAppointmentHistory } from "@/modules/appointments/components/PatientAppointmentHistory"
 import { PatientClinicalAlertsPanel } from "@/modules/medical-records/components/PatientClinicalAlertsPanel"
 import { PatientQuickCard } from "@/modules/patients/components/PatientQuickCard"
+import {
+  patientsListLocationFromSearchParams,
+  withPatientsListParams,
+} from "@/modules/patients/utils/patients-list-href"
 import { useAuth } from "@/providers/AuthProvider"
 
 type PatientOverviewPanelProps = {
@@ -22,6 +27,8 @@ export function PatientOverviewPanel({
   patientId,
 }: PatientOverviewPanelProps) {
   const { can, canAny } = useAuth()
+  const searchParams = useSearchParams()
+  const listLocation = patientsListLocationFromSearchParams(searchParams)
   const canReadRecords = can(Permission.RECORDS_READ)
   const canReadAppointments = canAny(
     Permission.APPOINTMENTS_CREATE,
@@ -58,13 +65,23 @@ export function PatientOverviewPanel({
 
       <div className="flex flex-wrap gap-2">
         <Button asChild variant="outline" size="sm">
-          <Link href={routes.patientDetailProfile(patientId)}>
+          <Link
+            href={withPatientsListParams(
+              routes.patientDetailProfile(patientId),
+              listLocation,
+            )}
+          >
             Abrir cadastro
           </Link>
         </Button>
         {canReadAppointments ? (
           <Button asChild variant="outline" size="sm">
-            <Link href={routes.patientDetailAppointments(patientId)}>
+            <Link
+              href={withPatientsListParams(
+                routes.patientDetailAppointments(patientId),
+                listLocation,
+              )}
+            >
               Ver agendamentos
             </Link>
           </Button>
@@ -72,12 +89,22 @@ export function PatientOverviewPanel({
         {canReadRecords ? (
           <>
             <Button asChild variant="outline" size="sm">
-              <Link href={routes.patientDetailNotes(patientId)}>
+              <Link
+                href={withPatientsListParams(
+                  routes.patientDetailNotes(patientId),
+                  listLocation,
+                )}
+              >
                 Ver anotações
               </Link>
             </Button>
             <Button asChild variant="outline" size="sm">
-              <Link href={routes.patientDetailVitals(patientId)}>
+              <Link
+                href={withPatientsListParams(
+                  routes.patientDetailVitals(patientId),
+                  listLocation,
+                )}
+              >
                 Ver sinais vitais
               </Link>
             </Button>

@@ -8,6 +8,12 @@ import {
   updatePatientSchema,
 } from "@/modules/patients/schemas/patient.schema"
 import { getPatientAgeYears } from "@/modules/patients/utils/patient-age"
+import {
+  buildPatientDetailHref,
+  buildPatientsListHref,
+  patientsListLocationFromSearchParams,
+  withPatientsListParams,
+} from "@/modules/patients/utils/patients-list-href"
 
 const VALID_CPF = "529.982.247-25"
 const VALID_CPF_DIGITS = "52998224725"
@@ -138,7 +144,7 @@ describe("listPatientsSchema", () => {
     const parsed = listPatientsSchema.parse({})
     assert.equal(parsed.q, undefined)
     assert.equal(parsed.page, 1)
-    assert.equal(parsed.pageSize, 20)
+    assert.equal(parsed.pageSize, 10)
   })
 
   it("trims q and converts empty string to undefined", () => {
@@ -151,6 +157,39 @@ describe("listPatientsSchema", () => {
     assert.equal(parsed.q, "Ana")
     assert.equal(parsed.page, 2)
     assert.equal(parsed.pageSize, 10)
+  })
+})
+
+describe("patients list href helpers", () => {
+  it("builds list and detail hrefs with q and page", () => {
+    assert.equal(
+      buildPatientsListHref({ q: "Maria", page: 2 }),
+      "/patients?q=Maria&page=2",
+    )
+    assert.equal(
+      buildPatientDetailHref(VALID_UUID, { q: "Maria", page: 2 }),
+      `/patients/${VALID_UUID}?q=Maria&page=2`,
+    )
+  })
+
+  it("omits empty q and page 1", () => {
+    assert.equal(buildPatientsListHref({ q: "  ", page: 1 }), "/patients")
+    assert.equal(buildPatientDetailHref(VALID_UUID), `/patients/${VALID_UUID}`)
+  })
+
+  it("preserves list params on section hrefs and parses them back", () => {
+    assert.equal(
+      withPatientsListParams(`/patients/${VALID_UUID}/profile`, {
+        q: "Ana",
+        page: 3,
+      }),
+      `/patients/${VALID_UUID}/profile?q=Ana&page=3`,
+    )
+
+    const location = patientsListLocationFromSearchParams(
+      new URLSearchParams("q=Ana&page=3"),
+    )
+    assert.deepEqual(location, { q: "Ana", page: 3 })
   })
 })
 

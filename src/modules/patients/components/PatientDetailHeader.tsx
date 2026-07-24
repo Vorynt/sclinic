@@ -6,8 +6,8 @@ import Link from "next/link"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Permission } from "@/config/permissions"
-import { routes } from "@/config/routes"
 import { PatientClinicalAlertBadges } from "@/modules/medical-records/components/PatientClinicalAlertBadges"
+import { usePatientsListReturnHref } from "@/modules/patients/hooks/use-patients-list-return-href"
 import type { Patient } from "@/modules/patients/types/patient"
 import { getPatientAgeYears } from "@/modules/patients/utils/patient-age"
 import { useAuth } from "@/providers/AuthProvider"
@@ -28,6 +28,7 @@ export function PatientDetailHeader({
   onSchedule,
 }: PatientDetailHeaderProps) {
   const { can } = useAuth()
+  const patientsHref = usePatientsListReturnHref()
   const ageYears = getPatientAgeYears(patient.birthDate)
   const canSchedule = Boolean(onSchedule) && can(Permission.APPOINTMENTS_CREATE)
   const canReadRecords = can(Permission.RECORDS_READ)
@@ -36,7 +37,7 @@ export function PatientDetailHeader({
     <header className="flex flex-col gap-4 border-b pb-4 sm:flex-row sm:items-start sm:justify-between">
       <div className="flex min-w-0 flex-col gap-2">
         <Button asChild variant="ghost" size="sm" className="-ml-2 w-fit">
-          <Link href={routes.patients}>
+          <Link href={patientsHref}>
             <ArrowLeftIcon />
             Pacientes
           </Link>
