@@ -2,6 +2,15 @@ import { env } from "@/config/env"
 import { Permission } from "@/config/permissions"
 import { email } from "@/core/email"
 import {
+  AUDIT_ACTIONS,
+  AUDIT_ENTITY_TYPES,
+} from "@/modules/audit/constants/audit"
+import {
+  auditErrorFields,
+  recordAudit,
+} from "@/modules/audit/emit"
+import { auditActorFromAuth } from "@/modules/audit/utils/audit-actor"
+import {
   requirePasswordReady,
   requirePermission,
   type AuthContextWithClinic,
@@ -144,73 +153,103 @@ export const invitationService = {
     ctx: AuthRequestContext,
   ): Promise<ClinicInvitation> {
     const auth = await requireTeamAccess(ctx)
+    const actor = auditActorFromAuth(auth)
     assertAssignableRoleKey(data.roleKey)
 
-    const existingMember = await memberRepository.findActiveByEmailAndClinic(
-      data.email,
-      auth.clinicId,
-    )
-    if (existingMember) {
-      throw new AppError(ErrorCode.CONFLICT, {
-        message: "Este e-mail já faz parte da clínica.",
-      })
-    }
-
-    const pending = await invitationRepository.findPendingByEmailAndClinic(
-      data.email,
-      auth.clinicId,
-    )
-    if (pending && pending.expiresAt.getTime() > Date.now()) {
-      throw new AppError(ErrorCode.CONFLICT, {
-        message: "Já existe um convite pendente para este e-mail.",
-      })
-    }
-    if (pending) {
-      await invitationRepository.markExpired(pending.id)
-    }
-
-    const role = await roleRepository.findSystemByKey(data.roleKey)
-    if (!role) {
-      throw new AppError(ErrorCode.NOT_FOUND, {
-        message: "Papel não encontrado.",
-      })
-    }
-
-    // New accounts get an opaque provisional password; invitees set theirs via token.
-    await authService.provisionInvitedUser({
-      name: data.name,
-      email: data.email,
-    })
-
-    const clinic = await clinicService.getById(auth.clinicId, ctx)
-    const rawToken = createInviteToken()
-    const invitation = await invitationRepository.create({
-      clinicId: auth.clinicId,
-      email: data.email,
-      roleId: role.id,
-      invitedBy: auth.user.id,
-      tokenHash: hashInviteToken(rawToken),
-      expiresAt: new Date(Date.now() + USERS_CONSTANTS.INVITE_TTL_MS),
-    })
-
-    const inviteUrl = new URL("/invite", env.BETTER_AUTH_URL)
-    inviteUrl.searchParams.set("token", rawToken)
-
     try {
-      await email.messages.collaboratorInvite({
-        to: data.email,
+      const existingMember = await memberRepository.findActiveByEmailAndClinic(
+        data.email,
+        auth.clinicId,
+      )
+      if (existingMember) {
+        throw new AppError(ErrorCode.CONFLICT, {
+          message: "Este e-mail já faz parte da clínica.",
+        })
+      }
+
+      const pending = await invitationRepository.findPendingByEmailAndClinic(
+        data.email,
+        auth.clinicId,
+      )
+      if (pending && pending.expiresAt.getTime() > Date.now()) {
+        throw new AppError(ErrorCode.CONFLICT, {
+          message: "Já existe um convite pendente para este e-mail.",
+        })
+      }
+      if (pending) {
+        await invitationRepository.markExpired(pending.id)
+      }
+
+      const role = await roleRepository.findSystemByKey(data.roleKey)
+      if (!role) {
+        throw new AppError(ErrorCode.NOT_FOUND, {
+          message: "Papel não encontrado.",
+        })
+      }
+
+      // New accounts get an opaque provisional password; invitees set theirs via token.
+      await authService.provisionInvitedUser({
         name: data.name,
-        inviterName: auth.user.name,
-        clinicName: clinic.name,
-        roleName: getRoleLabel(role.key, role.name),
-        inviteUrl: inviteUrl.toString(),
+        email: data.email,
       })
+
+      const clinic = await clinicService.getById(auth.clinicId, ctx)
+      const rawToken = createInviteToken()
+      const invitation = await invitationRepository.create({
+        clinicId: auth.clinicId,
+        email: data.email,
+        roleId: role.id,
+        invitedBy: auth.user.id,
+        tokenHash: hashInviteToken(rawToken),
+        expiresAt: new Date(Date.now() + USERS_CONSTANTS.INVITE_TTL_MS),
+      })
+
+      const inviteUrl = new URL("/invite", env.BETTER_AUTH_URL)
+      inviteUrl.searchParams.set("token", rawToken)
+
+      try {
+        await email.messages.collaboratorInvite({
+          to: data.email,
+          name: data.name,
+          inviterName: auth.user.name,
+          clinicName: clinic.name,
+          roleName: getRoleLabel(role.key, role.name),
+          inviteUrl: inviteUrl.toString(),
+        })
+      } catch (error) {
+        await invitationRepository.revoke(invitation.id, auth.clinicId)
+        throw error
+      }
+
+      recordAudit({
+        ...actor,
+        action: AUDIT_ACTIONS.INVITATION_CREATE,
+        status: "success",
+        entityType: AUDIT_ENTITY_TYPES.INVITATION,
+        entityId: invitation.id,
+        changes: {
+          after: {
+            email: invitation.email,
+            roleKey: invitation.roleKey,
+            status: invitation.status,
+          },
+        },
+      })
+
+      return invitation
     } catch (error) {
-      await invitationRepository.revoke(invitation.id, auth.clinicId)
+      recordAudit({
+        ...actor,
+        action: AUDIT_ACTIONS.INVITATION_CREATE,
+        status: "error",
+        entityType: AUDIT_ENTITY_TYPES.INVITATION,
+        changes: {
+          after: { email: data.email, name: data.name, roleKey: data.roleKey },
+        },
+        ...auditErrorFields(error),
+      })
       throw error
     }
-
-    return invitation
   },
 
   async revoke(
@@ -218,15 +257,44 @@ export const invitationService = {
     ctx: AuthRequestContext,
   ): Promise<void> {
     const auth = await requireTeamAccess(ctx)
+    const actor = auditActorFromAuth(auth)
     const invitation = await invitationRepository.findById(
       invitationId,
       auth.clinicId,
     )
-    if (!invitation || invitation.status !== "pending") {
-      throw new AppError(ErrorCode.INVITATION_NOT_FOUND)
-    }
 
-    await invitationRepository.revoke(invitationId, auth.clinicId)
+    try {
+      if (!invitation || invitation.status !== "pending") {
+        throw new AppError(ErrorCode.INVITATION_NOT_FOUND)
+      }
+
+      await invitationRepository.revoke(invitationId, auth.clinicId)
+
+      recordAudit({
+        ...actor,
+        action: AUDIT_ACTIONS.INVITATION_REVOKE,
+        status: "success",
+        entityType: AUDIT_ENTITY_TYPES.INVITATION,
+        entityId: invitationId,
+        changes: {
+          before: {
+            email: invitation.email,
+            roleKey: invitation.roleKey,
+            status: invitation.status,
+          },
+        },
+      })
+    } catch (error) {
+      recordAudit({
+        ...actor,
+        action: AUDIT_ACTIONS.INVITATION_REVOKE,
+        status: "error",
+        entityType: AUDIT_ENTITY_TYPES.INVITATION,
+        entityId: invitationId,
+        ...auditErrorFields(error),
+      })
+      throw error
+    }
   },
 
   async accept(
@@ -236,44 +304,96 @@ export const invitationService = {
     const auth = await requirePasswordReady(ctx)
     const invitation = await loadOpenInvitation(data.token)
 
-    if (auth.user.email.toLowerCase() !== invitation.email.toLowerCase()) {
-      throw new AppError(ErrorCode.INVITE_EMAIL_MISMATCH, {
-        message:
-          "Faça login com o e-mail que recebeu o convite para aceitar.",
-      })
-    }
+    try {
+      if (auth.user.email.toLowerCase() !== invitation.email.toLowerCase()) {
+        throw new AppError(ErrorCode.INVITE_EMAIL_MISMATCH, {
+          message:
+            "Faça login com o e-mail que recebeu o convite para aceitar.",
+        })
+      }
 
-    const existing = await memberRepository.findByUserAndClinic(
-      auth.user.id,
-      invitation.clinicId,
-    )
-    if (existing) {
-      const member =
-        existing.status === "suspended"
-          ? await memberRepository.setStatus(
-              existing.id,
-              invitation.clinicId,
-              "active",
-            )
-          : existing
+      const existing = await memberRepository.findByUserAndClinic(
+        auth.user.id,
+        invitation.clinicId,
+      )
+      if (existing) {
+        const member =
+          existing.status === "suspended"
+            ? await memberRepository.setStatus(
+                existing.id,
+                invitation.clinicId,
+                "active",
+              )
+            : existing
+
+        await invitationRepository.markAccepted(invitation.id)
+        await authService.markEmailVerifiedFromInvite(auth.user.id)
+        await authService.switchClinic({ clinicId: invitation.clinicId }, ctx)
+
+        recordAudit({
+          clinicId: invitation.clinicId,
+          actorUserId: auth.user.id,
+          actorName: auth.user.name,
+          actorEmail: auth.user.email,
+          action: AUDIT_ACTIONS.INVITATION_ACCEPT,
+          status: "success",
+          entityType: AUDIT_ENTITY_TYPES.INVITATION,
+          entityId: invitation.id,
+          changes: {
+            after: {
+              membershipId: member.id,
+              roleKey: member.roleKey,
+              status: member.status,
+            },
+          },
+        })
+
+        return member
+      }
+
+      const member = await memberRepository.create({
+        userId: auth.user.id,
+        clinicId: invitation.clinicId,
+        roleId: invitation.roleId,
+      })
 
       await invitationRepository.markAccepted(invitation.id)
       await authService.markEmailVerifiedFromInvite(auth.user.id)
+
       await authService.switchClinic({ clinicId: invitation.clinicId }, ctx)
+
+      recordAudit({
+        clinicId: invitation.clinicId,
+        actorUserId: auth.user.id,
+        actorName: auth.user.name,
+        actorEmail: auth.user.email,
+        action: AUDIT_ACTIONS.INVITATION_ACCEPT,
+        status: "success",
+        entityType: AUDIT_ENTITY_TYPES.INVITATION,
+        entityId: invitation.id,
+        changes: {
+          after: {
+            membershipId: member.id,
+            roleKey: member.roleKey,
+            status: member.status,
+          },
+        },
+      })
+
       return member
+    } catch (error) {
+      recordAudit({
+        clinicId: invitation.clinicId,
+        actorUserId: auth.user.id,
+        actorName: auth.user.name,
+        actorEmail: auth.user.email,
+        action: AUDIT_ACTIONS.INVITATION_ACCEPT,
+        status: "error",
+        entityType: AUDIT_ENTITY_TYPES.INVITATION,
+        entityId: invitation.id,
+        ...auditErrorFields(error),
+      })
+      throw error
     }
-
-    const member = await memberRepository.create({
-      userId: auth.user.id,
-      clinicId: invitation.clinicId,
-      roleId: invitation.roleId,
-    })
-
-    await invitationRepository.markAccepted(invitation.id)
-    await authService.markEmailVerifiedFromInvite(auth.user.id)
-
-    await authService.switchClinic({ clinicId: invitation.clinicId }, ctx)
-
-    return member
   },
 }

@@ -14,6 +14,7 @@ export const Permission = {
   MEMBERS_INVITE: "members.invite",
   RECORDS_READ: "records.read",
   RECORDS_WRITE: "records.write",
+  AUDIT_READ: "audit.read",
 } as const
 
 export type PermissionKey = (typeof Permission)[keyof typeof Permission]

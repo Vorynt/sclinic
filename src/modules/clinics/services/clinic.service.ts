@@ -1,5 +1,14 @@
 import { Permission } from "@/config/permissions"
 import { routes } from "@/config/routes"
+import {
+  auditErrorFields,
+  recordAudit,
+} from "@/modules/audit/emit"
+import {
+  AUDIT_ACTIONS,
+  AUDIT_ENTITY_TYPES,
+} from "@/modules/audit/constants/audit"
+import { auditActorFromAuth } from "@/modules/audit/utils/audit-actor"
 import { requirePermission } from "@/modules/authentication/permissions/guards"
 import { authService } from "@/modules/authentication/services/auth.service"
 import { billingService } from "@/modules/billing/services/billing.service"
@@ -14,6 +23,17 @@ import type { Clinic } from "@/modules/clinics/types/clinic"
 import type { AuthRequestContext } from "@/shared/auth"
 import { AppError, ErrorCode } from "@/shared/errors"
 
+function clinicSnapshot(clinic: Clinic) {
+  return {
+    id: clinic.id,
+    name: clinic.name,
+    tradeName: clinic.tradeName,
+    timezone: clinic.timezone,
+    phone: clinic.phone ?? null,
+    email: clinic.email ?? null,
+  }
+}
+
 export const clinicService = {
   /**
    * Owner onboarding: clinic + owner membership + incomplete subscription.
@@ -24,23 +44,39 @@ export const clinicService = {
   ): Promise<Clinic> {
     const { planId, ...clinicData } = data
 
-    await billingService.getActivePlan(planId)
+    try {
+      await billingService.getActivePlan(planId)
 
-    const clinic = await clinicRepository.create({
-      ...clinicData,
-      createdBy: ctx.userId,
-      subscriptionStatus: "incomplete",
-    })
+      const clinic = await clinicRepository.create({
+        ...clinicData,
+        createdBy: ctx.userId,
+        subscriptionStatus: "incomplete",
+      })
 
-    await authService.createOwnerMembership({
-      userId: ctx.userId,
-      clinicId: clinic.id,
-      sessionId: ctx.sessionId,
-    })
+      await authService.createOwnerMembership({
+        userId: ctx.userId,
+        clinicId: clinic.id,
+        sessionId: ctx.sessionId,
+      })
 
-    await billingService.attachPlanToClinic(clinic.id, planId)
+      await billingService.attachPlanToClinic(clinic.id, planId)
 
-    return clinic
+      recordAudit({
+        clinicId: clinic.id,
+        actorUserId: ctx.userId,
+        action: AUDIT_ACTIONS.CLINIC_CREATE,
+        status: "success",
+        entityType: AUDIT_ENTITY_TYPES.CLINIC,
+        entityId: clinic.id,
+        changes: { after: clinicSnapshot(clinic) },
+      })
+
+      return clinic
+    } catch (error) {
+      // Clinic may not exist yet — skip persist if we have no clinicId.
+      void error
+      throw error
+    }
   },
 
   /**
@@ -81,6 +117,7 @@ export const clinicService = {
     ctx: AuthRequestContext,
   ): Promise<Clinic> {
     const auth = await requirePermission(ctx, Permission.SETTINGS_MANAGE)
+    const actor = auditActorFromAuth(auth)
 
     const existing = await clinicRepository.findById(auth.clinicId)
     if (!existing) {
@@ -89,11 +126,38 @@ export const clinicService = {
       })
     }
 
-    return clinicRepository.update({
-      id: auth.clinicId,
-      updatedBy: auth.user.id,
-      data,
-    })
+    try {
+      const clinic = await clinicRepository.update({
+        id: auth.clinicId,
+        updatedBy: auth.user.id,
+        data,
+      })
+
+      recordAudit({
+        ...actor,
+        action: AUDIT_ACTIONS.CLINIC_UPDATE,
+        status: "success",
+        entityType: AUDIT_ENTITY_TYPES.CLINIC,
+        entityId: clinic.id,
+        changes: {
+          before: clinicSnapshot(existing),
+          after: clinicSnapshot(clinic),
+        },
+      })
+
+      return clinic
+    } catch (error) {
+      recordAudit({
+        ...actor,
+        action: AUDIT_ACTIONS.CLINIC_UPDATE,
+        status: "error",
+        entityType: AUDIT_ENTITY_TYPES.CLINIC,
+        entityId: auth.clinicId,
+        changes: { before: clinicSnapshot(existing), after: data },
+        ...auditErrorFields(error),
+      })
+      throw error
+    }
   },
 
   /** Active clinic for settings (requires settings.manage). */
@@ -116,6 +180,7 @@ export const clinicService = {
     ctx: AuthRequestContext,
   ): Promise<DeleteClinicResult> {
     const auth = await requirePermission(ctx, Permission.SETTINGS_MANAGE)
+    const actor = auditActorFromAuth(auth)
 
     if (auth.membership.roleKey !== "owner") {
       throw new AppError(ErrorCode.FORBIDDEN, {
@@ -130,27 +195,49 @@ export const clinicService = {
       })
     }
 
-    if (data.confirmationName !== clinic.name) {
-      throw new AppError(ErrorCode.VALIDATION_FAILED, {
-        message: "O nome informado não confere com o nome da clínica.",
+    try {
+      if (data.confirmationName !== clinic.name) {
+        throw new AppError(ErrorCode.VALIDATION_FAILED, {
+          message: "O nome informado não confere com o nome da clínica.",
+        })
+      }
+
+      await clinicRepository.softDeleteTenant({
+        id: clinic.id,
+        updatedBy: auth.user.id,
       })
-    }
 
-    await clinicRepository.softDeleteTenant({
-      id: clinic.id,
-      updatedBy: auth.user.id,
-    })
+      await authService.revokeAccessForClinic(clinic.id)
 
-    await authService.revokeAccessForClinic(clinic.id)
+      recordAudit({
+        ...actor,
+        action: AUDIT_ACTIONS.CLINIC_DELETE,
+        status: "success",
+        entityType: AUDIT_ENTITY_TYPES.CLINIC,
+        entityId: clinic.id,
+        changes: { before: clinicSnapshot(clinic) },
+      })
 
-    const remaining = await authService.listMemberships(ctx)
-    const hasOtherClinic = remaining.some(
-      (membership) =>
-        membership.clinicId !== clinic.id && membership.status === "active",
-    )
+      const remaining = await authService.listMemberships(ctx)
+      const hasOtherClinic = remaining.some(
+        (membership) =>
+          membership.clinicId !== clinic.id && membership.status === "active",
+      )
 
-    return {
-      redirectTo: hasOtherClinic ? routes.home : routes.onboardingPlan,
+      return {
+        redirectTo: hasOtherClinic ? routes.home : routes.onboardingPlan,
+      }
+    } catch (error) {
+      recordAudit({
+        ...actor,
+        action: AUDIT_ACTIONS.CLINIC_DELETE,
+        status: "error",
+        entityType: AUDIT_ENTITY_TYPES.CLINIC,
+        entityId: clinic.id,
+        changes: { before: clinicSnapshot(clinic) },
+        ...auditErrorFields(error),
+      })
+      throw error
     }
   },
 }

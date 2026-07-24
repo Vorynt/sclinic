@@ -16,38 +16,39 @@ import { permissions, rolePermissions, roles } from "@/db/schema";
 const SYSTEM_ROLES = [
   {
     key: "owner",
-    name: "Owner",
-    description: "Clinic owner — full access including billing and members",
+    name: "Proprietário",
+    description:
+      "Proprietário do clínico — acesso completo incluindo faturamento e membros",
   },
   {
     key: "admin",
-    name: "Admin",
-    description: "Clinic administrator",
+    name: "Administrador",
+    description: "Administrador do clínico",
   },
   {
     key: "manager",
-    name: "Manager",
-    description: "Operational manager",
+    name: "Gerente",
+    description: "Gerente operacional",
   },
   {
     key: "receptionist",
-    name: "Receptionist",
-    description: "Front desk — patients and appointments",
+    name: "Recepcionista",
+    description: "Recepcionista — pacientes e agendamentos",
   },
   {
     key: "doctor",
-    name: "Doctor",
-    description: "Health professional with clinical write access",
+    name: "Médico",
+    description: "Profissional de saúde com acesso de escrita clínico",
   },
   {
     key: "nurse",
-    name: "Nurse",
-    description: "Nursing staff",
+    name: "Enfermeiro",
+    description: "Equipe de enfermagem",
   },
   {
     key: "financial",
-    name: "Financial",
-    description: "Billing and financial views",
+    name: "Financeiro",
+    description: "Faturamento e visualização financeira",
   },
 ] as const;
 
@@ -92,6 +93,11 @@ const PERMISSIONS = [
     name: "Write medical records",
     module: "medical-records",
   },
+  {
+    key: "audit.read",
+    name: "Read clinic audit logs",
+    module: "audit",
+  },
 ] as const;
 
 const ROLE_PERMISSION_MATRIX: Record<string, readonly string[]> = {
@@ -109,6 +115,7 @@ const ROLE_PERMISSION_MATRIX: Record<string, readonly string[]> = {
     "members.invite",
     "records.read",
     "records.write",
+    "audit.read",
   ],
   manager: [
     "patients.read",

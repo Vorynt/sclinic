@@ -49,6 +49,13 @@
       "when": 1784858066480,
       "tag": "0007_clinic_hours_second_interval",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1784905850803,
+      "tag": "0007_bored_pretty_boy",
+      "breakpoints": true
     }
   ],
   "version": "7"

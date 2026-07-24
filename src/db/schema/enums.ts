@@ -96,3 +96,5 @@ export const appointmentTypeEnum = pgEnum("appointment_type", [
   "evaluation",
   "other",
 ])
+
+export const auditStatusEnum = pgEnum("audit_status", ["success", "error"])

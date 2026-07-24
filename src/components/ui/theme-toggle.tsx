@@ -13,7 +13,6 @@ import {
 } from "./dropdown-menu";
 
 const THEMES = ["light", "dark", "system"] as const;
-type Theme = (typeof THEMES)[number];
 const THEME_LABELS = {
   light: "Claro",
   dark: "Escuro",
@@ -21,15 +20,14 @@ const THEME_LABELS = {
 };
 
 export function ThemeToggle() {
-  const { theme = "system", setTheme } = useTheme();
+  const { setTheme } = useTheme();
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="h-full rounded-none">
+        <Button variant="ghost" className="h-full rounded-none px-4!">
           <MoonIcon className={cn("h-4 w-4 hidden dark:block")} />
           <SunIcon className={cn("h-4 w-4 dark:hidden")} />
-          <span className="text-xs">{THEME_LABELS[theme as Theme]}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent>

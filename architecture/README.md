@@ -17,6 +17,8 @@ Documentos obrigatórios do projeto. Cada arquivo define uma regra que o código
 | 011 | [form-validation](./011-form-validation.md) | Zod + React Hook Form |
 | 012 | [list-query](./012-list-query.md) | Paginação + busca server-side em tabelas |
 
+Ver também: [ADR-001 — módulo de auditoria](../docs/adr/001-clinic-audit-module.md).
+
 ## Fluxo de camadas
 
 ```

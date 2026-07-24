@@ -137,6 +137,37 @@ const PAGE_META: Record<string, PageMeta> = {
       { label: "Equipe" },
     ],
   },
+  [routes.account]: {
+    title: "Minha conta",
+    breadcrumbs: [
+      { label: "Início", href: routes.home },
+      { label: "Minha conta" },
+    ],
+  },
+  [routes.accountOverview]: {
+    title: "Visão geral",
+    breadcrumbs: [
+      { label: "Início", href: routes.home },
+      { label: "Minha conta", href: routes.accountOverview },
+      { label: "Visão geral" },
+    ],
+  },
+  [routes.accountProfile]: {
+    title: "Dados pessoais",
+    breadcrumbs: [
+      { label: "Início", href: routes.home },
+      { label: "Minha conta", href: routes.accountOverview },
+      { label: "Dados pessoais" },
+    ],
+  },
+  [routes.accountSecurity]: {
+    title: "Segurança",
+    breadcrumbs: [
+      { label: "Início", href: routes.home },
+      { label: "Minha conta", href: routes.accountOverview },
+      { label: "Segurança" },
+    ],
+  },
   [routes.settings]: {
     title: "Configurações",
     breadcrumbs: [

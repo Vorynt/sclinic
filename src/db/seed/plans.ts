@@ -4,14 +4,14 @@
  * Usage:
  *   npm run db:seed:plans
  */
-import { config } from "dotenv"
-import { and, eq, isNull } from "drizzle-orm"
+import { config } from "dotenv";
+import { and, eq, isNull } from "drizzle-orm";
 
-config({ path: ".env.local" })
-config({ path: ".env" })
+config({ path: ".env.local" });
+config({ path: ".env" });
 
-import { db } from "@/db"
-import { plans } from "@/db/schema"
+import { db } from "@/db";
+import { plans } from "@/db/schema";
 
 const STUB_PLANS = [
   {
@@ -51,7 +51,7 @@ const STUB_PLANS = [
     stripePriceId: null,
     isActive: true,
   },
-]
+];
 
 async function seed() {
   for (const plan of STUB_PLANS) {
@@ -65,7 +65,7 @@ async function seed() {
           isNull(plans.deletedAt),
         ),
       )
-      .limit(1)
+      .limit(1);
 
     if (existing) {
       await db
@@ -79,17 +79,17 @@ async function seed() {
           maxStorageBytes: plan.maxStorageBytes,
           isActive: plan.isActive,
         })
-        .where(eq(plans.id, existing.id))
-      continue
+        .where(eq(plans.id, existing.id));
+      continue;
     }
 
-    await db.insert(plans).values(plan)
+    await db.insert(plans).values(plan);
   }
 
-  console.log("Plans seed completed")
+  console.log("Plans seed completed");
 }
 
 seed().catch((error) => {
-  console.error(error)
-  process.exit(1)
-})
+  console.error(error);
+  process.exit(1);
+});

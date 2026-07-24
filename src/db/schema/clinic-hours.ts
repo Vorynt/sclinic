@@ -1,4 +1,4 @@
-import { sql } from "drizzle-orm"
+import { sql } from "drizzle-orm";
 import {
   boolean,
   index,
@@ -8,16 +8,16 @@ import {
   time,
   uniqueIndex,
   uuid,
-} from "drizzle-orm/pg-core"
+} from "drizzle-orm/pg-core";
 
-import { clinics } from "./clinics"
+import { clinics } from "./clinics";
 import {
   clinicIsolation,
   primaryUuid,
   softDelete,
   timestamps,
-} from "./helpers"
-import { sclinicAppRole } from "./rls"
+} from "./helpers";
+import { sclinicAppRole } from "./rls";
 
 /**
  * Weekly opening hours per clinic (one row per weekday).
@@ -56,7 +56,7 @@ export const clinicBusinessHours = pgTable(
       withCheck: clinicIsolation(t.clinicId),
     }),
   ],
-)
+);
 
-export type ClinicBusinessHours = typeof clinicBusinessHours.$inferSelect
-export type NewClinicBusinessHours = typeof clinicBusinessHours.$inferInsert
+export type ClinicBusinessHours = typeof clinicBusinessHours.$inferSelect;
+export type NewClinicBusinessHours = typeof clinicBusinessHours.$inferInsert;

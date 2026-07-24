@@ -3,7 +3,7 @@
  *
  * Order of domain files mirrors rollout:
  * auth → clinics → clinic-hours → rbac → memberships → invitations →
- * professionals → billing → patients → appointments.
+ * professionals → billing → patients → appointments → audit-logs.
  *
  * Deferred (not modeled yet): medical-records, inventory.
  * Billing here is SaaS plans/subscriptions only — clinical charges later.
@@ -22,3 +22,4 @@ export * from "./professionals"
 export * from "./billing"
 export * from "./patients"
 export * from "./appointments"
+export * from "./audit-logs"

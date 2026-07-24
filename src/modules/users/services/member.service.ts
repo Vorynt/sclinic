@@ -5,6 +5,15 @@ import {
   type AuthContextWithClinic,
 } from "@/modules/authentication/permissions/guards"
 import { Permission } from "@/config/permissions"
+import {
+  auditErrorFields,
+  recordAudit,
+} from "@/modules/audit/emit"
+import {
+  AUDIT_ACTIONS,
+  AUDIT_ENTITY_TYPES,
+} from "@/modules/audit/constants/audit"
+import { auditActorFromAuth } from "@/modules/audit/utils/audit-actor"
 import type {
   ListMembersDto,
   UpdateMemberRoleDto,
@@ -22,6 +31,17 @@ async function requireTeamAccess(
   ctx: AuthRequestContext,
 ): Promise<AuthContextWithClinic> {
   return requirePermission(ctx, Permission.MEMBERS_INVITE)
+}
+
+function memberSnapshot(member: ClinicMember) {
+  return {
+    id: member.id,
+    userId: member.userId,
+    name: member.userName,
+    email: member.userEmail,
+    roleKey: member.roleKey,
+    status: member.status,
+  }
 }
 
 export const memberService = {
@@ -43,6 +63,7 @@ export const memberService = {
     ctx: AuthRequestContext,
   ): Promise<ClinicMember> {
     const auth = await requireTeamAccess(ctx)
+    const actor = auditActorFromAuth(auth)
     assertAssignableRoleKey(data.roleKey)
 
     const member = await memberRepository.findById(
@@ -55,24 +76,54 @@ export const memberService = {
       })
     }
 
-    assertCanManageMember({
-      actorUserId: auth.user.id,
-      targetUserId: member.userId,
-      targetRoleKey: member.roleKey,
-    })
-
-    const role = await roleRepository.findSystemByKey(data.roleKey)
-    if (!role) {
-      throw new AppError(ErrorCode.NOT_FOUND, {
-        message: "Papel não encontrado.",
+    try {
+      assertCanManageMember({
+        actorUserId: auth.user.id,
+        targetUserId: member.userId,
+        targetRoleKey: member.roleKey,
       })
-    }
 
-    return memberRepository.updateRole(
-      data.membershipId,
-      auth.clinicId,
-      role.id,
-    )
+      const role = await roleRepository.findSystemByKey(data.roleKey)
+      if (!role) {
+        throw new AppError(ErrorCode.NOT_FOUND, {
+          message: "Papel não encontrado.",
+        })
+      }
+
+      const updated = await memberRepository.updateRole(
+        data.membershipId,
+        auth.clinicId,
+        role.id,
+      )
+
+      recordAudit({
+        ...actor,
+        action: AUDIT_ACTIONS.MEMBER_ROLE_UPDATE,
+        status: "success",
+        entityType: AUDIT_ENTITY_TYPES.MEMBER,
+        entityId: updated.id,
+        changes: {
+          before: memberSnapshot(member),
+          after: memberSnapshot(updated),
+        },
+      })
+
+      return updated
+    } catch (error) {
+      recordAudit({
+        ...actor,
+        action: AUDIT_ACTIONS.MEMBER_ROLE_UPDATE,
+        status: "error",
+        entityType: AUDIT_ENTITY_TYPES.MEMBER,
+        entityId: data.membershipId,
+        changes: {
+          before: memberSnapshot(member),
+          after: { roleKey: data.roleKey },
+        },
+        ...auditErrorFields(error),
+      })
+      throw error
+    }
   },
 
   async remove(
@@ -80,6 +131,7 @@ export const memberService = {
     ctx: AuthRequestContext,
   ): Promise<void> {
     const auth = await requireTeamAccess(ctx)
+    const actor = auditActorFromAuth(auth)
 
     const member = await memberRepository.findById(membershipId, auth.clinicId)
     if (!member || member.status === "removed") {
@@ -88,15 +140,37 @@ export const memberService = {
       })
     }
 
-    assertCanManageMember({
-      actorUserId: auth.user.id,
-      targetUserId: member.userId,
-      targetRoleKey: member.roleKey,
-    })
+    try {
+      assertCanManageMember({
+        actorUserId: auth.user.id,
+        targetUserId: member.userId,
+        targetRoleKey: member.roleKey,
+      })
 
-    // Soft-deactivate: keep the clinic link so the member sees the
-    // membership-inactive screen instead of owner onboarding.
-    await memberRepository.softRemove(membershipId, auth.clinicId)
+      // Soft-deactivate: keep the clinic link so the member sees the
+      // membership-inactive screen instead of owner onboarding.
+      await memberRepository.softRemove(membershipId, auth.clinicId)
+
+      recordAudit({
+        ...actor,
+        action: AUDIT_ACTIONS.MEMBER_REMOVE,
+        status: "success",
+        entityType: AUDIT_ENTITY_TYPES.MEMBER,
+        entityId: membershipId,
+        changes: { before: memberSnapshot(member) },
+      })
+    } catch (error) {
+      recordAudit({
+        ...actor,
+        action: AUDIT_ACTIONS.MEMBER_REMOVE,
+        status: "error",
+        entityType: AUDIT_ENTITY_TYPES.MEMBER,
+        entityId: membershipId,
+        changes: { before: memberSnapshot(member) },
+        ...auditErrorFields(error),
+      })
+      throw error
+    }
   },
 
   async setStatus(
@@ -105,6 +179,7 @@ export const memberService = {
     ctx: AuthRequestContext,
   ): Promise<ClinicMember> {
     const auth = await requireTeamAccess(ctx)
+    const actor = auditActorFromAuth(auth)
 
     const member = await memberRepository.findById(membershipId, auth.clinicId)
     if (!member || member.status === "removed") {
@@ -113,12 +188,46 @@ export const memberService = {
       })
     }
 
-    assertCanManageMember({
-      actorUserId: auth.user.id,
-      targetUserId: member.userId,
-      targetRoleKey: member.roleKey,
-    })
+    try {
+      assertCanManageMember({
+        actorUserId: auth.user.id,
+        targetUserId: member.userId,
+        targetRoleKey: member.roleKey,
+      })
 
-    return memberRepository.setStatus(membershipId, auth.clinicId, status)
+      const updated = await memberRepository.setStatus(
+        membershipId,
+        auth.clinicId,
+        status,
+      )
+
+      recordAudit({
+        ...actor,
+        action: AUDIT_ACTIONS.MEMBER_STATUS_UPDATE,
+        status: "success",
+        entityType: AUDIT_ENTITY_TYPES.MEMBER,
+        entityId: updated.id,
+        changes: {
+          before: memberSnapshot(member),
+          after: memberSnapshot(updated),
+        },
+      })
+
+      return updated
+    } catch (error) {
+      recordAudit({
+        ...actor,
+        action: AUDIT_ACTIONS.MEMBER_STATUS_UPDATE,
+        status: "error",
+        entityType: AUDIT_ENTITY_TYPES.MEMBER,
+        entityId: membershipId,
+        changes: {
+          before: memberSnapshot(member),
+          after: { status },
+        },
+        ...auditErrorFields(error),
+      })
+      throw error
+    }
   },
 }

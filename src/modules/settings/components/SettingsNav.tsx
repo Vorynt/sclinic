@@ -5,16 +5,22 @@ import { usePathname } from "next/navigation"
 
 import { cn } from "@/lib/utils"
 import { SETTINGS_NAV_ITEMS } from "@/modules/settings/constants/nav"
+import { useAuth } from "@/providers/AuthProvider"
 
 export function SettingsNav() {
   const pathname = usePathname()
+  const { can } = useAuth()
+
+  const items = SETTINGS_NAV_ITEMS.filter(
+    (item) => !item.permission || can(item.permission),
+  )
 
   return (
     <nav
       aria-label="Seções de configuração"
       className="sticky top-8 flex flex-col gap-1"
     >
-      {SETTINGS_NAV_ITEMS.map((item) => {
+      {items.map((item) => {
         const isActive =
           pathname === item.href || pathname.startsWith(`${item.href}/`)
         const isDanger = item.tone === "danger"

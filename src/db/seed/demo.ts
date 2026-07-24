@@ -4,9 +4,17 @@
  * Usage:
  *   npm run db:seed:demo
  *
- * Login:
- *   admin@sclinic.local / senha123
- *   (emailVerified = true, mustChangePassword = false)
+ * Login (all users — emailVerified = true, mustChangePassword = false):
+ *   admin@sclinic.local / senha123          (owner)
+ *   marina.souza@sclinic.local / senha123   (admin)
+ *   roberto.ferreira@sclinic.local / senha123 (manager)
+ *   camila.dias@sclinic.local / senha123    (receptionist)
+ *   lucas.martins@sclinic.local / senha123  (receptionist)
+ *   ana.nogueira@sclinic.local / senha123   (doctor)
+ *   carlos.mendes@sclinic.local / senha123  (doctor)
+ *   patricia.almeida@sclinic.local / senha123 (nurse)
+ *   helena.barbosa@sclinic.local / senha123 (financial)
+ *   tiago.ramos@sclinic.local / senha123    (manager, suspended)
  */
 import { randomUUID } from "node:crypto"
 
@@ -40,11 +48,89 @@ import {
 import { buildOnboardingHoursDraft } from "@/modules/clinics/constants/default-hours"
 import { toDbTime } from "@/modules/clinics/mappers/clinic-hours.mapper"
 
+const DEMO_PASSWORD = "senha123" as const
+
 const DEMO_OWNER = {
   name: "Raissa Admin",
   email: "admin@sclinic.local",
-  password: "senha123",
+  password: DEMO_PASSWORD,
 } as const
+
+type DemoTeamRoleKey =
+  | "admin"
+  | "manager"
+  | "receptionist"
+  | "doctor"
+  | "nurse"
+  | "financial"
+
+type DemoTeamMemberSeed = {
+  name: string
+  email: string
+  phone: string
+  roleKey: DemoTeamRoleKey
+  /** Membership status — default active. */
+  status?: "active" | "suspended"
+}
+
+/** Staff users (besides owner). Fits Profissional plan maxUsers = 10. */
+const DEMO_TEAM_MEMBERS: readonly DemoTeamMemberSeed[] = [
+  {
+    name: "Marina Souza",
+    email: "marina.souza@sclinic.local",
+    phone: "11990010001",
+    roleKey: "admin",
+  },
+  {
+    name: "Roberto Ferreira",
+    email: "roberto.ferreira@sclinic.local",
+    phone: "11990010002",
+    roleKey: "manager",
+  },
+  {
+    name: "Camila Dias",
+    email: "camila.dias@sclinic.local",
+    phone: "11990010003",
+    roleKey: "receptionist",
+  },
+  {
+    name: "Lucas Martins",
+    email: "lucas.martins@sclinic.local",
+    phone: "11990010004",
+    roleKey: "receptionist",
+  },
+  {
+    name: "Dra. Ana Beatriz Nogueira",
+    email: "ana.nogueira@sclinic.local",
+    phone: "11990010005",
+    roleKey: "doctor",
+  },
+  {
+    name: "Dr. Carlos Eduardo Mendes",
+    email: "carlos.mendes@sclinic.local",
+    phone: "11990010006",
+    roleKey: "doctor",
+  },
+  {
+    name: "Enf. Patricia Souza Almeida",
+    email: "patricia.almeida@sclinic.local",
+    phone: "11990010007",
+    roleKey: "nurse",
+  },
+  {
+    name: "Helena Barbosa",
+    email: "helena.barbosa@sclinic.local",
+    phone: "11990010008",
+    roleKey: "financial",
+  },
+  {
+    name: "Tiago Ramos",
+    email: "tiago.ramos@sclinic.local",
+    phone: "11990010009",
+    roleKey: "manager",
+    status: "suspended",
+  },
+] as const
 
 const RLS_TABLES = [
   "appointments",
@@ -535,18 +621,22 @@ async function seedPlans() {
   return professionalPlan
 }
 
-async function seedOwnerUser() {
+async function seedCredentialUser(params: {
+  name: string
+  email: string
+  phone: string
+  passwordHash: string
+}) {
   const id = randomUUID()
-  const passwordHash = await hashPassword(DEMO_OWNER.password)
 
   await db.insert(user).values({
     id,
-    name: DEMO_OWNER.name,
-    email: DEMO_OWNER.email,
+    name: params.name,
+    email: params.email,
     emailVerified: true,
     status: "active",
     mustChangePassword: false,
-    phone: "11987654321",
+    phone: params.phone,
     lastLoginAt: new Date(),
   })
 
@@ -555,10 +645,60 @@ async function seedOwnerUser() {
     accountId: id,
     providerId: "credential",
     userId: id,
-    password: passwordHash,
+    password: params.passwordHash,
   })
 
   return id
+}
+
+async function seedOwnerUser(passwordHash: string) {
+  return seedCredentialUser({
+    name: DEMO_OWNER.name,
+    email: DEMO_OWNER.email,
+    phone: "11987654321",
+    passwordHash,
+  })
+}
+
+async function seedTeamMembers(params: {
+  clinicId: string
+  rolesByKey: Map<string, string>
+  passwordHash: string
+}) {
+  const { clinicId, rolesByKey, passwordHash } = params
+  const seeded: { email: string; roleKey: string; status: string }[] = []
+
+  for (const member of DEMO_TEAM_MEMBERS) {
+    const roleId = rolesByKey.get(member.roleKey)
+    if (!roleId) {
+      throw new Error(`Role missing for team member: ${member.roleKey}`)
+    }
+
+    const userId = await seedCredentialUser({
+      name: member.name,
+      email: member.email,
+      phone: member.phone,
+      passwordHash,
+    })
+
+    const status = member.status ?? "active"
+
+    await db.insert(clinicMemberships).values({
+      userId,
+      clinicId,
+      roleId,
+      isDefault: true,
+      status,
+    })
+
+    seeded.push({
+      email: member.email,
+      roleKey: member.roleKey,
+      status,
+    })
+  }
+
+  return seeded
 }
 
 async function seedClinic(ownerId: string, planId: string) {
@@ -786,12 +926,22 @@ async function seed() {
     const ownerRole = allRoles.find((role) => role.key === "owner")
     if (!ownerRole) throw new Error("Owner role missing after RBAC seed")
 
+    const passwordHash = await hashPassword(DEMO_PASSWORD)
+    const rolesByKey = new Map(allRoles.map((role) => [role.key, role.id]))
+
     console.log("Seeding owner user…")
-    const ownerId = await seedOwnerUser()
+    const ownerId = await seedOwnerUser(passwordHash)
 
     console.log("Seeding clinic, hours, subscription…")
     const clinicId = await seedClinic(ownerId, professionalPlan.id)
     await seedMembership(ownerId, clinicId, ownerRole.id)
+
+    console.log("Seeding team members…")
+    const teamMembers = await seedTeamMembers({
+      clinicId,
+      rolesByKey,
+      passwordHash,
+    })
 
     console.log("Seeding professionals…")
     const professionalRows = await seedProfessionals(clinicId)
@@ -809,10 +959,15 @@ async function seed() {
 
     console.log("\nDemo seed completed.")
     console.log(`  Clinic: Clínica Horizonte Saúde (${clinicId})`)
+    console.log(`  Team members: ${teamMembers.length + 1} (incl. owner)`)
+    for (const member of teamMembers) {
+      console.log(`    - ${member.email} (${member.roleKey}, ${member.status})`)
+    }
     console.log(`  Professionals: ${professionalRows.length}`)
     console.log(`  Patients: ${patientRows.length}`)
     console.log(`  Appointments: ${appointmentCount}`)
-    console.log(`  Login: ${DEMO_OWNER.email} / ${DEMO_OWNER.password}`)
+    console.log(`  Password (all): ${DEMO_PASSWORD}`)
+    console.log(`  Owner login: ${DEMO_OWNER.email} / ${DEMO_PASSWORD}`)
   } finally {
     console.log("Re-enabling RLS…")
     await enableRls()

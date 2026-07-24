@@ -1,3 +1,12 @@
+import {
+  auditErrorFields,
+  recordAudit,
+} from "@/modules/audit/emit"
+import {
+  AUDIT_ACTIONS,
+  AUDIT_ENTITY_TYPES,
+} from "@/modules/audit/constants/audit"
+import { auditActorFromAuth } from "@/modules/audit/utils/audit-actor"
 import { Permission } from "@/config/permissions"
 import { requirePermission } from "@/modules/authentication/permissions/guards"
 import type { CreatePatientDto } from "@/modules/patients/dto/create-patient.dto"
@@ -18,6 +27,18 @@ function rethrowAsConflict(error: unknown): never {
     })
   }
   throw error
+}
+
+function patientSnapshot(patient: Patient) {
+  return {
+    id: patient.id,
+    name: patient.name,
+    cpf: patient.cpf,
+    email: patient.email ?? null,
+    phone: patient.phone ?? null,
+    birthDate: patient.birthDate ?? null,
+    status: patient.status,
+  }
 }
 
 export const patientService = {
@@ -49,20 +70,41 @@ export const patientService = {
 
   async create(data: CreatePatientDto, ctx: AuthRequestContext): Promise<Patient> {
     const auth = await requirePermission(ctx, Permission.PATIENTS_WRITE)
+    const actor = auditActorFromAuth(auth)
 
     try {
-      return await patientRepository.create({
+      const patient = await patientRepository.create({
         clinicId: auth.clinicId,
         createdBy: auth.user.id,
         data,
       })
+
+      recordAudit({
+        ...actor,
+        action: AUDIT_ACTIONS.PATIENT_CREATE,
+        status: "success",
+        entityType: AUDIT_ENTITY_TYPES.PATIENT,
+        entityId: patient.id,
+        changes: { after: patientSnapshot(patient) },
+      })
+
+      return patient
     } catch (error) {
+      recordAudit({
+        ...actor,
+        action: AUDIT_ACTIONS.PATIENT_CREATE,
+        status: "error",
+        entityType: AUDIT_ENTITY_TYPES.PATIENT,
+        changes: { after: { name: data.name, cpf: data.cpf } },
+        ...auditErrorFields(error),
+      })
       return rethrowAsConflict(error)
     }
   },
 
   async update(data: UpdatePatientDto, ctx: AuthRequestContext): Promise<Patient> {
     const auth = await requirePermission(ctx, Permission.PATIENTS_WRITE)
+    const actor = auditActorFromAuth(auth)
     const { id, ...rest } = data
 
     const existing = await patientRepository.findById(id, auth.clinicId)
@@ -73,19 +115,43 @@ export const patientService = {
     }
 
     try {
-      return await patientRepository.update({
+      const patient = await patientRepository.update({
         id,
         clinicId: auth.clinicId,
         updatedBy: auth.user.id,
         data: rest,
       })
+
+      recordAudit({
+        ...actor,
+        action: AUDIT_ACTIONS.PATIENT_UPDATE,
+        status: "success",
+        entityType: AUDIT_ENTITY_TYPES.PATIENT,
+        entityId: patient.id,
+        changes: {
+          before: patientSnapshot(existing),
+          after: patientSnapshot(patient),
+        },
+      })
+
+      return patient
     } catch (error) {
+      recordAudit({
+        ...actor,
+        action: AUDIT_ACTIONS.PATIENT_UPDATE,
+        status: "error",
+        entityType: AUDIT_ENTITY_TYPES.PATIENT,
+        entityId: id,
+        changes: { before: patientSnapshot(existing), after: rest },
+        ...auditErrorFields(error),
+      })
       return rethrowAsConflict(error)
     }
   },
 
   async delete(id: string, ctx: AuthRequestContext): Promise<void> {
     const auth = await requirePermission(ctx, Permission.PATIENTS_WRITE)
+    const actor = auditActorFromAuth(auth)
 
     const existing = await patientRepository.findById(id, auth.clinicId)
     if (!existing) {
@@ -94,10 +160,32 @@ export const patientService = {
       })
     }
 
-    await patientRepository.softDelete({
-      id,
-      clinicId: auth.clinicId,
-      updatedBy: auth.user.id,
-    })
+    try {
+      await patientRepository.softDelete({
+        id,
+        clinicId: auth.clinicId,
+        updatedBy: auth.user.id,
+      })
+
+      recordAudit({
+        ...actor,
+        action: AUDIT_ACTIONS.PATIENT_DELETE,
+        status: "success",
+        entityType: AUDIT_ENTITY_TYPES.PATIENT,
+        entityId: id,
+        changes: { before: patientSnapshot(existing) },
+      })
+    } catch (error) {
+      recordAudit({
+        ...actor,
+        action: AUDIT_ACTIONS.PATIENT_DELETE,
+        status: "error",
+        entityType: AUDIT_ENTITY_TYPES.PATIENT,
+        entityId: id,
+        changes: { before: patientSnapshot(existing) },
+        ...auditErrorFields(error),
+      })
+      throw error
+    }
   },
 }
