@@ -18,6 +18,7 @@ import {
 } from "@/modules/professionals/constants/professionals"
 import type { CreateProfessionalDto } from "@/modules/professionals/dto/create-professional.dto"
 import type {
+  ListProfessionalsDto,
   ProfessionalInviteTokenDto,
   SetProfessionalStatusDto,
   UpdateProfessionalInviteProfileDto,
@@ -39,6 +40,7 @@ import {
 } from "@/modules/users/utils/invite-token"
 import type { AuthRequestContext } from "@/shared/auth"
 import { AppError, ErrorCode } from "@/shared/errors"
+import type { PaginatedResult } from "@/types/pagination"
 
 function assertProfessionalRoleKey(key: string): ProfessionalRoleKey {
   if (!(PROFESSIONAL_ROLE_KEYS as readonly string[]).includes(key)) {
@@ -119,12 +121,21 @@ function assertInviteEmailMatch(
 }
 
 export const professionalService = {
-  async list(ctx: AuthRequestContext): Promise<ProfessionalListItem[]> {
+  async list(
+    filters: ListProfessionalsDto,
+    ctx: AuthRequestContext,
+  ): Promise<PaginatedResult<ProfessionalListItem>> {
     const auth = await requirePermission(ctx, Permission.PROFESSIONALS_MANAGE)
-    return professionalRepository.listByClinic(auth.clinicId)
+    return professionalRepository.listByClinic({
+      clinicId: auth.clinicId,
+      q: filters.q,
+      page: filters.page,
+      pageSize: filters.pageSize,
+    })
   },
 
   async listForScheduling(
+    filters: { q?: string },
     ctx: AuthRequestContext,
   ): Promise<ProfessionalSchedulingItem[]> {
     const auth = await requireAnyPermission(
@@ -147,7 +158,10 @@ export const professionalService = {
       return mine ? [mine] : []
     }
 
-    return professionalRepository.listActiveForScheduling(auth.clinicId)
+    return professionalRepository.listActiveForScheduling({
+      clinicId: auth.clinicId,
+      q: filters.q,
+    })
   },
 
   async getById(

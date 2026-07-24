@@ -12,7 +12,10 @@ import { AppointmentMonthView } from "@/modules/appointments/components/Appointm
 import { AppointmentsCalendarSkeleton } from "@/modules/appointments/components/AppointmentsPageSkeleton"
 import { AppointmentsToolbar } from "@/modules/appointments/components/AppointmentsToolbar"
 import { AppointmentWeekView } from "@/modules/appointments/components/AppointmentWeekView"
-import { useAppointmentsQuery } from "@/modules/appointments/hooks/use-appointments"
+import {
+  useAppointmentsQuery,
+  useCalendarClinicHoursQuery,
+} from "@/modules/appointments/hooks/use-appointments"
 import type { Appointment } from "@/modules/appointments/types/appointment"
 import {
   type CalendarViewMode,
@@ -45,7 +48,15 @@ export function AppointmentsPanel() {
   const range = useMemo(() => getVisibleRange(mode, anchor), [mode, anchor])
   const periodLabel = useMemo(() => getPeriodLabel(mode, anchor), [mode, anchor])
   const appointmentsQuery = useAppointmentsQuery(range)
+  const calendarHoursQuery = useCalendarClinicHoursQuery()
   const appointments = appointmentsQuery.data ?? []
+  const weeklyHours = calendarHoursQuery.data
+  const isCalendarLoading =
+    appointmentsQuery.isLoading ||
+    (mode !== "month" && calendarHoursQuery.isLoading)
+  const isCalendarError =
+    appointmentsQuery.isError ||
+    (mode !== "month" && calendarHoursQuery.isError)
 
   function handlePrevious() {
     setAnchor((current) => getPreviousAnchor(mode, current))
@@ -104,9 +115,9 @@ export function AppointmentsPanel() {
         onToday={handleToday}
       />
 
-      {appointmentsQuery.isLoading ? (
+      {isCalendarLoading ? (
         <AppointmentsCalendarSkeleton />
-      ) : appointmentsQuery.isError ? (
+      ) : isCalendarError ? (
         <p className="text-sm text-destructive">
           Não foi possível carregar os agendamentos.
         </p>
@@ -121,20 +132,22 @@ export function AppointmentsPanel() {
             />
           ) : null}
 
-          {mode === "week" ? (
+          {mode === "week" && weeklyHours ? (
             <AppointmentWeekView
               anchor={anchor}
               appointments={appointments}
+              weeklyHours={weeklyHours}
               isMobile={isMobile}
               onSelectAppointment={handleSelectAppointment}
               onSelectSlot={handleSelectSlot}
             />
           ) : null}
 
-          {mode === "day" ? (
+          {mode === "day" && weeklyHours ? (
             <AppointmentDayView
               anchor={anchor}
               appointments={appointments}
+              weeklyHours={weeklyHours}
               onSelectAppointment={handleSelectAppointment}
               onSelectSlot={handleSelectSlot}
             />

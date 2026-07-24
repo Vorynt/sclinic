@@ -6,15 +6,20 @@ import { cn } from "@/lib/utils";
 import { AppointmentEventCard } from "@/modules/appointments/components/AppointmentEventCard";
 import type { Appointment } from "@/modules/appointments/types/appointment";
 import {
-  CALENDAR_HOUR_RANGE,
-  CALENDAR_SLOT_STEP_MINUTES,
-} from "@/modules/appointments/utils/calendar-constants";
+  type CalendarHourRange,
+  getUnavailableMinuteRanges,
+  isWithinOpenClinicMinutes,
+} from "@/modules/appointments/utils/calendar-clinic-hours";
+import { CALENDAR_SLOT_STEP_MINUTES } from "@/modules/appointments/utils/calendar-constants";
 import { layoutOverlappingAppointments } from "@/modules/appointments/utils/event-layout";
+import type { ClinicWeeklyHours } from "@/modules/clinics/types/clinic-hours";
 
 type AppointmentTimeGridColumnProps = {
   day: Date;
   appointments: Appointment[];
   hourHeightPx: number;
+  hourRange: CalendarHourRange;
+  weeklyHours: ClinicWeeklyHours;
   onSelectAppointment: (appointment: Appointment) => void;
   onSelectSlot: (date: Date) => void;
   className?: string;
@@ -24,17 +29,21 @@ export function AppointmentTimeGridColumn({
   day,
   appointments,
   hourHeightPx,
+  hourRange,
+  weeklyHours,
   onSelectAppointment,
   onSelectSlot,
   className,
 }: AppointmentTimeGridColumnProps) {
-  const totalHours = CALENDAR_HOUR_RANGE.end - CALENDAR_HOUR_RANGE.start;
+  const totalHours = hourRange.end - hourRange.start;
   const pxPerMinute = hourHeightPx / 60;
-  const rangeStart = addMinutes(
-    startOfDay(day),
-    CALENDAR_HOUR_RANGE.start * 60,
+  const rangeStart = addMinutes(startOfDay(day), hourRange.start * 60);
+  const rangeEnd = addMinutes(startOfDay(day), hourRange.end * 60);
+  const unavailableRanges = getUnavailableMinuteRanges(
+    weeklyHours,
+    day,
+    hourRange,
   );
-  const rangeEnd = addMinutes(startOfDay(day), CALENDAR_HOUR_RANGE.end * 60);
 
   const dayAppointments = appointments.filter((appointment) =>
     isSameDay(appointment.startsAt, day),
@@ -48,6 +57,12 @@ export function AppointmentTimeGridColumn({
     const steppedMinutes =
       Math.round(rawMinutes / CALENDAR_SLOT_STEP_MINUTES) *
       CALENDAR_SLOT_STEP_MINUTES;
+    const minutesFromMidnight = hourRange.start * 60 + steppedMinutes;
+
+    if (!isWithinOpenClinicMinutes(weeklyHours, day, minutesFromMidnight)) {
+      return;
+    }
+
     onSelectSlot(addMinutes(rangeStart, steppedMinutes));
   }
 
@@ -68,6 +83,23 @@ export function AppointmentTimeGridColumn({
           style={{ top: index * hourHeightPx }}
         />
       ))}
+
+      {unavailableRanges.map((range) => {
+        const topPx =
+          (range.startMinutes - hourRange.start * 60) * pxPerMinute;
+        const heightPx =
+          (range.endMinutes - range.startMinutes) * pxPerMinute;
+
+        return (
+          <div
+            key={`${range.startMinutes}-${range.endMinutes}`}
+            aria-hidden
+            title="Horário indisponível"
+            className="pointer-events-none absolute inset-x-0 z-1 bg-muted/55 bg-[repeating-linear-gradient(-45deg,transparent,transparent_6px,var(--border)_6px,var(--border)_7px)]"
+            style={{ top: topPx, height: heightPx }}
+          />
+        );
+      })}
 
       {laidOut.map(({ appointment, column, columnCount }) => {
         const clampedStart = Math.max(
@@ -99,6 +131,7 @@ export function AppointmentTimeGridColumn({
               height: heightPx,
               left: `calc(${leftPercent}% + 2px)`,
               width: `calc(${widthPercent}% - 4px)`,
+              zIndex: 2,
             }}
             onClick={(event) => {
               event.stopPropagation();

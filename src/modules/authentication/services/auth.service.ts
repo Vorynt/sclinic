@@ -414,6 +414,15 @@ export const authService = {
     return membership;
   },
 
+  /**
+   * Public contract for clinics: revoke all memberships and clear sessions
+   * pointing at a deleted clinic.
+   */
+  async revokeAccessForClinic(clinicId: string): Promise<void> {
+    await membershipRepository.softDeleteAllForClinic(clinicId);
+    await sessionRepository.clearActiveClinicIdForClinic(clinicId);
+  },
+
   async requestPasswordReset(
     data: RequestPasswordResetDto,
     ctx: AuthRequestContext,

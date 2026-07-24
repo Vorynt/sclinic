@@ -23,6 +23,8 @@ import { usePatientsQuery } from "@/modules/patients/hooks/use-patients";
 import type { Patient } from "@/modules/patients/types/patient";
 import { formatCpf } from "@/utils/cpf";
 
+const MIN_SEARCH_CHARS = 3;
+
 type PatientComboboxProps = {
   value: string;
   onValueChange: (patientId: string) => void;
@@ -55,10 +57,12 @@ export function PatientCombobox({
     return () => clearTimeout(timeout);
   }, [search]);
 
+  const canSearch = debouncedSearch.length >= MIN_SEARCH_CHARS;
   const patientsQuery = usePatientsQuery(
-    debouncedSearch ? { q: debouncedSearch } : undefined,
+    canSearch ? { q: debouncedSearch } : undefined,
+    { enabled: canSearch },
   );
-  const patients = patientsQuery.data ?? [];
+  const patients = canSearch ? (patientsQuery.data?.items ?? []) : [];
 
   useEffect(() => {
     if (!value) {
@@ -114,12 +118,25 @@ export function PatientCombobox({
         align="start">
         <Command shouldFilter={false}>
           <CommandInput
-            placeholder="Buscar por nome ou CPF"
+            placeholder="Digite ao menos 3 caracteres"
             value={search}
             onValueChange={setSearch}
           />
           <CommandList>
-            {patientsQuery.isLoading ? (
+            {!canSearch ? (
+              <div className="flex flex-col items-center gap-2 px-2 py-6 text-sm text-muted-foreground">
+                <span>Digite ao menos 3 caracteres para buscar.</span>
+                {onCreatePatient ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleCreatePatient}>
+                    Cadastrar paciente
+                  </Button>
+                ) : null}
+              </div>
+            ) : patientsQuery.isLoading ? (
               <div className="flex items-center justify-center gap-2 py-6 text-sm text-muted-foreground">
                 <Spinner />
                 Buscando...

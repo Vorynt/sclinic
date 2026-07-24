@@ -1,6 +1,7 @@
 import { z } from "zod"
 
 import { PROFESSIONAL_ROLE_KEYS } from "@/modules/professionals/constants/professionals"
+import { listQuerySchema } from "@/shared/validators"
 
 const professionalRoleKeySchema = z.enum(PROFESSIONAL_ROLE_KEYS)
 
@@ -102,6 +103,12 @@ export const deleteProfessionalSchema = z.object({
   id: professionalIdSchema,
 })
 
+export const listProfessionalsSchema = listQuerySchema
+
+export const listProfessionalsForSchedulingSchema = z.object({
+  q: optionalTrimmed,
+})
+
 export const professionalInviteTokenSchema = z.object({
   token: z.string().trim().min(1, "Token é obrigatório"),
 })
@@ -131,6 +138,10 @@ export type SetProfessionalStatusInput = z.infer<
   typeof setProfessionalStatusSchema
 >
 export type DeleteProfessionalInput = z.infer<typeof deleteProfessionalSchema>
+export type ListProfessionalsInput = z.infer<typeof listProfessionalsSchema>
+export type ListProfessionalsForSchedulingInput = z.infer<
+  typeof listProfessionalsForSchedulingSchema
+>
 export type ProfessionalInviteTokenInput = z.infer<
   typeof professionalInviteTokenSchema
 >

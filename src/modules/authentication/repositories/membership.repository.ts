@@ -258,4 +258,24 @@ export const membershipRepository = {
       return toAuthMembership(withRole)
     })
   },
+
+  async softDeleteAllForClinic(clinicId: string): Promise<void> {
+    return withDbError(async () => {
+      const now = new Date()
+      await db
+        .update(clinicMemberships)
+        .set({
+          status: "removed",
+          deletedAt: now,
+          isDefault: false,
+          updatedAt: now,
+        })
+        .where(
+          and(
+            eq(clinicMemberships.clinicId, clinicId),
+            isNull(clinicMemberships.deletedAt),
+          ),
+        )
+    })
+  },
 }

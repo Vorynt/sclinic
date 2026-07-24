@@ -20,8 +20,12 @@ import {
 import { sclinicAppRole } from "./rls"
 
 /**
- * Weekly opening hours per clinic.
+ * Weekly opening hours per clinic (one row per weekday).
  * `dayOfWeek`: 0 = Sunday … 6 = Saturday (JS `Date#getDay()`).
+ *
+ * Up to two intervals per day (e.g. morning + afternoon with lunch break):
+ * - Interval 1: `opensAt` / `closesAt` (required when `!isClosed`)
+ * - Interval 2: `secondOpensAt` / `secondClosesAt` (optional)
  */
 export const clinicBusinessHours = pgTable(
   "clinic_business_hours",
@@ -33,6 +37,8 @@ export const clinicBusinessHours = pgTable(
     dayOfWeek: smallint("day_of_week").notNull(),
     opensAt: time("opens_at"),
     closesAt: time("closes_at"),
+    secondOpensAt: time("second_opens_at"),
+    secondClosesAt: time("second_closes_at"),
     isClosed: boolean("is_closed").default(false).notNull(),
     ...timestamps,
     ...softDelete,

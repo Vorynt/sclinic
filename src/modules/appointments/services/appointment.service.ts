@@ -11,6 +11,8 @@ import {
   requireAnyPermission,
   requirePermission,
 } from "@/modules/authentication/permissions/guards";
+import { clinicHoursService } from "@/modules/clinics/services/clinic-hours.service";
+import type { ClinicWeeklyHours } from "@/modules/clinics/types/clinic-hours";
 import type { AuthRequestContext } from "@/shared/auth";
 import { AppError, ErrorCode } from "@/shared/errors";
 
@@ -87,6 +89,20 @@ export const appointmentService = {
     }
 
     return appointment;
+  },
+
+  /**
+   * Clinic hours for the calendar grid (same fallback as availability checks).
+   */
+  async getCalendarHours(ctx: AuthRequestContext): Promise<ClinicWeeklyHours> {
+    const auth = await requireAnyPermission(
+      ctx,
+      ...APPOINTMENTS_ANY_PERMISSION,
+    );
+    const { weeklyHours } = await clinicHoursService.getAvailabilityContext(
+      auth.clinicId,
+    );
+    return weeklyHours;
   },
 
   async create(

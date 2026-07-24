@@ -1,5 +1,6 @@
-import { PageHeaderSkeleton } from "@/components/status/PageHeaderSkeleton"
-import { TableSkeleton } from "@/components/status/TableSkeleton"
+import { PageHeaderSkeleton } from "@/components/status/PageHeaderSkeleton";
+import { TableSkeleton } from "@/components/status/TableSkeleton";
+import { DEFAULT_LIST_PAGE_SIZE } from "@/shared/validators";
 
 /** Full-page silhouette matching TeamPanel. */
 export function TeamPageSkeleton() {
@@ -7,14 +8,13 @@ export function TeamPageSkeleton() {
     <div
       role="status"
       aria-label="Carregando equipe"
-      className="flex flex-col gap-6"
-    >
+      className="flex flex-col gap-6">
       <PageHeaderSkeleton
         titleClassName="h-7 w-24"
         descriptionClassName="h-4 w-56 max-w-full"
         actionClassName="h-9 w-36"
       />
-      <TableSkeleton columns={5} rows={6} />
+      <TableSkeleton columns={5} rows={DEFAULT_LIST_PAGE_SIZE} />
     </div>
-  )
+  );
 }

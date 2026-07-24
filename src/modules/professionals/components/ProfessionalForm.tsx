@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import type { z } from "zod";
 
 import { Button } from "@/components/ui/button";
+import { DialogFooter } from "@/components/ui/dialog";
 import {
   Field,
   FieldError,
@@ -430,7 +431,7 @@ export function ProfessionalForm({
         </Field>
       </FieldGroup>
 
-      <div className="flex justify-end gap-2">
+      <DialogFooter className="flex justify-end gap-2">
         {onCancel ? (
           <Button
             type="button"
@@ -444,7 +445,7 @@ export function ProfessionalForm({
           {isPending ? <Spinner /> : null}
           Convidar profissional
         </Button>
-      </div>
+      </DialogFooter>
     </form>
   );
 }

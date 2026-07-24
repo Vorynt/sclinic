@@ -9,7 +9,7 @@ import {
   inviteMemberSchema,
   setPasswordFromInviteSchema,
 } from "@/modules/users/schemas/invitation.schema"
-import { updateMemberRoleSchema } from "@/modules/users/schemas/member.schema"
+import { updateMemberRoleSchema, listMembersSchema } from "@/modules/users/schemas/member.schema"
 import {
   createInviteToken,
   hashInviteToken,
@@ -133,5 +133,14 @@ describe("role labels", () => {
   it("returns portuguese labels for known roles", () => {
     assert.equal(getRoleLabel("doctor"), "Médico(a)")
     assert.equal(getRoleLabel("custom", "Custom"), "Custom")
+  })
+})
+
+describe("listMembersSchema", () => {
+  it("defaults page and pageSize", () => {
+    const parsed = listMembersSchema.parse({})
+    assert.equal(parsed.page, 1)
+    assert.equal(parsed.pageSize, 20)
+    assert.equal(parsed.q, undefined)
   })
 })

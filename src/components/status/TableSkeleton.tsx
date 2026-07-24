@@ -1,45 +1,43 @@
-import { Skeleton } from "@/components/ui/skeleton"
-import { cn } from "@/lib/utils"
+import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
+import { DEFAULT_LIST_PAGE_SIZE } from "@/shared/validators";
 
 type TableSkeletonProps = {
-  columns: number
-  rows?: number
-  className?: string
-}
+  columns: number;
+  rows?: number;
+  className?: string;
+};
 
 /**
  * Table silhouette (header + body rows) for list-style pages.
  */
 export function TableSkeleton({
   columns,
-  rows = 8,
+  rows = DEFAULT_LIST_PAGE_SIZE,
   className,
 }: TableSkeletonProps) {
   const gridStyle = {
     gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
-  } as const
+  } as const;
 
   return (
     <div
       role="status"
       aria-label="Carregando tabela"
-      className={cn("w-full overflow-hidden rounded-md border", className)}
-    >
+      className={cn("w-full overflow-hidden rounded-md border", className)}>
       <div
         className="grid gap-4 border-b bg-muted/40 px-4 py-3"
-        style={gridStyle}
-      >
+        style={gridStyle}>
         {Array.from({ length: columns }, (_, index) => (
           <Skeleton key={`head-${index}`} className="h-4 w-full" />
         ))}
       </div>
 
-      {Array.from({ length: rows }, (_, row) => (
+      {Array.from({ length: rows + 2 }, (_, row) => (
         <div
           key={`row-${row}`}
-          className="grid gap-4 border-b px-4 py-3 last:border-b-0"
-          style={gridStyle}
-        >
+          className="grid gap-4 h-11 border-b px-4 py-3 last:border-b-0"
+          style={gridStyle}>
           {Array.from({ length: columns }, (_, col) => (
             <Skeleton
               key={`cell-${row}-${col}`}
@@ -52,5 +50,5 @@ export function TableSkeleton({
         </div>
       ))}
     </div>
-  )
+  );
 }

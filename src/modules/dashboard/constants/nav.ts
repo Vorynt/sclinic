@@ -76,7 +76,7 @@ export const NAV_ITEMS: NavItem[] = [
     href: routes.settings,
     icon: GearIcon,
     permissions: [Permission.SETTINGS_MANAGE],
-    enabled: false,
+    enabled: true,
   },
 ]
 
@@ -97,6 +97,30 @@ const PAGE_META: Record<string, PageMeta> = {
     breadcrumbs: [
       { label: "Início", href: routes.home },
       { label: "Configurações" },
+    ],
+  },
+  [routes.settingsGeneral]: {
+    title: "Geral",
+    breadcrumbs: [
+      { label: "Início", href: routes.home },
+      { label: "Configurações", href: routes.settingsGeneral },
+      { label: "Geral" },
+    ],
+  },
+  [routes.settingsHours]: {
+    title: "Horários",
+    breadcrumbs: [
+      { label: "Início", href: routes.home },
+      { label: "Configurações", href: routes.settingsGeneral },
+      { label: "Horários" },
+    ],
+  },
+  [routes.settingsDanger]: {
+    title: "Zona de perigo",
+    breadcrumbs: [
+      { label: "Início", href: routes.home },
+      { label: "Configurações", href: routes.settingsGeneral },
+      { label: "Zona de perigo" },
     ],
   },
   [routes.patients]: {

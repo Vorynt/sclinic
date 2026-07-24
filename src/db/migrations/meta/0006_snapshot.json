@@ -1,6 +1,6 @@
 {
-  "id": "535869f8-9286-458a-abb7-05b5bf1a4782",
-  "prevId": "9c8287f2-f08a-4960-a2cf-595d54517f0f",
+  "id": "5f22c855-1c3f-4a6e-9f0b-dae9ec80cac7",
+  "prevId": "535869f8-9286-458a-abb7-05b5bf1a4782",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -637,6 +637,18 @@
         },
         "closes_at": {
           "name": "closes_at",
+          "type": "time",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "second_opens_at": {
+          "name": "second_opens_at",
+          "type": "time",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "second_closes_at": {
+          "name": "second_closes_at",
           "type": "time",
           "primaryKey": false,
           "notNull": false

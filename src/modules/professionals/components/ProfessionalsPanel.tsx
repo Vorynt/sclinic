@@ -2,12 +2,15 @@
 
 import { useState } from "react"
 
+import { DataTableSearch } from "@/components/data-table/DataTableSearch"
 import { Button } from "@/components/ui/button"
+import { useListQueryParams } from "@/hooks/use-list-query-params"
 import { ProfessionalFormDialog } from "@/modules/professionals/components/ProfessionalFormDialog"
 import { ProfessionalsTable } from "@/modules/professionals/components/ProfessionalsTable"
 import type { ProfessionalListItem } from "@/modules/professionals/types/professional"
 
 export function ProfessionalsPanel() {
+  const { q, page, pageSize, setQ, setPage } = useListQueryParams()
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingProfessional, setEditingProfessional] =
     useState<ProfessionalListItem | null>(null)
@@ -38,7 +41,17 @@ export function ProfessionalsPanel() {
         </Button>
       </div>
 
-      <ProfessionalsTable onEdit={handleEditProfessional} />
+      <DataTableSearch
+        value={q ?? ""}
+        onValueChange={setQ}
+        placeholder="Buscar por nome, especialidade ou e-mail"
+      />
+
+      <ProfessionalsTable
+        filters={{ q, page, pageSize }}
+        onPageChange={setPage}
+        onEdit={handleEditProfessional}
+      />
 
       <ProfessionalFormDialog
         professional={editingProfessional}

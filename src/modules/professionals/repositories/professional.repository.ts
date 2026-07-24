@@ -1,4 +1,4 @@
-import { and, desc, eq, inArray, isNull, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, ilike, inArray, isNull, or, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 
 import { db } from "@/db";
@@ -22,6 +22,27 @@ import type {
   ProfessionalSchedulingItem,
   ProfessionalStatus,
 } from "@/modules/professionals/types/professional";
+import {
+  toPaginatedResult,
+  type PaginatedResult,
+} from "@/types/pagination";
+
+function buildSchedulingSearchCondition(q: string) {
+  const pattern = `%${q}%`;
+  return or(
+    ilike(professionals.fullName, pattern),
+    ilike(professionals.specialty, pattern),
+  );
+}
+
+function buildListSearchCondition(q: string) {
+  const pattern = `%${q}%`;
+  return or(
+    ilike(professionals.fullName, pattern),
+    ilike(professionals.specialty, pattern),
+    ilike(user.email, pattern),
+  );
+}
 
 const invitationRoles = alias(roles, "invitation_roles");
 const membershipRoles = alias(roles, "membership_roles");
@@ -154,8 +175,88 @@ export const professionalRepository = {
     });
   },
 
-  async listByClinic(clinicId: string): Promise<ProfessionalListItem[]> {
+  async listByClinic(params: {
+    clinicId: string;
+    q?: string;
+    page: number;
+    pageSize: number;
+  }): Promise<PaginatedResult<ProfessionalListItem>> {
     return withDbError(async () => {
+      const baseWhere = and(
+        eq(professionalClinics.clinicId, params.clinicId),
+        isNull(professionalClinics.deletedAt),
+      );
+
+      const searchJoinNeeded = Boolean(params.q);
+
+      const countQuery = db
+        .select({ total: count() })
+        .from(professionalClinics)
+        .innerJoin(
+          professionals,
+          and(
+            eq(professionals.id, professionalClinics.professionalId),
+            isNull(professionals.deletedAt),
+          ),
+        );
+
+      const countRows = searchJoinNeeded
+        ? await countQuery
+            .leftJoin(user, eq(user.id, professionals.userId))
+            .where(
+              and(baseWhere, buildListSearchCondition(params.q as string)),
+            )
+        : await countQuery.where(baseWhere);
+
+      const total = countRows[0]?.total ?? 0;
+      const offset = (params.page - 1) * params.pageSize;
+
+      if (total === 0) {
+        return toPaginatedResult({
+          items: [],
+          total: 0,
+          page: params.page,
+          pageSize: params.pageSize,
+        });
+      }
+
+      const pageIdQuery = db
+        .select({ id: professionalClinics.id })
+        .from(professionalClinics)
+        .innerJoin(
+          professionals,
+          and(
+            eq(professionals.id, professionalClinics.professionalId),
+            isNull(professionals.deletedAt),
+          ),
+        );
+
+      const pageIds = searchJoinNeeded
+        ? await pageIdQuery
+            .leftJoin(user, eq(user.id, professionals.userId))
+            .where(
+              and(baseWhere, buildListSearchCondition(params.q as string)),
+            )
+            .orderBy(asc(professionals.fullName))
+            .limit(params.pageSize)
+            .offset(offset)
+        : await pageIdQuery
+            .where(baseWhere)
+            .orderBy(asc(professionals.fullName))
+            .limit(params.pageSize)
+            .offset(offset);
+
+      if (pageIds.length === 0) {
+        return toPaginatedResult({
+          items: [],
+          total,
+          page: params.page,
+          pageSize: params.pageSize,
+        });
+      }
+
+      const affiliationIds = pageIds.map((row) => row.id);
+
       const rows = await db
         .selectDistinctOn([professionalClinics.id], listSelect)
         .from(professionalClinics)
@@ -170,7 +271,7 @@ export const professionalRepository = {
           invitations,
           and(
             eq(invitations.professionalId, professionals.id),
-            eq(invitations.clinicId, clinicId),
+            eq(invitations.clinicId, params.clinicId),
             inArray(invitations.status, [...INVITE_LIST_STATUSES]),
           ),
         )
@@ -180,7 +281,7 @@ export const professionalRepository = {
           clinicMemberships,
           and(
             eq(clinicMemberships.userId, professionals.userId),
-            eq(clinicMemberships.clinicId, clinicId),
+            eq(clinicMemberships.clinicId, params.clinicId),
             eq(clinicMemberships.status, "active"),
             isNull(clinicMemberships.deletedAt),
           ),
@@ -189,23 +290,33 @@ export const professionalRepository = {
           membershipRoles,
           eq(membershipRoles.id, clinicMemberships.roleId),
         )
-        .where(
-          and(
-            eq(professionalClinics.clinicId, clinicId),
-            isNull(professionalClinics.deletedAt),
-          ),
-        )
+        .where(inArray(professionalClinics.id, affiliationIds))
         .orderBy(professionalClinics.id, desc(invitations.createdAt));
 
-      return mapRows(rows as ProfessionalListRow[]).sort((a, b) =>
-        a.fullName.localeCompare(b.fullName, "pt-BR"),
+      const byId = new Map(
+        mapRows(rows as ProfessionalListRow[]).map((item) => [
+          item.affiliationId,
+          item,
+        ]),
       );
+
+      const items = affiliationIds
+        .map((id) => byId.get(id))
+        .filter((item): item is ProfessionalListItem => item !== undefined);
+
+      return toPaginatedResult({
+        items,
+        total,
+        page: params.page,
+        pageSize: params.pageSize,
+      });
     });
   },
 
-  async listActiveForScheduling(
-    clinicId: string,
-  ): Promise<ProfessionalSchedulingItem[]> {
+  async listActiveForScheduling(params: {
+    clinicId: string;
+    q?: string;
+  }): Promise<ProfessionalSchedulingItem[]> {
     return withDbError(async () => {
       const rows = await db
         .select({
@@ -224,12 +335,14 @@ export const professionalRepository = {
         )
         .where(
           and(
-            eq(professionalClinics.clinicId, clinicId),
+            eq(professionalClinics.clinicId, params.clinicId),
             eq(professionalClinics.status, "active"),
             isNull(professionalClinics.deletedAt),
+            params.q ? buildSchedulingSearchCondition(params.q) : undefined,
           ),
         )
-        .orderBy(professionals.fullName);
+        .orderBy(professionals.fullName)
+        .limit(100);
 
       return rows;
     });

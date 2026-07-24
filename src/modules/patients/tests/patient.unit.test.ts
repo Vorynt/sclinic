@@ -118,14 +118,23 @@ describe("updatePatientSchema", () => {
 })
 
 describe("listPatientsSchema", () => {
-  it("defaults to an empty filter", () => {
+  it("defaults page and pageSize with empty filter", () => {
     const parsed = listPatientsSchema.parse({})
     assert.equal(parsed.q, undefined)
+    assert.equal(parsed.page, 1)
+    assert.equal(parsed.pageSize, 20)
   })
 
   it("trims q and converts empty string to undefined", () => {
     assert.equal(listPatientsSchema.parse({ q: "  Maria  " }).q, "Maria")
     assert.equal(listPatientsSchema.parse({ q: "   " }).q, undefined)
+  })
+
+  it("accepts page and pageSize overrides", () => {
+    const parsed = listPatientsSchema.parse({ q: "Ana", page: 2, pageSize: 10 })
+    assert.equal(parsed.q, "Ana")
+    assert.equal(parsed.page, 2)
+    assert.equal(parsed.pageSize, 10)
   })
 })
 

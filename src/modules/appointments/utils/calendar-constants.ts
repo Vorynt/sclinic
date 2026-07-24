@@ -4,11 +4,15 @@
  * appointments API layer (status/type labels, professional colors).
  */
 
-/** Visible hour range for week/day time grids (24h clock, end exclusive). */
+/** Fallback visible hour range when clinic hours are missing/closed (24h, end exclusive). */
 export const CALENDAR_HOUR_RANGE = { start: 7, end: 20 } as const
 
-/** Pixel height of one hour row in the week/day time grids. */
-export const CALENDAR_HOUR_HEIGHT_PX = 56
+/**
+ * Pixel height of one hour row in the week/day time grids.
+ * Sized so a 30-minute block (~half this value) fits the appointment card
+ * content (patient + time + professional, text-xs + py-1 + border).
+ */
+export const CALENDAR_HOUR_HEIGHT_PX = 120
 
 /** Duration options (minutes) offered when creating an appointment. */
 export const APPOINTMENT_DURATION_OPTIONS = [15, 30, 45, 60, 90, 120] as const

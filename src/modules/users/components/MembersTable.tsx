@@ -2,6 +2,7 @@
 
 import { toast } from "sonner";
 
+import { DataTablePagination } from "@/components/data-table/DataTablePagination";
 import { TableSkeleton } from "@/components/status/TableSkeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -27,6 +28,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import type { ListQueryParams } from "@/hooks/use-list-query-params";
 import {
   type AssignableRoleKey,
   getRoleLabel,
@@ -46,15 +48,21 @@ import {
 } from "@/modules/users/hooks/use-users";
 import { isAssignableRoleKey } from "@/modules/users/utils/member-rules";
 import { useAuth } from "@/providers/AuthProvider";
+import { DEFAULT_LIST_PAGE_SIZE } from "@/shared/validators";
 import { ArrowsClockwiseIcon, ProhibitIcon } from "@phosphor-icons/react";
+
+type MembersTableProps = {
+  filters: ListQueryParams;
+  onPageChange: (page: number) => void;
+};
 
 function statusBadgeVariant(status: TeamRowStatus): "secondary" | "outline" {
   return status === "active" ? "secondary" : "outline";
 }
 
-export function MembersTable() {
+export function MembersTable({ filters, onPageChange }: MembersTableProps) {
   const { auth } = useAuth();
-  const membersQuery = useMembersQuery();
+  const membersQuery = useMembersQuery(filters);
   const invitationsQuery = useInvitationsQuery();
   const rolesQuery = useAssignableRolesQuery();
 
@@ -77,7 +85,7 @@ export function MembersTable() {
   });
 
   if (membersQuery.isLoading || invitationsQuery.isLoading) {
-    return <TableSkeleton columns={5} rows={6} />;
+    return <TableSkeleton columns={5} rows={DEFAULT_LIST_PAGE_SIZE} />;
   }
 
   if (membersQuery.isError || invitationsQuery.isError) {
@@ -88,10 +96,12 @@ export function MembersTable() {
     );
   }
 
-  const members = membersQuery.data ?? [];
+  const result = membersQuery.data;
+  const members = result?.items ?? [];
   const invitations = invitationsQuery.data ?? [];
+  const showInvitations = !filters.q && (filters.page ?? 1) === 1;
 
-  if (members.length === 0 && invitations.length === 0) {
+  if (members.length === 0 && (!showInvitations || invitations.length === 0)) {
     return (
       <Empty className="border">
         <EmptyHeader>
@@ -105,131 +115,146 @@ export function MembersTable() {
   }
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Nome</TableHead>
-          <TableHead>E-mail</TableHead>
-          <TableHead>Papel</TableHead>
-          <TableHead>Status</TableHead>
-          <TableHead className="text-right">Ações</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {members.map((member) => {
-          const isSelf = member.userId === auth?.user.id;
-          const isOwner = member.roleKey === USERS_CONSTANTS.OWNER_ROLE_KEY;
-          const canManage = !isSelf && !isOwner;
-          const canChangeRole =
-            canManage && isAssignableRoleKey(member.roleKey);
-          const roleLabel = getRoleLabel(member.roleKey, member.roleName);
-          const status: TeamRowStatus =
-            member.status === "suspended" ? "suspended" : "active";
-
-          return (
-            <TableRow key={member.id}>
-              <TableCell className="font-medium">{member.userName}</TableCell>
-              <TableCell>{member.userEmail}</TableCell>
-              <TableCell>
-                {canChangeRole ? (
-                  <Select
-                    value={member.roleKey}
-                    onValueChange={(roleKey) =>
-                      updateRole.mutate({
-                        membershipId: member.id,
-                        roleKey: roleKey as AssignableRoleKey,
-                      })
-                    }
-                    disabled={updateRole.isPending}>
-                    <SelectTrigger size="sm" className="w-40">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {(rolesQuery.data ?? []).map((role) => (
-                        <SelectItem key={role.id} value={role.key}>
-                          {getRoleLabel(role.key, role.name)}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                ) : (
-                  <div className="flex flex-col gap-0.5">
-                    <span>{roleLabel}</span>
-                  </div>
-                )}
-              </TableCell>
-              <TableCell>
-                <Badge variant={statusBadgeVariant(status)}>
-                  {getTeamStatusLabel(status)}
-                </Badge>
-              </TableCell>
-              <TableCell className="flex items-end justify-end text-right">
-                {canManage ? (
-                  <ButtonGroup>
-                    <Button
-                      type="button"
-                      variant={
-                        status === "suspended" ? "outline" : "destructive"
-                      }
-                      size="icon"
-                      tooltip={
-                        status === "suspended" ? "Reativar" : "Suspender"
-                      }
-                      disabled={updateStatus.isPending}
-                      onClick={() =>
-                        updateStatus.mutate({
-                          membershipId: member.id,
-                          status:
-                            status === "suspended" ? "active" : "suspended",
-                        })
-                      }>
-                      {status === "suspended" ? (
-                        <ArrowsClockwiseIcon />
-                      ) : (
-                        <ProhibitIcon />
-                      )}
-                      <span className="sr-only">
-                        {status === "suspended" ? "Reativar" : "Suspender"}
-                      </span>
-                    </Button>
-                  </ButtonGroup>
-                ) : null}
-              </TableCell>
-            </TableRow>
-          );
-        })}
-
-        {invitations.map((invitation) => (
-          <TableRow key={`invite-${invitation.id}`}>
-            <TableCell className="text-muted-foreground">—</TableCell>
-            <TableCell className="font-medium">{invitation.email}</TableCell>
-            <TableCell>
-              {getRoleLabel(invitation.roleKey, invitation.roleName)}
-            </TableCell>
-            <TableCell>
-              <Badge variant={statusBadgeVariant("invite_pending")}>
-                {getTeamStatusLabel("invite_pending")}
-              </Badge>
-            </TableCell>
-            <TableCell className="flex items-end justify-end text-right">
-              <ButtonGroup>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  tooltip="Cancelar convite"
-                  disabled={revokeInvite.isPending}
-                  onClick={() =>
-                    revokeInvite.mutate({ invitationId: invitation.id })
-                  }>
-                  <ProhibitIcon />
-                  <span className="sr-only">Cancelar convite</span>
-                </Button>
-              </ButtonGroup>
-            </TableCell>
+    <div className="flex flex-col gap-4">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Nome</TableHead>
+            <TableHead>E-mail</TableHead>
+            <TableHead>Papel</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead className="text-right">Ações</TableHead>
           </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+        </TableHeader>
+        <TableBody>
+          {showInvitations
+            ? invitations.map((invitation) => (
+                <TableRow key={`invite-${invitation.id}`}>
+                  <TableCell className="text-muted-foreground">—</TableCell>
+                  <TableCell className="font-medium">
+                    {invitation.email}
+                  </TableCell>
+                  <TableCell>
+                    {getRoleLabel(invitation.roleKey, invitation.roleName)}
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={statusBadgeVariant("invite_pending")}>
+                      {getTeamStatusLabel("invite_pending")}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="flex items-end justify-end text-right">
+                    <ButtonGroup>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        tooltip="Cancelar convite"
+                        disabled={revokeInvite.isPending}
+                        onClick={() =>
+                          revokeInvite.mutate({ invitationId: invitation.id })
+                        }>
+                        <ProhibitIcon />
+                        <span className="sr-only">Cancelar convite</span>
+                      </Button>
+                    </ButtonGroup>
+                  </TableCell>
+                </TableRow>
+              ))
+            : null}
+
+          {members.map((member) => {
+            const isSelf = member.userId === auth?.user.id;
+            const isOwner = member.roleKey === USERS_CONSTANTS.OWNER_ROLE_KEY;
+            const canManage = !isSelf && !isOwner;
+            const canChangeRole =
+              canManage && isAssignableRoleKey(member.roleKey);
+            const roleLabel = getRoleLabel(member.roleKey, member.roleName);
+            const status: TeamRowStatus =
+              member.status === "suspended" ? "suspended" : "active";
+
+            return (
+              <TableRow key={member.id}>
+                <TableCell className="font-medium">{member.userName}</TableCell>
+                <TableCell>{member.userEmail}</TableCell>
+                <TableCell>
+                  {canChangeRole ? (
+                    <Select
+                      value={member.roleKey}
+                      onValueChange={(roleKey) =>
+                        updateRole.mutate({
+                          membershipId: member.id,
+                          roleKey: roleKey as AssignableRoleKey,
+                        })
+                      }
+                      disabled={updateRole.isPending}>
+                      <SelectTrigger size="sm" className="w-40">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {(rolesQuery.data ?? []).map((role) => (
+                          <SelectItem key={role.id} value={role.key}>
+                            {getRoleLabel(role.key, role.name)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <div className="flex flex-col gap-0.5">
+                      <span>{roleLabel}</span>
+                    </div>
+                  )}
+                </TableCell>
+                <TableCell>
+                  <Badge variant={statusBadgeVariant(status)}>
+                    {getTeamStatusLabel(status)}
+                  </Badge>
+                </TableCell>
+                <TableCell className="flex items-end justify-end text-right">
+                  {canManage ? (
+                    <ButtonGroup>
+                      <Button
+                        type="button"
+                        variant={
+                          status === "suspended" ? "outline" : "destructive"
+                        }
+                        size="icon"
+                        tooltip={
+                          status === "suspended" ? "Reativar" : "Suspender"
+                        }
+                        disabled={updateStatus.isPending}
+                        onClick={() =>
+                          updateStatus.mutate({
+                            membershipId: member.id,
+                            status:
+                              status === "suspended" ? "active" : "suspended",
+                          })
+                        }>
+                        {status === "suspended" ? (
+                          <ArrowsClockwiseIcon />
+                        ) : (
+                          <ProhibitIcon />
+                        )}
+                        <span className="sr-only">
+                          {status === "suspended" ? "Reativar" : "Suspender"}
+                        </span>
+                      </Button>
+                    </ButtonGroup>
+                  ) : null}
+                </TableCell>
+              </TableRow>
+            );
+          })}
+        </TableBody>
+      </Table>
+
+      <DataTablePagination
+        page={result?.page ?? filters.page ?? 1}
+        pageSize={
+          result?.pageSize ?? filters.pageSize ?? DEFAULT_LIST_PAGE_SIZE
+        }
+        total={result?.total ?? 0}
+        onPageChange={onPageChange}
+      />
+    </div>
   );
 }

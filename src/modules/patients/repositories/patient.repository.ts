@@ -1,4 +1,4 @@
-import { and, asc, eq, ilike, isNull, or } from "drizzle-orm"
+import { and, asc, count, eq, ilike, isNull, or } from "drizzle-orm"
 
 import { db } from "@/db"
 import { patients } from "@/db/schema"
@@ -7,6 +7,10 @@ import type { CreatePatientDto } from "@/modules/patients/dto/create-patient.dto
 import type { UpdatePatientDto } from "@/modules/patients/dto/update-patient.dto"
 import { toPatient } from "@/modules/patients/mappers/patient.mapper"
 import type { Patient } from "@/modules/patients/types/patient"
+import {
+  toPaginatedResult,
+  type PaginatedResult,
+} from "@/types/pagination"
 import { stripCpf } from "@/utils/cpf"
 
 function buildSearchCondition(q: string) {
@@ -51,22 +55,35 @@ export const patientRepository = {
   async listByClinic(params: {
     clinicId: string
     q?: string
-  }): Promise<Patient[]> {
+    page: number
+    pageSize: number
+  }): Promise<PaginatedResult<Patient>> {
     return withDbError(async () => {
-      const rows = await db
-        .select()
-        .from(patients)
-        .where(
-          and(
-            eq(patients.clinicId, params.clinicId),
-            isNull(patients.deletedAt),
-            params.q ? buildSearchCondition(params.q) : undefined,
-          ),
-        )
-        .orderBy(asc(patients.fullName))
-        .limit(100)
+      const where = and(
+        eq(patients.clinicId, params.clinicId),
+        isNull(patients.deletedAt),
+        params.q ? buildSearchCondition(params.q) : undefined,
+      )
 
-      return rows.map(toPatient)
+      const offset = (params.page - 1) * params.pageSize
+
+      const [totalRow, rows] = await Promise.all([
+        db.select({ total: count() }).from(patients).where(where),
+        db
+          .select()
+          .from(patients)
+          .where(where)
+          .orderBy(asc(patients.fullName))
+          .limit(params.pageSize)
+          .offset(offset),
+      ])
+
+      return toPaginatedResult({
+        items: rows.map(toPatient),
+        total: totalRow[0]?.total ?? 0,
+        page: params.page,
+        pageSize: params.pageSize,
+      })
     })
   },
 

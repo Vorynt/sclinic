@@ -15,6 +15,7 @@ Documentos obrigatórios do projeto. Cada arquivo define uma regra que o código
 | 009 | [testing](./009-testing.md) | Testes |
 | 010 | [design-system](./010-design-system.md) | UI / Storybook |
 | 011 | [form-validation](./011-form-validation.md) | Zod + React Hook Form |
+| 012 | [list-query](./012-list-query.md) | Paginação + busca server-side em tabelas |
 
 ## Fluxo de camadas
 

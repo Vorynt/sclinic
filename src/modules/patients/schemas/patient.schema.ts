@@ -1,5 +1,6 @@
 import { z } from "zod"
 
+import { listQuerySchema } from "@/shared/validators"
 import { isValidCpf, stripCpf } from "@/utils/cpf"
 
 const cpfSchema = z
@@ -70,9 +71,7 @@ export const updatePatientSchema = z
     },
   )
 
-export const listPatientsSchema = z.object({
-  q: optionalTrimmed,
-})
+export const listPatientsSchema = listQuerySchema
 
 export type CreatePatientInput = z.infer<typeof createPatientSchema>
 export type UpdatePatientInput = z.infer<typeof updatePatientSchema>

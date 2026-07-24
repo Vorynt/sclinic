@@ -1,9 +1,10 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 
+import { DataTableSearch } from "@/components/data-table/DataTableSearch"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { useListQueryParams } from "@/hooks/use-list-query-params"
 import { PatientFormDialog } from "@/modules/patients/components/PatientFormDialog"
 import { PatientsTable } from "@/modules/patients/components/PatientsTable"
 import type { Patient } from "@/modules/patients/types/patient"
@@ -13,15 +14,9 @@ type PatientsPanelProps = {
 }
 
 export function PatientsPanel({ onSchedulePatient }: PatientsPanelProps) {
-  const [q, setQ] = useState("")
-  const [debouncedQ, setDebouncedQ] = useState("")
+  const { q, page, pageSize, setQ, setPage } = useListQueryParams()
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingPatient, setEditingPatient] = useState<Patient | null>(null)
-
-  useEffect(() => {
-    const timeout = setTimeout(() => setDebouncedQ(q), 300)
-    return () => clearTimeout(timeout)
-  }, [q])
 
   function handleNewPatient() {
     setEditingPatient(null)
@@ -49,15 +44,15 @@ export function PatientsPanel({ onSchedulePatient }: PatientsPanelProps) {
         </Button>
       </div>
 
-      <Input
+      <DataTableSearch
+        value={q ?? ""}
+        onValueChange={setQ}
         placeholder="Buscar por nome ou CPF"
-        value={q}
-        onChange={(event) => setQ(event.target.value)}
-        className="max-w-sm"
       />
 
       <PatientsTable
-        searchQuery={debouncedQ}
+        filters={{ q, page, pageSize }}
+        onPageChange={setPage}
         onEdit={handleEditPatient}
         onSchedule={onSchedulePatient}
       />

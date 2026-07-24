@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { toast } from "sonner";
 
+import { DataTablePagination } from "@/components/data-table/DataTablePagination";
+import { TableSkeleton } from "@/components/status/TableSkeleton";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,7 +24,6 @@ import {
   EmptyHeader,
   EmptyTitle,
 } from "@/components/ui/empty";
-import { TableSkeleton } from "@/components/status/TableSkeleton";
 import {
   Table,
   TableBody,
@@ -31,6 +32,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import type { ListQueryParams } from "@/hooks/use-list-query-params";
 import {
   ACCOUNT_STATUS_LABELS,
   getAffiliationTypeLabel,
@@ -45,6 +47,7 @@ import type {
   ProfessionalAccountStatus,
   ProfessionalListItem,
 } from "@/modules/professionals/types/professional";
+import { DEFAULT_LIST_PAGE_SIZE } from "@/shared/validators";
 import {
   CheckCircleIcon,
   PencilSimpleIcon,
@@ -53,6 +56,8 @@ import {
 } from "@phosphor-icons/react";
 
 type ProfessionalsTableProps = {
+  filters: ListQueryParams;
+  onPageChange: (page: number) => void;
   onEdit: (professional: ProfessionalListItem) => void;
 };
 
@@ -66,11 +71,15 @@ function accountStatusLabel(status: ProfessionalAccountStatus): string {
   return ACCOUNT_STATUS_LABELS[status] ?? status;
 }
 
-export function ProfessionalsTable({ onEdit }: ProfessionalsTableProps) {
+export function ProfessionalsTable({
+  filters,
+  onPageChange,
+  onEdit,
+}: ProfessionalsTableProps) {
   const [professionalToDelete, setProfessionalToDelete] =
     useState<ProfessionalListItem | null>(null);
 
-  const professionalsQuery = useProfessionalsQuery();
+  const professionalsQuery = useProfessionalsQuery(filters);
 
   const setStatus = useSetProfessionalStatusMutation({
     onSuccess: () => toast.success("Status atualizado"),
@@ -86,7 +95,7 @@ export function ProfessionalsTable({ onEdit }: ProfessionalsTableProps) {
   });
 
   if (professionalsQuery.isLoading) {
-    return <TableSkeleton columns={6} rows={8} />;
+    return <TableSkeleton columns={6} rows={DEFAULT_LIST_PAGE_SIZE} />;
   }
 
   if (professionalsQuery.isError) {
@@ -97,7 +106,8 @@ export function ProfessionalsTable({ onEdit }: ProfessionalsTableProps) {
     );
   }
 
-  const professionals = professionalsQuery.data ?? [];
+  const result = professionalsQuery.data;
+  const professionals = result?.items ?? [];
 
   if (professionals.length === 0) {
     return (
@@ -113,7 +123,7 @@ export function ProfessionalsTable({ onEdit }: ProfessionalsTableProps) {
   }
 
   return (
-    <>
+    <div className="flex flex-col gap-4">
       <Table>
         <TableHeader>
           <TableRow>
@@ -209,6 +219,15 @@ export function ProfessionalsTable({ onEdit }: ProfessionalsTableProps) {
         </TableBody>
       </Table>
 
+      <DataTablePagination
+        page={result?.page ?? filters.page ?? 1}
+        pageSize={
+          result?.pageSize ?? filters.pageSize ?? DEFAULT_LIST_PAGE_SIZE
+        }
+        total={result?.total ?? 0}
+        onPageChange={onPageChange}
+      />
+
       <AlertDialog
         open={Boolean(professionalToDelete)}
         onOpenChange={(open) => {
@@ -240,6 +259,6 @@ export function ProfessionalsTable({ onEdit }: ProfessionalsTableProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </>
+    </div>
   );
 }

@@ -1,9 +1,16 @@
 import { useQuery } from "@tanstack/react-query"
 
+import type { ListQueryParams } from "@/hooks/use-list-query-params"
 import { usersQueries } from "@/modules/users/queries/users.query"
 
-export function useMembersQuery() {
-  return useQuery(usersQueries.members())
+export function useMembersQuery(
+  filters?: ListQueryParams,
+  options?: { enabled?: boolean },
+) {
+  return useQuery({
+    ...usersQueries.members(filters),
+    ...options,
+  })
 }
 
 export function useInvitationsQuery() {

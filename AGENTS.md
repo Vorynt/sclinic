@@ -25,6 +25,7 @@ Antes de criar pastas, camadas ou padrões novos, leia:
 | Testes | `architecture/009-testing.md` |
 | Design system | `architecture/010-design-system.md` |
 | Validação de forms (Zod + RHF) | `architecture/011-form-validation.md` |
+| Listagens (paginação + busca) | `architecture/012-list-query.md` |
 
 Visão geral: `architecture/README.md`.
 

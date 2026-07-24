@@ -1,5 +1,6 @@
 import { queryOptions } from "@tanstack/react-query"
 
+import type { ListQueryParams } from "@/hooks/use-list-query-params"
 import { getInviteAccessAction } from "@/modules/users/actions/get-invite-access"
 import { listAssignableRolesAction } from "@/modules/users/actions/list-assignable-roles"
 import { listInvitationsAction } from "@/modules/users/actions/list-invitations"
@@ -8,17 +9,21 @@ import { unwrapActionResult } from "@/shared/errors"
 
 export const usersQueryKeys = {
   all: ["users"] as const,
-  members: () => ["users", "members"] as const,
-  invitations: () => ["users", "invitations"] as const,
-  roles: () => ["users", "roles"] as const,
-  inviteAccess: (token: string) => ["users", "invite-access", token] as const,
+  members: () => [...usersQueryKeys.all, "members"] as const,
+  membersList: (filters?: Record<string, unknown>) =>
+    [...usersQueryKeys.members(), filters ?? {}] as const,
+  invitations: () => [...usersQueryKeys.all, "invitations"] as const,
+  roles: () => [...usersQueryKeys.all, "roles"] as const,
+  inviteAccess: (token: string) =>
+    [...usersQueryKeys.all, "invite-access", token] as const,
 }
 
 export const usersQueries = {
-  members: () =>
+  members: (filters?: ListQueryParams) =>
     queryOptions({
-      queryKey: usersQueryKeys.members(),
-      queryFn: async () => unwrapActionResult(await listMembersAction()),
+      queryKey: usersQueryKeys.membersList(filters),
+      queryFn: async () =>
+        unwrapActionResult(await listMembersAction(filters)),
     }),
 
   invitations: () =>

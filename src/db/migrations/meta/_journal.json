@@ -42,6 +42,13 @@
       "when": 1784827383899,
       "tag": "0006_colossal_mikhail_rasputin",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1784858066480,
+      "tag": "0007_clinic_hours_second_interval",
+      "breakpoints": true
     }
   ],
   "version": "7"

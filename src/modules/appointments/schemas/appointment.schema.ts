@@ -38,6 +38,10 @@ export const createAppointmentSchema = z
     reason: optionalTrimmed,
     notes: optionalTrimmed,
   })
+  .refine((data) => data.startsAt.getTime() > Date.now(), {
+    message: "Não é possível agendar para um horário no passado.",
+    path: ["startsAt"],
+  })
   .refine((data) => data.endsAt > data.startsAt, {
     message: "O horário final deve ser depois do horário inicial.",
     path: ["endsAt"],

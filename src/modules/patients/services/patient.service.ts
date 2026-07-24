@@ -7,6 +7,7 @@ import { patientRepository } from "@/modules/patients/repositories/patient.repos
 import type { Patient } from "@/modules/patients/types/patient"
 import type { AuthRequestContext } from "@/shared/auth"
 import { AppError, ErrorCode, isTechnicalError } from "@/shared/errors"
+import type { PaginatedResult } from "@/types/pagination"
 
 /** Maps a CPF unique-constraint violation to a domain conflict error. */
 function rethrowAsConflict(error: unknown): never {
@@ -20,9 +21,17 @@ function rethrowAsConflict(error: unknown): never {
 }
 
 export const patientService = {
-  async list(filters: ListPatientsDto, ctx: AuthRequestContext): Promise<Patient[]> {
+  async list(
+    filters: ListPatientsDto,
+    ctx: AuthRequestContext,
+  ): Promise<PaginatedResult<Patient>> {
     const auth = await requirePermission(ctx, Permission.PATIENTS_READ)
-    return patientRepository.listByClinic({ clinicId: auth.clinicId, q: filters.q })
+    return patientRepository.listByClinic({
+      clinicId: auth.clinicId,
+      q: filters.q,
+      page: filters.page,
+      pageSize: filters.pageSize,
+    })
   },
 
   async getById(id: string, ctx: AuthRequestContext): Promise<Patient> {

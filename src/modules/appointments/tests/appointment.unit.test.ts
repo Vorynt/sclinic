@@ -17,6 +17,11 @@ import {
 } from "@/modules/appointments/services/professional-availability.service"
 import type { ProfessionalAvailabilityInput } from "@/modules/appointments/types/availability"
 import {
+  getUnavailableMinuteRanges,
+  isWithinOpenClinicMinutes,
+  resolveVisibleHourRange,
+} from "@/modules/appointments/utils/calendar-clinic-hours"
+import {
   findNextAvailableStarts,
   formatSuggestedSlotLabel,
   readSuggestedSlotsFromMeta,
@@ -25,6 +30,13 @@ import { AppError, ErrorCode } from "@/shared/errors"
 
 const VALID_UUID = "11111111-1111-4111-8111-111111111111"
 const OTHER_UUID = "22222222-2222-4222-8222-222222222222"
+
+/** Relative future window so createAppointmentSchema past-check stays stable. */
+function futureRange(hoursFromNow = 24, durationHours = 1) {
+  const startsAt = new Date(Date.now() + hoursFromNow * 60 * 60 * 1000)
+  const endsAt = new Date(startsAt.getTime() + durationHours * 60 * 60 * 1000)
+  return { startsAt, endsAt }
+}
 
 const baseInput: ProfessionalAvailabilityInput = {
   clinicId: VALID_UUID,
@@ -35,8 +47,7 @@ const baseInput: ProfessionalAvailabilityInput = {
 
 describe("createAppointmentSchema", () => {
   it("accepts a valid payload and defaults type to consultation", () => {
-    const startsAt = new Date("2026-01-10T10:00:00.000Z")
-    const endsAt = new Date("2026-01-10T11:00:00.000Z")
+    const { startsAt, endsAt } = futureRange()
 
     const parsed = createAppointmentSchema.parse({
       patientId: VALID_UUID,
@@ -51,41 +62,57 @@ describe("createAppointmentSchema", () => {
   })
 
   it("rejects invalid patientId/professionalId", () => {
+    const { startsAt, endsAt } = futureRange()
     const result = createAppointmentSchema.safeParse({
       patientId: "not-a-uuid",
       professionalId: OTHER_UUID,
-      startsAt: "2026-01-10T10:00:00.000Z",
-      endsAt: "2026-01-10T11:00:00.000Z",
+      startsAt: startsAt.toISOString(),
+      endsAt: endsAt.toISOString(),
     })
     assert.equal(result.success, false)
   })
 
   it("rejects when endsAt is before or equal to startsAt", () => {
+    const { startsAt } = futureRange()
     const result = createAppointmentSchema.safeParse({
       patientId: VALID_UUID,
       professionalId: OTHER_UUID,
-      startsAt: "2026-01-10T11:00:00.000Z",
-      endsAt: "2026-01-10T11:00:00.000Z",
+      startsAt: startsAt.toISOString(),
+      endsAt: startsAt.toISOString(),
     })
     assert.equal(result.success, false)
   })
 
   it("rejects a duration longer than 8 hours", () => {
+    const { startsAt, endsAt } = futureRange(24, 9)
     const result = createAppointmentSchema.safeParse({
       patientId: VALID_UUID,
       professionalId: OTHER_UUID,
-      startsAt: "2026-01-10T08:00:00.000Z",
-      endsAt: "2026-01-10T17:00:00.000Z",
+      startsAt: startsAt.toISOString(),
+      endsAt: endsAt.toISOString(),
+    })
+    assert.equal(result.success, false)
+  })
+
+  it("rejects a startsAt in the past", () => {
+    const startsAt = new Date(Date.now() - 60 * 60 * 1000)
+    const endsAt = new Date(startsAt.getTime() + 30 * 60 * 1000)
+    const result = createAppointmentSchema.safeParse({
+      patientId: VALID_UUID,
+      professionalId: OTHER_UUID,
+      startsAt: startsAt.toISOString(),
+      endsAt: endsAt.toISOString(),
     })
     assert.equal(result.success, false)
   })
 
   it("trims optional reason/notes and drops empty values", () => {
+    const { startsAt, endsAt } = futureRange()
     const parsed = createAppointmentSchema.parse({
       patientId: VALID_UUID,
       professionalId: OTHER_UUID,
-      startsAt: "2026-01-10T10:00:00.000Z",
-      endsAt: "2026-01-10T11:00:00.000Z",
+      startsAt: startsAt.toISOString(),
+      endsAt: endsAt.toISOString(),
       reason: "  Dor de cabeça  ",
       notes: "   ",
     })
@@ -94,11 +121,12 @@ describe("createAppointmentSchema", () => {
   })
 
   it("accepts a supported appointment type", () => {
+    const { startsAt, endsAt } = futureRange()
     const parsed = createAppointmentSchema.parse({
       patientId: VALID_UUID,
       professionalId: OTHER_UUID,
-      startsAt: "2026-01-10T10:00:00.000Z",
-      endsAt: "2026-01-10T11:00:00.000Z",
+      startsAt: startsAt.toISOString(),
+      endsAt: endsAt.toISOString(),
       type: "follow_up",
     })
     assert.equal(parsed.type, "follow_up")
@@ -237,9 +265,12 @@ describe("isSelfScheduleOnlyRole", () => {
 })
 
 describe("checkProfessionalAvailability", () => {
+  const withinHours = async () => true
+
   it("returns available when there is no overlapping active appointment", async () => {
     const result = await checkProfessionalAvailability(baseInput, {
       hasOverlappingActiveAppointment: async () => false,
+      isWithinWorkingHours: withinHours,
     })
 
     assert.deepEqual(result, { available: true })
@@ -248,11 +279,24 @@ describe("checkProfessionalAvailability", () => {
   it("returns slot_conflict when an active appointment overlaps", async () => {
     const result = await checkProfessionalAvailability(baseInput, {
       hasOverlappingActiveAppointment: async () => true,
+      isWithinWorkingHours: withinHours,
     })
 
     assert.deepEqual(result, {
       available: false,
       reason: "slot_conflict",
+    })
+  })
+
+  it("returns outside_working_hours when outside clinic hours", async () => {
+    const result = await checkProfessionalAvailability(baseInput, {
+      hasOverlappingActiveAppointment: async () => false,
+      isWithinWorkingHours: async () => false,
+    })
+
+    assert.deepEqual(result, {
+      available: false,
+      reason: "outside_working_hours",
     })
   })
 
@@ -266,6 +310,7 @@ describe("checkProfessionalAvailability", () => {
           received = input
           return false
         },
+        isWithinWorkingHours: withinHours,
       },
     )
 
@@ -274,10 +319,18 @@ describe("checkProfessionalAvailability", () => {
 })
 
 describe("professionalAvailabilityService.ensureAvailable", () => {
+  const availabilityMocks = {
+    isWithinWorkingHours: async () => true,
+    getDayIntervalsForSuggestions: async () => () => [
+      { startMinutes: 7 * 60, endMinutes: 19 * 60 },
+    ],
+  }
+
   it("resolves when the professional is available", async () => {
     await professionalAvailabilityService.ensureAvailable(baseInput, {
       hasOverlappingActiveAppointment: async () => false,
       listBusyIntervals: async () => [],
+      ...availabilityMocks,
     })
   })
 
@@ -292,6 +345,7 @@ describe("professionalAvailabilityService.ensureAvailable", () => {
               endsAt: baseInput.endsAt,
             },
           ],
+          ...availabilityMocks,
         }),
       (error: unknown) => {
         if (
@@ -354,6 +408,20 @@ describe("findNextAvailableStarts", () => {
     assert.equal(slots[1]?.getHours(), 11)
     assert.equal(slots[1]?.getMinutes(), 30)
   })
+
+  it("starts from the next step after an unaligned 'now' without skipping a valid slot", () => {
+    const after = new Date(2026, 6, 23, 15, 7, 0)
+    const slots = findNextAvailableStarts({
+      after,
+      durationMs: 30 * 60 * 1000,
+      busy: [],
+      limit: 1,
+    })
+
+    assert.equal(slots.length, 1)
+    assert.equal(slots[0]?.getHours(), 15)
+    assert.equal(slots[0]?.getMinutes(), 30)
+  })
 })
 
 describe("readSuggestedSlotsFromMeta", () => {
@@ -363,6 +431,62 @@ describe("readSuggestedSlotsFromMeta", () => {
         suggestedSlots: ["2026-07-23T15:00:00.000Z", "nope", 12],
       }),
       ["2026-07-23T15:00:00.000Z"],
+    )
+  })
+})
+
+describe("calendar clinic hours utils", () => {
+  const splitDayWeek = Array.from({ length: 7 }, (_, dayOfWeek) => ({
+    dayOfWeek,
+    isClosed: dayOfWeek === 0,
+    intervals:
+      dayOfWeek === 0
+        ? []
+        : [
+            { opensAt: "08:00", closesAt: "12:00" },
+            { opensAt: "14:00", closesAt: "18:00" },
+          ],
+  }))
+
+  it("resolves visible hour range from open intervals", () => {
+    // Monday 2026-07-20
+    const monday = new Date(2026, 6, 20)
+    assert.deepEqual(resolveVisibleHourRange(splitDayWeek, [monday]), {
+      start: 8,
+      end: 18,
+    })
+  })
+
+  it("marks the lunch break as an unavailable range", () => {
+    const monday = new Date(2026, 6, 20)
+    const ranges = getUnavailableMinuteRanges(splitDayWeek, monday, {
+      start: 8,
+      end: 18,
+    })
+
+    assert.deepEqual(ranges, [
+      { startMinutes: 12 * 60, endMinutes: 14 * 60 },
+    ])
+  })
+
+  it("marks a closed day as fully unavailable", () => {
+    const sunday = new Date(2026, 6, 19)
+    const ranges = getUnavailableMinuteRanges(splitDayWeek, sunday, {
+      start: 8,
+      end: 18,
+    })
+
+    assert.deepEqual(ranges, [
+      { startMinutes: 8 * 60, endMinutes: 18 * 60 },
+    ])
+  })
+
+  it("detects open vs break minutes", () => {
+    const monday = new Date(2026, 6, 20)
+    assert.equal(isWithinOpenClinicMinutes(splitDayWeek, monday, 9 * 60), true)
+    assert.equal(
+      isWithinOpenClinicMinutes(splitDayWeek, monday, 13 * 60),
+      false,
     )
   })
 })

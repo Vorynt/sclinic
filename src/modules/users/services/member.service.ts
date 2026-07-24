@@ -5,7 +5,10 @@ import {
   type AuthContextWithClinic,
 } from "@/modules/authentication/permissions/guards"
 import { Permission } from "@/config/permissions"
-import type { UpdateMemberRoleDto } from "@/modules/users/dto/member.dto"
+import type {
+  ListMembersDto,
+  UpdateMemberRoleDto,
+} from "@/modules/users/dto/member.dto"
 import { memberRepository } from "@/modules/users/repositories/member.repository"
 import { roleRepository } from "@/modules/users/repositories/role.repository"
 import type { ClinicMember } from "@/modules/users/types/member"
@@ -13,6 +16,7 @@ import {
   assertAssignableRoleKey,
   assertCanManageMember,
 } from "@/modules/users/utils/member-rules"
+import type { PaginatedResult } from "@/types/pagination"
 
 async function requireTeamAccess(
   ctx: AuthRequestContext,
@@ -21,9 +25,17 @@ async function requireTeamAccess(
 }
 
 export const memberService = {
-  async list(ctx: AuthRequestContext): Promise<ClinicMember[]> {
+  async list(
+    filters: ListMembersDto,
+    ctx: AuthRequestContext,
+  ): Promise<PaginatedResult<ClinicMember>> {
     const auth = await requireTeamAccess(ctx)
-    return memberRepository.listByClinic(auth.clinicId)
+    return memberRepository.listByClinic({
+      clinicId: auth.clinicId,
+      q: filters.q,
+      page: filters.page,
+      pageSize: filters.pageSize,
+    })
   },
 
   async updateRole(

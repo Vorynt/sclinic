@@ -7,10 +7,11 @@ import type { Patient } from "@/modules/patients/types/patient"
 import { toActionResult } from "@/shared/errors"
 import { parseOrThrow } from "@/shared/validators"
 import type { ApiResponse } from "@/types/api"
+import type { PaginatedResult } from "@/types/pagination"
 
 export async function listPatientsAction(
   data: unknown = {},
-): Promise<ApiResponse<Patient[]>> {
+): Promise<ApiResponse<PaginatedResult<Patient>>> {
   return toActionResult(async () => {
     const parsed = parseOrThrow(listPatientsSchema, data ?? {})
     return patientService.list(parsed, await getAuthRequestContext())

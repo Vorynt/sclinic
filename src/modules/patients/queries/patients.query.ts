@@ -3,6 +3,7 @@ import { queryOptions } from "@tanstack/react-query"
 import { getPatientAction } from "@/modules/patients/actions/get-patient"
 import { listPatientsAction } from "@/modules/patients/actions/list-patients"
 import { unwrapActionResult } from "@/shared/errors"
+import type { ListQueryParams } from "@/hooks/use-list-query-params"
 
 export const patientsQueryKeys = {
   all: ["patients"] as const,
@@ -14,7 +15,7 @@ export const patientsQueryKeys = {
 }
 
 export const patientsQueries = {
-  list: (filters?: { q?: string }) =>
+  list: (filters?: ListQueryParams) =>
     queryOptions({
       queryKey: patientsQueryKeys.list(filters),
       queryFn: async () =>

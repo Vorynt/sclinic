@@ -1,9 +1,17 @@
 import { addDays, addMinutes, format, isSameDay, startOfDay } from "date-fns"
 
 import type { BusyInterval } from "@/modules/appointments/types/availability"
+import type { MinuteInterval } from "@/modules/clinics/utils/clinic-hours-window"
 
-/** Default clinic day window until professionals define their own schedules. */
-export const DEFAULT_AVAILABILITY_HOUR_RANGE = { start: 7, end: 20 } as const
+/** Default clinic day window until clinic hours are configured. */
+export const DEFAULT_AVAILABILITY_HOUR_RANGE = { start: 7, end: 19 } as const
+
+export const DEFAULT_DAY_INTERVALS: MinuteInterval[] = [
+  {
+    startMinutes: DEFAULT_AVAILABILITY_HOUR_RANGE.start * 60,
+    endMinutes: DEFAULT_AVAILABILITY_HOUR_RANGE.end * 60,
+  },
+]
 
 export const SUGGESTED_SLOTS_LIMIT = 3
 export const SUGGESTED_SLOT_STEP_MINUTES = 30
@@ -17,7 +25,8 @@ type FindNextAvailableStartsParams = {
   limit?: number
   stepMinutes?: number
   searchWindowDays?: number
-  dayHourRange?: { start: number; end: number }
+  /** Intervals for the cursor's local calendar day (minutes from midnight). */
+  getDayIntervals?: (day: Date) => MinuteInterval[]
 }
 
 function overlaps(
@@ -32,19 +41,19 @@ function minutesOfDay(date: Date): number {
   return date.getHours() * 60 + date.getMinutes()
 }
 
-function fitsDayHours(
+function fitsDayIntervals(
   startsAt: Date,
   endsAt: Date,
-  range: { start: number; end: number },
+  intervals: MinuteInterval[],
 ): boolean {
-  if (!isSameDay(startsAt, endsAt)) {
+  if (!isSameDay(startsAt, endsAt) || intervals.length === 0) {
     return false
   }
 
-  const startBound = range.start * 60
-  const endBound = range.end * 60
-  return (
-    minutesOfDay(startsAt) >= startBound && minutesOfDay(endsAt) <= endBound
+  const start = minutesOfDay(startsAt)
+  const end = minutesOfDay(endsAt)
+  return intervals.some(
+    (interval) => start >= interval.startMinutes && end <= interval.endMinutes,
   )
 }
 
@@ -58,15 +67,46 @@ function alignToStep(date: Date, stepMinutes: number): Date {
   return aligned
 }
 
-function atDayHour(day: Date, hour: number): Date {
+/** Next step-aligned instant strictly after `date` (exclusive lower bound). */
+function nextStepAfter(date: Date, stepMinutes: number): Date {
+  const next = new Date(date)
+  next.setSeconds(0, 0)
+  if (next.getTime() <= date.getTime()) {
+    next.setMinutes(next.getMinutes() + 1)
+  }
+  return alignToStep(next, stepMinutes)
+}
+
+function atDayMinutes(day: Date, minutes: number): Date {
   const next = startOfDay(day)
-  next.setHours(hour, 0, 0, 0)
+  next.setHours(Math.floor(minutes / 60), minutes % 60, 0, 0)
   return next
+}
+
+function advanceToNextOpenWindow(
+  cursor: Date,
+  intervals: MinuteInterval[],
+): Date {
+  const currentMinutes = minutesOfDay(cursor)
+
+  for (const interval of intervals) {
+    if (currentMinutes < interval.startMinutes) {
+      return atDayMinutes(cursor, interval.startMinutes)
+    }
+    if (
+      currentMinutes >= interval.startMinutes &&
+      currentMinutes < interval.endMinutes
+    ) {
+      return cursor
+    }
+  }
+
+  return atDayMinutes(addDays(cursor, 1), 0)
 }
 
 /**
  * Finds the next free `startsAt` values after `after`, skipping busy intervals
- * and staying within the default day hour range (until professional schedules exist).
+ * and staying within clinic day intervals.
  */
 export function findNextAvailableStarts(
   params: FindNextAvailableStartsParams,
@@ -78,7 +118,7 @@ export function findNextAvailableStarts(
     limit = SUGGESTED_SLOTS_LIMIT,
     stepMinutes = SUGGESTED_SLOT_STEP_MINUTES,
     searchWindowDays = SUGGESTED_SLOTS_SEARCH_DAYS,
-    dayHourRange = DEFAULT_AVAILABILITY_HOUR_RANGE,
+    getDayIntervals = () => DEFAULT_DAY_INTERVALS,
   } = params
 
   if (durationMs <= 0 || limit <= 0) {
@@ -86,18 +126,21 @@ export function findNextAvailableStarts(
   }
 
   const searchEnd = addDays(after, searchWindowDays)
-  let cursor = alignToStep(addMinutes(after, stepMinutes), stepMinutes)
+  let cursor = nextStepAfter(after, stepMinutes)
   const suggestions: Date[] = []
 
   while (cursor < searchEnd && suggestions.length < limit) {
+    const intervals = getDayIntervals(cursor)
     const slotEnd = new Date(cursor.getTime() + durationMs)
 
-    if (!fitsDayHours(cursor, slotEnd, dayHourRange)) {
-      const dayStart = atDayHour(cursor, dayHourRange.start)
-      if (cursor <= dayStart) {
-        cursor = dayStart
+    if (!fitsDayIntervals(cursor, slotEnd, intervals)) {
+      const advanced = advanceToNextOpenWindow(cursor, intervals)
+      if (advanced.getTime() === cursor.getTime()) {
+        cursor = addMinutes(cursor, stepMinutes)
+      } else if (advanced <= cursor) {
+        cursor = atDayMinutes(addDays(cursor, 1), 0)
       } else {
-        cursor = atDayHour(addDays(cursor, 1), dayHourRange.start)
+        cursor = advanced
       }
       continue
     }
@@ -166,4 +209,3 @@ export function readSuggestedSlotsFromMeta(
       typeof value === "string" && !Number.isNaN(Date.parse(value)),
   )
 }
-

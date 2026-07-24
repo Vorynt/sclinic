@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Inter, Space_Grotesk } from "next/font/google";
 import { headers } from "next/headers";
+import { NuqsAdapter } from "nuqs/adapters/next/app";
 
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -57,16 +58,18 @@ export default async function RootLayout({
         spaceGroteskHeading.variable,
       )}>
       <body className="min-h-full flex flex-col">
-        <ThemeProvider>
-          <QueryProvider>
-            <AuthProvider initialSession={initialSession}>
-              <TooltipProvider>
-                {children}
-                <Toaster richColors />
-              </TooltipProvider>
-            </AuthProvider>
-          </QueryProvider>
-        </ThemeProvider>
+        <NuqsAdapter>
+          <ThemeProvider>
+            <QueryProvider>
+              <AuthProvider initialSession={initialSession}>
+                <TooltipProvider>
+                  {children}
+                  <Toaster richColors />
+                </TooltipProvider>
+              </AuthProvider>
+            </QueryProvider>
+          </ThemeProvider>
+        </NuqsAdapter>
       </body>
     </html>
   );

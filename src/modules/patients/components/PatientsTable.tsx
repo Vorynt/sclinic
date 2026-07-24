@@ -8,6 +8,8 @@ import {
 import { useState } from "react";
 import { toast } from "sonner";
 
+import { DataTablePagination } from "@/components/data-table/DataTablePagination";
+import { TableSkeleton } from "@/components/status/TableSkeleton";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,7 +28,6 @@ import {
   EmptyHeader,
   EmptyTitle,
 } from "@/components/ui/empty";
-import { TableSkeleton } from "@/components/status/TableSkeleton";
 import {
   Table,
   TableBody,
@@ -36,21 +37,25 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Permission } from "@/config/permissions";
+import type { ListQueryParams } from "@/hooks/use-list-query-params";
 import { useDeletePatientMutation } from "@/modules/patients/hooks/use-patient-mutations";
 import { usePatientsQuery } from "@/modules/patients/hooks/use-patients";
 import type { Patient } from "@/modules/patients/types/patient";
 import { useAuth } from "@/providers/AuthProvider";
+import { DEFAULT_LIST_PAGE_SIZE } from "@/shared/validators";
 import { formatCpf } from "@/utils/cpf";
 import { formatPhone } from "@/utils/phone";
 
 type PatientsTableProps = {
-  searchQuery?: string;
+  filters: ListQueryParams;
+  onPageChange: (page: number) => void;
   onEdit: (patient: Patient) => void;
   onSchedule?: (patient: Patient) => void;
 };
 
 export function PatientsTable({
-  searchQuery,
+  filters,
+  onPageChange,
   onEdit,
   onSchedule,
 }: PatientsTableProps) {
@@ -60,7 +65,7 @@ export function PatientsTable({
   const canSchedule =
     Boolean(onSchedule) && can(Permission.APPOINTMENTS_CREATE);
 
-  const patientsQuery = usePatientsQuery({ q: searchQuery });
+  const patientsQuery = usePatientsQuery(filters);
 
   const deletePatient = useDeletePatientMutation({
     onSuccess: () => {
@@ -71,7 +76,7 @@ export function PatientsTable({
   });
 
   if (patientsQuery.isLoading) {
-    return <TableSkeleton columns={5} rows={8} />;
+    return <TableSkeleton columns={5} rows={DEFAULT_LIST_PAGE_SIZE} />;
   }
 
   if (patientsQuery.isError) {
@@ -82,7 +87,8 @@ export function PatientsTable({
     );
   }
 
-  const patients = patientsQuery.data ?? [];
+  const result = patientsQuery.data;
+  const patients = result?.items ?? [];
 
   if (patients.length === 0) {
     return (
@@ -98,7 +104,7 @@ export function PatientsTable({
   }
 
   return (
-    <>
+    <div className="flex flex-col gap-4">
       <Table>
         <TableHeader>
           <TableRow>
@@ -156,6 +162,15 @@ export function PatientsTable({
         </TableBody>
       </Table>
 
+      <DataTablePagination
+        page={result?.page ?? filters.page ?? 1}
+        pageSize={
+          result?.pageSize ?? filters.pageSize ?? DEFAULT_LIST_PAGE_SIZE
+        }
+        total={result?.total ?? 0}
+        onPageChange={onPageChange}
+      />
+
       <AlertDialog
         open={Boolean(patientToDelete)}
         onOpenChange={(open) => {
@@ -187,6 +202,6 @@ export function PatientsTable({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </>
+    </div>
   );
 }

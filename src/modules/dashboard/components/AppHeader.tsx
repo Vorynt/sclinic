@@ -18,7 +18,6 @@ import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { UserMenu } from "@/modules/dashboard/components/UserMenu";
 import { getPageMeta } from "@/modules/dashboard/constants/nav";
 import { useTheme } from "next-themes";
-import { AppClock } from "./AppClock";
 
 export function AppHeader() {
   const pathname = usePathname();
@@ -63,7 +62,6 @@ export function AppHeader() {
         </BreadcrumbList>
       </Breadcrumb>
       <section className="flex items-center h-full *:border-l *:border-l-border *:pl-2">
-        <AppClock />
         <ThemeToggle />
         <UserMenu />
       </section>

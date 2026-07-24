@@ -1,5 +1,6 @@
 import { queryOptions } from "@tanstack/react-query"
 
+import type { ListQueryParams } from "@/hooks/use-list-query-params"
 import { getProfessionalAction } from "@/modules/professionals/actions/get-professional"
 import { getProfessionalInvitePreviewAction } from "@/modules/professionals/actions/get-professional-invite-preview"
 import { listProfessionalsAction } from "@/modules/professionals/actions/list-professionals"
@@ -9,8 +10,10 @@ import { unwrapActionResult } from "@/shared/errors"
 export const professionalsQueryKeys = {
   all: ["professionals"] as const,
   lists: () => [...professionalsQueryKeys.all, "list"] as const,
-  list: () => [...professionalsQueryKeys.lists()] as const,
-  scheduling: () => [...professionalsQueryKeys.all, "scheduling"] as const,
+  list: (filters?: Record<string, unknown>) =>
+    [...professionalsQueryKeys.lists(), filters ?? {}] as const,
+  scheduling: (filters?: Record<string, unknown>) =>
+    [...professionalsQueryKeys.all, "scheduling", filters ?? {}] as const,
   details: () => [...professionalsQueryKeys.all, "detail"] as const,
   detail: (id: string) => [...professionalsQueryKeys.details(), id] as const,
   invitePreview: (token: string) =>
@@ -18,18 +21,18 @@ export const professionalsQueryKeys = {
 }
 
 export const professionalsQueries = {
-  list: () =>
+  list: (filters?: ListQueryParams) =>
     queryOptions({
-      queryKey: professionalsQueryKeys.list(),
+      queryKey: professionalsQueryKeys.list(filters),
       queryFn: async () =>
-        unwrapActionResult(await listProfessionalsAction()),
+        unwrapActionResult(await listProfessionalsAction(filters)),
     }),
 
-  scheduling: () =>
+  scheduling: (filters?: { q?: string }) =>
     queryOptions({
-      queryKey: professionalsQueryKeys.scheduling(),
+      queryKey: professionalsQueryKeys.scheduling(filters),
       queryFn: async () =>
-        unwrapActionResult(await listProfessionalsForSchedulingAction()),
+        unwrapActionResult(await listProfessionalsForSchedulingAction(filters)),
     }),
 
   detail: (id: string) =>

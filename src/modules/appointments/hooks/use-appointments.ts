@@ -10,3 +10,7 @@ import {
 export function useAppointmentsQuery(filters: AppointmentsRangeFilters) {
   return useQuery(appointmentsQueries.list(filters))
 }
+
+export function useCalendarClinicHoursQuery() {
+  return useQuery(appointmentsQueries.calendarHours())
+}

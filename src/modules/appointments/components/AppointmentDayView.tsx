@@ -7,13 +7,14 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { AppointmentTimeGridColumn } from "@/modules/appointments/components/AppointmentTimeGridColumn";
 import type { Appointment } from "@/modules/appointments/types/appointment";
-import { CALENDAR_HOUR_RANGE } from "@/modules/appointments/utils/calendar-constants";
-
-const DAY_HOUR_HEIGHT_PX = 72;
+import { resolveVisibleHourRange } from "@/modules/appointments/utils/calendar-clinic-hours";
+import { CALENDAR_HOUR_HEIGHT_PX } from "@/modules/appointments/utils/calendar-constants";
+import type { ClinicWeeklyHours } from "@/modules/clinics/types/clinic-hours";
 
 type AppointmentDayViewProps = {
   anchor: Date;
   appointments: Appointment[];
+  weeklyHours: ClinicWeeklyHours;
   onSelectAppointment: (appointment: Appointment) => void;
   onSelectSlot: (date: Date) => void;
 };
@@ -21,15 +22,17 @@ type AppointmentDayViewProps = {
 export function AppointmentDayView({
   anchor,
   appointments,
+  weeklyHours,
   onSelectAppointment,
   onSelectSlot,
 }: AppointmentDayViewProps) {
+  const hourRange = resolveVisibleHourRange(weeklyHours, [anchor]);
   const hourMarks = Array.from(
-    { length: CALENDAR_HOUR_RANGE.end - CALENDAR_HOUR_RANGE.start },
-    (_, index) => CALENDAR_HOUR_RANGE.start + index,
+    { length: hourRange.end - hourRange.start },
+    (_, index) => hourRange.start + index,
   );
   const gridHeight =
-    (CALENDAR_HOUR_RANGE.end - CALENDAR_HOUR_RANGE.start) * DAY_HOUR_HEIGHT_PX;
+    (hourRange.end - hourRange.start) * CALENDAR_HOUR_HEIGHT_PX;
 
   return (
     <div className="flex flex-col gap-2">
@@ -50,7 +53,7 @@ export function AppointmentDayView({
               <span
                 key={hour}
                 className="absolute right-2 -translate-y-1/2 text-xs text-muted-foreground"
-                style={{ top: index * DAY_HOUR_HEIGHT_PX }}>
+                style={{ top: index * CALENDAR_HOUR_HEIGHT_PX }}>
                 {String(hour).padStart(2, "0")}:00
               </span>
             ))}
@@ -59,7 +62,9 @@ export function AppointmentDayView({
           <AppointmentTimeGridColumn
             day={anchor}
             appointments={appointments}
-            hourHeightPx={DAY_HOUR_HEIGHT_PX}
+            hourHeightPx={CALENDAR_HOUR_HEIGHT_PX}
+            hourRange={hourRange}
+            weeklyHours={weeklyHours}
             onSelectAppointment={onSelectAppointment}
             onSelectSlot={onSelectSlot}
           />

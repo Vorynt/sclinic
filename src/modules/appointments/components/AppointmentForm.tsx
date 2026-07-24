@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { addMinutes } from "date-fns";
+import { addMinutes, startOfDay } from "date-fns";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Controller, FormProvider, useForm } from "react-hook-form";
@@ -10,6 +10,7 @@ import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
 import { DatePicker } from "@/components/ui/date-picker";
+import { DialogFooter } from "@/components/ui/dialog";
 import {
   Field,
   FieldError,
@@ -42,6 +43,7 @@ import { useAuthSession } from "@/modules/authentication/hooks/use-auth";
 import { PatientCombobox } from "@/modules/patients/components/PatientCombobox";
 import { PatientFormDialog } from "@/modules/patients/components/PatientFormDialog";
 import type { Patient } from "@/modules/patients/types/patient";
+import { ProfessionalCombobox } from "@/modules/professionals/components/ProfessionalCombobox";
 import { useProfessionalsForSchedulingQuery } from "@/modules/professionals/hooks/use-professionals";
 import { ErrorCode, getClientMessage, isAppError } from "@/shared/errors";
 import { parseISODate, toISODate } from "@/utils/date";
@@ -51,22 +53,41 @@ const appointmentTypeOptions = Object.entries(APPOINTMENT_TYPE_LABELS) as [
   string,
 ][];
 
-const scheduleFormSchema = z.object({
-  patientId: z.string().uuid("Selecione um paciente"),
-  professionalId: z.string().uuid("Selecione um profissional"),
-  type: appointmentTypeSchema,
-  date: z.string().trim().min(1, "Selecione a data"),
-  startTime: z
-    .string()
-    .trim()
-    .regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Informe um horário válido"),
-  durationMinutes: z.string().min(1, "Selecione a duração"),
-  reason: z
-    .string()
-    .trim()
-    .max(300, "Motivo deve ter no máximo 300 caracteres")
-    .optional(),
-});
+const scheduleFormSchema = z
+  .object({
+    patientId: z.string().uuid("Selecione um paciente"),
+    professionalId: z.string().uuid("Selecione um profissional"),
+    type: appointmentTypeSchema,
+    date: z.string().trim().min(1, "Selecione a data"),
+    startTime: z
+      .string()
+      .trim()
+      .regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Informe um horário válido"),
+    durationMinutes: z.string().min(1, "Selecione a duração"),
+    reason: z
+      .string()
+      .trim()
+      .max(300, "Motivo deve ter no máximo 300 caracteres")
+      .optional(),
+  })
+  .superRefine((data, ctx) => {
+    const day = parseISODate(data.date);
+    if (!day) return;
+
+    const [hours, minutes] = data.startTime.split(":").map(Number);
+    if (Number.isNaN(hours) || Number.isNaN(minutes)) return;
+
+    const startsAt = new Date(day);
+    startsAt.setHours(hours, minutes, 0, 0);
+
+    if (startsAt.getTime() <= Date.now()) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Não é possível agendar para um horário no passado.",
+        path: ["startTime"],
+      });
+    }
+  });
 
 type ScheduleFormValues = z.input<typeof scheduleFormSchema>;
 type ScheduleFormOutput = z.output<typeof scheduleFormSchema>;
@@ -94,6 +115,16 @@ function roundToNextStep(date: Date, stepMinutes: number): Date {
   return rounded;
 }
 
+/** Prefer `defaultStartsAt` when still in the future; otherwise next step from now. */
+function resolveInitialStartsAt(defaultStartsAt?: Date): Date {
+  const now = new Date();
+  const candidate = roundToNextStep(defaultStartsAt ?? now, 30);
+  if (candidate.getTime() > now.getTime()) {
+    return candidate;
+  }
+  return roundToNextStep(now, 30);
+}
+
 export function AppointmentForm({
   defaultStartsAt,
   lockedPatient,
@@ -111,7 +142,8 @@ export function AppointmentForm({
   >(lockedPatient?.name ?? null);
 
   const isPatientLocked = Boolean(lockedPatient);
-  const initialDate = roundToNextStep(defaultStartsAt ?? new Date(), 30);
+  const today = startOfDay(new Date());
+  const initialDate = resolveInitialStartsAt(defaultStartsAt);
 
   const sessionQuery = useAuthSession();
   const isProfessionalLocked = isSelfScheduleOnlyRole(
@@ -143,6 +175,13 @@ export function AppointmentForm({
   } = form;
 
   const professionals = professionalsQuery.data ?? [];
+  const lockedProfessionalLabel = isProfessionalLocked
+    ? (professionals[0]
+        ? professionals[0].specialty
+          ? `${professionals[0].fullName} · ${professionals[0].specialty}`
+          : professionals[0].fullName
+        : null)
+    : null;
 
   useEffect(() => {
     if (!isProfessionalLocked) return;
@@ -260,43 +299,21 @@ export function AppointmentForm({
                 name="professionalId"
                 control={control}
                 render={({ field }) => (
-                  <Select
+                  <ProfessionalCombobox
                     value={field.value}
                     onValueChange={field.onChange}
+                    displayLabel={lockedProfessionalLabel}
                     disabled={
                       isPending ||
                       sessionQuery.isLoading ||
                       professionalsQuery.isLoading ||
                       isProfessionalsEmpty ||
                       isProfessionalLocked
-                    }>
-                    <SelectTrigger
-                      aria-invalid={
-                        Boolean(errors.professionalId) || undefined
-                      }>
-                      <SelectValue
-                        placeholder={
-                          isProfessionalsEmpty
-                            ? isProfessionalLocked
-                              ? "Perfil profissional não vinculado"
-                              : "Nenhum profissional cadastrado"
-                            : "Selecione o profissional"
-                        }
-                      />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {professionals.map((professional) => (
-                        <SelectItem
-                          key={professional.id}
-                          value={professional.id}>
-                          {professional.fullName}
-                          {professional.specialty
-                            ? ` · ${professional.specialty}`
-                            : ""}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    }
+                    aria-invalid={
+                      Boolean(errors.professionalId) || undefined
+                    }
+                  />
                 )}
               />
               {isProfessionalsEmpty ? (
@@ -360,6 +377,8 @@ export function AppointmentForm({
                       onChange={field.onChange}
                       onBlur={field.onBlur}
                       disabled={isPending}
+                      startMonth={today}
+                      disabledDates={{ before: today }}
                       aria-invalid={Boolean(errors.date) || undefined}
                     />
                   )}
@@ -432,7 +451,7 @@ export function AppointmentForm({
             </Field>
           </FieldGroup>
 
-          <div className="flex justify-end gap-2">
+          <DialogFooter>
             {onCancel ? (
               <Button
                 type="button"
@@ -446,7 +465,7 @@ export function AppointmentForm({
               {isPending ? <Spinner /> : null}
               Agendar
             </Button>
-          </div>
+          </DialogFooter>
         </form>
       </FormProvider>
 

@@ -1,10 +1,8 @@
-import { SimplePageSkeleton } from "@/components/status/SimplePageSkeleton"
-
-export default function Loading() {
+export default function SettingsLoading() {
   return (
-    <SimplePageSkeleton
-      titleClassName="h-7 w-40"
-      descriptionClassName="h-4 w-96 max-w-full"
-    />
+    <div className="flex flex-col gap-2">
+      <div className="h-7 w-48 animate-pulse rounded-md bg-muted" />
+      <div className="h-4 w-72 animate-pulse rounded-md bg-muted" />
+    </div>
   )
 }

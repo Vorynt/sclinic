@@ -42,4 +42,13 @@ export const sessionRepository = {
       return row ? toAuthSession(row) : null
     })
   },
+
+  async clearActiveClinicIdForClinic(clinicId: string): Promise<void> {
+    return withDbError(async () => {
+      await db
+        .update(session)
+        .set({ activeClinicId: null })
+        .where(eq(session.activeClinicId, clinicId))
+    })
+  },
 }

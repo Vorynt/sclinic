@@ -9,6 +9,7 @@ import {
 import { computeAccountStatus } from "@/modules/professionals/mappers/professional.mapper"
 import {
   createProfessionalSchema,
+  listProfessionalsSchema,
   updateProfessionalSchema,
 } from "@/modules/professionals/schemas/professional.schema"
 
@@ -162,5 +163,14 @@ describe("computeAccountStatus", () => {
       }),
       "active",
     )
+  })
+})
+
+describe("listProfessionalsSchema", () => {
+  it("defaults page and pageSize", () => {
+    const parsed = listProfessionalsSchema.parse({})
+    assert.equal(parsed.page, 1)
+    assert.equal(parsed.pageSize, 20)
+    assert.equal(parsed.q, undefined)
   })
 })

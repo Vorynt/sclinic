@@ -8,15 +8,15 @@ import { cn } from "@/lib/utils";
 import { AppointmentEventCard } from "@/modules/appointments/components/AppointmentEventCard";
 import { AppointmentTimeGridColumn } from "@/modules/appointments/components/AppointmentTimeGridColumn";
 import type { Appointment } from "@/modules/appointments/types/appointment";
-import {
-  CALENDAR_HOUR_HEIGHT_PX,
-  CALENDAR_HOUR_RANGE,
-} from "@/modules/appointments/utils/calendar-constants";
+import { resolveVisibleHourRange } from "@/modules/appointments/utils/calendar-clinic-hours";
+import { CALENDAR_HOUR_HEIGHT_PX } from "@/modules/appointments/utils/calendar-constants";
 import { getVisibleRange } from "@/modules/appointments/utils/calendar-range";
+import type { ClinicWeeklyHours } from "@/modules/clinics/types/clinic-hours";
 
 type AppointmentWeekViewProps = {
   anchor: Date;
   appointments: Appointment[];
+  weeklyHours: ClinicWeeklyHours;
   isMobile: boolean;
   onSelectAppointment: (appointment: Appointment) => void;
   onSelectSlot: (date: Date) => void;
@@ -25,12 +25,14 @@ type AppointmentWeekViewProps = {
 export function AppointmentWeekView({
   anchor,
   appointments,
+  weeklyHours,
   isMobile,
   onSelectAppointment,
   onSelectSlot,
 }: AppointmentWeekViewProps) {
   const { from, to } = getVisibleRange("week", anchor);
   const days = eachDayOfInterval({ start: from, end: to });
+  const hourRange = resolveVisibleHourRange(weeklyHours, days);
 
   if (isMobile) {
     return (
@@ -77,12 +79,11 @@ export function AppointmentWeekView({
   }
 
   const hourMarks = Array.from(
-    { length: CALENDAR_HOUR_RANGE.end - CALENDAR_HOUR_RANGE.start },
-    (_, index) => CALENDAR_HOUR_RANGE.start + index,
+    { length: hourRange.end - hourRange.start },
+    (_, index) => hourRange.start + index,
   );
   const gridHeight =
-    (CALENDAR_HOUR_RANGE.end - CALENDAR_HOUR_RANGE.start) *
-    CALENDAR_HOUR_HEIGHT_PX;
+    (hourRange.end - hourRange.start) * CALENDAR_HOUR_HEIGHT_PX;
 
   return (
     <ScrollArea className="max-h-[70vh] rounded-lg border">
@@ -124,6 +125,8 @@ export function AppointmentWeekView({
             day={day}
             appointments={appointments}
             hourHeightPx={CALENDAR_HOUR_HEIGHT_PX}
+            hourRange={hourRange}
+            weeklyHours={weeklyHours}
             onSelectAppointment={onSelectAppointment}
             onSelectSlot={onSelectSlot}
             className={cn("border-r", isToday(day) && "bg-primary/5")}

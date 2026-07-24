@@ -1,10 +1,14 @@
-import { and, eq, inArray, isNull, ne } from "drizzle-orm";
+import { and, asc, count, eq, ilike, inArray, isNull, ne, or } from "drizzle-orm";
 
 import { db } from "@/db";
 import { clinicMemberships, roles, user } from "@/db/schema";
 import { withDbError } from "@/db/with-db-error";
 import { toClinicMember } from "@/modules/users/mappers/member.mapper";
 import type { ClinicMember } from "@/modules/users/types/member";
+import {
+  toPaginatedResult,
+  type PaginatedResult,
+} from "@/types/pagination";
 
 const memberSelect = {
   id: clinicMemberships.id,
@@ -21,23 +25,52 @@ const memberSelect = {
   userImage: user.image,
 };
 
-export const memberRepository = {
-  async listByClinic(clinicId: string): Promise<ClinicMember[]> {
-    return withDbError(async () => {
-      const rows = await db
-        .select(memberSelect)
-        .from(clinicMemberships)
-        .innerJoin(roles, eq(roles.id, clinicMemberships.roleId))
-        .innerJoin(user, eq(user.id, clinicMemberships.userId))
-        .where(
-          and(
-            eq(clinicMemberships.clinicId, clinicId),
-            inArray(clinicMemberships.status, ["active", "suspended"]),
-            isNull(clinicMemberships.deletedAt),
-          ),
-        );
+function buildMemberSearchCondition(q: string) {
+  const pattern = `%${q}%`;
+  return or(ilike(user.name, pattern), ilike(user.email, pattern));
+}
 
-      return rows.map(toClinicMember);
+export const memberRepository = {
+  async listByClinic(params: {
+    clinicId: string;
+    q?: string;
+    page: number;
+    pageSize: number;
+  }): Promise<PaginatedResult<ClinicMember>> {
+    return withDbError(async () => {
+      const where = and(
+        eq(clinicMemberships.clinicId, params.clinicId),
+        inArray(clinicMemberships.status, ["active", "suspended"]),
+        isNull(clinicMemberships.deletedAt),
+        params.q ? buildMemberSearchCondition(params.q) : undefined,
+      );
+
+      const offset = (params.page - 1) * params.pageSize;
+
+      const [totalRow, rows] = await Promise.all([
+        db
+          .select({ total: count() })
+          .from(clinicMemberships)
+          .innerJoin(roles, eq(roles.id, clinicMemberships.roleId))
+          .innerJoin(user, eq(user.id, clinicMemberships.userId))
+          .where(where),
+        db
+          .select(memberSelect)
+          .from(clinicMemberships)
+          .innerJoin(roles, eq(roles.id, clinicMemberships.roleId))
+          .innerJoin(user, eq(user.id, clinicMemberships.userId))
+          .where(where)
+          .orderBy(asc(user.name))
+          .limit(params.pageSize)
+          .offset(offset),
+      ]);
+
+      return toPaginatedResult({
+        items: rows.map(toClinicMember),
+        total: totalRow[0]?.total ?? 0,
+        page: params.page,
+        pageSize: params.pageSize,
+      });
     });
   },
 
