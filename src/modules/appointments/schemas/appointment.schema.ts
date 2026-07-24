@@ -113,6 +113,12 @@ export const updateAppointmentStatusSchema = z.object({
   status: appointmentStatusTransitionSchema,
 })
 
+export const listPatientAppointmentsSchema = z.object({
+  patientId: z.string().uuid("Paciente inválido"),
+  excludeAppointmentId: z.string().uuid("ID inválido").optional(),
+  limit: z.coerce.number().int().min(1).max(50).default(10),
+})
+
 export type ListAppointmentsInput = z.infer<typeof listAppointmentsSchema>
 export type CreateAppointmentInput = z.infer<typeof createAppointmentSchema>
 export type CancelAppointmentInput = z.infer<typeof cancelAppointmentSchema>
@@ -124,4 +130,7 @@ export type UpdateAppointmentDetailsInput = z.infer<
 >
 export type UpdateAppointmentStatusInput = z.infer<
   typeof updateAppointmentStatusSchema
+>
+export type ListPatientAppointmentsInput = z.infer<
+  typeof listPatientAppointmentsSchema
 >

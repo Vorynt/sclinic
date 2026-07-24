@@ -19,6 +19,7 @@ import {
 import type { CancelAppointmentDto } from "@/modules/appointments/dto/cancel-appointment.dto"
 import type { CreateAppointmentDto } from "@/modules/appointments/dto/create-appointment.dto"
 import type { ListAppointmentsDto } from "@/modules/appointments/dto/list-appointments.dto"
+import type { ListPatientAppointmentsDto } from "@/modules/appointments/dto/list-patient-appointments.dto"
 import type { RescheduleAppointmentDto } from "@/modules/appointments/dto/reschedule-appointment.dto"
 import type { UpdateAppointmentDetailsDto } from "@/modules/appointments/dto/update-appointment-details.dto"
 import type { UpdateAppointmentStatusDto } from "@/modules/appointments/dto/update-appointment-status.dto"
@@ -157,6 +158,37 @@ export const appointmentService = {
     }
 
     return appointment
+  },
+
+  /**
+   * Recent appointments for a patient in the clinic (attendance / chart context).
+   * Not scoped to self-schedule — clinical history needs the full patient timeline.
+   */
+  async listByPatient(
+    filters: ListPatientAppointmentsDto,
+    ctx: AuthRequestContext,
+  ): Promise<Appointment[]> {
+    const auth = await requireAnyPermission(
+      ctx,
+      ...APPOINTMENTS_ANY_PERMISSION,
+    )
+
+    const exists = await appointmentRepository.patientExists(
+      filters.patientId,
+      auth.clinicId,
+    )
+    if (!exists) {
+      throw new AppError(ErrorCode.NOT_FOUND, {
+        message: "Paciente não encontrado.",
+      })
+    }
+
+    return appointmentRepository.listByPatient({
+      clinicId: auth.clinicId,
+      patientId: filters.patientId,
+      excludeAppointmentId: filters.excludeAppointmentId,
+      limit: filters.limit,
+    })
   },
 
   /**

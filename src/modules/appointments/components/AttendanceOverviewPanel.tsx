@@ -1,32 +1,34 @@
-"use client";
+"use client"
 
-import { format } from "date-fns";
-import Link from "next/link";
+import { format } from "date-fns"
+import Link from "next/link"
 
-import { Button } from "@/components/ui/button";
-import { Spinner } from "@/components/ui/spinner";
-import { routes } from "@/config/routes";
+import { Button } from "@/components/ui/button"
+import { Spinner } from "@/components/ui/spinner"
+import { routes } from "@/config/routes"
+import { PatientAppointmentHistory } from "@/modules/appointments/components/PatientAppointmentHistory"
 import {
   APPOINTMENT_STATUS_LABELS,
   APPOINTMENT_TYPE_LABELS,
-} from "@/modules/appointments/constants/appointments";
-import { useAppointmentQuery } from "@/modules/appointments/hooks/use-appointment";
+} from "@/modules/appointments/constants/appointments"
+import { useAppointmentQuery } from "@/modules/appointments/hooks/use-appointment"
+import { PatientQuickCard } from "@/modules/patients/components/PatientQuickCard"
 
 type AttendanceOverviewPanelProps = {
-  appointmentId: string;
-};
+  appointmentId: string
+}
 
 export function AttendanceOverviewPanel({
   appointmentId,
 }: AttendanceOverviewPanelProps) {
-  const appointmentQuery = useAppointmentQuery(appointmentId);
+  const appointmentQuery = useAppointmentQuery(appointmentId)
 
   if (appointmentQuery.isLoading) {
     return (
       <div className="flex justify-center py-12">
         <Spinner />
       </div>
-    );
+    )
   }
 
   if (appointmentQuery.isError || !appointmentQuery.data) {
@@ -34,10 +36,10 @@ export function AttendanceOverviewPanel({
       <p className="text-sm text-destructive">
         Não foi possível carregar o resumo do atendimento.
       </p>
-    );
+    )
   }
 
-  const appointment = appointmentQuery.data;
+  const appointment = appointmentQuery.data
 
   return (
     <div className="flex flex-col gap-6">
@@ -46,8 +48,8 @@ export function AttendanceOverviewPanel({
           Resumo
         </h2>
         <p className="text-sm text-muted-foreground">
-          Contexto do agendamento. Use a navegação ao lado para abrir as seções
-          clínicas.
+          Contexto do agendamento e do paciente. Use a navegação ao lado para
+          abrir as seções clínicas.
         </p>
       </div>
 
@@ -104,10 +106,15 @@ export function AttendanceOverviewPanel({
         </div>
       ) : null}
 
+      <PatientQuickCard patientId={appointment.patientId} />
+
+      <PatientAppointmentHistory
+        patientId={appointment.patientId}
+        excludeAppointmentId={appointment.id}
+      />
+
       <div className="flex flex-col gap-2 rounded-md border border-border px-4 py-4">
-        <p className="text-sm font-medium text-foreground">
-          Anotações clínicas
-        </p>
+        <p className="text-sm font-medium text-foreground">Anotações clínicas</p>
         <p className="text-sm text-muted-foreground">
           Registre e visualize a evolução clínica deste paciente.
         </p>
@@ -118,5 +125,5 @@ export function AttendanceOverviewPanel({
         </Button>
       </div>
     </div>
-  );
+  )
 }

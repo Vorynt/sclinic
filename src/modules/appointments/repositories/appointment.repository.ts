@@ -1,4 +1,4 @@
-import { and, asc, eq, gt, isNull, lt, ne } from "drizzle-orm"
+import { and, asc, desc, eq, gt, isNull, lt, ne } from "drizzle-orm"
 
 import { db } from "@/db"
 import { appointments, patients, professionalClinics, professionals } from "@/db/schema"
@@ -77,6 +77,31 @@ export const appointmentRepository = {
         .limit(1)
 
       return row ? toAppointment(row) : null
+    })
+  },
+
+  async listByPatient(params: {
+    clinicId: string
+    patientId: string
+    excludeAppointmentId?: string
+    limit: number
+  }): Promise<Appointment[]> {
+    return withDbError(async () => {
+      const rows = await appointmentJoin()
+        .where(
+          and(
+            eq(appointments.clinicId, params.clinicId),
+            eq(appointments.patientId, params.patientId),
+            isNull(appointments.deletedAt),
+            params.excludeAppointmentId
+              ? ne(appointments.id, params.excludeAppointmentId)
+              : undefined,
+          ),
+        )
+        .orderBy(desc(appointments.startsAt))
+        .limit(params.limit)
+
+      return rows.map(toAppointment)
     })
   },
 

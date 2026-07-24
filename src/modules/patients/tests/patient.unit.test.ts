@@ -7,6 +7,7 @@ import {
   listPatientsSchema,
   updatePatientSchema,
 } from "@/modules/patients/schemas/patient.schema"
+import { getPatientAgeYears } from "@/modules/patients/utils/patient-age"
 
 const VALID_CPF = "529.982.247-25"
 const VALID_CPF_DIGITS = "52998224725"
@@ -151,9 +152,9 @@ describe("toPatient mapper", () => {
       phone: "11999998888",
       birthDate: "1990-05-20",
       gender: null,
-      emergencyContactName: null,
-      emergencyContactPhone: null,
-      notes: null,
+      emergencyContactName: "João Silva",
+      emergencyContactPhone: "11988887777",
+      notes: "Paciente preferencial",
       status: "active",
       addressStreet: null,
       addressNumber: null,
@@ -176,6 +177,9 @@ describe("toPatient mapper", () => {
     assert.equal(patient.email, "maria@example.com")
     assert.equal(patient.phone, "11999998888")
     assert.equal(patient.birthDate, "1990-05-20")
+    assert.equal(patient.emergencyContactName, "João Silva")
+    assert.equal(patient.emergencyContactPhone, "11988887777")
+    assert.equal(patient.notes, "Paciente preferencial")
     assert.equal(patient.status, "active")
     assert.equal(patient.createdAt, now)
   })
@@ -213,5 +217,18 @@ describe("toPatient mapper", () => {
 
     assert.equal(patient.status, "active")
     assert.equal(patient.cpf, "")
+  })
+})
+
+describe("getPatientAgeYears", () => {
+  it("returns full years from birthDate", () => {
+    const now = new Date("2026-07-24T12:00:00.000Z")
+    assert.equal(getPatientAgeYears("1990-05-20", now), 36)
+  })
+
+  it("returns null when birthDate is missing or invalid", () => {
+    assert.equal(getPatientAgeYears(null), null)
+    assert.equal(getPatientAgeYears(undefined), null)
+    assert.equal(getPatientAgeYears("not-a-date"), null)
   })
 })

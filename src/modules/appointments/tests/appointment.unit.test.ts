@@ -17,6 +17,7 @@ import {
   cancelAppointmentSchema,
   createAppointmentSchema,
   listAppointmentsSchema,
+  listPatientAppointmentsSchema,
   rescheduleAppointmentSchema,
   updateAppointmentDetailsSchema,
   updateAppointmentStatusSchema,
@@ -163,6 +164,41 @@ describe("listAppointmentsSchema", () => {
       to: "2026-01-01T00:00:00.000Z",
     })
     assert.equal(result.success, false)
+  })
+})
+
+describe("listPatientAppointmentsSchema", () => {
+  it("defaults limit to 10", () => {
+    const parsed = listPatientAppointmentsSchema.parse({
+      patientId: VALID_UUID,
+    })
+    assert.equal(parsed.patientId, VALID_UUID)
+    assert.equal(parsed.limit, 10)
+    assert.equal(parsed.excludeAppointmentId, undefined)
+  })
+
+  it("accepts excludeAppointmentId and custom limit", () => {
+    const parsed = listPatientAppointmentsSchema.parse({
+      patientId: VALID_UUID,
+      excludeAppointmentId: OTHER_UUID,
+      limit: 5,
+    })
+    assert.equal(parsed.excludeAppointmentId, OTHER_UUID)
+    assert.equal(parsed.limit, 5)
+  })
+
+  it("rejects invalid patientId or limit out of range", () => {
+    assert.equal(
+      listPatientAppointmentsSchema.safeParse({ patientId: "bad" }).success,
+      false,
+    )
+    assert.equal(
+      listPatientAppointmentsSchema.safeParse({
+        patientId: VALID_UUID,
+        limit: 0,
+      }).success,
+      false,
+    )
   })
 })
 

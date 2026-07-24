@@ -13,6 +13,10 @@ export type Patient = {
   email?: string | null
   phone?: string | null
   birthDate?: string | null
+  emergencyContactName?: string | null
+  emergencyContactPhone?: string | null
+  /** Administrative notes only — not a medical record. */
+  notes?: string | null
   status: PatientStatus
   createdAt: Date
   updatedAt: Date
