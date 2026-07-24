@@ -16,9 +16,9 @@ import {
   useAppointmentsQuery,
   useCalendarClinicHoursQuery,
 } from "@/modules/appointments/hooks/use-appointments"
+import { useCalendarQueryParams } from "@/modules/appointments/hooks/use-calendar-query-params"
 import type { Appointment } from "@/modules/appointments/types/appointment"
 import {
-  type CalendarViewMode,
   getNextAnchor,
   getPeriodLabel,
   getPreviousAnchor,
@@ -28,9 +28,15 @@ import {
 export function AppointmentsPanel() {
   const isMobile = useIsMobile()
   const appliedMobileDefault = useRef(false)
+  const {
+    mode,
+    date: anchor,
+    hasExplicitMode,
+    setMode,
+    setDate,
+    setModeAndDate,
+  } = useCalendarQueryParams()
 
-  const [mode, setMode] = useState<CalendarViewMode>("month")
-  const [anchor, setAnchor] = useState(() => new Date())
   const [detailAppointment, setDetailAppointment] =
     useState<Appointment | null>(null)
   const [formDialogOpen, setFormDialogOpen] = useState(false)
@@ -39,11 +45,11 @@ export function AppointmentsPanel() {
   >(undefined)
 
   useEffect(() => {
-    if (isMobile && !appliedMobileDefault.current) {
+    if (isMobile && !hasExplicitMode && !appliedMobileDefault.current) {
       setMode("day")
       appliedMobileDefault.current = true
     }
-  }, [isMobile])
+  }, [hasExplicitMode, isMobile, setMode])
 
   const range = useMemo(() => getVisibleRange(mode, anchor), [mode, anchor])
   const periodLabel = useMemo(() => getPeriodLabel(mode, anchor), [mode, anchor])
@@ -59,20 +65,19 @@ export function AppointmentsPanel() {
     (mode !== "month" && calendarHoursQuery.isError)
 
   function handlePrevious() {
-    setAnchor((current) => getPreviousAnchor(mode, current))
+    setDate(getPreviousAnchor(mode, anchor))
   }
 
   function handleNext() {
-    setAnchor((current) => getNextAnchor(mode, current))
+    setDate(getNextAnchor(mode, anchor))
   }
 
   function handleToday() {
-    setAnchor(new Date())
+    setDate(new Date())
   }
 
   function handleSelectDay(date: Date) {
-    setAnchor(date)
-    setMode("day")
+    setModeAndDate("day", date)
   }
 
   function handleSelectAppointment(appointment: Appointment) {
