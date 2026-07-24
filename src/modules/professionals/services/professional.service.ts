@@ -218,15 +218,19 @@ export const professionalService = {
       })
     }
 
+    // Provisional auth display name until the invitee completes their profile.
+    const provisionalName = data.email.split("@")[0] || data.email
+
     await authService.provisionInvitedUser({
-      name: data.name,
+      name: provisionalName,
       email: data.email,
     })
 
     const clinic = await clinicService.getById(auth.clinicId, ctx)
 
     const created = await professionalRepository.create({
-      fullName: data.name,
+      fullName: null,
+      treatmentPronoun: null,
       status: "inactive",
     })
 
@@ -259,7 +263,7 @@ export const professionalService = {
     try {
       await email.messages.professionalInvite({
         to: data.email,
-        name: data.name,
+        name: null,
         inviterName: auth.user.name,
         clinicName: clinic.name,
         roleName: getRoleLabel(role.key, role.name),
@@ -306,6 +310,7 @@ export const professionalService = {
       data: {
         ...rest,
         fullName: fullName ?? name,
+        treatmentPronoun: rest.treatmentPronoun ?? undefined,
         specialty: rest.specialty ?? undefined,
         councilNumber: rest.councilNumber ?? undefined,
         councilState: rest.councilState ?? undefined,
@@ -371,6 +376,7 @@ export const professionalService = {
     return {
       tokenValid: true,
       fullName: professional.fullName,
+      treatmentPronoun: professional.treatmentPronoun,
       email: invitation.email,
       clinicName: clinic.name,
       roleName: getRoleLabel(invitation.roleKey, invitation.roleName),
@@ -400,6 +406,7 @@ export const professionalService = {
       clinicId: invitation.clinicId,
       data: {
         fullName: data.fullName,
+        treatmentPronoun: data.treatmentPronoun,
         councilType: data.councilType ?? null,
         councilNumber: data.councilNumber ?? null,
         councilState: data.councilState ?? null,
@@ -407,6 +414,8 @@ export const professionalService = {
         biography: data.biography ?? null,
       },
     })
+
+    await authService.updateDisplayName(auth.user.id, data.fullName)
 
     const updated = await professionalRepository.findById(
       professional.id,
@@ -421,6 +430,7 @@ export const professionalService = {
     return {
       tokenValid: true,
       fullName: updated.fullName,
+      treatmentPronoun: updated.treatmentPronoun,
       email: invitation.email,
       clinicName: clinic.name,
       roleName: getRoleLabel(invitation.roleKey, invitation.roleName),
@@ -440,12 +450,19 @@ export const professionalService = {
     ctx: AuthRequestContext,
   ): Promise<{ success: true }> {
     const auth = await requirePasswordReady(ctx)
-    const { invitation } = await loadInviteContext(data.token)
+    const { invitation, professional } = await loadInviteContext(data.token)
     assertInviteEmailMatch(auth.user.email, invitation.email)
 
     if (!invitation.professionalId) {
       throw new AppError(ErrorCode.INVALID_TOKEN, {
         message: "Convite inválido.",
+      })
+    }
+
+    if (!professional.fullName?.trim() || !professional.treatmentPronoun) {
+      throw new AppError(ErrorCode.VALIDATION_FAILED, {
+        message:
+          "Complete seu nome e pronome de tratamento antes de aceitar o convite.",
       })
     }
 

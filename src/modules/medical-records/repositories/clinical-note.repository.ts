@@ -4,6 +4,7 @@ import { db } from "@/db"
 import {
   appointments,
   clinicalNotes,
+  professionalDisplayNameSql,
   professionals,
   type ClinicalNoteContent,
 } from "@/db/schema"
@@ -17,7 +18,7 @@ const clinicalNoteSelect = {
   patientId: clinicalNotes.patientId,
   appointmentId: clinicalNotes.appointmentId,
   professionalId: clinicalNotes.professionalId,
-  professionalName: professionals.fullName,
+  professionalName: professionalDisplayNameSql,
   content: clinicalNotes.content,
   plainText: clinicalNotes.plainText,
   appointmentStartsAt: appointments.startsAt,

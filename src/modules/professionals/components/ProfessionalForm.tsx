@@ -31,6 +31,8 @@ import {
   COUNCIL_TYPE_LABELS,
   PROFESSIONAL_ROLE_KEYS,
   PROFESSIONAL_ROLE_LABELS,
+  TREATMENT_PRONOUN_KEYS,
+  TREATMENT_PRONOUN_LABELS,
 } from "@/modules/professionals/constants/professionals";
 import {
   useCreateProfessionalMutation,
@@ -69,7 +71,6 @@ export function ProfessionalForm({
   const createForm = useForm<CreateValues, unknown, CreateOutput>({
     resolver: zodResolver(createProfessionalSchema),
     defaultValues: {
-      name: "",
       email: "",
       roleKey: "doctor",
       affiliationType: "attending",
@@ -81,6 +82,7 @@ export function ProfessionalForm({
     defaultValues: {
       id: professional?.id ?? "",
       fullName: professional?.fullName ?? "",
+      treatmentPronoun: professional?.treatmentPronoun ?? undefined,
       affiliationType: professional?.affiliationType ?? "attending",
       specialty: professional?.specialty ?? "",
       councilType:
@@ -144,18 +146,50 @@ export function ProfessionalForm({
         ) : null}
 
         <FieldGroup className="flex flex-col gap-4">
-          <Field data-invalid={Boolean(errors.fullName) || undefined}>
-            <FieldLabel htmlFor="professional-full-name">Nome</FieldLabel>
-            <Input
-              id="professional-full-name"
-              autoComplete="name"
-              placeholder="Nome completo"
-              aria-invalid={Boolean(errors.fullName) || undefined}
-              disabled={isPending}
-              {...register("fullName")}
-            />
-            <FieldError errors={[errors.fullName]} />
-          </Field>
+          <div className="grid gap-4 sm:grid-cols-[8rem_1fr]">
+            <Field
+              data-invalid={Boolean(errors.treatmentPronoun) || undefined}>
+              <FieldLabel>Pronome</FieldLabel>
+              <Controller
+                name="treatmentPronoun"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    value={field.value ?? undefined}
+                    onValueChange={field.onChange}
+                    disabled={isPending}>
+                    <SelectTrigger
+                      aria-invalid={
+                        Boolean(errors.treatmentPronoun) || undefined
+                      }>
+                      <SelectValue placeholder="Selecione" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {TREATMENT_PRONOUN_KEYS.map((key) => (
+                        <SelectItem key={key} value={key}>
+                          {TREATMENT_PRONOUN_LABELS[key]}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+              <FieldError errors={[errors.treatmentPronoun]} />
+            </Field>
+
+            <Field data-invalid={Boolean(errors.fullName) || undefined}>
+              <FieldLabel htmlFor="professional-full-name">Nome</FieldLabel>
+              <Input
+                id="professional-full-name"
+                autoComplete="name"
+                placeholder="Nome completo"
+                aria-invalid={Boolean(errors.fullName) || undefined}
+                disabled={isPending}
+                {...register("fullName")}
+              />
+              <FieldError errors={[errors.fullName]} />
+            </Field>
+          </div>
 
           <Field data-invalid={Boolean(errors.affiliationType) || undefined}>
             <FieldLabel>Afiliação</FieldLabel>
@@ -347,19 +381,6 @@ export function ProfessionalForm({
       ) : null}
 
       <FieldGroup className="flex flex-col gap-4">
-        <Field data-invalid={Boolean(errors.name) || undefined}>
-          <FieldLabel htmlFor="professional-name">Nome</FieldLabel>
-          <Input
-            id="professional-name"
-            autoComplete="name"
-            placeholder="Nome completo"
-            aria-invalid={Boolean(errors.name) || undefined}
-            disabled={isPending}
-            {...register("name")}
-          />
-          <FieldError errors={[errors.name]} />
-        </Field>
-
         <Field data-invalid={Boolean(errors.email) || undefined}>
           <FieldLabel htmlFor="professional-email">E-mail</FieldLabel>
           <Input

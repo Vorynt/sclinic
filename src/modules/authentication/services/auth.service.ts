@@ -540,6 +540,11 @@ export const authService = {
     await userRepository.setEmailVerified(userId, true);
   },
 
+  /** Syncs the auth display name (e.g. after professional invite profile completion). */
+  async updateDisplayName(userId: string, name: string): Promise<void> {
+    await userRepository.updateName(userId, name);
+  },
+
   async resendVerificationEmail(ctx: AuthRequestContext): Promise<void> {
     const authContext = await this.requireSession(ctx);
 

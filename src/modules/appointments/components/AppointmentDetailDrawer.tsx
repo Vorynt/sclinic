@@ -38,13 +38,14 @@ import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import { AppointmentDetailsForm } from "@/modules/appointments/components/AppointmentDetailsForm";
 import { AppointmentRescheduleForm } from "@/modules/appointments/components/AppointmentRescheduleForm";
+import { useAuthSession } from "@/modules/authentication/hooks/use-auth";
 import {
   APPOINTMENT_STATUS_LABELS,
   APPOINTMENT_TYPE_LABELS,
   canConfirmAppointment,
   canMarkAppointmentNoShow,
-  canOpenAttendance,
   canResumeAttendance,
+  canRoleStartAttendance,
   canStartAttendance,
   isAppointmentScheduleEditable,
 } from "@/modules/appointments/constants/appointments";
@@ -115,6 +116,7 @@ function AppointmentDetailContent({
 }: AppointmentDetailContentProps) {
   const router = useRouter();
   const { mode: agendaMode, date: agendaDate } = useCalendarQueryParams();
+  const sessionQuery = useAuthSession();
   const beginPreparingAttendance = useAttendanceUiStore(
     (state) => state.beginPreparingAttendance,
   );
@@ -124,6 +126,9 @@ function AppointmentDetailContent({
   const [mode, setMode] = useState<DrawerMode>("view");
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
+  const canStartByRole = canRoleStartAttendance(
+    sessionQuery.data?.membership?.roleKey,
+  );
 
   const cancelAppointment = useCancelAppointmentMutation({
     onSuccess: () => {
@@ -167,8 +172,12 @@ function AppointmentDetailContent({
   const canEditSchedule = isAppointmentScheduleEditable(appointment.status);
   const showConfirm = canConfirmAppointment(appointment.status);
   const showNoShow = canMarkAppointmentNoShow(appointment.status);
-  const showAttendance = canOpenAttendance(appointment.status);
   const needsCheckIn = canStartAttendance(appointment.status);
+  const showStartAttendance = needsCheckIn && canStartByRole;
+  const showResumeOrView =
+    canResumeAttendance(appointment.status) ||
+    appointment.status === "completed";
+  const showAttendance = showStartAttendance || showResumeOrView;
   const attendanceLabel = canResumeAttendance(appointment.status)
     ? "Abrir atendimento"
     : appointment.status === "completed"

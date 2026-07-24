@@ -87,6 +87,26 @@ export function isSelfScheduleOnlyRole(
   );
 }
 
+/**
+ * Roles allowed to start attendance (move appointment into checked_in).
+ * Healthcare professionals plus clinic owner/admin.
+ */
+export const CAN_START_ATTENDANCE_ROLE_KEYS = [
+  "owner",
+  "admin",
+  "doctor",
+  "nurse",
+] as const;
+
+export function canRoleStartAttendance(
+  roleKey: string | null | undefined,
+): boolean {
+  return (
+    roleKey != null &&
+    (CAN_START_ATTENDANCE_ROLE_KEYS as readonly string[]).includes(roleKey)
+  );
+}
+
 /** Palette of distinct soft calendar colors, one per professional. */
 export const PROFESSIONAL_CALENDAR_COLORS: string[] = [
   "#93C5FD",

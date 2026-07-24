@@ -78,9 +78,10 @@ export function useSignOutMutation({
 
   return useMutation({
     ...authMutations.signOut(),
-    onSuccess: async (data) => {
+    onSuccess: (data) => {
+      // Wipe the entire client cache so domain data cannot leak across sessions.
       setQueryClinicId(null);
-      await queryClient.invalidateQueries({ queryKey: authQueryKeys.all });
+      queryClient.clear();
       onSuccess?.(data);
     },
     onError: (error) => {

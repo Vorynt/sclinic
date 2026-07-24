@@ -4,6 +4,7 @@ import type {
   ProfessionalAccountStatus,
   ProfessionalListItem,
   ProfessionalStatus,
+  TreatmentPronoun,
 } from "@/modules/professionals/types/professional"
 import { getRoleLabel } from "@/modules/users/constants/users"
 
@@ -17,6 +18,15 @@ const AFFILIATION_TYPES = new Set<AffiliationType>([
 const PROFESSIONAL_STATUSES = new Set<ProfessionalStatus>([
   "active",
   "inactive",
+])
+
+const TREATMENT_PRONOUNS = new Set<TreatmentPronoun>([
+  "dr",
+  "dra",
+  "sr",
+  "sra",
+  "enf",
+  "enfa",
 ])
 
 const INVITE_OPEN_STATUSES = new Set<InvitationStatus>([
@@ -44,6 +54,16 @@ function toProfessionalStatus(value: unknown): ProfessionalStatus {
     return value as ProfessionalStatus
   }
   return "inactive"
+}
+
+function toTreatmentPronoun(value: unknown): TreatmentPronoun | null {
+  if (
+    typeof value === "string" &&
+    TREATMENT_PRONOUNS.has(value as TreatmentPronoun)
+  ) {
+    return value as TreatmentPronoun
+  }
+  return null
 }
 
 function toInvitationStatus(value: unknown): InvitationStatus | null {
@@ -98,7 +118,8 @@ export function computeAccountStatus(params: {
 
 export type ProfessionalListRow = {
   id: string
-  fullName: string
+  fullName: string | null
+  treatmentPronoun: unknown
   email: string | null
   roleKey: string | null
   roleName: string | null
@@ -128,6 +149,7 @@ export function toProfessionalListItem(
   return {
     id: row.id,
     fullName: row.fullName,
+    treatmentPronoun: toTreatmentPronoun(row.treatmentPronoun),
     email: row.email,
     roleKey,
     roleName: getRoleLabel(roleKey, row.roleName ?? undefined),

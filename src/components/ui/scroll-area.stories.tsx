@@ -62,7 +62,7 @@ export const Horizontal: Story = {
     docs: {
       description: {
         story:
-          "Conteúdo horizontal com overflow — rolagem via viewport nativo (barra horizontal customizada requer composição adicional).",
+          "Conteúdo horizontal com overflow e barra de rolagem customizada.",
       },
     },
   },

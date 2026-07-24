@@ -32,6 +32,8 @@ import {
   BRAZILIAN_STATES,
   COUNCIL_TYPE_LABELS,
   getAffiliationTypeLabel,
+  TREATMENT_PRONOUN_KEYS,
+  TREATMENT_PRONOUN_LABELS,
 } from "@/modules/professionals/constants/professionals"
 import {
   useAcceptProfessionalInviteMutation,
@@ -91,6 +93,7 @@ export function ProfessionalInviteOnboarding({
     defaultValues: {
       token,
       fullName: "",
+      treatmentPronoun: undefined,
       councilType: undefined,
       councilNumber: "",
       councilState: "",
@@ -105,6 +108,7 @@ export function ProfessionalInviteOnboarding({
     reset({
       token,
       fullName: previewQuery.data.fullName ?? "",
+      treatmentPronoun: previewQuery.data.treatmentPronoun ?? undefined,
       councilType:
         (previewQuery.data.councilType as InviteProfileValues["councilType"]) ??
         undefined,
@@ -306,18 +310,53 @@ export function ProfessionalInviteOnboarding({
         ) : null}
 
         <FieldGroup className="flex flex-col gap-4">
-          <Field data-invalid={Boolean(errors.fullName) || undefined}>
-            <FieldLabel htmlFor="invite-full-name">Nome completo</FieldLabel>
-            <Input
-              id="invite-full-name"
-              autoComplete="name"
-              placeholder="Nome completo"
-              aria-invalid={Boolean(errors.fullName) || undefined}
-              disabled={isPending}
-              {...register("fullName")}
-            />
-            <FieldError errors={[errors.fullName]} />
-          </Field>
+          <div className="grid gap-4 sm:grid-cols-[8rem_1fr]">
+            <Field
+              data-invalid={Boolean(errors.treatmentPronoun) || undefined}
+            >
+              <FieldLabel>Pronome</FieldLabel>
+              <Controller
+                name="treatmentPronoun"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    value={field.value}
+                    onValueChange={field.onChange}
+                    disabled={isPending}
+                  >
+                    <SelectTrigger
+                      aria-invalid={
+                        Boolean(errors.treatmentPronoun) || undefined
+                      }
+                    >
+                      <SelectValue placeholder="Selecione" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {TREATMENT_PRONOUN_KEYS.map((key) => (
+                        <SelectItem key={key} value={key}>
+                          {TREATMENT_PRONOUN_LABELS[key]}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+              <FieldError errors={[errors.treatmentPronoun]} />
+            </Field>
+
+            <Field data-invalid={Boolean(errors.fullName) || undefined}>
+              <FieldLabel htmlFor="invite-full-name">Nome completo</FieldLabel>
+              <Input
+                id="invite-full-name"
+                autoComplete="name"
+                placeholder="Nome completo"
+                aria-invalid={Boolean(errors.fullName) || undefined}
+                disabled={isPending}
+                {...register("fullName")}
+              />
+              <FieldError errors={[errors.fullName]} />
+            </Field>
+          </div>
 
           <div className="grid gap-4 sm:grid-cols-3">
             <Field data-invalid={Boolean(errors.councilType) || undefined}>

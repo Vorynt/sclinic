@@ -15,9 +15,12 @@ export type ProfessionalStatus = "active" | "inactive"
 
 export type CouncilType = "CRM" | "CRO" | "COREN" | "CRF" | "OTHER"
 
+export type TreatmentPronoun = "dr" | "dra" | "sr" | "sra" | "enf" | "enfa"
+
 export type ProfessionalListItem = {
   id: string
-  fullName: string
+  fullName: string | null
+  treatmentPronoun: TreatmentPronoun | null
   email: string | null
   roleKey: string
   roleName: string
@@ -38,13 +41,15 @@ export type ProfessionalListItem = {
 
 export type ProfessionalSchedulingItem = {
   id: string
-  fullName: string
+  fullName: string | null
+  treatmentPronoun: TreatmentPronoun | null
   specialty: string | null
 }
 
 export type ProfessionalInvitePreview = {
   tokenValid: true
-  fullName: string
+  fullName: string | null
+  treatmentPronoun: TreatmentPronoun | null
   email: string
   clinicName: string
   roleName: string

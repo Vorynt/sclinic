@@ -33,6 +33,7 @@ import { APPOINTMENT_DURATION_OPTIONS } from "@/modules/appointments/utils/calen
 import { readSuggestedSlotsFromMeta } from "@/modules/appointments/utils/suggested-slots"
 import { useAuthSession } from "@/modules/authentication/hooks/use-auth"
 import { ProfessionalCombobox } from "@/modules/professionals/components/ProfessionalCombobox"
+import { formatProfessionalSchedulingLabel } from "@/modules/professionals/constants/professionals"
 import { useProfessionalsForSchedulingQuery } from "@/modules/professionals/hooks/use-professionals"
 import { ErrorCode, getClientMessage, isAppError } from "@/shared/errors"
 import { parseISODate, toISODate } from "@/utils/date"
@@ -139,9 +140,11 @@ export function AppointmentRescheduleForm({
   const professionals = professionalsQuery.data ?? []
   const lockedProfessionalLabel = isProfessionalLocked
     ? professionals[0]
-      ? professionals[0].specialty
-        ? `${professionals[0].fullName} · ${professionals[0].specialty}`
-        : professionals[0].fullName
+      ? formatProfessionalSchedulingLabel({
+          fullName: professionals[0].fullName,
+          treatmentPronoun: professionals[0].treatmentPronoun,
+          specialty: professionals[0].specialty,
+        })
       : null
     : appointment.professionalName
 

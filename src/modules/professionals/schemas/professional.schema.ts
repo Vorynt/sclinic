@@ -1,9 +1,14 @@
 import { z } from "zod"
 
-import { PROFESSIONAL_ROLE_KEYS } from "@/modules/professionals/constants/professionals"
+import {
+  PROFESSIONAL_ROLE_KEYS,
+  TREATMENT_PRONOUN_KEYS,
+} from "@/modules/professionals/constants/professionals"
 import { listQuerySchema } from "@/shared/validators"
 
 const professionalRoleKeySchema = z.enum(PROFESSIONAL_ROLE_KEYS)
+
+const treatmentPronounSchema = z.enum(TREATMENT_PRONOUN_KEYS)
 
 const affiliationTypeSchema = z.enum([
   "attending",
@@ -26,14 +31,13 @@ const optionalCouncilType = z
   .union([councilTypeSchema, z.literal("").transform(() => undefined)])
   .optional()
 
+const optionalTreatmentPronoun = z
+  .union([treatmentPronounSchema, z.literal("").transform(() => undefined)])
+  .optional()
+
 export const professionalIdSchema = z.string().uuid("ID inválido")
 
 export const createProfessionalSchema = z.object({
-  name: z
-    .string()
-    .trim()
-    .min(1, "Nome é obrigatório")
-    .max(200, "Nome deve ter no máximo 200 caracteres"),
   email: z
     .string()
     .trim()
@@ -59,6 +63,7 @@ export const updateProfessionalSchema = z
       .min(1, "Nome é obrigatório")
       .max(200, "Nome deve ter no máximo 200 caracteres")
       .optional(),
+    treatmentPronoun: optionalTreatmentPronoun,
     specialty: optionalTrimmed,
     affiliationType: affiliationTypeSchema.optional(),
     status: professionalStatusSchema.optional(),
@@ -81,6 +86,7 @@ export const updateProfessionalSchema = z
     (data) =>
       data.name !== undefined ||
       data.fullName !== undefined ||
+      data.treatmentPronoun !== undefined ||
       data.specialty !== undefined ||
       data.affiliationType !== undefined ||
       data.status !== undefined ||
@@ -120,6 +126,7 @@ export const updateProfessionalInviteProfileSchema = z.object({
     .trim()
     .min(1, "Nome é obrigatório")
     .max(200, "Nome deve ter no máximo 200 caracteres"),
+  treatmentPronoun: treatmentPronounSchema,
   councilType: optionalCouncilType,
   councilNumber: optionalTrimmed,
   councilState: z

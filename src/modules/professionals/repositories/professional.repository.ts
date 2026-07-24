@@ -21,6 +21,7 @@ import type {
   ProfessionalListItem,
   ProfessionalSchedulingItem,
   ProfessionalStatus,
+  TreatmentPronoun,
 } from "@/modules/professionals/types/professional";
 import {
   toPaginatedResult,
@@ -57,6 +58,7 @@ const INVITE_LIST_STATUSES = [
 const listSelect = {
   id: professionals.id,
   fullName: professionals.fullName,
+  treatmentPronoun: professionals.treatmentPronoun,
   email: sql<string | null>`coalesce(${invitations.email}, ${user.email})`,
   roleKey: sql<
     string | null
@@ -87,19 +89,27 @@ function mapRows(rows: ProfessionalListRow[]): ProfessionalListItem[] {
 
 export const professionalRepository = {
   async create(params: {
-    fullName: string;
+    fullName?: string | null;
+    treatmentPronoun?: TreatmentPronoun | null;
     status?: ProfessionalStatus;
-  }): Promise<{ id: string; fullName: string; status: ProfessionalStatus }> {
+  }): Promise<{
+    id: string;
+    fullName: string | null;
+    treatmentPronoun: TreatmentPronoun | null;
+    status: ProfessionalStatus;
+  }> {
     return withDbError(async () => {
       const [row] = await db
         .insert(professionals)
         .values({
-          fullName: params.fullName,
+          fullName: params.fullName ?? null,
+          treatmentPronoun: params.treatmentPronoun ?? null,
           status: params.status ?? "inactive",
         })
         .returning({
           id: professionals.id,
           fullName: professionals.fullName,
+          treatmentPronoun: professionals.treatmentPronoun,
           status: professionals.status,
         });
 
@@ -110,6 +120,7 @@ export const professionalRepository = {
       return {
         id: row.id,
         fullName: row.fullName,
+        treatmentPronoun: (row.treatmentPronoun as TreatmentPronoun | null) ?? null,
         status: (row.status as ProfessionalStatus) ?? "inactive",
       };
     });
@@ -322,6 +333,7 @@ export const professionalRepository = {
         .select({
           id: professionals.id,
           fullName: professionals.fullName,
+          treatmentPronoun: professionals.treatmentPronoun,
           specialty: professionals.specialty,
         })
         .from(professionalClinics)
@@ -344,7 +356,13 @@ export const professionalRepository = {
         .orderBy(professionals.fullName)
         .limit(100);
 
-      return rows;
+      return rows.map((row) => ({
+        id: row.id,
+        fullName: row.fullName,
+        treatmentPronoun:
+          (row.treatmentPronoun as TreatmentPronoun | null) ?? null,
+        specialty: row.specialty,
+      }));
     });
   },
 
@@ -357,6 +375,7 @@ export const professionalRepository = {
         .select({
           id: professionals.id,
           fullName: professionals.fullName,
+          treatmentPronoun: professionals.treatmentPronoun,
           specialty: professionals.specialty,
         })
         .from(professionalClinics)
@@ -378,7 +397,15 @@ export const professionalRepository = {
         )
         .limit(1);
 
-      return row ?? null;
+      if (!row) return null;
+
+      return {
+        id: row.id,
+        fullName: row.fullName,
+        treatmentPronoun:
+          (row.treatmentPronoun as TreatmentPronoun | null) ?? null,
+        specialty: row.specialty,
+      };
     });
   },
 
@@ -438,7 +465,8 @@ export const professionalRepository = {
     id: string;
     clinicId: string;
     data: {
-      fullName?: string;
+      fullName?: string | null;
+      treatmentPronoun?: TreatmentPronoun | null;
       specialty?: string | null;
       affiliationType?: AffiliationType;
       status?: ProfessionalStatus;
@@ -460,6 +488,7 @@ export const professionalRepository = {
 
       const {
         fullName,
+        treatmentPronoun,
         specialty,
         affiliationType,
         status,
@@ -471,6 +500,7 @@ export const professionalRepository = {
 
       const hasProfessionalFields =
         fullName !== undefined ||
+        treatmentPronoun !== undefined ||
         specialty !== undefined ||
         status !== undefined ||
         councilType !== undefined ||
@@ -483,6 +513,7 @@ export const professionalRepository = {
           .update(professionals)
           .set({
             ...(fullName !== undefined ? { fullName } : {}),
+            ...(treatmentPronoun !== undefined ? { treatmentPronoun } : {}),
             ...(specialty !== undefined ? { specialty } : {}),
             ...(status !== undefined ? { status } : {}),
             ...(councilType !== undefined ? { councilType } : {}),

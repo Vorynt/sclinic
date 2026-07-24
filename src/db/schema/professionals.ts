@@ -16,6 +16,7 @@ import {
   affiliationTypeEnum,
   councilTypeEnum,
   professionalStatusEnum,
+  treatmentPronounEnum,
 } from "./enums"
 import {
   clinicIsolation,
@@ -28,13 +29,17 @@ import { sclinicAppRole } from "./rls"
 /**
  * Health professional profile. `userId` nullable = may exist without login.
  * RBAC for users with login remains on clinic_memberships.
+ *
+ * `fullName` / `treatmentPronoun` are filled when the professional accepts the invite.
  */
 export const professionals = pgTable(
   "professionals",
   {
     id: primaryUuid(),
     userId: text("user_id").references(() => user.id, { onDelete: "set null" }),
-    fullName: text("full_name").notNull(),
+    /** Filled by the professional when accepting the invite (nullable until then). */
+    fullName: text("full_name"),
+    treatmentPronoun: treatmentPronounEnum("treatment_pronoun"),
     councilType: councilTypeEnum("council_type"),
     councilNumber: text("council_number"),
     councilState: text("council_state"),
@@ -58,6 +63,29 @@ export const professionals = pgTable(
     index("professionals_status_idx").on(t.status),
   ],
 )
+
+/**
+ * Display name with optional treatment pronoun (e.g. "Dra. Ana Silva").
+ * Used in joins that expose a single `professionalName` string.
+ */
+export const professionalDisplayNameSql = sql<string | null>`
+  CASE
+    WHEN ${professionals.fullName} IS NULL THEN NULL
+    WHEN ${professionals.treatmentPronoun} IS NULL THEN ${professionals.fullName}
+    ELSE concat(
+      CASE ${professionals.treatmentPronoun}
+        WHEN 'dr' THEN 'Dr. '
+        WHEN 'dra' THEN 'Dra. '
+        WHEN 'sr' THEN 'Sr. '
+        WHEN 'sra' THEN 'Sra. '
+        WHEN 'enf' THEN 'Enf. '
+        WHEN 'enfa' THEN 'Enfa. '
+        ELSE ''
+      END,
+      ${professionals.fullName}
+    )
+  END
+`
 
 /**
  * Clinical affiliation (where they practice). Not the RBAC source of truth.

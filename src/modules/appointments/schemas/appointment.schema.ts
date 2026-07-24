@@ -22,6 +22,10 @@ export const listAppointmentsSchema = z
   .object({
     from: z.coerce.date(),
     to: z.coerce.date(),
+    professionalIds: z
+      .array(z.string().uuid("Profissional inválido"))
+      .max(100)
+      .optional(),
   })
   .refine((data) => data.from < data.to, {
     message: "A data inicial deve ser anterior à data final.",

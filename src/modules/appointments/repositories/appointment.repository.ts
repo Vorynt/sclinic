@@ -1,7 +1,13 @@
-import { and, asc, desc, eq, gt, isNull, lt, ne } from "drizzle-orm"
+import { and, asc, desc, eq, gt, inArray, isNull, lt, ne } from "drizzle-orm"
 
 import { db } from "@/db"
-import { appointments, patients, professionalClinics, professionals } from "@/db/schema"
+import {
+  appointments,
+  patients,
+  professionalClinics,
+  professionalDisplayNameSql,
+  professionals,
+} from "@/db/schema"
 import { withDbError } from "@/db/with-db-error"
 import type { CreateAppointmentDto } from "@/modules/appointments/dto/create-appointment.dto"
 import { toAppointment } from "@/modules/appointments/mappers/appointment.mapper"
@@ -17,7 +23,7 @@ const appointmentSelect = {
   patientId: appointments.patientId,
   patientName: patients.fullName,
   professionalId: appointments.professionalId,
-  professionalName: professionals.fullName,
+  professionalName: professionalDisplayNameSql,
   startsAt: appointments.startsAt,
   endsAt: appointments.endsAt,
   type: appointments.type,
@@ -43,7 +49,7 @@ export const appointmentRepository = {
     clinicId: string
     from: Date
     to: Date
-    professionalId?: string
+    professionalIds?: string[]
   }): Promise<Appointment[]> {
     return withDbError(async () => {
       const rows = await appointmentJoin()
@@ -53,8 +59,8 @@ export const appointmentRepository = {
             isNull(appointments.deletedAt),
             lt(appointments.startsAt, params.to),
             gt(appointments.endsAt, params.from),
-            params.professionalId
-              ? eq(appointments.professionalId, params.professionalId)
+            params.professionalIds?.length
+              ? inArray(appointments.professionalId, params.professionalIds)
               : undefined,
           ),
         )

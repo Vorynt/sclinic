@@ -44,6 +44,7 @@ import { PatientCombobox } from "@/modules/patients/components/PatientCombobox";
 import { PatientFormDialog } from "@/modules/patients/components/PatientFormDialog";
 import type { Patient } from "@/modules/patients/types/patient";
 import { ProfessionalCombobox } from "@/modules/professionals/components/ProfessionalCombobox";
+import { formatProfessionalSchedulingLabel } from "@/modules/professionals/constants/professionals";
 import { useProfessionalsForSchedulingQuery } from "@/modules/professionals/hooks/use-professionals";
 import { ErrorCode, getClientMessage, isAppError } from "@/shared/errors";
 import { parseISODate, toISODate } from "@/utils/date";
@@ -193,9 +194,11 @@ export function AppointmentForm({
   const professionals = professionalsQuery.data ?? []
   const lockedProfessionalLabel = isProfessionalLocked
     ? professionals[0]
-      ? professionals[0].specialty
-        ? `${professionals[0].fullName} · ${professionals[0].specialty}`
-        : professionals[0].fullName
+      ? formatProfessionalSchedulingLabel({
+          fullName: professionals[0].fullName,
+          treatmentPronoun: professionals[0].treatmentPronoun,
+          specialty: professionals[0].specialty,
+        })
       : null
     : null
 

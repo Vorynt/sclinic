@@ -7,6 +7,7 @@ import {
   canMarkAppointmentNoShow,
   canOpenAttendance,
   canResumeAttendance,
+  canRoleStartAttendance,
   canStartAttendance,
   getProfessionalCalendarColor,
   isAppointmentScheduleEditable,
@@ -156,6 +157,25 @@ describe("listAppointmentsSchema", () => {
       to: "2026-01-31T23:59:59.000Z",
     })
     assert.ok(parsed.from < parsed.to)
+    assert.equal(parsed.professionalIds, undefined)
+  })
+
+  it("accepts optional professionalIds", () => {
+    const parsed = listAppointmentsSchema.parse({
+      from: "2026-01-01T00:00:00.000Z",
+      to: "2026-01-31T23:59:59.000Z",
+      professionalIds: [VALID_UUID, OTHER_UUID],
+    })
+    assert.deepEqual(parsed.professionalIds, [VALID_UUID, OTHER_UUID])
+  })
+
+  it("rejects invalid professionalIds", () => {
+    const result = listAppointmentsSchema.safeParse({
+      from: "2026-01-01T00:00:00.000Z",
+      to: "2026-01-31T23:59:59.000Z",
+      professionalIds: ["not-a-uuid"],
+    })
+    assert.equal(result.success, false)
   })
 
   it("rejects when from is not before to", () => {
@@ -327,6 +347,17 @@ describe("appointment status transition helpers", () => {
     assert.equal(canStartAttendance("scheduled"), true)
     assert.equal(canStartAttendance("confirmed"), true)
     assert.equal(canStartAttendance("checked_in"), false)
+  })
+
+  it("allows start attendance only for owner, admin and health roles", () => {
+    assert.equal(canRoleStartAttendance("owner"), true)
+    assert.equal(canRoleStartAttendance("admin"), true)
+    assert.equal(canRoleStartAttendance("doctor"), true)
+    assert.equal(canRoleStartAttendance("nurse"), true)
+    assert.equal(canRoleStartAttendance("manager"), false)
+    assert.equal(canRoleStartAttendance("receptionist"), false)
+    assert.equal(canRoleStartAttendance("financial"), false)
+    assert.equal(canRoleStartAttendance(null), false)
   })
 
   it("allows resume only while checked_in", () => {

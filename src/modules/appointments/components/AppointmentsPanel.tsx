@@ -9,9 +9,11 @@ import { AppointmentDayView } from "@/modules/appointments/components/Appointmen
 import { AppointmentDetailDrawer } from "@/modules/appointments/components/AppointmentDetailDrawer"
 import { AppointmentFormDialog } from "@/modules/appointments/components/AppointmentFormDialog"
 import { AppointmentMonthView } from "@/modules/appointments/components/AppointmentMonthView"
+import { AppointmentProfessionalFilter } from "@/modules/appointments/components/AppointmentProfessionalFilter"
 import { AppointmentsCalendarSkeleton } from "@/modules/appointments/components/AppointmentsPageSkeleton"
 import { AppointmentsToolbar } from "@/modules/appointments/components/AppointmentsToolbar"
 import { AppointmentWeekView } from "@/modules/appointments/components/AppointmentWeekView"
+import { isSelfScheduleOnlyRole } from "@/modules/appointments/constants/appointments"
 import {
   useAppointmentsQuery,
   useCalendarClinicHoursQuery,
@@ -24,10 +26,12 @@ import {
   getPreviousAnchor,
   getVisibleRange,
 } from "@/modules/appointments/utils/calendar-range"
+import { useAuthSession } from "@/modules/authentication/hooks/use-auth"
 
 export function AppointmentsPanel() {
   const isMobile = useIsMobile()
   const appliedMobileDefault = useRef(false)
+  const sessionQuery = useAuthSession()
   const {
     mode,
     date: anchor,
@@ -43,6 +47,9 @@ export function AppointmentsPanel() {
   const [formDefaultStartsAt, setFormDefaultStartsAt] = useState<
     Date | undefined
   >(undefined)
+  const [selectedProfessionalIds, setSelectedProfessionalIds] = useState<
+    string[]
+  >([])
 
   useEffect(() => {
     if (isMobile && !hasExplicitMode && !appliedMobileDefault.current) {
@@ -51,9 +58,24 @@ export function AppointmentsPanel() {
     }
   }, [hasExplicitMode, isMobile, setMode])
 
+  const roleKey = sessionQuery.data?.membership?.roleKey
+  const showProfessionalFilter =
+    Boolean(roleKey) && !isSelfScheduleOnlyRole(roleKey)
+
   const range = useMemo(() => getVisibleRange(mode, anchor), [mode, anchor])
   const periodLabel = useMemo(() => getPeriodLabel(mode, anchor), [mode, anchor])
-  const appointmentsQuery = useAppointmentsQuery(range)
+  const listFilters = useMemo(
+    () => ({
+      ...range,
+      professionalIds: showProfessionalFilter
+        ? selectedProfessionalIds.length > 0
+          ? selectedProfessionalIds
+          : undefined
+        : undefined,
+    }),
+    [range, selectedProfessionalIds, showProfessionalFilter],
+  )
+  const appointmentsQuery = useAppointmentsQuery(listFilters)
   const calendarHoursQuery = useCalendarClinicHoursQuery()
   const appointments = appointmentsQuery.data ?? []
   const weeklyHours = calendarHoursQuery.data
@@ -95,7 +117,7 @@ export function AppointmentsPanel() {
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex min-w-0 flex-col gap-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex flex-col gap-1">
           <h1 className="font-heading text-xl font-semibold tracking-tight text-foreground">
@@ -119,6 +141,13 @@ export function AppointmentsPanel() {
         onNext={handleNext}
         onToday={handleToday}
       />
+
+      {showProfessionalFilter ? (
+        <AppointmentProfessionalFilter
+          selectedIds={selectedProfessionalIds}
+          onSelectedIdsChange={setSelectedProfessionalIds}
+        />
+      ) : null}
 
       {isCalendarLoading ? (
         <AppointmentsCalendarSkeleton />

@@ -12,6 +12,7 @@ import {
   canCompleteAttendance,
   canConfirmAppointment,
   canMarkAppointmentNoShow,
+  canRoleStartAttendance,
   canStartAttendance,
   isAppointmentScheduleEditable,
   isSelfScheduleOnlyRole,
@@ -128,15 +129,17 @@ export const appointmentService = {
       ...APPOINTMENTS_ANY_PERMISSION,
     )
 
-    const professionalId = isSelfScheduleOnlyRole(auth.membership.roleKey)
-      ? await resolveOwnProfessionalId(auth)
-      : undefined
+    const professionalIds = isSelfScheduleOnlyRole(auth.membership.roleKey)
+      ? [await resolveOwnProfessionalId(auth)]
+      : filters.professionalIds?.length
+        ? filters.professionalIds
+        : undefined
 
     return appointmentRepository.listByRange({
       clinicId: auth.clinicId,
       from: filters.from,
       to: filters.to,
-      professionalId,
+      professionalIds,
     })
   },
 
@@ -525,6 +528,12 @@ export const appointmentService = {
           })
         }
       } else if (data.status === "checked_in") {
+        if (!canRoleStartAttendance(auth.membership.roleKey)) {
+          throw new AppError(ErrorCode.FORBIDDEN, {
+            message:
+              "Apenas profissionais de saúde, administradores e proprietários podem iniciar atendimentos.",
+          })
+        }
         if (!canStartAttendance(existing.status)) {
           throw new AppError(ErrorCode.CONFLICT, {
             message:

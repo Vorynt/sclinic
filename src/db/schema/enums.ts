@@ -44,6 +44,16 @@ export const councilTypeEnum = pgEnum("council_type", [
   "OTHER",
 ])
 
+/** Honorific / treatment pronoun shown before the professional's name. */
+export const treatmentPronounEnum = pgEnum("treatment_pronoun", [
+  "dr",
+  "dra",
+  "sr",
+  "sra",
+  "enf",
+  "enfa",
+])
+
 export const affiliationTypeEnum = pgEnum("affiliation_type", [
   "attending",
   "coordinator",

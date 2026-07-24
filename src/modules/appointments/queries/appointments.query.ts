@@ -9,6 +9,7 @@ import { unwrapActionResult } from "@/shared/errors"
 export type AppointmentsRangeFilters = {
   from: Date
   to: Date
+  professionalIds?: string[]
 }
 
 export type PatientAppointmentsFilters = {
@@ -23,7 +24,13 @@ export const appointmentsQueryKeys = {
   list: (filters: AppointmentsRangeFilters) =>
     [
       ...appointmentsQueryKeys.lists(),
-      { from: filters.from.toISOString(), to: filters.to.toISOString() },
+      {
+        from: filters.from.toISOString(),
+        to: filters.to.toISOString(),
+        professionalIds: filters.professionalIds?.length
+          ? [...filters.professionalIds].sort()
+          : undefined,
+      },
     ] as const,
   patientLists: () => [...appointmentsQueryKeys.all, "patient"] as const,
   patientList: (filters: PatientAppointmentsFilters) =>

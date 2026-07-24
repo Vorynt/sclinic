@@ -115,21 +115,21 @@ const DEMO_TEAM_MEMBERS: readonly DemoTeamMemberSeed[] = [
     email: "ana.nogueira@sclinic.local",
     phone: "11990010005",
     roleKey: "doctor",
-    professionalFullName: "Dra. Ana Beatriz Nogueira",
+    professionalFullName: "Ana Beatriz Nogueira",
   },
   {
     name: "Dr. Carlos Eduardo Mendes",
     email: "carlos.mendes@sclinic.local",
     phone: "11990010006",
     roleKey: "doctor",
-    professionalFullName: "Dr. Carlos Eduardo Mendes",
+    professionalFullName: "Carlos Eduardo Mendes",
   },
   {
     name: "Enf. Patricia Souza Almeida",
     email: "patricia.almeida@sclinic.local",
     phone: "11990010007",
     roleKey: "nurse",
-    professionalFullName: "Enf. Patricia Souza Almeida",
+    professionalFullName: "Patricia Souza Almeida",
   },
   {
     name: "Helena Barbosa",
@@ -343,56 +343,64 @@ const STUB_PLANS = [
 
 const PROFESSIONAL_SEEDS = [
   {
-    fullName: "Dra. Ana Beatriz Nogueira",
+    fullName: "Ana Beatriz Nogueira",
+    treatmentPronoun: "dra" as const,
     specialty: "Clínica Geral",
     councilType: "CRM" as const,
     councilNumber: "123456",
     councilState: "SP",
   },
   {
-    fullName: "Dr. Carlos Eduardo Mendes",
+    fullName: "Carlos Eduardo Mendes",
+    treatmentPronoun: "dr" as const,
     specialty: "Cardiologia",
     councilType: "CRM" as const,
     councilNumber: "234567",
     councilState: "SP",
   },
   {
-    fullName: "Dra. Fernanda Lima Rocha",
+    fullName: "Fernanda Lima Rocha",
+    treatmentPronoun: "dra" as const,
     specialty: "Dermatologia",
     councilType: "CRM" as const,
     councilNumber: "345678",
     councilState: "SP",
   },
   {
-    fullName: "Dr. Gustavo Henrique Alves",
+    fullName: "Gustavo Henrique Alves",
+    treatmentPronoun: "dr" as const,
     specialty: "Ortopedia",
     councilType: "CRM" as const,
     councilNumber: "456789",
     councilState: "SP",
   },
   {
-    fullName: "Dra. Juliana Costa Ribeiro",
+    fullName: "Juliana Costa Ribeiro",
+    treatmentPronoun: "dra" as const,
     specialty: "Pediatria",
     councilType: "CRM" as const,
     councilNumber: "567890",
     councilState: "SP",
   },
   {
-    fullName: "Dr. Marcos Vinícius Prado",
+    fullName: "Marcos Vinícius Prado",
+    treatmentPronoun: "dr" as const,
     specialty: "Psiquiatria",
     councilType: "CRM" as const,
     councilNumber: "678901",
     councilState: "SP",
   },
   {
-    fullName: "Enf. Patricia Souza Almeida",
+    fullName: "Patricia Souza Almeida",
+    treatmentPronoun: "enf" as const,
     specialty: "Enfermagem",
     councilType: "COREN" as const,
     councilNumber: "789012",
     councilState: "SP",
   },
   {
-    fullName: "Dra. Renata Oliveira Campos",
+    fullName: "Renata Oliveira Campos",
+    treatmentPronoun: "dra" as const,
     specialty: "Ginecologia",
     councilType: "CRM" as const,
     councilNumber: "890123",
@@ -950,6 +958,7 @@ async function seedProfessionals(params: {
     .values(
       PROFESSIONAL_SEEDS.map((p) => ({
         fullName: p.fullName,
+        treatmentPronoun: p.treatmentPronoun,
         specialty: p.specialty,
         councilType: p.councilType,
         councilNumber: p.councilNumber,
@@ -1222,7 +1231,7 @@ async function seedInvitations(params: {
   clinicId: string
   ownerId: string
   rolesByKey: Map<string, string>
-  professionals: Array<{ id: string; fullName: string; userId: string | null }>
+  professionals: Array<{ id: string; fullName: string | null; userId: string | null }>
 }) {
   const { clinicId, ownerId, rolesByKey, professionals: professionalRows } =
     params
@@ -1237,7 +1246,7 @@ async function seedInvitations(params: {
   const unlinkedProfessional = professionalRows.find(
     (professional) =>
       professional.userId === null &&
-      professional.fullName.includes("Fernanda"),
+      (professional.fullName?.includes("Fernanda") ?? false),
   )
 
   const now = new Date()

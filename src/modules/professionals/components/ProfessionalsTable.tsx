@@ -35,6 +35,7 @@ import {
 import type { ListQueryParams } from "@/hooks/use-list-query-params";
 import {
   ACCOUNT_STATUS_LABELS,
+  formatProfessionalDisplayName,
   getAffiliationTypeLabel,
   getProfessionalRoleLabel,
 } from "@/modules/professionals/constants/professionals";
@@ -144,7 +145,11 @@ export function ProfessionalsTable({
             return (
               <TableRow key={professional.id}>
                 <TableCell className="font-medium">
-                  {professional.fullName}
+                  {formatProfessionalDisplayName({
+                    fullName: professional.fullName,
+                    treatmentPronoun: professional.treatmentPronoun,
+                    fallback: professional.email ?? "—",
+                  })}
                 </TableCell>
                 <TableCell>{professional.email || "—"}</TableCell>
                 <TableCell>
@@ -238,8 +243,14 @@ export function ProfessionalsTable({
             <AlertDialogTitle>Remover profissional</AlertDialogTitle>
             <AlertDialogDescription>
               Tem certeza que deseja remover{" "}
-              <strong>{professionalToDelete?.fullName}</strong>? Essa ação não
-              pode ser desfeita.
+              <strong>
+                {formatProfessionalDisplayName({
+                  fullName: professionalToDelete?.fullName,
+                  treatmentPronoun: professionalToDelete?.treatmentPronoun,
+                  fallback: professionalToDelete?.email ?? "este profissional",
+                })}
+              </strong>
+              ? Essa ação não pode ser desfeita.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

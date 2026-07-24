@@ -19,6 +19,10 @@ import {
 } from "@/components/ui/popover";
 import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
+import {
+  formatProfessionalDisplayName,
+  formatProfessionalSchedulingLabel,
+} from "@/modules/professionals/constants/professionals";
 import { useProfessionalsForSchedulingQuery } from "@/modules/professionals/hooks/use-professionals";
 import type { ProfessionalSchedulingItem } from "@/modules/professionals/types/professional";
 
@@ -75,9 +79,11 @@ export function ProfessionalCombobox({
     );
     if (match) {
       setSelectedLabel(
-        match.specialty
-          ? `${match.fullName} · ${match.specialty}`
-          : match.fullName,
+        formatProfessionalSchedulingLabel({
+          fullName: match.fullName,
+          treatmentPronoun: match.treatmentPronoun,
+          specialty: match.specialty,
+        }),
       );
     }
   }, [displayLabel, professionals, value]);
@@ -85,9 +91,11 @@ export function ProfessionalCombobox({
   function handleSelect(professional: ProfessionalSchedulingItem) {
     onValueChange(professional.id);
     setSelectedLabel(
-      professional.specialty
-        ? `${professional.fullName} · ${professional.specialty}`
-        : professional.fullName,
+      formatProfessionalSchedulingLabel({
+        fullName: professional.fullName,
+        treatmentPronoun: professional.treatmentPronoun,
+        specialty: professional.specialty,
+      }),
     );
     setOpen(false);
     setSearch("");
@@ -142,30 +150,36 @@ export function ProfessionalCombobox({
                   </div>
                 </CommandEmpty>
                 <CommandGroup>
-                  {professionals.map((professional) => (
-                    <CommandItem
-                      key={professional.id}
-                      value={`${professional.fullName} ${professional.specialty ?? ""}`}
-                      data-checked={value === professional.id || undefined}
-                      onSelect={() => handleSelect(professional)}>
-                      <div className="flex min-w-0 flex-1 flex-col">
-                        <span className="truncate">{professional.fullName}</span>
-                        {professional.specialty ? (
-                          <span className="truncate text-xs text-muted-foreground">
-                            {professional.specialty}
-                          </span>
-                        ) : null}
-                      </div>
-                      <CheckIcon
-                        className={cn(
-                          "ml-auto",
-                          value === professional.id
-                            ? "opacity-100"
-                            : "opacity-0",
-                        )}
-                      />
-                    </CommandItem>
-                  ))}
+                  {professionals.map((professional) => {
+                    const displayName = formatProfessionalDisplayName({
+                      fullName: professional.fullName,
+                      treatmentPronoun: professional.treatmentPronoun,
+                    });
+                    return (
+                      <CommandItem
+                        key={professional.id}
+                        value={`${displayName} ${professional.specialty ?? ""}`}
+                        data-checked={value === professional.id || undefined}
+                        onSelect={() => handleSelect(professional)}>
+                        <div className="flex min-w-0 flex-1 flex-col">
+                          <span className="truncate">{displayName}</span>
+                          {professional.specialty ? (
+                            <span className="truncate text-xs text-muted-foreground">
+                              {professional.specialty}
+                            </span>
+                          ) : null}
+                        </div>
+                        <CheckIcon
+                          className={cn(
+                            "ml-auto",
+                            value === professional.id
+                              ? "opacity-100"
+                              : "opacity-0",
+                          )}
+                        />
+                      </CommandItem>
+                    );
+                  })}
                 </CommandGroup>
               </>
             )}

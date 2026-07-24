@@ -11,6 +11,26 @@ export const PROFESSIONAL_ROLE_LABELS: Record<ProfessionalRoleKey, string> = {
   nurse: "Enfermeiro(a)",
 }
 
+export const TREATMENT_PRONOUN_KEYS = [
+  "dr",
+  "dra",
+  "sr",
+  "sra",
+  "enf",
+  "enfa",
+] as const
+
+export type TreatmentPronounKey = (typeof TREATMENT_PRONOUN_KEYS)[number]
+
+export const TREATMENT_PRONOUN_LABELS: Record<TreatmentPronounKey, string> = {
+  dr: "Dr.",
+  dra: "Dra.",
+  sr: "Sr.",
+  sra: "Sra.",
+  enf: "Enf.",
+  enfa: "Enfa.",
+}
+
 export const AFFILIATION_TYPE_LABELS = {
   attending: "Assistente",
   coordinator: "Coordenador(a)",
@@ -81,4 +101,43 @@ export function getAffiliationTypeLabel(type: string): string {
     return AFFILIATION_TYPE_LABELS[type as AffiliationTypeLabel]
   }
   return type
+}
+
+export function getTreatmentPronounLabel(pronoun: string): string {
+  if (pronoun in TREATMENT_PRONOUN_LABELS) {
+    return TREATMENT_PRONOUN_LABELS[pronoun as TreatmentPronounKey]
+  }
+  return pronoun
+}
+
+/** Display name with optional treatment pronoun (e.g. "Dra. Ana Silva"). */
+export function formatProfessionalDisplayName(params: {
+  fullName: string | null | undefined
+  treatmentPronoun?: string | null
+  fallback?: string
+}): string {
+  const name = params.fullName?.trim()
+  if (!name) {
+    return params.fallback ?? "—"
+  }
+  if (!params.treatmentPronoun) {
+    return name
+  }
+  return `${getTreatmentPronounLabel(params.treatmentPronoun)} ${name}`
+}
+
+/** Scheduling label: display name, optionally with specialty. */
+export function formatProfessionalSchedulingLabel(params: {
+  fullName: string | null | undefined
+  treatmentPronoun?: string | null
+  specialty?: string | null
+  fallback?: string
+}): string {
+  const displayName = formatProfessionalDisplayName({
+    fullName: params.fullName,
+    treatmentPronoun: params.treatmentPronoun,
+    fallback: params.fallback,
+  })
+  const specialty = params.specialty?.trim()
+  return specialty ? `${displayName} · ${specialty}` : displayName
 }

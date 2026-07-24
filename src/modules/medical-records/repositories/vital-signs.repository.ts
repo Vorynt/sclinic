@@ -1,7 +1,12 @@
 import { and, desc, eq, isNull, ne } from "drizzle-orm"
 
 import { db } from "@/db"
-import { appointments, professionals, vitalSigns } from "@/db/schema"
+import {
+  appointments,
+  professionalDisplayNameSql,
+  professionals,
+  vitalSigns,
+} from "@/db/schema"
 import { withDbError } from "@/db/with-db-error"
 import type { UpsertVitalSignsDto } from "@/modules/medical-records/dto/upsert-vital-signs.dto"
 import { toVitalSigns } from "@/modules/medical-records/mappers/vital-signs.mapper"
@@ -13,7 +18,7 @@ const vitalSignsSelect = {
   patientId: vitalSigns.patientId,
   appointmentId: vitalSigns.appointmentId,
   professionalId: vitalSigns.professionalId,
-  professionalName: professionals.fullName,
+  professionalName: professionalDisplayNameSql,
   systolicMmHg: vitalSigns.systolicMmHg,
   diastolicMmHg: vitalSigns.diastolicMmHg,
   heartRateBpm: vitalSigns.heartRateBpm,
