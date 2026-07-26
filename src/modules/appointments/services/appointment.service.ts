@@ -1,4 +1,5 @@
 import { Permission } from "@/config/permissions"
+import { hasAnyPermission } from "@/core/permissions"
 import {
   auditErrorFields,
   recordAudit,
@@ -32,6 +33,7 @@ import {
   requireAnyPermission,
   requirePermission,
 } from "@/modules/authentication/permissions/guards"
+import { chargeService } from "@/modules/billing/services/charge.service"
 import { clinicHoursService } from "@/modules/clinics/services/clinic-hours.service"
 import type { ClinicWeeklyHours } from "@/modules/clinics/types/clinic-hours"
 import type { AuthRequestContext } from "@/shared/auth"
@@ -247,11 +249,34 @@ export const appointmentService = {
         endsAt: data.endsAt,
       })
 
+      if (data.amountCents != null) {
+        const canCollect = hasAnyPermission(auth.permissions, [
+          Permission.FINANCIAL_COLLECT,
+          Permission.FINANCIAL_MANAGE,
+        ])
+        if (!canCollect) {
+          throw new AppError(ErrorCode.FORBIDDEN, {
+            message:
+              "Você não tem permissão para criar cobrança neste agendamento.",
+          })
+        }
+      }
+
       const appointment = await appointmentRepository.create({
         clinicId: auth.clinicId,
         createdBy: auth.user.id,
         data,
       })
+
+      if (data.amountCents != null) {
+        await chargeService.createFromAppointment(
+          {
+            appointmentId: appointment.id,
+            amountCents: data.amountCents,
+          },
+          ctx,
+        )
+      }
 
       recordAudit({
         ...actor,

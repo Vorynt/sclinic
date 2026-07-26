@@ -27,6 +27,7 @@ const ENTITY_FILTERS = [
   AUDIT_ENTITY_TYPES.CLINIC_HOURS,
   AUDIT_ENTITY_TYPES.MEMBER,
   AUDIT_ENTITY_TYPES.INVITATION,
+  AUDIT_ENTITY_TYPES.CHARGE,
 ] as const
 
 export function AuditLogsPanel() {
@@ -104,6 +105,9 @@ export function AuditLogsPanel() {
               <SelectItem value={AUDIT_ENTITY_TYPES.MEMBER}>Membro</SelectItem>
               <SelectItem value={AUDIT_ENTITY_TYPES.INVITATION}>
                 Convite
+              </SelectItem>
+              <SelectItem value={AUDIT_ENTITY_TYPES.CHARGE}>
+                Cobrança
               </SelectItem>
             </SelectContent>
           </Select>

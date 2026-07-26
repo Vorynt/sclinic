@@ -148,6 +148,39 @@ describe("createAppointmentSchema", () => {
     })
     assert.equal(parsed.type, "follow_up")
   })
+
+  it("accepts optional amountCents when positive", () => {
+    const { startsAt, endsAt } = futureRange()
+    const parsed = createAppointmentSchema.parse({
+      patientId: VALID_UUID,
+      professionalId: OTHER_UUID,
+      startsAt: startsAt.toISOString(),
+      endsAt: endsAt.toISOString(),
+      amountCents: 15000,
+    })
+    assert.equal(parsed.amountCents, 15000)
+  })
+
+  it("rejects amountCents <= 0 when provided", () => {
+    const { startsAt, endsAt } = futureRange()
+    const zero = createAppointmentSchema.safeParse({
+      patientId: VALID_UUID,
+      professionalId: OTHER_UUID,
+      startsAt: startsAt.toISOString(),
+      endsAt: endsAt.toISOString(),
+      amountCents: 0,
+    })
+    assert.equal(zero.success, false)
+
+    const negative = createAppointmentSchema.safeParse({
+      patientId: VALID_UUID,
+      professionalId: OTHER_UUID,
+      startsAt: startsAt.toISOString(),
+      endsAt: endsAt.toISOString(),
+      amountCents: -1,
+    })
+    assert.equal(negative.success, false)
+  })
 })
 
 describe("listAppointmentsSchema", () => {

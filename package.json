@@ -16,7 +16,7 @@
     "db:seed:demo": "tsx src/db/seed/demo.ts",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "test": "node --import tsx --test src/modules/authentication/tests/*.test.ts src/modules/clinics/tests/*.test.ts src/modules/dashboard/tests/*.test.ts src/modules/users/tests/*.test.ts src/modules/professionals/tests/*.test.ts src/modules/appointments/tests/*.test.ts src/modules/patients/tests/*.test.ts src/modules/medical-records/tests/*.test.ts src/modules/audit/tests/*.test.ts src/shared/validators/list-query.test.ts"
+    "test": "node --import tsx --test src/modules/authentication/tests/*.test.ts src/modules/clinics/tests/*.test.ts src/modules/dashboard/tests/*.test.ts src/modules/users/tests/*.test.ts src/modules/professionals/tests/*.test.ts src/modules/appointments/tests/*.test.ts src/modules/patients/tests/*.test.ts src/modules/medical-records/tests/*.test.ts src/modules/audit/tests/*.test.ts src/modules/billing/tests/*.test.ts src/shared/validators/list-query.test.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.4.0",

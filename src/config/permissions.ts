@@ -10,6 +10,8 @@ export const Permission = {
   PROFESSIONALS_MANAGE: "professionals.manage",
   FINANCIAL_VIEW: "financial.view",
   FINANCIAL_MANAGE: "financial.manage",
+  /** Create/mark paid/cancel charges tied to appointments (not full billing list). */
+  FINANCIAL_COLLECT: "financial.collect",
   SETTINGS_MANAGE: "settings.manage",
   MEMBERS_INVITE: "members.invite",
   RECORDS_READ: "records.read",

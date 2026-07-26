@@ -23,6 +23,7 @@ export const routes = {
   patientDetailNotes: (patientId: string) => `/patients/${patientId}/notes`,
   patientDetailVitals: (patientId: string) => `/patients/${patientId}/vitals`,
   professionals: "/professionals",
+  billing: "/billing",
   appointments: "/appointments",
   appointmentAttendance: (appointmentId: string) =>
     `/appointments/${appointmentId}/attendance`,

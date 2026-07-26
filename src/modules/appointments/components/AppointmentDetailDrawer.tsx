@@ -59,6 +59,7 @@ import type {
   AppointmentStatus,
 } from "@/modules/appointments/types/appointment";
 import { buildAttendanceHref } from "@/modules/appointments/utils/agenda-href";
+import { AppointmentChargeSummary } from "@/modules/billing/components/AppointmentChargeSummary";
 import { PatientCompactSummary } from "@/modules/patients/components/PatientCompactSummary";
 import { useAttendanceUiStore } from "@/stores/attendance.store";
 
@@ -300,6 +301,7 @@ function AppointmentDetailContent({
                 </dd>
               </div>
             </dl>
+
             <div className="flex gap-2">
               {showAttendance ? (
                 <Button
@@ -408,6 +410,8 @@ function AppointmentDetailContent({
         <div className="flex-1 overflow-y-auto px-4 py-4">
           <div className="flex flex-col gap-4">
             <PatientCompactSummary patientId={appointment.patientId} />
+
+            <AppointmentChargeSummary appointmentId={appointment.id} />
 
             {hasSecondaryDetails ? (
               <dl className="flex flex-col gap-3 text-sm">

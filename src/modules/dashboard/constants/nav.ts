@@ -1,6 +1,7 @@
 import type { Icon } from "@phosphor-icons/react"
 import {
   CalendarBlankIcon,
+  CurrencyCircleDollarIcon,
   GearIcon,
   HouseIcon,
   QuestionIcon,
@@ -98,6 +99,13 @@ export const NAV_CONFIG: NavConfig = {
       collapsible: true,
       defaultOpen: true,
       items: [
+        {
+          title: "Faturamento",
+          href: routes.billing,
+          icon: CurrencyCircleDollarIcon,
+          permissions: [Permission.FINANCIAL_VIEW],
+          enabled: true,
+        },
         {
           title: "Equipe",
           href: routes.users,
@@ -218,6 +226,13 @@ const PAGE_META: Record<string, PageMeta> = {
     breadcrumbs: [
       { label: "Início", href: routes.home },
       { label: "Agendamentos" },
+    ],
+  },
+  [routes.billing]: {
+    title: "Faturamento",
+    breadcrumbs: [
+      { label: "Início", href: routes.home },
+      { label: "Faturamento" },
     ],
   },
 }

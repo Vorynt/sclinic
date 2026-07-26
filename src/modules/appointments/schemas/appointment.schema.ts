@@ -41,6 +41,12 @@ export const createAppointmentSchema = z
     type: appointmentTypeSchema.default("consultation"),
     reason: optionalTrimmed,
     notes: optionalTrimmed,
+    /** Optional clinical charge amount (cents). Requires financial.collect. */
+    amountCents: z.coerce
+      .number()
+      .int("Valor deve ser um número inteiro em centavos")
+      .positive("Valor deve ser maior que zero")
+      .optional(),
   })
   .refine((data) => data.startsAt.getTime() > Date.now(), {
     message: "Não é possível agendar para um horário no passado.",

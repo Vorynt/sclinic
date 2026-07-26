@@ -30,6 +30,7 @@ import {
   account,
   appointments,
   auditLogs,
+  charges,
   clinicBusinessHours,
   clinicMemberships,
   clinics,
@@ -37,6 +38,7 @@ import {
   invitations,
   patientClinicalAlerts,
   patients,
+  payments,
   permissions,
   plans,
   professionalClinics,
@@ -148,6 +150,8 @@ const DEMO_TEAM_MEMBERS: readonly DemoTeamMemberSeed[] = [
 
 const RLS_TABLES = [
   "audit_logs",
+  "payments",
+  "charges",
   "vital_signs",
   "patient_clinical_alerts",
   "clinical_notes",
@@ -227,6 +231,11 @@ const PERMISSIONS = [
   { key: "financial.view", name: "View financial", module: "billing" },
   { key: "financial.manage", name: "Manage financial", module: "billing" },
   {
+    key: "financial.collect",
+    name: "Collect clinical payments",
+    module: "billing",
+  },
+  {
     key: "settings.manage",
     name: "Manage clinic settings",
     module: "settings",
@@ -260,6 +269,7 @@ const ROLE_PERMISSION_MATRIX: Record<string, readonly string[]> = {
     "professionals.manage",
     "financial.view",
     "financial.manage",
+    "financial.collect",
     "settings.manage",
     "members.invite",
     "records.read",
@@ -274,6 +284,7 @@ const ROLE_PERMISSION_MATRIX: Record<string, readonly string[]> = {
     "appointments.delete",
     "professionals.manage",
     "financial.view",
+    "financial.collect",
     "members.invite",
     "records.read",
   ],
@@ -283,6 +294,7 @@ const ROLE_PERMISSION_MATRIX: Record<string, readonly string[]> = {
     "appointments.create",
     "appointments.update",
     "appointments.delete",
+    "financial.collect",
   ],
   doctor: [
     "patients.read",
@@ -291,6 +303,7 @@ const ROLE_PERMISSION_MATRIX: Record<string, readonly string[]> = {
     "appointments.update",
     "records.read",
     "records.write",
+    "financial.collect",
   ],
   nurse: [
     "patients.read",
@@ -299,7 +312,12 @@ const ROLE_PERMISSION_MATRIX: Record<string, readonly string[]> = {
     "records.read",
     "records.write",
   ],
-  financial: ["patients.read", "financial.view", "financial.manage"],
+  financial: [
+    "patients.read",
+    "financial.view",
+    "financial.manage",
+    "financial.collect",
+  ],
 }
 
 const STUB_PLANS = [
@@ -558,6 +576,28 @@ const CLINICAL_NOTE_TEXTS = [
   "Renovação de receita de uso contínuo. Sem efeitos adversos relatados. Exames recentes estáveis. Próximo retorno em 90 dias.",
 ]
 
+/** Typical private-practice consultation fees (BRL cents). */
+const CHARGE_AMOUNT_CENTS = [
+  15_000, // R$ 150
+  18_000,
+  20_000,
+  22_000,
+  25_000,
+  28_000,
+  30_000,
+  35_000,
+] as const
+
+const PAYMENT_METHODS = [
+  "pix_manual",
+  "pix_manual",
+  "card",
+  "card",
+  "cash",
+  "transfer",
+  "other",
+] as const
+
 const CLINICAL_ALERT_SEEDS = [
   {
     kind: "allergy" as const,
@@ -697,6 +737,8 @@ async function wipeAllData() {
   await db.execute(sql`
     TRUNCATE TABLE
       audit_logs,
+      payments,
+      charges,
       vital_signs,
       patient_clinical_alerts,
       clinical_notes,
@@ -1121,6 +1163,182 @@ async function seedAppointments(params: {
   return db.insert(appointments).values(rows).returning()
 }
 
+async function seedChargesAndPayments(params: {
+  clinicId: string
+  ownerId: string
+  recordedByUserId: string
+  appointments: Array<{
+    id: string
+    patientId: string
+    startsAt: Date
+    status: string
+  }>
+}) {
+  const { clinicId, ownerId, recordedByUserId, appointments: appointmentRows } =
+    params
+
+  type ChargeInsert = {
+    clinicId: string
+    patientId: string
+    appointmentId: string
+    amountCents: number
+    currency: string
+    status: "pending" | "paid" | "canceled" | "failed"
+    description: string
+    dueAt: Date
+    provider: "none"
+    createdBy: string
+    updatedBy: string
+  }
+
+  const chargeRows: ChargeInsert[] = []
+  /** Parallel array: payment method when status is paid, else null. */
+  const paymentMethodByChargeIndex: Array<
+    (typeof PAYMENT_METHODS)[number] | null
+  > = []
+
+  for (const [index, appointment] of appointmentRows.entries()) {
+    const amountCents =
+      CHARGE_AMOUNT_CENTS[index % CHARGE_AMOUNT_CENTS.length]!
+    const dueAt = addDays(appointment.startsAt, 0)
+    dueAt.setHours(23, 59, 0, 0)
+
+    const description = `Consulta — ${REASONS[index % REASONS.length]!}`
+
+    // ~1 in 4 future appointments already have a pending charge from booking
+    if (
+      appointment.status === "scheduled" ||
+      appointment.status === "confirmed" ||
+      appointment.status === "checked_in"
+    ) {
+      if (index % 4 !== 0) continue
+      chargeRows.push({
+        clinicId,
+        patientId: appointment.patientId,
+        appointmentId: appointment.id,
+        amountCents,
+        currency: "BRL",
+        status: "pending",
+        description,
+        dueAt,
+        provider: "none",
+        createdBy: ownerId,
+        updatedBy: ownerId,
+      })
+      paymentMethodByChargeIndex.push(null)
+      continue
+    }
+
+    if (appointment.status === "canceled") {
+      // Some canceled appointments keep a canceled receivable on record
+      if (index % 5 !== 0) continue
+      chargeRows.push({
+        clinicId,
+        patientId: appointment.patientId,
+        appointmentId: appointment.id,
+        amountCents,
+        currency: "BRL",
+        status: "canceled",
+        description,
+        dueAt,
+        provider: "none",
+        createdBy: ownerId,
+        updatedBy: ownerId,
+      })
+      paymentMethodByChargeIndex.push(null)
+      continue
+    }
+
+    if (appointment.status === "no_show") {
+      // Mix of pending (still owed) and canceled (waived)
+      const status = index % 3 === 0 ? ("canceled" as const) : ("pending" as const)
+      chargeRows.push({
+        clinicId,
+        patientId: appointment.patientId,
+        appointmentId: appointment.id,
+        amountCents,
+        currency: "BRL",
+        status,
+        description,
+        dueAt,
+        provider: "none",
+        createdBy: ownerId,
+        updatedBy: ownerId,
+      })
+      paymentMethodByChargeIndex.push(null)
+      continue
+    }
+
+    if (appointment.status === "completed") {
+      // ~70% paid, ~20% pending, ~10% canceled
+      const bucket = index % 10
+      const status =
+        bucket < 7
+          ? ("paid" as const)
+          : bucket < 9
+            ? ("pending" as const)
+            : ("canceled" as const)
+
+      chargeRows.push({
+        clinicId,
+        patientId: appointment.patientId,
+        appointmentId: appointment.id,
+        amountCents,
+        currency: "BRL",
+        status,
+        description,
+        dueAt,
+        provider: "none",
+        createdBy: ownerId,
+        updatedBy: ownerId,
+      })
+      paymentMethodByChargeIndex.push(
+        status === "paid"
+          ? PAYMENT_METHODS[index % PAYMENT_METHODS.length]!
+          : null,
+      )
+    }
+  }
+
+  if (chargeRows.length === 0) {
+    return { charges: 0, payments: 0, chargeIds: [] as string[] }
+  }
+
+  const insertedCharges = await db.insert(charges).values(chargeRows).returning()
+
+  const paymentRows = insertedCharges.flatMap((charge, index) => {
+    const method = paymentMethodByChargeIndex[index]
+    if (charge.status !== "paid" || !method) return []
+
+    const paidAt = new Date(charge.dueAt ?? new Date())
+    paidAt.setHours(10 + (index % 8), (index * 11) % 60, 0, 0)
+
+    return [
+      {
+        clinicId,
+        chargeId: charge.id,
+        amountCents: charge.amountCents,
+        method,
+        paidAt,
+        provider: "none" as const,
+        notes:
+          index % 6 === 0 ? "Pagamento registrado na recepção." : null,
+        recordedBy: recordedByUserId,
+      },
+    ]
+  })
+
+  if (paymentRows.length > 0) {
+    await db.insert(payments).values(paymentRows)
+  }
+
+  return {
+    charges: insertedCharges.length,
+    payments: paymentRows.length,
+    chargeIds: insertedCharges.map((c) => c.id),
+  }
+}
+
 async function seedClinicalNotesAndVitals(params: {
   clinicId: string
   ownerId: string
@@ -1307,8 +1525,10 @@ async function seedAuditLogs(params: {
   team: Array<{ userId: string; name: string; email: string }>
   patientIds: string[]
   appointmentIds: string[]
+  chargeIds: string[]
 }) {
-  const { clinicId, owner, team, patientIds, appointmentIds } = params
+  const { clinicId, owner, team, patientIds, appointmentIds, chargeIds } =
+    params
   const actors = [
     owner,
     ...team.map((member) => ({
@@ -1381,6 +1601,32 @@ async function seedAuditLogs(params: {
       errorMessage: "Documento já cadastrado nesta clínica.",
       errorCode: "PATIENT_DOCUMENT_CONFLICT",
     },
+    {
+      action: AUDIT_ACTIONS.CHARGE_CREATE,
+      entityType: AUDIT_ENTITY_TYPES.CHARGE,
+      status: "success",
+      changes: {
+        after: { amountCents: 20_000, status: "pending" },
+      },
+    },
+    {
+      action: AUDIT_ACTIONS.CHARGE_MARK_PAID,
+      entityType: AUDIT_ENTITY_TYPES.CHARGE,
+      status: "success",
+      changes: {
+        before: { status: "pending" },
+        after: { status: "paid", method: "pix_manual" },
+      },
+    },
+    {
+      action: AUDIT_ACTIONS.CHARGE_CANCEL,
+      entityType: AUDIT_ENTITY_TYPES.CHARGE,
+      status: "success",
+      changes: {
+        before: { status: "pending" },
+        after: { status: "canceled" },
+      },
+    },
   ]
 
   const rows = Array.from({ length: 60 }, (_, index) => {
@@ -1390,6 +1636,11 @@ async function seedAuditLogs(params: {
 
     if (index < actionSpecs.length) {
       const spec = actionSpecs[index]!
+      const isCharge = spec.entityType === AUDIT_ENTITY_TYPES.CHARGE
+      const chargeId =
+        chargeIds.length > 0
+          ? chargeIds[index % chargeIds.length]!
+          : clinicId
       return {
         clinicId,
         actorUserId: actor.id,
@@ -1398,7 +1649,7 @@ async function seedAuditLogs(params: {
         action: spec.action,
         status: spec.status,
         entityType: spec.entityType,
-        entityId: clinicId,
+        entityId: isCharge ? chargeId : clinicId,
         changes: spec.changes,
         errorMessage: spec.errorMessage ?? null,
         errorCode: spec.errorCode ?? null,
@@ -1408,7 +1659,9 @@ async function seedAuditLogs(params: {
 
     const patientId = patientIds[index % patientIds.length]!
     const appointmentId = appointmentIds[index % appointmentIds.length]!
-    const cycle = index % 6
+    const chargeId =
+      chargeIds.length > 0 ? chargeIds[index % chargeIds.length]! : null
+    const cycle = index % 7
 
     if (cycle === 0) {
       return {
@@ -1504,6 +1757,26 @@ async function seedAuditLogs(params: {
       }
     }
 
+    if (cycle === 5 && chargeId) {
+      return {
+        clinicId,
+        actorUserId: actor.id,
+        actorName: actor.name,
+        actorEmail: actor.email,
+        action: AUDIT_ACTIONS.CHARGE_MARK_PAID,
+        status: "success" as const,
+        entityType: AUDIT_ENTITY_TYPES.CHARGE,
+        entityId: chargeId,
+        changes: {
+          before: { status: "pending" },
+          after: { status: "paid", method: "card" },
+        },
+        errorMessage: null,
+        errorCode: null,
+        createdAt,
+      }
+    }
+
     return {
       clinicId,
       actorUserId: actor.id,
@@ -1581,6 +1854,19 @@ async function seed() {
       professionalIds: professionalRows.map((p) => p.id),
     })
 
+    const financialMember = teamMembers.find(
+      (member) => member.roleKey === "financial",
+    )
+    const recordedByUserId = financialMember?.userId ?? ownerId
+
+    console.log("Seeding clinical charges + payments…")
+    const billingCounts = await seedChargesAndPayments({
+      clinicId,
+      ownerId,
+      recordedByUserId,
+      appointments: appointmentRows,
+    })
+
     console.log("Seeding clinical notes + vital signs…")
     const clinicalCounts = await seedClinicalNotesAndVitals({
       clinicId,
@@ -1614,6 +1900,7 @@ async function seed() {
       team: teamMembers,
       patientIds: patientRows.map((p) => p.id),
       appointmentIds: appointmentRows.map((a) => a.id),
+      chargeIds: billingCounts.chargeIds ?? [],
     })
 
     console.log("\nDemo seed completed.")
@@ -1629,6 +1916,8 @@ async function seed() {
     )
     console.log(`  Patients: ${patientRows.length}`)
     console.log(`  Appointments: ${appointmentRows.length}`)
+    console.log(`  Charges: ${billingCounts.charges}`)
+    console.log(`  Payments: ${billingCounts.payments}`)
     console.log(`  Clinical notes: ${clinicalCounts.notes}`)
     console.log(`  Vital signs: ${clinicalCounts.vitals}`)
     console.log(`  Clinical alerts: ${alertCount}`)

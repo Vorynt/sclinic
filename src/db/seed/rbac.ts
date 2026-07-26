@@ -78,6 +78,11 @@ const PERMISSIONS = [
   { key: "financial.view", name: "View financial", module: "billing" },
   { key: "financial.manage", name: "Manage financial", module: "billing" },
   {
+    key: "financial.collect",
+    name: "Collect clinical payments",
+    module: "billing",
+  },
+  {
     key: "settings.manage",
     name: "Manage clinic settings",
     module: "settings",
@@ -111,6 +116,7 @@ const ROLE_PERMISSION_MATRIX: Record<string, readonly string[]> = {
     "professionals.manage",
     "financial.view",
     "financial.manage",
+    "financial.collect",
     "settings.manage",
     "members.invite",
     "records.read",
@@ -125,6 +131,7 @@ const ROLE_PERMISSION_MATRIX: Record<string, readonly string[]> = {
     "appointments.delete",
     "professionals.manage",
     "financial.view",
+    "financial.collect",
     "members.invite",
     "records.read",
   ],
@@ -134,6 +141,7 @@ const ROLE_PERMISSION_MATRIX: Record<string, readonly string[]> = {
     "appointments.create",
     "appointments.update",
     "appointments.delete",
+    "financial.collect",
   ],
   doctor: [
     "patients.read",
@@ -142,6 +150,7 @@ const ROLE_PERMISSION_MATRIX: Record<string, readonly string[]> = {
     "appointments.update",
     "records.read",
     "records.write",
+    "financial.collect",
   ],
   nurse: [
     "patients.read",
@@ -150,7 +159,12 @@ const ROLE_PERMISSION_MATRIX: Record<string, readonly string[]> = {
     "records.read",
     "records.write",
   ],
-  financial: ["patients.read", "financial.view", "financial.manage"],
+  financial: [
+    "patients.read",
+    "financial.view",
+    "financial.manage",
+    "financial.collect",
+  ],
 };
 
 async function ensureSystemRoles() {

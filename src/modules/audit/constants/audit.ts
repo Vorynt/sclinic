@@ -17,6 +17,9 @@ export const AUDIT_ACTIONS = {
   INVITATION_CREATE: "invitation.create",
   INVITATION_REVOKE: "invitation.revoke",
   INVITATION_ACCEPT: "invitation.accept",
+  CHARGE_CREATE: "charge.create",
+  CHARGE_MARK_PAID: "charge.mark_paid",
+  CHARGE_CANCEL: "charge.cancel",
 } as const
 
 export type AuditAction = (typeof AUDIT_ACTIONS)[keyof typeof AUDIT_ACTIONS]
@@ -28,6 +31,7 @@ export const AUDIT_ENTITY_TYPES = {
   CLINIC_HOURS: "clinic_hours",
   MEMBER: "member",
   INVITATION: "invitation",
+  CHARGE: "charge",
 } as const
 
 export type AuditEntityType =
@@ -52,6 +56,9 @@ export const AUDIT_ACTION_LABELS: Record<string, string> = {
   [AUDIT_ACTIONS.INVITATION_CREATE]: "Convite enviado",
   [AUDIT_ACTIONS.INVITATION_REVOKE]: "Convite cancelado",
   [AUDIT_ACTIONS.INVITATION_ACCEPT]: "Convite aceito",
+  [AUDIT_ACTIONS.CHARGE_CREATE]: "Cobrança criada",
+  [AUDIT_ACTIONS.CHARGE_MARK_PAID]: "Cobrança marcada como paga",
+  [AUDIT_ACTIONS.CHARGE_CANCEL]: "Cobrança cancelada",
 }
 
 export const AUDIT_ENTITY_LABELS: Record<string, string> = {
@@ -61,4 +68,5 @@ export const AUDIT_ENTITY_LABELS: Record<string, string> = {
   [AUDIT_ENTITY_TYPES.CLINIC_HOURS]: "Horários",
   [AUDIT_ENTITY_TYPES.MEMBER]: "Membro",
   [AUDIT_ENTITY_TYPES.INVITATION]: "Convite",
+  [AUDIT_ENTITY_TYPES.CHARGE]: "Cobrança",
 }

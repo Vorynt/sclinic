@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Controller, FormProvider, useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { useHookFormMask } from "use-mask-input";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
@@ -28,6 +29,7 @@ import {
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
+import { Permission } from "@/config/permissions";
 import { routes } from "@/config/routes";
 import { SuggestedAvailabilitySlots } from "@/modules/appointments/components/SuggestedAvailabilitySlots";
 import {
@@ -40,14 +42,20 @@ import type { AppointmentType } from "@/modules/appointments/types/appointment";
 import { APPOINTMENT_DURATION_OPTIONS } from "@/modules/appointments/utils/calendar-constants";
 import { readSuggestedSlotsFromMeta } from "@/modules/appointments/utils/suggested-slots";
 import { useAuthSession } from "@/modules/authentication/hooks/use-auth";
+import {
+  isEmptyMoneyInput,
+  parseBrlToCents,
+} from "@/modules/billing/utils/money";
 import { PatientCombobox } from "@/modules/patients/components/PatientCombobox";
 import { PatientFormDialog } from "@/modules/patients/components/PatientFormDialog";
 import type { Patient } from "@/modules/patients/types/patient";
 import { ProfessionalCombobox } from "@/modules/professionals/components/ProfessionalCombobox";
 import { formatProfessionalSchedulingLabel } from "@/modules/professionals/constants/professionals";
 import { useProfessionalsForSchedulingQuery } from "@/modules/professionals/hooks/use-professionals";
+import { useAuth } from "@/providers/AuthProvider";
 import { ErrorCode, getClientMessage, isAppError } from "@/shared/errors";
 import { parseISODate, toISODate } from "@/utils/date";
+import { CURRENCY_MASK_OPTIONS, MASKS } from "@/utils/mask";
 
 const appointmentTypeOptions = Object.entries(APPOINTMENT_TYPE_LABELS) as [
   AppointmentType,
@@ -70,6 +78,7 @@ const scheduleFormSchema = z
       .trim()
       .max(300, "Motivo deve ter no máximo 300 caracteres")
       .optional(),
+    amountBrl: z.string().optional(),
   })
   .superRefine((data, ctx) => {
     const day = parseISODate(data.date);
@@ -86,6 +95,15 @@ const scheduleFormSchema = z
         code: "custom",
         message: "Não é possível agendar para um horário no passado.",
         path: ["startTime"],
+      });
+    }
+
+    const amountRaw = data.amountBrl?.trim() ?? "";
+    if (!isEmptyMoneyInput(amountRaw) && parseBrlToCents(amountRaw) == null) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Informe um valor válido maior que zero.",
+        path: ["amountBrl"],
       });
     }
   });
@@ -163,6 +181,11 @@ export function AppointmentForm({
       : defaultType;
 
   const sessionQuery = useAuthSession();
+  const { canAny } = useAuth();
+  const canCollect = canAny(
+    Permission.FINANCIAL_COLLECT,
+    Permission.FINANCIAL_MANAGE,
+  );
   const isProfessionalLocked = isSelfScheduleOnlyRole(
     sessionQuery.data?.membership?.roleKey,
   );
@@ -180,6 +203,7 @@ export function AppointmentForm({
       ).padStart(2, "0")}`,
       durationMinutes: "30",
       reason: "",
+      amountBrl: "",
     },
   });
 
@@ -189,9 +213,11 @@ export function AppointmentForm({
     handleSubmit,
     setValue,
     formState: { errors },
-  } = form
+  } = form;
 
-  const professionals = professionalsQuery.data ?? []
+  const registerWithMask = useHookFormMask(register);
+
+  const professionals = professionalsQuery.data ?? [];
   const lockedProfessionalLabel = isProfessionalLocked
     ? professionals[0]
       ? formatProfessionalSchedulingLabel({
@@ -270,6 +296,12 @@ export function AppointmentForm({
     startsAt.setHours(hours, minutes, 0, 0);
     const endsAt = addMinutes(startsAt, Number(data.durationMinutes));
 
+    const amountRaw = data.amountBrl?.trim() ?? "";
+    const amountCents =
+      canCollect && !isEmptyMoneyInput(amountRaw)
+        ? parseBrlToCents(amountRaw)
+        : undefined;
+
     createAppointment.mutate({
       patientId: data.patientId,
       professionalId: data.professionalId,
@@ -277,6 +309,7 @@ export function AppointmentForm({
       endsAt,
       type: data.type,
       reason: data.reason,
+      ...(amountCents != null ? { amountCents } : {}),
     });
   });
 
@@ -475,6 +508,27 @@ export function AppointmentForm({
               />
               <FieldError errors={[errors.reason]} />
             </Field>
+
+            {canCollect ? (
+              <Field data-invalid={Boolean(errors.amountBrl) || undefined}>
+                <FieldLabel htmlFor="appointment-amount">
+                  Valor da consulta
+                </FieldLabel>
+                <Input
+                  id="appointment-amount"
+                  inputMode="decimal"
+                  placeholder="R$ 0,00"
+                  aria-invalid={Boolean(errors.amountBrl) || undefined}
+                  disabled={isPending}
+                  {...registerWithMask(
+                    "amountBrl",
+                    MASKS.currency,
+                    CURRENCY_MASK_OPTIONS,
+                  )}
+                />
+                <FieldError errors={[errors.amountBrl]} />
+              </Field>
+            ) : null}
           </FieldGroup>
 
           <DialogFooter>

@@ -5,6 +5,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { appointmentsMutations } from "@/modules/appointments/mutations/appointments.mutation"
 import { appointmentsQueryKeys } from "@/modules/appointments/queries/appointments.query"
 import type { Appointment } from "@/modules/appointments/types/appointment"
+import { chargesQueryKeys } from "@/modules/billing/queries/charges.query"
 import {
   AppError,
   ErrorCode,
@@ -33,9 +34,14 @@ export function useCreateAppointmentMutation({
   return useMutation({
     ...appointmentsMutations.create(),
     onSuccess: async (data) => {
-      await queryClient.invalidateQueries({
-        queryKey: appointmentsQueryKeys.all,
-      })
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: appointmentsQueryKeys.all,
+        }),
+        queryClient.invalidateQueries({
+          queryKey: chargesQueryKeys.all,
+        }),
+      ])
       onSuccess?.(data)
     },
     onError: (error) => {

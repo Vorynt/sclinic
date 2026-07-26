@@ -4,7 +4,12 @@ import * as React from "react";
 import { useMaskInput } from "use-mask-input";
 
 import { Input } from "@/components/ui/input";
-import { MASK_INPUT_OPTIONS, MASKS, type MaskName } from "@/utils/mask";
+import {
+  CURRENCY_MASK_OPTIONS,
+  MASK_INPUT_OPTIONS,
+  MASKS,
+  type MaskName,
+} from "@/utils/mask";
 
 type MaskedInputProps = Omit<React.ComponentProps<"input">, "type"> & {
   mask: MaskName;
@@ -28,7 +33,7 @@ function assignRef<T>(ref: React.Ref<T> | undefined, value: T | null) {
 function MaskedInput({ mask, ref, type, ...props }: MaskedInputProps) {
   const maskRef = useMaskInput({
     mask: MASKS[mask],
-    options: MASK_INPUT_OPTIONS,
+    options: mask === "currency" ? CURRENCY_MASK_OPTIONS : MASK_INPUT_OPTIONS,
   });
 
   const setRefs = (node: HTMLInputElement | null) => {
@@ -41,7 +46,9 @@ function MaskedInput({ mask, ref, type, ...props }: MaskedInputProps) {
       {...props}
       ref={setRefs}
       type={type ?? (mask === "phone" ? "tel" : "text")}
-      inputMode={props.inputMode ?? "numeric"}
+      inputMode={
+        props.inputMode ?? (mask === "currency" ? "decimal" : "numeric")
+      }
       autoComplete={
         props.autoComplete ?? (mask === "phone" ? "tel" : undefined)
       }

@@ -12,7 +12,7 @@ const meta = {
   argTypes: {
     mask: {
       control: "select",
-      options: ["cpf", "cnpj", "phone", "cep"] satisfies MaskName[],
+      options: ["cpf", "cnpj", "phone", "cep", "currency"] satisfies MaskName[],
       description: "Máscara aplicada na UI.",
     },
     disabled: {
@@ -74,5 +74,13 @@ export const Cep: Story = {
   args: {
     mask: "cep",
     placeholder: "00000-000",
+  },
+}
+
+export const Currency: Story = {
+  render: (args) => <Demo {...args} />,
+  args: {
+    mask: "currency",
+    placeholder: "R$ 0,00",
   },
 }

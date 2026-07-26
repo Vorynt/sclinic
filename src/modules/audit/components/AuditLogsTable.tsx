@@ -5,6 +5,7 @@ import {
   CaretDownIcon,
   CheckCircleIcon,
   ClockIcon,
+  CurrencyCircleDollarIcon,
   EnvelopeSimpleIcon,
   HospitalIcon,
   UserIcon,
@@ -61,6 +62,7 @@ const ENTITY_ICONS: Record<string, Icon> = {
   [AUDIT_ENTITY_TYPES.CLINIC_HOURS]: ClockIcon,
   [AUDIT_ENTITY_TYPES.MEMBER]: UsersThreeIcon,
   [AUDIT_ENTITY_TYPES.INVITATION]: EnvelopeSimpleIcon,
+  [AUDIT_ENTITY_TYPES.CHARGE]: CurrencyCircleDollarIcon,
 };
 
 const FIELD_LABELS: Record<string, string> = {

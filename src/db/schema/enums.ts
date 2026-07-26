@@ -122,3 +122,30 @@ export const clinicalAlertSeverityEnum = pgEnum("clinical_alert_severity", [
   "medium",
   "high",
 ])
+
+/** Clinical charge lifecycle (clinic receivables — not SaaS subscription). */
+export const chargeStatusEnum = pgEnum("charge_status", [
+  "pending",
+  "paid",
+  "canceled",
+  "failed",
+])
+
+/**
+ * How a clinical payment was settled.
+ * `gateway` is reserved for in-app PIX/card via provider (e.g. Asaas).
+ */
+export const paymentMethodEnum = pgEnum("payment_method", [
+  "cash",
+  "pix_manual",
+  "card",
+  "transfer",
+  "other",
+  "gateway",
+])
+
+/** Payment provider for clinical charges. MVP always uses `none`. */
+export const paymentProviderEnum = pgEnum("payment_provider", [
+  "none",
+  "asaas",
+])
