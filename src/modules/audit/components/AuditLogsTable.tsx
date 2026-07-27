@@ -7,10 +7,14 @@ import {
   ClockIcon,
   CurrencyCircleDollarIcon,
   EnvelopeSimpleIcon,
+  HeartbeatIcon,
   HospitalIcon,
+  NotePencilIcon,
+  StethoscopeIcon,
   UserIcon,
   UsersThreeIcon,
   WarningCircleIcon,
+  WarningIcon,
   type Icon,
 } from "@phosphor-icons/react";
 import { format } from "date-fns";
@@ -63,6 +67,10 @@ const ENTITY_ICONS: Record<string, Icon> = {
   [AUDIT_ENTITY_TYPES.MEMBER]: UsersThreeIcon,
   [AUDIT_ENTITY_TYPES.INVITATION]: EnvelopeSimpleIcon,
   [AUDIT_ENTITY_TYPES.CHARGE]: CurrencyCircleDollarIcon,
+  [AUDIT_ENTITY_TYPES.CLINICAL_NOTE]: NotePencilIcon,
+  [AUDIT_ENTITY_TYPES.VITAL_SIGNS]: HeartbeatIcon,
+  [AUDIT_ENTITY_TYPES.CLINICAL_ALERT]: WarningIcon,
+  [AUDIT_ENTITY_TYPES.PROFESSIONAL]: StethoscopeIcon,
 };
 
 const FIELD_LABELS: Record<string, string> = {

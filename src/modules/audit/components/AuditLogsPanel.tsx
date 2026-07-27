@@ -28,6 +28,10 @@ const ENTITY_FILTERS = [
   AUDIT_ENTITY_TYPES.MEMBER,
   AUDIT_ENTITY_TYPES.INVITATION,
   AUDIT_ENTITY_TYPES.CHARGE,
+  AUDIT_ENTITY_TYPES.CLINICAL_NOTE,
+  AUDIT_ENTITY_TYPES.VITAL_SIGNS,
+  AUDIT_ENTITY_TYPES.CLINICAL_ALERT,
+  AUDIT_ENTITY_TYPES.PROFESSIONAL,
 ] as const
 
 export function AuditLogsPanel() {
@@ -108,6 +112,18 @@ export function AuditLogsPanel() {
               </SelectItem>
               <SelectItem value={AUDIT_ENTITY_TYPES.CHARGE}>
                 Cobrança
+              </SelectItem>
+              <SelectItem value={AUDIT_ENTITY_TYPES.CLINICAL_NOTE}>
+                Anotação clínica
+              </SelectItem>
+              <SelectItem value={AUDIT_ENTITY_TYPES.VITAL_SIGNS}>
+                Sinais vitais
+              </SelectItem>
+              <SelectItem value={AUDIT_ENTITY_TYPES.CLINICAL_ALERT}>
+                Alerta clínico
+              </SelectItem>
+              <SelectItem value={AUDIT_ENTITY_TYPES.PROFESSIONAL}>
+                Profissional
               </SelectItem>
             </SelectContent>
           </Select>

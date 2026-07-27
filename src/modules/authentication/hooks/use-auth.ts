@@ -144,3 +144,33 @@ export function useChangePasswordMutation({
     },
   });
 }
+
+export function useRequestPasswordResetMutation({
+  onSuccess,
+  onError,
+}: MutationCallbacks = {}) {
+  return useMutation({
+    ...authMutations.requestPasswordReset(),
+    onSuccess: (data) => {
+      onSuccess?.(data);
+    },
+    onError: (error) => {
+      onError?.(toAppError(error));
+    },
+  });
+}
+
+export function useResetPasswordMutation({
+  onSuccess,
+  onError,
+}: MutationCallbacks = {}) {
+  return useMutation({
+    ...authMutations.resetPassword(),
+    onSuccess: (data) => {
+      onSuccess?.(data);
+    },
+    onError: (error) => {
+      onError?.(toAppError(error));
+    },
+  });
+}

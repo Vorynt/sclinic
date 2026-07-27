@@ -1,4 +1,8 @@
-import type { ClinicalNoteContent } from "@/db/schema"
+import type {
+  ClinicalNoteContent,
+  ClinicalNoteFormValues,
+} from "@/db/schema"
+import type { ClinicalNoteTemplateId } from "@/modules/medical-records/constants/clinical-note-templates"
 import type { ClinicalNote } from "@/modules/medical-records/types/clinical-note"
 
 type ClinicalNoteRow = {
@@ -10,6 +14,8 @@ type ClinicalNoteRow = {
   professionalName: string | null
   content: ClinicalNoteContent
   plainText: string
+  templateId: string | null
+  formValues: ClinicalNoteFormValues | null
   appointmentStartsAt: Date | null
   createdAt: Date
   updatedAt: Date
@@ -25,6 +31,8 @@ export function toClinicalNote(row: ClinicalNoteRow): ClinicalNote {
     professionalName: row.professionalName,
     content: row.content,
     plainText: row.plainText,
+    templateId: (row.templateId as ClinicalNoteTemplateId | null) ?? null,
+    formValues: row.formValues ?? null,
     appointmentStartsAt: row.appointmentStartsAt,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,

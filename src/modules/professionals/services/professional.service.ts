@@ -3,6 +3,15 @@ import { Permission } from "@/config/permissions"
 import { routes } from "@/config/routes"
 import { email } from "@/core/email"
 import {
+  AUDIT_ACTIONS,
+  AUDIT_ENTITY_TYPES,
+} from "@/modules/audit/constants/audit"
+import {
+  auditErrorFields,
+  recordAudit,
+} from "@/modules/audit/emit"
+import { auditActorFromAuth } from "@/modules/audit/utils/audit-actor"
+import {
   requireAnyPermission,
   requireAuth,
   requirePasswordReady,
@@ -187,6 +196,7 @@ export const professionalService = {
     ctx: AuthRequestContext,
   ): Promise<ProfessionalListItem> {
     const auth = await requirePermission(ctx, Permission.PROFESSIONALS_MANAGE)
+    const actor = auditActorFromAuth(auth)
     assertProfessionalRoleKey(data.roleKey)
     await billingService.assertPlanCapacity(auth.clinicId, "professionals")
 
@@ -223,73 +233,108 @@ export const professionalService = {
     // Provisional auth display name until the invitee completes their profile.
     const provisionalName = data.email.split("@")[0] || data.email
 
-    await authService.provisionInvitedUser({
-      name: provisionalName,
-      email: data.email,
-    })
-
-    const clinic = await clinicService.getById(auth.clinicId, ctx)
-
-    const created = await professionalRepository.create({
-      fullName: null,
-      treatmentPronoun: null,
-      status: "inactive",
-    })
-
-    await professionalRepository.createAffiliation({
-      professionalId: created.id,
-      clinicId: auth.clinicId,
-      affiliationType: data.affiliationType,
-      status: "inactive",
-    })
-
-    const rawToken = createInviteToken()
-    const invitation = await invitationRepository.create({
-      clinicId: auth.clinicId,
-      email: data.email,
-      roleId: role.id,
-      invitedBy: auth.user.id,
-      tokenHash: hashInviteToken(rawToken),
-      expiresAt: new Date(
-        Date.now() + PROFESSIONALS_CONSTANTS.INVITE_TTL_MS,
-      ),
-      professionalId: created.id,
-    })
-
-    const reviewUrl = new URL(
-      routes.professionalInvite,
-      env.BETTER_AUTH_URL,
-    )
-    reviewUrl.searchParams.set("token", rawToken)
-
     try {
-      await email.messages.professionalInvite({
-        to: data.email,
-        name: null,
-        inviterName: auth.user.name,
-        clinicName: clinic.name,
-        roleName: getRoleLabel(role.key, role.name),
-        reviewUrl: reviewUrl.toString(),
+      await authService.provisionInvitedUser({
+        name: provisionalName,
+        email: data.email,
       })
-    } catch (error) {
-      await invitationRepository.revoke(invitation.id, auth.clinicId)
-      await professionalRepository.softDelete({
-        id: created.id,
+
+      const clinic = await clinicService.getById(auth.clinicId, ctx)
+
+      const created = await professionalRepository.create({
+        fullName: null,
+        treatmentPronoun: null,
+        status: "inactive",
+      })
+
+      await professionalRepository.createAffiliation({
+        professionalId: created.id,
         clinicId: auth.clinicId,
+        affiliationType: data.affiliationType,
+        status: "inactive",
+      })
+
+      const rawToken = createInviteToken()
+      const invitation = await invitationRepository.create({
+        clinicId: auth.clinicId,
+        email: data.email,
+        roleId: role.id,
+        invitedBy: auth.user.id,
+        tokenHash: hashInviteToken(rawToken),
+        expiresAt: new Date(
+          Date.now() + PROFESSIONALS_CONSTANTS.INVITE_TTL_MS,
+        ),
+        professionalId: created.id,
+      })
+
+      const reviewUrl = new URL(
+        routes.professionalInvite,
+        env.BETTER_AUTH_URL,
+      )
+      reviewUrl.searchParams.set("token", rawToken)
+
+      try {
+        await email.messages.professionalInvite({
+          to: data.email,
+          name: null,
+          inviterName: auth.user.name,
+          clinicName: clinic.name,
+          roleName: getRoleLabel(role.key, role.name),
+          reviewUrl: reviewUrl.toString(),
+        })
+      } catch (error) {
+        await invitationRepository.revoke(invitation.id, auth.clinicId)
+        await professionalRepository.softDelete({
+          id: created.id,
+          clinicId: auth.clinicId,
+        })
+        throw error
+      }
+
+      const listItem = await professionalRepository.findById(
+        created.id,
+        auth.clinicId,
+      )
+      if (!listItem) {
+        throw new AppError(ErrorCode.INTERNAL_ERROR, {
+          message: "Falha ao carregar profissional após criação.",
+        })
+      }
+
+      recordAudit({
+        ...actor,
+        action: AUDIT_ACTIONS.PROFESSIONAL_CREATE,
+        status: "success",
+        entityType: AUDIT_ENTITY_TYPES.PROFESSIONAL,
+        entityId: listItem.id,
+        changes: {
+          after: {
+            id: listItem.id,
+            email: data.email,
+            roleKey: data.roleKey,
+            affiliationType: data.affiliationType,
+          },
+        },
+      })
+
+      return listItem
+    } catch (error) {
+      recordAudit({
+        ...actor,
+        action: AUDIT_ACTIONS.PROFESSIONAL_CREATE,
+        status: "error",
+        entityType: AUDIT_ENTITY_TYPES.PROFESSIONAL,
+        changes: {
+          after: {
+            email: data.email,
+            roleKey: data.roleKey,
+            affiliationType: data.affiliationType,
+          },
+        },
+        ...auditErrorFields(error),
       })
       throw error
     }
-
-    const listItem = await professionalRepository.findById(
-      created.id,
-      auth.clinicId,
-    )
-    if (!listItem) {
-      throw new AppError(ErrorCode.INTERNAL_ERROR, {
-        message: "Falha ao carregar profissional após criação.",
-      })
-    }
-    return listItem
   },
 
   async update(
@@ -297,6 +342,7 @@ export const professionalService = {
     ctx: AuthRequestContext,
   ): Promise<ProfessionalListItem> {
     const auth = await requirePermission(ctx, Permission.PROFESSIONALS_MANAGE)
+    const actor = auditActorFromAuth(auth)
     const { id, name, fullName, ...rest } = data
 
     const existing = await professionalRepository.findById(id, auth.clinicId)
@@ -306,20 +352,63 @@ export const professionalService = {
       })
     }
 
-    return professionalRepository.update({
-      id,
-      clinicId: auth.clinicId,
-      data: {
-        ...rest,
-        fullName: fullName ?? name,
-        treatmentPronoun: rest.treatmentPronoun ?? undefined,
-        specialty: rest.specialty ?? undefined,
-        councilNumber: rest.councilNumber ?? undefined,
-        councilState: rest.councilState ?? undefined,
-        biography: rest.biography ?? undefined,
-        councilType: rest.councilType ?? undefined,
-      },
-    })
+    try {
+      const updated = await professionalRepository.update({
+        id,
+        clinicId: auth.clinicId,
+        data: {
+          ...rest,
+          fullName: fullName ?? name,
+          treatmentPronoun: rest.treatmentPronoun ?? undefined,
+          specialty: rest.specialty ?? undefined,
+          councilNumber: rest.councilNumber ?? undefined,
+          councilState: rest.councilState ?? undefined,
+          biography: rest.biography ?? undefined,
+          councilType: rest.councilType ?? undefined,
+        },
+      })
+
+      recordAudit({
+        ...actor,
+        action: AUDIT_ACTIONS.PROFESSIONAL_UPDATE,
+        status: "success",
+        entityType: AUDIT_ENTITY_TYPES.PROFESSIONAL,
+        entityId: updated.id,
+        changes: {
+          before: {
+            id: existing.id,
+            fullName: existing.fullName,
+            specialty: existing.specialty,
+            status: existing.status,
+          },
+          after: {
+            id: updated.id,
+            fullName: updated.fullName,
+            specialty: updated.specialty,
+            status: updated.status,
+          },
+        },
+      })
+
+      return updated
+    } catch (error) {
+      recordAudit({
+        ...actor,
+        action: AUDIT_ACTIONS.PROFESSIONAL_UPDATE,
+        status: "error",
+        entityType: AUDIT_ENTITY_TYPES.PROFESSIONAL,
+        entityId: id,
+        changes: {
+          before: {
+            id: existing.id,
+            fullName: existing.fullName,
+          },
+          after: { fullName: fullName ?? name, ...rest },
+        },
+        ...auditErrorFields(error),
+      })
+      throw error
+    }
   },
 
   async setStatus(
@@ -347,6 +436,7 @@ export const professionalService = {
 
   async delete(id: string, ctx: AuthRequestContext): Promise<void> {
     const auth = await requirePermission(ctx, Permission.PROFESSIONALS_MANAGE)
+    const actor = auditActorFromAuth(auth)
 
     const existing = await professionalRepository.findById(id, auth.clinicId)
     if (!existing) {
@@ -355,14 +445,47 @@ export const professionalService = {
       })
     }
 
-    await invitationRepository.revokePendingByProfessionalId(
-      id,
-      auth.clinicId,
-    )
-    await professionalRepository.softDelete({
-      id,
-      clinicId: auth.clinicId,
-    })
+    try {
+      await invitationRepository.revokePendingByProfessionalId(
+        id,
+        auth.clinicId,
+      )
+      await professionalRepository.softDelete({
+        id,
+        clinicId: auth.clinicId,
+      })
+
+      recordAudit({
+        ...actor,
+        action: AUDIT_ACTIONS.PROFESSIONAL_DELETE,
+        status: "success",
+        entityType: AUDIT_ENTITY_TYPES.PROFESSIONAL,
+        entityId: id,
+        changes: {
+          before: {
+            id: existing.id,
+            fullName: existing.fullName,
+            status: existing.status,
+          },
+        },
+      })
+    } catch (error) {
+      recordAudit({
+        ...actor,
+        action: AUDIT_ACTIONS.PROFESSIONAL_DELETE,
+        status: "error",
+        entityType: AUDIT_ENTITY_TYPES.PROFESSIONAL,
+        entityId: id,
+        changes: {
+          before: {
+            id: existing.id,
+            fullName: existing.fullName,
+          },
+        },
+        ...auditErrorFields(error),
+      })
+      throw error
+    }
   },
 
   async getInvitePreview(
@@ -403,47 +526,91 @@ export const professionalService = {
     )
     assertInviteEmailMatch(auth.user.email, invitation.email)
 
-    await professionalRepository.update({
-      id: professional.id,
+    const actor = {
       clinicId: invitation.clinicId,
-      data: {
-        fullName: data.fullName,
-        treatmentPronoun: data.treatmentPronoun,
-        councilType: data.councilType ?? null,
-        councilNumber: data.councilNumber ?? null,
-        councilState: data.councilState ?? null,
-        specialty: data.specialty ?? null,
-        biography: data.biography ?? null,
-      },
-    })
-
-    await authService.updateDisplayName(auth.user.id, data.fullName)
-
-    const updated = await professionalRepository.findById(
-      professional.id,
-      invitation.clinicId,
-    )
-    if (!updated) {
-      throw new AppError(ErrorCode.NOT_FOUND, {
-        message: "Profissional não encontrado.",
-      })
+      actorUserId: auth.user.id,
+      actorName: auth.user.name,
+      actorEmail: auth.user.email,
     }
 
-    return {
-      tokenValid: true,
-      fullName: updated.fullName,
-      treatmentPronoun: updated.treatmentPronoun,
-      email: invitation.email,
-      clinicName: clinic.name,
-      roleName: getRoleLabel(invitation.roleKey, invitation.roleName),
-      affiliationType: updated.affiliationType,
-      councilType: updated.councilType,
-      councilNumber: updated.councilNumber,
-      councilState: updated.councilState,
-      specialty: updated.specialty,
-      biography: updated.biography,
-      professionalId: updated.id,
-      expiresAt: invitation.expiresAt,
+    try {
+      await professionalRepository.update({
+        id: professional.id,
+        clinicId: invitation.clinicId,
+        data: {
+          fullName: data.fullName,
+          treatmentPronoun: data.treatmentPronoun,
+          councilType: data.councilType ?? null,
+          councilNumber: data.councilNumber ?? null,
+          councilState: data.councilState ?? null,
+          specialty: data.specialty ?? null,
+          biography: data.biography ?? null,
+        },
+      })
+
+      await authService.updateDisplayName(auth.user.id, data.fullName)
+
+      const updated = await professionalRepository.findById(
+        professional.id,
+        invitation.clinicId,
+      )
+      if (!updated) {
+        throw new AppError(ErrorCode.NOT_FOUND, {
+          message: "Profissional não encontrado.",
+        })
+      }
+
+      recordAudit({
+        ...actor,
+        action: AUDIT_ACTIONS.PROFESSIONAL_INVITE_PROFILE_UPDATE,
+        status: "success",
+        entityType: AUDIT_ENTITY_TYPES.PROFESSIONAL,
+        entityId: updated.id,
+        changes: {
+          before: {
+            fullName: professional.fullName,
+            treatmentPronoun: professional.treatmentPronoun,
+          },
+          after: {
+            fullName: updated.fullName,
+            treatmentPronoun: updated.treatmentPronoun,
+            specialty: updated.specialty,
+          },
+        },
+      })
+
+      return {
+        tokenValid: true,
+        fullName: updated.fullName,
+        treatmentPronoun: updated.treatmentPronoun,
+        email: invitation.email,
+        clinicName: clinic.name,
+        roleName: getRoleLabel(invitation.roleKey, invitation.roleName),
+        affiliationType: updated.affiliationType,
+        councilType: updated.councilType,
+        councilNumber: updated.councilNumber,
+        councilState: updated.councilState,
+        specialty: updated.specialty,
+        biography: updated.biography,
+        professionalId: updated.id,
+        expiresAt: invitation.expiresAt,
+      }
+    } catch (error) {
+      recordAudit({
+        ...actor,
+        action: AUDIT_ACTIONS.PROFESSIONAL_INVITE_PROFILE_UPDATE,
+        status: "error",
+        entityType: AUDIT_ENTITY_TYPES.PROFESSIONAL,
+        entityId: professional.id,
+        changes: {
+          after: {
+            fullName: data.fullName,
+            treatmentPronoun: data.treatmentPronoun,
+          },
+        },
+        ...auditErrorFields(error),
+      })
+      throw error
     }
   },
 

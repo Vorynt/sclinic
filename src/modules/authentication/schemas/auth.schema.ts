@@ -47,6 +47,18 @@ export const resetPasswordSchema = z.object({
   newPassword: passwordSchema,
 })
 
+/** Client form schema — includes confirm; action uses `resetPasswordSchema`. */
+export const resetPasswordFormSchema = z
+  .object({
+    token: z.string().min(1, "Token é obrigatório"),
+    newPassword: passwordSchema,
+    confirmPassword: z.string().min(1, "Confirme a nova senha"),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: "As senhas não coincidem",
+    path: ["confirmPassword"],
+  })
+
 export const changePasswordSchema = z
   .object({
     currentPassword: z.string().min(1, "Senha atual é obrigatória"),
@@ -65,4 +77,5 @@ export type RequestPasswordResetInput = z.infer<
   typeof requestPasswordResetSchema
 >
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>
+export type ResetPasswordFormInput = z.infer<typeof resetPasswordFormSchema>
 export type ChangePasswordInput = z.infer<typeof changePasswordSchema>
