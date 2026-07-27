@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Inter, Space_Grotesk } from "next/font/google";
 import { headers } from "next/headers";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
+import { Analytics } from "@vercel/analytics/next";
 
 import { AttendancePreparingOverlay } from "@/components/status/AttendancePreparingOverlay";
 import { Toaster } from "@/components/ui/sonner";
@@ -76,6 +77,7 @@ export default async function RootLayout({
             </QueryProvider>
           </ThemeProvider>
         </NuqsAdapter>
+        <Analytics />
       </body>
     </html>
   );
