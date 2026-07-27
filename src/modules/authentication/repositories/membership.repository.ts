@@ -131,6 +131,57 @@ export const membershipRepository = {
     })
   },
 
+  /** Active owner user id for a clinic (SaaS payer — ADR-003 / ADR-004). */
+  async findActiveOwnerUserIdByClinic(
+    clinicId: string,
+  ): Promise<string | null> {
+    return withDbError(async () => {
+      const [row] = await db
+        .select({ userId: clinicMemberships.userId })
+        .from(clinicMemberships)
+        .innerJoin(roles, eq(roles.id, clinicMemberships.roleId))
+        .where(
+          and(
+            eq(clinicMemberships.clinicId, clinicId),
+            eq(roles.key, "owner"),
+            eq(clinicMemberships.status, "active"),
+            isNull(clinicMemberships.deletedAt),
+          ),
+        )
+        .limit(1)
+
+      return row?.userId ?? null
+    })
+  },
+
+  /** Active owner memberships for a user (owned clinics). */
+  async listOwnerByUser(userId: string): Promise<AuthMembership[]> {
+    return withDbError(async () => {
+      const rows = await db
+        .select({
+          id: clinicMemberships.id,
+          clinicId: clinicMemberships.clinicId,
+          roleId: clinicMemberships.roleId,
+          roleKey: roles.key,
+          roleName: roles.name,
+          isDefault: clinicMemberships.isDefault,
+          status: clinicMemberships.status,
+        })
+        .from(clinicMemberships)
+        .innerJoin(roles, eq(roles.id, clinicMemberships.roleId))
+        .where(
+          and(
+            eq(clinicMemberships.userId, userId),
+            eq(roles.key, "owner"),
+            eq(clinicMemberships.status, "active"),
+            isNull(clinicMemberships.deletedAt),
+          ),
+        )
+
+      return rows.map(toAuthMembership)
+    })
+  },
+
   /**
    * Clinics shown in the switcher: active (selectable) + suspended (disabled).
    * Left-joins clinic name (RLS may hide suspended tenants until policy allows).
@@ -147,6 +198,7 @@ export const membershipRepository = {
           isDefault: clinicMemberships.isDefault,
           status: clinicMemberships.status,
           clinicName: clinics.name,
+          clinicSubscriptionStatus: clinics.subscriptionStatus,
         })
         .from(clinicMemberships)
         .innerJoin(roles, eq(roles.id, clinicMemberships.roleId))
@@ -215,6 +267,22 @@ export const membershipRepository = {
     isDefault?: boolean
   }): Promise<AuthMembership> {
     return withDbError(async () => {
+      // Unique partial index: at most one is_default=true per user.
+      // Owner onboarding (ADR-003) takes over default from a prior guest membership.
+      if (isDefault) {
+        const now = new Date()
+        await db
+          .update(clinicMemberships)
+          .set({ isDefault: false, updatedAt: now })
+          .where(
+            and(
+              eq(clinicMemberships.userId, userId),
+              eq(clinicMemberships.isDefault, true),
+              isNull(clinicMemberships.deletedAt),
+            ),
+          )
+      }
+
       const [row] = await db
         .insert(clinicMemberships)
         .values({

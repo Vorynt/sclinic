@@ -9,6 +9,7 @@ import {
   requirePermission,
 } from "@/modules/authentication/permissions/guards"
 import { authService } from "@/modules/authentication/services/auth.service"
+import { billingService } from "@/modules/billing/services/billing.service"
 import { clinicRepository } from "@/modules/clinics/repositories/clinic.repository"
 import { clinicService } from "@/modules/clinics/services/clinic.service"
 import {
@@ -187,6 +188,7 @@ export const professionalService = {
   ): Promise<ProfessionalListItem> {
     const auth = await requirePermission(ctx, Permission.PROFESSIONALS_MANAGE)
     assertProfessionalRoleKey(data.roleKey)
+    await billingService.assertPlanCapacity(auth.clinicId, "professionals")
 
     const existingMember = await memberRepository.findActiveByEmailAndClinic(
       data.email,

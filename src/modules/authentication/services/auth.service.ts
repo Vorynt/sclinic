@@ -26,6 +26,7 @@ import type {
   AuthUser,
 } from "@/modules/authentication/types/auth";
 import { assertUserCanAuthenticate } from "@/modules/authentication/utils/assert-user";
+import { billingService } from "@/modules/billing/services/billing.service";
 import type { AuthRequestContext } from "@/shared/auth";
 import { AppError } from "@/shared/errors/app-error";
 import { ErrorCode } from "@/shared/errors/codes";
@@ -139,23 +140,48 @@ async function buildAuthContextFromParts(
     session.activeClinicId,
   );
 
-  const ensured = await ensureActiveClinic(session, membership);
-  session = ensured.session;
-  membership = ensured.membership;
-
   // Stale activeClinicId (removed membership) → clear and re-resolve without it
   if (session.activeClinicId && !membership) {
-    const fallback = await resolveMembership(user.id, null);
     const updated = await sessionRepository.updateActiveClinicId(
       session.id,
-      fallback.membership?.clinicId ?? null,
+      null,
     );
-    session = updated ?? {
-      ...session,
-      activeClinicId: fallback.membership?.clinicId ?? null,
-    };
+    session = updated ?? { ...session, activeClinicId: null };
+    const fallback = await resolveMembership(user.id, null);
     membership = fallback.membership;
     needsClinicSelection = fallback.needsClinicSelection;
+  }
+
+  let subscriptionBlockedClinic: AuthContext["subscriptionBlockedClinic"] =
+    null;
+
+  // Owner SaaS entitlement (ADR-003): block before persisting activeClinicId
+  if (membership) {
+    const entitlement = await billingService.getClinicEntitlement(
+      membership.clinicId,
+    );
+    if (entitlement && !entitlement.entitled) {
+      subscriptionBlockedClinic = {
+        clinicId: membership.clinicId,
+        clinicName: entitlement.name,
+        isOwner: membership.roleKey === "owner",
+      };
+      if (session.activeClinicId) {
+        const updated = await sessionRepository.updateActiveClinicId(
+          session.id,
+          null,
+        );
+        session = updated ?? { ...session, activeClinicId: null };
+      }
+      membership = null;
+      needsClinicSelection = true;
+    }
+  }
+
+  if (membership) {
+    const ensured = await ensureActiveClinic(session, membership);
+    session = ensured.session;
+    membership = ensured.membership;
   }
 
   const permissions = await resolvePermissions(membership);
@@ -163,6 +189,7 @@ async function buildAuthContextFromParts(
   const hasSuspendedMembershipOnly =
     !membership &&
     !needsClinicSelection &&
+    !subscriptionBlockedClinic &&
     (await membershipRepository.hasSuspendedByUser(user.id));
 
   return {
@@ -172,6 +199,7 @@ async function buildAuthContextFromParts(
     permissions,
     hasSuspendedMembershipOnly,
     needsClinicSelection: !membership && needsClinicSelection,
+    subscriptionBlockedClinic,
   };
 }
 
@@ -382,6 +410,8 @@ export const authService = {
       throw new AppError(ErrorCode.MEMBERSHIP_INACTIVE);
     }
 
+    await billingService.assertClinicEntitled(data.clinicId);
+
     const updatedSession = await sessionRepository.updateActiveClinicId(
       authContext.session.id,
       data.clinicId,
@@ -400,6 +430,7 @@ export const authService = {
       permissions,
       hasSuspendedMembershipOnly: false,
       needsClinicSelection: false,
+      subscriptionBlockedClinic: null,
     };
   },
 
@@ -412,10 +443,12 @@ export const authService = {
     clinicId: string;
     sessionId: string;
   }): Promise<AuthMembership> {
-    const existing = await membershipRepository.listActiveByUser(input.userId);
-    if (existing.length > 0) {
+    const existingOwners = await membershipRepository.listOwnerByUser(
+      input.userId,
+    );
+    if (existingOwners.length > 0) {
       throw new AppError(ErrorCode.CONFLICT, {
-        message: "Você já possui uma clínica vinculada.",
+        message: "Você já possui uma clínica própria.",
       });
     }
 

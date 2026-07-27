@@ -21,6 +21,8 @@ Ver também:
 
 - [ADR-001 — módulo de auditoria](../docs/adr/001-clinic-audit-module.md)
 - [ADR-002 — faturamento clínico](../docs/adr/002-clinical-billing.md)
+- [ADR-003 — assinatura SaaS por usuário](../docs/adr/003-user-saas-subscription.md)
+- [ADR-004 — downgrade e modo over_limit](../docs/adr/004-plan-downgrade-over-limit.md)
 
 ## Fluxo de camadas
 

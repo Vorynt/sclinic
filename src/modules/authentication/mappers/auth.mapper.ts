@@ -81,6 +81,7 @@ export function toAuthMembership(row: {
   isDefault: boolean
   status: unknown
   clinicName?: string | null
+  clinicSubscriptionStatus?: string | null
 }): AuthMembership {
   return {
     id: row.id,
@@ -92,6 +93,13 @@ export function toAuthMembership(row: {
     status: toMembershipStatus(row.status),
     ...(row.clinicName != null && row.clinicName !== ""
       ? { clinicName: row.clinicName }
+      : {}),
+    ...(row.clinicSubscriptionStatus != null &&
+    row.clinicSubscriptionStatus !== ""
+      ? {
+          clinicSubscriptionStatus:
+            row.clinicSubscriptionStatus as AuthMembership["clinicSubscriptionStatus"],
+        }
       : {}),
   }
 }

@@ -1,62 +1,29 @@
 /**
- * Seeds stub SaaS plans (Stripe price IDs filled later).
+ * Seeds stub SaaS plans (Stripe IDs filled by `npm run stripe:sync-plans`).
  *
  * Usage:
  *   npm run db:seed:plans
+ *
+ * Does not overwrite `stripePriceId` / `priceCents` when the plan is already
+ * linked to Stripe — Stripe is the source of truth for amounts after sync.
  */
-import { config } from "dotenv";
-import { and, eq, isNull } from "drizzle-orm";
+import { config } from "dotenv"
+import { and, eq, isNull } from "drizzle-orm"
 
-config({ path: ".env.local" });
-config({ path: ".env" });
+config({ path: ".env.local" })
+config({ path: ".env" })
 
-import { db } from "@/db";
-import { plans } from "@/db/schema";
-
-const STUB_PLANS = [
-  {
-    name: "Essencial",
-    description: "Para clínicas começando a digitalizar o atendimento.",
-    priceCents: 9900,
-    currency: "BRL",
-    billingCycle: "monthly" as const,
-    maxUsers: 3,
-    maxProfessionals: 2,
-    // PG integer max ~2GB — store bytes within int4 until schema migrates to bigint
-    maxStorageBytes: 1 * 1024 * 1024 * 1024,
-    stripePriceId: null,
-    isActive: true,
-  },
-  {
-    name: "Profissional",
-    description: "Operação completa com mais usuários e profissionais.",
-    priceCents: 19900,
-    currency: "BRL",
-    billingCycle: "monthly" as const,
-    maxUsers: 10,
-    maxProfessionals: 8,
-    maxStorageBytes: 2 * 1024 * 1024 * 1024 - 1,
-    stripePriceId: null,
-    isActive: true,
-  },
-  {
-    name: "Enterprise",
-    description: "Limites ampliados para redes e alto volume.",
-    priceCents: 39900,
-    currency: "BRL",
-    billingCycle: "monthly" as const,
-    maxUsers: 50,
-    maxProfessionals: 40,
-    maxStorageBytes: 2 * 1024 * 1024 * 1024 - 1,
-    stripePriceId: null,
-    isActive: true,
-  },
-];
+import { db } from "@/db"
+import { plans } from "@/db/schema"
+import { PLAN_CATALOG } from "@/modules/billing/constants/catalog"
 
 async function seed() {
-  for (const plan of STUB_PLANS) {
+  for (const plan of PLAN_CATALOG) {
     const [existing] = await db
-      .select({ id: plans.id })
+      .select({
+        id: plans.id,
+        stripePriceId: plans.stripePriceId,
+      })
       .from(plans)
       .where(
         and(
@@ -65,31 +32,47 @@ async function seed() {
           isNull(plans.deletedAt),
         ),
       )
-      .limit(1);
+      .limit(1)
 
     if (existing) {
+      const linkedToStripe = Boolean(existing.stripePriceId)
       await db
         .update(plans)
         .set({
           description: plan.description,
-          priceCents: plan.priceCents,
-          currency: plan.currency,
+          ...(linkedToStripe
+            ? {}
+            : {
+                priceCents: plan.priceCents,
+                currency: plan.currency,
+              }),
           maxUsers: plan.maxUsers,
           maxProfessionals: plan.maxProfessionals,
           maxStorageBytes: plan.maxStorageBytes,
-          isActive: plan.isActive,
+          isActive: true,
         })
-        .where(eq(plans.id, existing.id));
-      continue;
+        .where(eq(plans.id, existing.id))
+      continue
     }
 
-    await db.insert(plans).values(plan);
+    await db.insert(plans).values({
+      name: plan.name,
+      description: plan.description,
+      priceCents: plan.priceCents,
+      currency: plan.currency,
+      billingCycle: plan.billingCycle,
+      maxUsers: plan.maxUsers,
+      maxProfessionals: plan.maxProfessionals,
+      maxStorageBytes: plan.maxStorageBytes,
+      stripePriceId: null,
+      isActive: true,
+    })
   }
 
-  console.log("Plans seed completed");
+  console.log("Plans seed completed")
 }
 
 seed().catch((error) => {
-  console.error(error);
-  process.exit(1);
-});
+  console.error(error)
+  process.exit(1)
+})

@@ -8,6 +8,16 @@ export type MembershipStatus =
   | "suspended"
   | "removed"
 
+/** Mirrors clinics.subscription_status for switcher entitlement checks. */
+export type ClinicSubscriptionStatus =
+  | "none"
+  | "trialing"
+  | "active"
+  | "past_due"
+  | "canceled"
+  | "unpaid"
+  | "incomplete"
+
 export type AuthUser = {
   id: string
   name: string
@@ -37,6 +47,8 @@ export type AuthMembership = {
   status: MembershipStatus
   /** Present when loaded for the clinic switcher. */
   clinicName?: string
+  /** Present when loaded for the clinic switcher (SaaS entitlement mirror). */
+  clinicSubscriptionStatus?: ClinicSubscriptionStatus
 }
 
 /**
@@ -57,6 +69,15 @@ export type AuthContext = {
    * Used to send them to the clinic selector before the dashboard.
    */
   needsClinicSelection: boolean
+  /**
+   * Active clinic was blocked because the owner's SaaS subscription is not living.
+   * Cleared from the session; user is sent to select-clinic with a notice.
+   */
+  subscriptionBlockedClinic: {
+    clinicId: string
+    clinicName: string
+    isOwner: boolean
+  } | null
 }
 
 export type AuthRequestContext = {

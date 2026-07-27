@@ -23,6 +23,10 @@ const clientMessages: Record<string, string> = {
     "Complete o cadastro da clínica para continuar.",
   [ErrorCode.MEMBERSHIP_NOT_FOUND]: "Você não pertence a esta clínica.",
   [ErrorCode.MEMBERSHIP_INACTIVE]: "Seu acesso a esta clínica está inativo.",
+  [ErrorCode.SUBSCRIPTION_INACTIVE]:
+    "A assinatura desta clínica está suspensa.",
+  [ErrorCode.PLAN_LIMIT_EXCEEDED]:
+    "Limite do plano atingido. Atualize o plano ou reduza o uso para continuar.",
   [ErrorCode.INVALID_TOKEN]: "Token inválido.",
   [ErrorCode.TOKEN_EXPIRED]: "Token expirado. Solicite um novo.",
   [ErrorCode.PASSWORD_CHANGE_REQUIRED]:

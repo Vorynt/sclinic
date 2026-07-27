@@ -6,6 +6,7 @@ import { SelectClinicBlock } from "@/modules/authentication/components/SelectCli
 import { authService } from "@/modules/authentication/services/auth.service"
 import { getPostAuthRedirect } from "@/modules/authentication/utils/post-auth-redirect"
 import { getAuthRequestContext } from "@/modules/authentication/utils/request-context"
+import { isClinicEntitledStatus } from "@/modules/billing/constants/subscription"
 
 export const metadata: Metadata = {
   title: "Selecionar clínica · sclinic",
@@ -38,7 +39,9 @@ export default async function SelectClinicPage({
     redirect(getPostAuthRedirect(session))
   }
 
-  if (!session.needsClinicSelection) {
+  const blocked = session.subscriptionBlockedClinic
+
+  if (!session.needsClinicSelection && !blocked) {
     redirect(getPostAuthRedirect(session))
   }
 
@@ -46,12 +49,39 @@ export default async function SelectClinicPage({
   const memberships = await authService.listMemberships(ctx)
   const clinics = memberships
     .filter((m) => m.status === "active" || m.status === "suspended")
-    .map((m) => ({
-      clinicId: m.clinicId,
-      name: m.clinicName ?? "Clínica",
-      roleName: m.roleName,
-      status: m.status as "active" | "suspended",
-    }))
+    .map((m) => {
+      const subscriptionStatus = m.clinicSubscriptionStatus ?? "none"
+      const subscriptionBlocked =
+        m.status === "active" && !isClinicEntitledStatus(subscriptionStatus)
 
-  return <SelectClinicBlock clinics={clinics} next={next} />
+      return {
+        clinicId: m.clinicId,
+        name: m.clinicName ?? "Clínica",
+        roleName: m.roleName,
+        status: (m.status === "suspended" || subscriptionBlocked
+          ? "suspended"
+          : "active") as "active" | "suspended",
+        suspendReason: subscriptionBlocked
+          ? ("subscription" as const)
+          : m.status === "suspended"
+            ? ("membership" as const)
+            : undefined,
+      }
+    })
+
+  return (
+    <SelectClinicBlock
+      clinics={clinics}
+      next={next}
+      blockedClinic={
+        blocked
+          ? {
+              clinicId: blocked.clinicId,
+              clinicName: blocked.clinicName,
+              isOwner: blocked.isOwner,
+            }
+          : null
+      }
+    />
+  )
 }

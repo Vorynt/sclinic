@@ -35,7 +35,7 @@ export default async function AttendanceRootLayout({
     if (session.hasSuspendedMembershipOnly) {
       redirect(routes.membershipInactive)
     }
-    if (session.needsClinicSelection) {
+    if (session.subscriptionBlockedClinic || session.needsClinicSelection) {
       redirect(routes.selectClinic)
     }
     redirect(routes.onboardingPlan)

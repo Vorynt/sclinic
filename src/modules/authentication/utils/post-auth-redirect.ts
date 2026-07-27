@@ -46,7 +46,7 @@ export function getPostAuthRedirect(
     if (auth.hasSuspendedMembershipOnly) {
       return routes.membershipInactive
     }
-    if (auth.needsClinicSelection) {
+    if (auth.subscriptionBlockedClinic || auth.needsClinicSelection) {
       return withNext(routes.selectClinic, safeNext)
     }
     return routes.onboardingPlan

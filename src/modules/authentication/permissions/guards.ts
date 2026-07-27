@@ -2,6 +2,7 @@ import type { PermissionKey } from "@/config/permissions"
 import { hasAllPermissions, hasAnyPermission } from "@/core/permissions"
 import { authService } from "@/modules/authentication/services/auth.service"
 import type { AuthContext } from "@/modules/authentication/types/auth"
+import { billingService } from "@/modules/billing/services/billing.service"
 import type { AuthRequestContext } from "@/shared/auth"
 import { AppError } from "@/shared/errors/app-error"
 import { ErrorCode } from "@/shared/errors/codes"
@@ -36,7 +37,8 @@ export async function requirePasswordReady(
 }
 
 /**
- * Requires auth + an active clinic membership on the session.
+ * Requires auth + an active clinic membership on the session
+ * with a living SaaS entitlement on that clinic (ADR-003).
  */
 export async function requireClinic(
   ctx: AuthRequestContext,
@@ -46,6 +48,10 @@ export async function requireClinic(
   if (!authContext.membership || !authContext.session.activeClinicId) {
     throw new AppError(ErrorCode.CLINIC_REQUIRED)
   }
+
+  await billingService.assertClinicEntitled(
+    authContext.session.activeClinicId,
+  )
 
   return {
     ...authContext,

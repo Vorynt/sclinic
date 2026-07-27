@@ -2,6 +2,7 @@
 
 import {
   CalendarBlankIcon,
+  CreditCardIcon,
   UsersIcon,
   UsersThreeIcon,
 } from "@phosphor-icons/react"
@@ -64,6 +65,11 @@ export function OwnerHome() {
       <HomeSection title="Ações rápidas">
         <HomeQuickActions
           actions={[
+            {
+              label: "Assinatura",
+              href: routes.accountSubscription,
+              icon: CreditCardIcon,
+            },
             {
               label: "Equipe",
               href: routes.users,
