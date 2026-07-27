@@ -7,6 +7,7 @@ import {
   professionalDisplayNameSql,
   professionals,
   type ClinicalNoteContent,
+  type ClinicalNoteFormValues,
 } from "@/db/schema"
 import { withDbError } from "@/db/with-db-error"
 import { toClinicalNote } from "@/modules/medical-records/mappers/clinical-note.mapper"
@@ -21,6 +22,8 @@ const clinicalNoteSelect = {
   professionalName: professionalDisplayNameSql,
   content: clinicalNotes.content,
   plainText: clinicalNotes.plainText,
+  templateId: clinicalNotes.templateId,
+  formValues: clinicalNotes.formValues,
   appointmentStartsAt: appointments.startsAt,
   createdAt: clinicalNotes.createdAt,
   updatedAt: clinicalNotes.updatedAt,
@@ -35,6 +38,13 @@ function clinicalNoteJoin() {
       professionals,
       eq(professionals.id, clinicalNotes.professionalId),
     )
+}
+
+export type ClinicalNoteWritePayload = {
+  content: ClinicalNoteContent
+  plainText: string
+  templateId: string | null
+  formValues: ClinicalNoteFormValues | null
 }
 
 export const clinicalNoteRepository = {
@@ -86,9 +96,8 @@ export const clinicalNoteRepository = {
     patientId: string
     appointmentId: string
     professionalId: string | null
-    content: ClinicalNoteContent
-    plainText: string
     createdBy: string
+    payload: ClinicalNoteWritePayload
   }): Promise<ClinicalNote> {
     return withDbError(async () => {
       const [row] = await db
@@ -98,8 +107,10 @@ export const clinicalNoteRepository = {
           patientId: params.patientId,
           appointmentId: params.appointmentId,
           professionalId: params.professionalId,
-          content: params.content,
-          plainText: params.plainText,
+          content: params.payload.content,
+          plainText: params.payload.plainText,
+          templateId: params.payload.templateId,
+          formValues: params.payload.formValues,
           createdBy: params.createdBy,
           updatedBy: params.createdBy,
         })
@@ -124,16 +135,17 @@ export const clinicalNoteRepository = {
     id: string
     clinicId: string
     professionalId: string | null
-    content: ClinicalNoteContent
-    plainText: string
     updatedBy: string
+    payload: ClinicalNoteWritePayload
   }): Promise<ClinicalNote> {
     return withDbError(async () => {
       const [row] = await db
         .update(clinicalNotes)
         .set({
-          content: params.content,
-          plainText: params.plainText,
+          content: params.payload.content,
+          plainText: params.payload.plainText,
+          templateId: params.payload.templateId,
+          formValues: params.payload.formValues,
           professionalId: params.professionalId,
           updatedBy: params.updatedBy,
         })

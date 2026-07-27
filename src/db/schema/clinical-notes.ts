@@ -22,12 +22,19 @@ import { patients } from "./patients"
 import { professionals } from "./professionals"
 import { sclinicAppRole } from "./rls"
 
-/** TipTap document JSON stored as jsonb. */
+/** TipTap document JSON stored as jsonb (derived when form template is used). */
 export type ClinicalNoteContent = Record<string, unknown>
+
+/** Structured form answers for template-based notes. */
+export type ClinicalNoteFormValues = Record<string, unknown>
 
 /**
  * One clinical note per appointment (medical record).
  * Distinct from administrative `patients.notes` / `appointments.notes`.
+ *
+ * Template notes: `templateId` + `formValues` are source of truth;
+ * `content` / `plainText` are compiled on save.
+ * Legacy TipTap-only notes: `templateId`/`formValues` null.
  */
 export const clinicalNotes = pgTable(
   "clinical_notes",
@@ -48,6 +55,10 @@ export const clinicalNotes = pgTable(
     content: jsonb("content").$type<ClinicalNoteContent>().notNull(),
     /** Derived plain text for preview and search. */
     plainText: text("plain_text").notNull(),
+    /** Clinical form template id when note was authored as structured form. */
+    templateId: text("template_id"),
+    /** Structured field values for the template (source of truth). */
+    formValues: jsonb("form_values").$type<ClinicalNoteFormValues>(),
     ...timestamps,
     ...softDelete,
     ...auditBy,
