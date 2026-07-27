@@ -164,6 +164,7 @@ describe("getPostAuthRedirect", () => {
     permissions: [],
     hasSuspendedMembershipOnly: false,
     needsClinicSelection: false,
+    subscriptionBlockedClinic: null,
   }
 
   it("sends unverified users to verify-email", () => {
@@ -244,6 +245,21 @@ describe("getPostAuthRedirect", () => {
       getPostAuthRedirect({
         ...baseAuth,
         needsClinicSelection: true,
+      }),
+      routes.selectClinic,
+    )
+  })
+
+  it("sends users blocked by clinic subscription to select-clinic", () => {
+    assert.equal(
+      getPostAuthRedirect({
+        ...baseAuth,
+        needsClinicSelection: true,
+        subscriptionBlockedClinic: {
+          clinicId: "c1",
+          clinicName: "Clínica Demo",
+          isOwner: true,
+        },
       }),
       routes.selectClinic,
     )

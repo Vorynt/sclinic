@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 
 import { LoadingScreen } from "@/components/status/LoadingScreen";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { PlanOverLimitBanner } from "@/modules/billing/components/PlanOverLimitBanner";
 import { AppHeader } from "@/modules/dashboard/components/AppHeader";
 import { AppSidebar } from "@/modules/dashboard/components/AppSidebar";
 import { useAuthUiStore } from "@/stores/auth.store";
@@ -20,8 +21,11 @@ export function AppShell({ children }: AppShellProps) {
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset>
+        <PlanOverLimitBanner />
         <AppHeader />
-        <div className="flex min-w-0 flex-1 flex-col gap-4 p-4 md:p-6">{children}</div>
+        <div className="flex min-w-0 flex-1 flex-col gap-4 p-4 md:p-6">
+          {children}
+        </div>
       </SidebarInset>
 
       {isSwitchingClinic ? (

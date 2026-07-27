@@ -17,9 +17,9 @@ export async function createClinicAction(
       await getAuthRequestContext(),
     )
 
-    if (authContext.membership) {
+    if (authContext.membership?.roleKey === "owner") {
       throw new AppError(ErrorCode.CONFLICT, {
-        message: "Você já possui uma clínica vinculada.",
+        message: "Você já possui uma clínica própria.",
       })
     }
 

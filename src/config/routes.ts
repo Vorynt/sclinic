@@ -35,6 +35,7 @@ export const routes = {
   accountOverview: "/account/overview",
   accountProfile: "/account/profile",
   accountSecurity: "/account/security",
+  accountSubscription: "/account/subscription",
   settings: "/settings",
   settingsGeneral: "/settings/general",
   settingsHours: "/settings/hours",

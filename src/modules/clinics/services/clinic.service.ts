@@ -36,7 +36,7 @@ function clinicSnapshot(clinic: Clinic) {
 
 export const clinicService = {
   /**
-   * Owner onboarding: clinic + owner membership + incomplete subscription.
+   * Owner onboarding: clinic + owner membership + user SaaS subscription (ADR-003).
    */
   async createForOwner(
     data: CreateClinicDto,
@@ -47,10 +47,21 @@ export const clinicService = {
     try {
       await billingService.getActivePlan(planId)
 
+      const subscription = await billingService.attachPlanToUser(
+        ctx.userId,
+        planId,
+      )
+
       const clinic = await clinicRepository.create({
         ...clinicData,
         createdBy: ctx.userId,
-        subscriptionStatus: "incomplete",
+        subscriptionStatus:
+          subscription.status === "trialing" ||
+          subscription.status === "active" ||
+          subscription.status === "past_due" ||
+          subscription.status === "incomplete"
+            ? subscription.status
+            : "incomplete",
       })
 
       await authService.createOwnerMembership({
@@ -58,8 +69,6 @@ export const clinicService = {
         clinicId: clinic.id,
         sessionId: ctx.sessionId,
       })
-
-      await billingService.attachPlanToClinic(clinic.id, planId)
 
       recordAudit({
         clinicId: clinic.id,

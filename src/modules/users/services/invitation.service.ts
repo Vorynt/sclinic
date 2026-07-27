@@ -17,6 +17,7 @@ import {
 } from "@/modules/authentication/permissions/guards"
 import { authService } from "@/modules/authentication/services/auth.service"
 import type { AuthContext } from "@/modules/authentication/types/auth"
+import { billingService } from "@/modules/billing/services/billing.service"
 import { clinicRepository } from "@/modules/clinics/repositories/clinic.repository"
 import { clinicService } from "@/modules/clinics/services/clinic.service"
 import { getRoleLabel, USERS_CONSTANTS } from "@/modules/users/constants/users"
@@ -155,6 +156,7 @@ export const invitationService = {
     const auth = await requireTeamAccess(ctx)
     const actor = auditActorFromAuth(auth)
     assertAssignableRoleKey(data.roleKey)
+    await billingService.assertPlanCapacity(auth.clinicId, "users")
 
     try {
       const existingMember = await memberRepository.findActiveByEmailAndClinic(

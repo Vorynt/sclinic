@@ -31,7 +31,7 @@ export default async function DashboardLayout({
     if (session.hasSuspendedMembershipOnly) {
       redirect(routes.membershipInactive)
     }
-    if (session.needsClinicSelection) {
+    if (session.subscriptionBlockedClinic || session.needsClinicSelection) {
       redirect(routes.selectClinic)
     }
     redirect(routes.onboardingPlan)

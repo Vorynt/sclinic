@@ -14,6 +14,7 @@
     "db:seed:rbac": "tsx src/db/seed/rbac.ts",
     "db:seed:plans": "tsx src/db/seed/plans.ts",
     "db:seed:demo": "tsx src/db/seed/demo.ts",
+    "stripe:sync-plans": "tsx src/db/seed/sync-stripe-plans.ts",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "test": "node --import tsx --test src/modules/authentication/tests/*.test.ts src/modules/clinics/tests/*.test.ts src/modules/dashboard/tests/*.test.ts src/modules/users/tests/*.test.ts src/modules/professionals/tests/*.test.ts src/modules/appointments/tests/*.test.ts src/modules/patients/tests/*.test.ts src/modules/medical-records/tests/*.test.ts src/modules/audit/tests/*.test.ts src/modules/billing/tests/*.test.ts src/shared/validators/list-query.test.ts"
@@ -47,6 +48,7 @@
     "resend": "^6.18.0",
     "shadcn": "^4.13.1",
     "sonner": "^2.0.7",
+    "stripe": "^22.3.2",
     "tailwind-merge": "^3.6.0",
     "tw-animate-css": "^1.4.0",
     "use-mask-input": "^3.11.0",

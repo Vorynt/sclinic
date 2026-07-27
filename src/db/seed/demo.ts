@@ -52,6 +52,7 @@ import {
   vitalSigns,
 } from "@/db/schema"
 import { AUDIT_ACTIONS, AUDIT_ENTITY_TYPES } from "@/modules/audit/constants/audit"
+import { PLAN_CATALOG } from "@/modules/billing/constants/catalog"
 import { buildOnboardingHoursDraft } from "@/modules/clinics/constants/default-hours"
 import { toDbTime } from "@/modules/clinics/mappers/clinic-hours.mapper"
 import {
@@ -320,44 +321,18 @@ const ROLE_PERMISSION_MATRIX: Record<string, readonly string[]> = {
   ],
 }
 
-const STUB_PLANS = [
-  {
-    name: "Essencial",
-    description: "Para clínicas começando a digitalizar o atendimento.",
-    priceCents: 9900,
-    currency: "BRL",
-    billingCycle: "monthly" as const,
-    maxUsers: 3,
-    maxProfessionals: 2,
-    maxStorageBytes: 1 * 1024 * 1024 * 1024,
-    stripePriceId: null,
-    isActive: true,
-  },
-  {
-    name: "Profissional",
-    description: "Operação completa com mais usuários e profissionais.",
-    priceCents: 19900,
-    currency: "BRL",
-    billingCycle: "monthly" as const,
-    maxUsers: 10,
-    maxProfessionals: 8,
-    maxStorageBytes: 2 * 1024 * 1024 * 1024 - 1,
-    stripePriceId: null,
-    isActive: true,
-  },
-  {
-    name: "Enterprise",
-    description: "Limites ampliados para redes e alto volume.",
-    priceCents: 39900,
-    currency: "BRL",
-    billingCycle: "monthly" as const,
-    maxUsers: 50,
-    maxProfessionals: 40,
-    maxStorageBytes: 2 * 1024 * 1024 * 1024 - 1,
-    stripePriceId: null,
-    isActive: true,
-  },
-]
+const STUB_PLANS = PLAN_CATALOG.map((plan) => ({
+  name: plan.name,
+  description: plan.description,
+  priceCents: plan.priceCents,
+  currency: plan.currency,
+  billingCycle: plan.billingCycle,
+  maxUsers: plan.maxUsers,
+  maxProfessionals: plan.maxProfessionals,
+  maxStorageBytes: plan.maxStorageBytes,
+  stripePriceId: null as string | null,
+  isActive: true,
+}))
 
 const PROFESSIONAL_SEEDS = [
   {
@@ -812,6 +787,10 @@ async function seedPlans() {
     throw new Error("Failed to seed Profissional plan")
   }
 
+  console.log(
+    "  Tip: run `npm run stripe:sync-plans` to attach Stripe price IDs after demo wipe.",
+  )
+
   return professionalPlan
 }
 
@@ -935,7 +914,7 @@ async function seedClinic(ownerId: string, planId: string) {
   const periodEnd = addDays(now, 30)
 
   await db.insert(subscriptions).values({
-    clinicId: clinic.id,
+    userId: ownerId,
     planId,
     gateway: "stripe",
     status: "active",

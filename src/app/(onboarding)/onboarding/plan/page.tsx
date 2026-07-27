@@ -2,11 +2,11 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
+import { Spinner } from "@/components/ui/spinner";
 import { routes } from "@/config/routes";
 import { authService } from "@/modules/authentication/services/auth.service";
 import { getAuthRequestContext } from "@/modules/authentication/utils/request-context";
 import { PlanPicker } from "@/modules/billing/components/PlanPicker";
-import { Spinner } from "@/components/ui/spinner";
 
 export const metadata: Metadata = {
   title: "Escolher plano · sclinic",
@@ -20,6 +20,9 @@ export default async function OnboardingPlanPage({
   searchParams,
 }: OnboardingPlanPageProps) {
   const session = await authService.getSession(await getAuthRequestContext());
+  const { intent } = await searchParams;
+  const bypassMembershipGate =
+    intent === "create-clinic" || intent === "reactivate";
 
   if (!session) {
     redirect(routes.login);
@@ -29,19 +32,18 @@ export default async function OnboardingPlanPage({
     redirect(routes.verifyEmail);
   }
 
-  if (session.membership) {
+  if (session.membership && !bypassMembershipGate) {
     redirect(routes.home);
   }
 
-  const { intent } = await searchParams;
-  if (
-    session.hasSuspendedMembershipOnly &&
-    intent !== "create-clinic"
-  ) {
+  if (session.hasSuspendedMembershipOnly && !bypassMembershipGate) {
     redirect(routes.membershipInactive);
   }
 
-  if (session.needsClinicSelection && intent !== "create-clinic") {
+  if (
+    (session.needsClinicSelection || session.subscriptionBlockedClinic) &&
+    !bypassMembershipGate
+  ) {
     redirect(routes.selectClinic);
   }
 

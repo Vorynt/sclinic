@@ -36,4 +36,80 @@ export const planRepository = {
       return row ? toPlan(row) : null
     })
   },
+
+  async findByStripePriceId(stripePriceId: string): Promise<Plan | null> {
+    return withDbError(async () => {
+      const [row] = await db
+        .select()
+        .from(plans)
+        .where(
+          and(
+            eq(plans.stripePriceId, stripePriceId),
+            isNull(plans.deletedAt),
+          ),
+        )
+        .limit(1)
+
+      return row ? toPlan(row) : null
+    })
+  },
+
+  async findByNameAndCycle(
+    name: string,
+    billingCycle: Plan["billingCycle"],
+  ): Promise<Plan | null> {
+    return withDbError(async () => {
+      const [row] = await db
+        .select()
+        .from(plans)
+        .where(
+          and(
+            eq(plans.name, name),
+            eq(plans.billingCycle, billingCycle),
+            isNull(plans.deletedAt),
+          ),
+        )
+        .limit(1)
+
+      return row ? toPlan(row) : null
+    })
+  },
+
+  async syncFromStripePrice(input: {
+    planName: string
+    billingCycle: Plan["billingCycle"]
+    stripePriceId: string
+    priceCents: number
+    currency: string
+    isActive: boolean
+  }): Promise<Plan | null> {
+    return withDbError(async () => {
+      const [existing] = await db
+        .select()
+        .from(plans)
+        .where(
+          and(
+            eq(plans.name, input.planName),
+            eq(plans.billingCycle, input.billingCycle),
+            isNull(plans.deletedAt),
+          ),
+        )
+        .limit(1)
+
+      if (!existing) return null
+
+      const [row] = await db
+        .update(plans)
+        .set({
+          stripePriceId: input.stripePriceId,
+          priceCents: input.priceCents,
+          currency: input.currency.toUpperCase(),
+          isActive: input.isActive,
+        })
+        .where(eq(plans.id, existing.id))
+        .returning()
+
+      return row ? toPlan(row) : null
+    })
+  },
 }

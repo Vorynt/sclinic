@@ -4,6 +4,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Spinner } from "@/components/ui/spinner"
+import { CreateOwnedClinicCta } from "@/modules/users/components/CreateOwnedClinicCta"
+import { USERS_CONSTANTS } from "@/modules/users/constants/users"
 import { useAccountOverview } from "@/modules/users/hooks/use-account"
 import type { AccountMembershipSummary } from "@/modules/users/types/account"
 import { formatDate } from "@/utils/date"
@@ -30,6 +32,16 @@ function membershipStatusLabel(status: AccountMembershipSummary["status"]) {
   }
 }
 
+function hasActiveOwnedClinic(
+  memberships: AccountMembershipSummary[],
+): boolean {
+  return memberships.some(
+    (membership) =>
+      membership.roleKey === USERS_CONSTANTS.OWNER_ROLE_KEY &&
+      membership.status === "active",
+  )
+}
+
 export function AccountOverviewPanel() {
   const { data, isPending, isError } = useAccountOverview()
 
@@ -49,6 +61,8 @@ export function AccountOverviewPanel() {
       </p>
     )
   }
+
+  const showCreateClinicCta = !hasActiveOwnedClinic(data.memberships)
 
   return (
     <div className="flex flex-col gap-8">
@@ -140,6 +154,12 @@ export function AccountOverviewPanel() {
             ))}
           </ul>
         )}
+
+        {showCreateClinicCta ? (
+          <CreateOwnedClinicCta
+            emphasis={data.memberships.length === 0 ? "primary" : "default"}
+          />
+        ) : null}
       </div>
     </div>
   )
