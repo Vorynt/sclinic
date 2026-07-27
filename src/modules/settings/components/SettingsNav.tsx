@@ -5,15 +5,20 @@ import { usePathname } from "next/navigation"
 
 import { cn } from "@/lib/utils"
 import { SETTINGS_NAV_ITEMS } from "@/modules/settings/constants/nav"
+import { USERS_CONSTANTS } from "@/modules/users/constants/users"
 import { useAuth } from "@/providers/AuthProvider"
 
 export function SettingsNav() {
   const pathname = usePathname()
-  const { can } = useAuth()
+  const { auth, can } = useAuth()
+  const isOwner =
+    auth?.membership?.roleKey === USERS_CONSTANTS.OWNER_ROLE_KEY
 
-  const items = SETTINGS_NAV_ITEMS.filter(
-    (item) => !item.permission || can(item.permission),
-  )
+  const items = SETTINGS_NAV_ITEMS.filter((item) => {
+    if (item.requiresOwner && !isOwner) return false
+    if (item.permission && !can(item.permission)) return false
+    return true
+  })
 
   return (
     <nav

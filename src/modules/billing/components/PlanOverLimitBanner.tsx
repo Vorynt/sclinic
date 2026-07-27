@@ -31,8 +31,10 @@ function overLimitSummary(over: Record<PlanQuotaDimension, boolean>): string {
 }
 
 function reduceUsageHref(over: Record<PlanQuotaDimension, boolean>): string {
-  if (over.users) return routes.users;
-  if (over.professionals) return routes.professionals;
+  // Owner usage page aggregates all dimensions; fall back for safety.
+  if (over.users || over.professionals || over.storage) {
+    return routes.settingsUsage;
+  }
   return routes.accountSubscription;
 }
 

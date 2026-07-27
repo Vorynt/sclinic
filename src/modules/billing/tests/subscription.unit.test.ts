@@ -15,6 +15,7 @@ import {
 import { toSubscription } from "@/modules/billing/mappers/billing.mapper"
 import { createCheckoutSessionSchema } from "@/modules/billing/schemas/checkout.schema"
 import { buildClinicPlanQuota } from "@/modules/billing/utils/plan-quota"
+import { formatStorageBytes } from "@/modules/billing/utils/format-storage"
 
 const VALID_UUID = "11111111-1111-4111-8111-111111111111"
 
@@ -167,5 +168,16 @@ describe("buildClinicPlanQuota", () => {
 
     assert.equal(quota.isOverLimit, false)
     assert.equal(quota.atCapacity.users, false)
+  })
+})
+
+describe("formatStorageBytes", () => {
+  it("formats bytes, KB, MB and GB", () => {
+    assert.equal(formatStorageBytes(0), "0 B")
+    assert.equal(formatStorageBytes(512), "512 B")
+    assert.equal(formatStorageBytes(1024), "1 KB")
+    assert.equal(formatStorageBytes(1536), "1,5 KB")
+    assert.equal(formatStorageBytes(1024 * 1024), "1 MB")
+    assert.equal(formatStorageBytes(1024 * 1024 * 1024), "1 GB")
   })
 })
