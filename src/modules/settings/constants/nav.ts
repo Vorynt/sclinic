@@ -10,6 +10,8 @@ export type SettingsNavItem = {
   tone?: "default" | "danger";
   /** When set, nav item is shown only if the user has this permission. */
   permission?: PermissionKey;
+  /** When true, item is shown only to the clinic owner. */
+  requiresOwner?: boolean;
 };
 
 export const SETTINGS_NAV_ITEMS: SettingsNavItem[] = [
@@ -22,6 +24,12 @@ export const SETTINGS_NAV_ITEMS: SettingsNavItem[] = [
     title: "Horários",
     href: routes.settingsHours,
     description: "Funcionamento semanal da clínica",
+  },
+  {
+    title: "Uso do plano",
+    href: routes.settingsUsage,
+    description: "Limites e consumo de recursos do plano",
+    requiresOwner: true,
   },
   {
     title: "Auditoria",

@@ -39,6 +39,7 @@ export const routes = {
   settings: "/settings",
   settingsGeneral: "/settings/general",
   settingsHours: "/settings/hours",
+  settingsUsage: "/settings/usage",
   settingsAudit: "/settings/audit",
   settingsDanger: "/settings/danger",
   /** Placeholder until the help page exists. */

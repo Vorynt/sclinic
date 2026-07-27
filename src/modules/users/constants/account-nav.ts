@@ -1,12 +1,12 @@
-import { routes } from "@/config/routes"
+import { routes } from "@/config/routes";
 
 export type AccountNavItem = {
-  title: string
-  href: string
-  description: string
+  title: string;
+  href: string;
+  description: string;
   /** When true, item is shown only if the user has a living SaaS subscription. */
-  requiresLivingSubscription?: boolean
-}
+  requiresLivingSubscription?: boolean;
+};
 
 export const ACCOUNT_NAV_ITEMS: AccountNavItem[] = [
   {
@@ -17,7 +17,7 @@ export const ACCOUNT_NAV_ITEMS: AccountNavItem[] = [
   {
     title: "Assinatura",
     href: routes.accountSubscription,
-    description: "Plano SaaS e portal de pagamento",
+    description: "Plano e portal de pagamento",
     requiresLivingSubscription: true,
   },
   {
@@ -30,4 +30,4 @@ export const ACCOUNT_NAV_ITEMS: AccountNavItem[] = [
     href: routes.accountSecurity,
     description: "Alterar senha de acesso",
   },
-]
+];

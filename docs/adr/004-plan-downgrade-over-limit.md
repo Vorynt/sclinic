@@ -71,3 +71,5 @@ UI pode desabilitar botões lendo a mesma quota; a fonte da verdade é o assert 
 - `src/modules/billing/services/billing.service.ts` — `getClinicPlanQuota` / `assertPlanCapacity`
 - `src/modules/billing/utils/plan-quota.ts`
 - `src/modules/billing/components/PlanOverLimitBanner.tsx`
+- `src/modules/billing/components/ClinicPlanUsagePanel.tsx` — página `/settings/usage` (owner)
+- `src/components/ui/usage-meter.tsx` — medidor genérico (Storybook)
