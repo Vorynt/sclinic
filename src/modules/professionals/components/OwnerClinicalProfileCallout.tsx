@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { useOwnerClinicalProfileStatusQuery } from "@/modules/professionals/hooks/use-professionals";
 import { USERS_CONSTANTS } from "@/modules/users/constants/users";
 import { useAuth } from "@/providers/AuthProvider";
+import { InfoIcon } from "@phosphor-icons/react";
 import { OwnerClinicalProfileDialog } from "./OwnerClinicalProfileDialog";
 
 export function OwnerClinicalProfileCallout() {
@@ -29,7 +30,8 @@ export function OwnerClinicalProfileCallout() {
 
   return (
     <>
-      <Alert>
+      <Alert className="bg-sidebar">
+        <InfoIcon />
         <AlertTitle>Você ainda não aparece na agenda</AlertTitle>
         <AlertDescription className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p>
