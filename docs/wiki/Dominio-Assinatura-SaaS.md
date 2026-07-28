@@ -21,6 +21,8 @@ Essencial (3u/2p), Profissional (10/8), Enterprise (50/40) — validar no seed d
 | Sem entitlement | Limpa clínica ativa → `/select-clinic` |
 | Over limit | Banner; bloqueia creates (users/professionals); **não** derruba sessão |
 
+Metering `users`: memberships com `status=active` e `deletedAt` nulo. Suspensos não ocupam vaga; soft-remove (`removed` + `deletedAt`) também libera.
+
 ## UI
 
 `/onboarding/plan`, `/account/subscription`, `/settings/usage` (owner), `PlanOverLimitBanner`.

@@ -71,6 +71,7 @@ Não atualizar por: refactor interno sem mudança observável; só tipagem; poli
 | audit | `Dominio-Auditoria.md` |
 | dashboard / settings | `Dominio-Dashboard-e-Settings.md` |
 | marketing | `Dominio-Marketing.md` |
+| help | `Dominio-Ajuda.md` |
 | decisões | `Indice-de-Decisoes.md` |
 | ops | `Ambientes-e-Operacao.md`, `Manutencao-da-Documentacao.md` |
 

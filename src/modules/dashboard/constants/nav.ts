@@ -128,7 +128,7 @@ export const NAV_CONFIG: NavConfig = {
       title: "Ajuda",
       href: routes.help,
       icon: QuestionIcon,
-      enabled: false,
+      enabled: true,
     },
   ],
 }
@@ -241,6 +241,13 @@ const PAGE_META: Record<string, PageMeta> = {
     breadcrumbs: [
       { label: "Início", href: routes.home },
       { label: "Faturamento" },
+    ],
+  },
+  [routes.help]: {
+    title: "Ajuda",
+    breadcrumbs: [
+      { label: "Início", href: routes.home },
+      { label: "Ajuda" },
     ],
   },
 }

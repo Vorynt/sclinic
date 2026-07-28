@@ -1,6 +1,10 @@
 "use client"
 
-import { CurrencyCircleDollarIcon, UsersIcon } from "@phosphor-icons/react"
+import {
+  CurrencyCircleDollarIcon,
+  QuestionIcon,
+  UsersIcon,
+} from "@phosphor-icons/react"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 
@@ -15,6 +19,7 @@ import { routes } from "@/config/routes"
 import { useBillingSummaryQuery } from "@/modules/billing/hooks/use-charges"
 import { formatCentsToBrl } from "@/modules/billing/utils/money"
 import { HomeGreeting } from "@/modules/dashboard/components/home/shared/HomeGreeting"
+import { HomePendingChargesPreview } from "@/modules/dashboard/components/home/shared/HomePendingChargesPreview"
 import { HomeQuickActions } from "@/modules/dashboard/components/home/shared/HomeQuickActions"
 import { HomeSection } from "@/modules/dashboard/components/home/shared/HomeSection"
 
@@ -73,6 +78,8 @@ export function FinancialHome() {
         )}
       </HomeSection>
 
+      <HomePendingChargesPreview />
+
       <HomeSection title="Ações rápidas">
         <HomeQuickActions
           actions={[
@@ -85,6 +92,11 @@ export function FinancialHome() {
               label: "Pacientes",
               href: routes.patients,
               icon: UsersIcon,
+            },
+            {
+              label: "Ajuda",
+              href: routes.help,
+              icon: QuestionIcon,
             },
           ]}
         />

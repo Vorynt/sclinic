@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react"
 
+import { getGreetingFirstName } from "@/modules/dashboard/utils/greeting-name"
 import { getRoleLabel } from "@/modules/users/constants/users"
 import { useAuth } from "@/providers/AuthProvider"
 
@@ -11,7 +12,7 @@ type HomeGreetingProps = {
 
 export function HomeGreeting({ subtitle }: HomeGreetingProps) {
   const { auth } = useAuth()
-  const firstName = auth?.user.name?.trim().split(/\s+/)[0] ?? "olá"
+  const firstName = getGreetingFirstName(auth?.user.name)
   const roleKey = auth?.membership?.roleKey
   const roleLabel = roleKey
     ? getRoleLabel(roleKey, auth?.membership?.roleName)

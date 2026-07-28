@@ -53,6 +53,5 @@ export const routes = {
   settingsUsage: "/settings/usage",
   settingsAudit: "/settings/audit",
   settingsDanger: "/settings/danger",
-  /** Placeholder until the help page exists. */
   help: "/help",
 } as const

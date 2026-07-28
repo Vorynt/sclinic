@@ -21,6 +21,7 @@ import {
   isSelfScheduleOnlyRole,
 } from "@/modules/appointments/constants/appointments"
 import type { CancelAppointmentDto } from "@/modules/appointments/dto/cancel-appointment.dto"
+import type { CountAppointmentsDto } from "@/modules/appointments/dto/count-appointments.dto"
 import type { CreateAppointmentDto } from "@/modules/appointments/dto/create-appointment.dto"
 import type { ListAppointmentsDto } from "@/modules/appointments/dto/list-appointments.dto"
 import type { ListPatientAppointmentsDto } from "@/modules/appointments/dto/list-patient-appointments.dto"
@@ -144,6 +145,28 @@ export const appointmentService = {
       from: filters.from,
       to: filters.to,
       professionalIds,
+    })
+  },
+
+  async countInRange(
+    filters: CountAppointmentsDto,
+    ctx: AuthRequestContext,
+  ): Promise<number> {
+    const auth = await requireAnyPermission(
+      ctx,
+      ...APPOINTMENTS_ANY_PERMISSION,
+    )
+
+    const professionalIds = isSelfScheduleOnlyRole(auth.membership.roleKey)
+      ? [await resolveOwnProfessionalId(auth)]
+      : undefined
+
+    return appointmentRepository.countInRange({
+      clinicId: auth.clinicId,
+      from: filters.from,
+      to: filters.to,
+      professionalIds,
+      excludeStatuses: filters.excludeCanceled ? ["canceled"] : undefined,
     })
   },
 

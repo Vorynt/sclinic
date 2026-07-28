@@ -1,9 +1,20 @@
 "use client";
 
+import { useState } from "react";
 import { toast } from "sonner";
 
 import { DataTablePagination } from "@/components/data-table/DataTablePagination";
 import { TableSkeleton } from "@/components/status/TableSkeleton";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
@@ -37,6 +48,7 @@ import {
   USERS_CONSTANTS,
 } from "@/modules/users/constants/users";
 import {
+  useRemoveMemberMutation,
   useRevokeInvitationMutation,
   useUpdateMemberRoleMutation,
   useUpdateMemberStatusMutation,
@@ -46,10 +58,15 @@ import {
   useInvitationsQuery,
   useMembersQuery,
 } from "@/modules/users/hooks/use-users";
+import type { ClinicMember } from "@/modules/users/types/member";
 import { isAssignableRoleKey } from "@/modules/users/utils/member-rules";
 import { useAuth } from "@/providers/AuthProvider";
 import { DEFAULT_LIST_PAGE_SIZE } from "@/shared/validators";
-import { ArrowsClockwiseIcon, ProhibitIcon } from "@phosphor-icons/react";
+import {
+  ArrowsClockwiseIcon,
+  ProhibitIcon,
+  TrashIcon,
+} from "@phosphor-icons/react";
 
 type MembersTableProps = {
   filters: ListQueryParams;
@@ -62,6 +79,9 @@ function statusBadgeVariant(status: TeamRowStatus): "secondary" | "outline" {
 
 export function MembersTable({ filters, onPageChange }: MembersTableProps) {
   const { auth } = useAuth();
+  const [memberToRemove, setMemberToRemove] = useState<ClinicMember | null>(
+    null,
+  );
   const membersQuery = useMembersQuery(filters);
   const invitationsQuery = useInvitationsQuery();
   const rolesQuery = useAssignableRolesQuery();
@@ -76,6 +96,14 @@ export function MembersTable({ filters, onPageChange }: MembersTableProps) {
       toast.success(
         member.status === "suspended" ? "Membro suspenso" : "Membro reativado",
       ),
+    onError: (error) => toast.error(error.message),
+  });
+
+  const removeMember = useRemoveMemberMutation({
+    onSuccess: () => {
+      toast.success("Membro removido da equipe");
+      setMemberToRemove(null);
+    },
     onError: (error) => toast.error(error.message),
   });
 
@@ -221,7 +249,9 @@ export function MembersTable({ filters, onPageChange }: MembersTableProps) {
                         tooltip={
                           status === "suspended" ? "Reativar" : "Suspender"
                         }
-                        disabled={updateStatus.isPending}
+                        disabled={
+                          updateStatus.isPending || removeMember.isPending
+                        }
                         onClick={() =>
                           updateStatus.mutate({
                             membershipId: member.id,
@@ -237,6 +267,18 @@ export function MembersTable({ filters, onPageChange }: MembersTableProps) {
                         <span className="sr-only">
                           {status === "suspended" ? "Reativar" : "Suspender"}
                         </span>
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="icon"
+                        tooltip="Remover da equipe"
+                        disabled={
+                          updateStatus.isPending || removeMember.isPending
+                        }
+                        onClick={() => setMemberToRemove(member)}>
+                        <TrashIcon />
+                        <span className="sr-only">Remover da equipe</span>
                       </Button>
                     </ButtonGroup>
                   ) : null}
@@ -255,6 +297,39 @@ export function MembersTable({ filters, onPageChange }: MembersTableProps) {
         total={result?.total ?? 0}
         onPageChange={onPageChange}
       />
+
+      <AlertDialog
+        open={Boolean(memberToRemove)}
+        onOpenChange={(open) => {
+          if (!open) setMemberToRemove(null);
+        }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remover membro da equipe</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja remover{" "}
+              <strong>{memberToRemove?.userName ?? "este membro"}</strong> da
+              equipe? O vínculo deixa de aparecer na listagem e libera a vaga do
+              plano; o histórico permanece no sistema.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={removeMember.isPending}>
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              disabled={removeMember.isPending}
+              onClick={() => {
+                if (memberToRemove) {
+                  removeMember.mutate({ membershipId: memberToRemove.id });
+                }
+              }}>
+              Remover
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

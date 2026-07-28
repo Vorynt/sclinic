@@ -1,4 +1,4 @@
-import { and, count, eq, inArray, isNull } from "drizzle-orm"
+import { and, count, eq, isNull } from "drizzle-orm"
 
 import { db } from "@/db"
 import { clinicMemberships, professionalClinics } from "@/db/schema"
@@ -19,7 +19,7 @@ export const planQuotaRepository = {
           .where(
             and(
               eq(clinicMemberships.clinicId, clinicId),
-              inArray(clinicMemberships.status, ["active", "suspended"]),
+              eq(clinicMemberships.status, "active"),
               isNull(clinicMemberships.deletedAt),
             ),
           ),

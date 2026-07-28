@@ -16,6 +16,7 @@
 | `settings` | Nav/shell de configurações | Done (fino) |
 | `audit` | Leitura + emissão via events | Done |
 | `marketing` | Landing | Done |
+| `help` | Central de ajuda (FAQ curado) | Done |
 | `inventory` | Reservado | Deferred |
 
 ## Boundaries de import

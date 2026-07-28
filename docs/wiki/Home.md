@@ -18,7 +18,7 @@ Handbook oficial do produto e da engenharia. Público-alvo: **qualquer novo cola
 |-------|---------|
 | **Produto** | [Visão](Visao-do-Produto), [Glossário](Glossario), [Roadmap](Roadmap), [Épicos](Epicos), [Features](Catalogo-de-Features) |
 | **Arquitetura** | [Arquitetura](Arquitetura), [Módulos](Modulos-e-Boundaries), [Rotas](Rotas-e-Navegacao), [RBAC](RBAC-e-Permissoes), [Diagramas](Diagramas) |
-| **Domínio** | Auth, Clínicas, Equipe, Pacientes, Profissionais, Agenda, Prontuário, Recepção, Faturamento, SaaS, Auditoria, Dashboard/Settings, Marketing |
+| **Domínio** | Auth, Clínicas, Equipe, Pacientes, Profissionais, Agenda, Prontuário, Recepção, Faturamento, SaaS, Auditoria, Dashboard/Settings, Ajuda, Marketing |
 | **Decisões** | [Índice de decisões](Indice-de-Decisoes) → ADRs em `docs/adr/` |
 | **Operação** | [Ambientes](Ambientes-e-Operacao), [Manutenção da doc](Manutencao-da-Documentacao) |
 

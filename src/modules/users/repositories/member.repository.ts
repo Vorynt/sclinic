@@ -222,11 +222,14 @@ export const memberRepository = {
 
   async softRemove(membershipId: string, clinicId: string): Promise<void> {
     return withDbError(async () => {
+      const now = new Date();
       await db
         .update(clinicMemberships)
         .set({
-          status: "suspended",
+          status: "removed",
           isDefault: false,
+          deletedAt: now,
+          updatedAt: now,
         })
         .where(
           and(

@@ -69,7 +69,7 @@ Page / Component
 | Zustand (só client state global) | `src/stores/` — **nunca** dados de domínio |
 | Server state | TanStack Query em `queries/` / `mutations/` do módulo |
 
-Módulos: `patients`, `professionals`, `appointments`, `medical-records`, `billing`, `inventory`, `dashboard`, `settings`, `users`, `authentication`, `clinics`, `audit`, `marketing`.
+Módulos: `patients`, `professionals`, `appointments`, `medical-records`, `billing`, `inventory`, `dashboard`, `settings`, `users`, `authentication`, `clinics`, `audit`, `marketing`, `help`.
 
 ## Boundaries e imports
 

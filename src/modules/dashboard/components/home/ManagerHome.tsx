@@ -2,11 +2,13 @@
 
 import {
   CalendarBlankIcon,
+  QuestionIcon,
   StethoscopeIcon,
   UsersIcon,
 } from "@phosphor-icons/react"
 
 import { routes } from "@/config/routes"
+import { HomeDayOpsStats } from "@/modules/dashboard/components/home/shared/HomeDayOpsStats"
 import { HomeGreeting } from "@/modules/dashboard/components/home/shared/HomeGreeting"
 import { HomeQuickActions } from "@/modules/dashboard/components/home/shared/HomeQuickActions"
 import { HomeSection } from "@/modules/dashboard/components/home/shared/HomeSection"
@@ -15,11 +17,16 @@ import { TodaysAppointmentsPreview } from "@/modules/dashboard/components/home/s
 export function ManagerHome() {
   return (
     <div className="flex flex-col gap-8">
-      <HomeGreeting />
+      <HomeGreeting subtitle="Acompanhe a ocupação e o fluxo clínico do dia." />
+
+      <HomeDayOpsStats
+        title="Ocupação do dia"
+        description="Como está a agenda e o fluxo de atendimento."
+      />
 
       <TodaysAppointmentsPreview
         title="Agenda do dia"
-        description="Acompanhe a ocupação e o fluxo clínico."
+        description="Próximos atendimentos da clínica."
       />
 
       <HomeSection title="Ações rápidas">
@@ -39,6 +46,11 @@ export function ManagerHome() {
               label: "Agendamentos",
               href: routes.appointments,
               icon: CalendarBlankIcon,
+            },
+            {
+              label: "Ajuda",
+              href: routes.help,
+              icon: QuestionIcon,
             },
           ]}
         />

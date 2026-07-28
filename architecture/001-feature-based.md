@@ -21,6 +21,7 @@ Cada módulo é um mini-projeto autocontido. Não espalhe arquivos de um domíni
 - `clinics`
 - `audit`
 - `marketing`
+- `help`
 
 ## Estrutura obrigatória de um módulo
 

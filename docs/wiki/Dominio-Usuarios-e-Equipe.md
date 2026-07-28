@@ -10,13 +10,15 @@ Membros da clínica, convites assignable, conta do usuário (`/account/*`).
 
 - `/users` — TeamPanel (membros + convites)
 - Invite TTL 7 dias; roles: `admin|manager|receptionist|financial`
-- Soft-remove → `suspended`; reativação via novo aceite
+- Suspender / reativar membro (permanece na listagem)
+- Soft-remove → `status=removed` + `deletedAt` (some da listagem; histórico/FK preservados; libera vaga)
 - Conta: overview, profile, security, subscription (se living)
 
 ## Regras
 
 - Não atribuir `owner` / `doctor` / `nurse` por este fluxo
 - `assertPlanCapacity(users)` antes de convidar (ADR-004)
+- Quota de usuários conta só memberships **`active`** (suspensos e removidos não ocupam vaga)
 - Não alterar owner nem a si mesmo (`member-rules`)
 - Quota de plano bloqueia novos invites quando over/at limit
 
