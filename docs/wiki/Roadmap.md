@@ -21,7 +21,7 @@ Derivado do **código implementado** + ADRs 001–008 + gaps explícitos no repo
 6. Prontuário MVP: notas, vitais, alertas, receitas (+ templates em blocos, ADR-008)
 7. Loop balcão: charge + board recepção + SSE
 8. Auditoria + settings + landing
-9. Central de ajuda `/help` (FAQ curado para o owner)
+9. Central de ajuda `/help` (FAQ curado por papel)
 
 ## Próximo (Next) — extensões dos ADRs
 

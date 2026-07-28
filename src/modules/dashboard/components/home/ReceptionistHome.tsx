@@ -3,6 +3,7 @@
 import {
   CalendarBlankIcon,
   CalendarPlusIcon,
+  QuestionIcon,
   UserPlusIcon,
 } from "@phosphor-icons/react"
 import { endOfDay, format, startOfDay } from "date-fns"
@@ -132,6 +133,11 @@ export function ReceptionistHome() {
               label: "Abrir agenda",
               href: routes.appointments,
               icon: CalendarBlankIcon,
+            },
+            {
+              label: "Ajuda",
+              href: routes.help,
+              icon: QuestionIcon,
             },
           ]}
         />

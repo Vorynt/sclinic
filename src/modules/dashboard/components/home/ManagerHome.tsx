@@ -2,6 +2,7 @@
 
 import {
   CalendarBlankIcon,
+  QuestionIcon,
   StethoscopeIcon,
   UsersIcon,
 } from "@phosphor-icons/react"
@@ -45,6 +46,11 @@ export function ManagerHome() {
               label: "Agendamentos",
               href: routes.appointments,
               icon: CalendarBlankIcon,
+            },
+            {
+              label: "Ajuda",
+              href: routes.help,
+              icon: QuestionIcon,
             },
           ]}
         />

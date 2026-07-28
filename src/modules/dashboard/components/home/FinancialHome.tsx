@@ -1,6 +1,10 @@
 "use client"
 
-import { CurrencyCircleDollarIcon, UsersIcon } from "@phosphor-icons/react"
+import {
+  CurrencyCircleDollarIcon,
+  QuestionIcon,
+  UsersIcon,
+} from "@phosphor-icons/react"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 
@@ -88,6 +92,11 @@ export function FinancialHome() {
               label: "Pacientes",
               href: routes.patients,
               icon: UsersIcon,
+            },
+            {
+              label: "Ajuda",
+              href: routes.help,
+              icon: QuestionIcon,
             },
           ]}
         />

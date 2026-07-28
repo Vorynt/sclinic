@@ -2,10 +2,10 @@ import { routes } from "@/config/routes"
 import type { HelpFaqItem } from "@/modules/help/types/help"
 
 /**
- * FAQ em linguagem simples para o dono da clínica.
+ * FAQ em linguagem simples para o dono (proprietário) da clínica.
  * Evitar jargão técnico. Atualizar quando o produto mudar.
  */
-export const HELP_FAQ: HelpFaqItem[] = [
+export const HELP_FAQ_OWNER: HelpFaqItem[] = [
   // ─── Começar ─────────────────────────────────────────────────────────────
   {
     id: "what-is-sclinic",
@@ -479,8 +479,108 @@ export const HELP_FAQ: HelpFaqItem[] = [
       { label: "Auditoria", href: routes.settingsAudit },
     ],
   },
+  {
+    id: "confirm-appointment",
+    categoryId: "appointments",
+    question: "Como confirmo que o paciente vem?",
+    answer: [
+      "Na agenda, abra a consulta e marque como Confirmada. Isso ajuda a equipe a ver quem já confirmou o horário.",
+      "Se o paciente não aparecer, use o status Faltou. Se precisar desmarcar, cancele a consulta.",
+    ],
+    keywords: ["confirmar", "confirmada", "paciente vem", "faltou"],
+    relatedRoutes: [{ label: "Agenda", href: routes.appointments }],
+  },
+  {
+    id: "end-to-end-day",
+    categoryId: "getting-started",
+    question: "Como funciona um dia típico na clínica?",
+    answer: [
+      "Em geral: a recepção marca e confirma consultas; o profissional inicia o atendimento, registra o prontuário e conclui; depois alguém registra o pagamento.",
+      "Na home da recepção existe um quadro do dia com quem ainda vai chegar, quem está em atendimento e quem aguarda pagamento.",
+    ],
+    steps: [
+      "Marque a consulta (com valor, se quiser cobrar depois).",
+      "Confirme o horário quando o paciente confirmar.",
+      "O profissional inicia e conclui o atendimento.",
+      "Registre o pagamento na agenda ou em Faturamento.",
+    ],
+    keywords: ["fluxo", "dia a dia", "balcão", "quadro", "rotina"],
+    relatedRoutes: [
+      { label: "Início", href: routes.home },
+      { label: "Agenda", href: routes.appointments },
+      { label: "Faturamento", href: routes.billing },
+    ],
+  },
+  {
+    id: "prescription-templates",
+    categoryId: "clinic",
+    question: "Como personalizo o visual da receita?",
+    answer: [
+      "Em Configurações → Receitas você ajusta cabeçalho, rodapé e outros textos que aparecem na impressão.",
+      "Isso vale para as receitas emitidas pelos profissionais da clínica.",
+    ],
+    keywords: ["modelo", "receita", "cabeçalho", "rodapé", "imprimir"],
+    relatedRoutes: [
+      { label: "Modelos de receita", href: routes.settingsPrescriptions },
+    ],
+  },
+  {
+    id: "cancel-charge",
+    categoryId: "billing",
+    question: "Como cancelo uma cobrança errada?",
+    answer: [
+      "Em Faturamento, abra a cobrança e cancele se ainda fizer sentido (por exemplo, consulta cancelada ou valor digitado errado).",
+      "Cobranças já pagas pedem cuidado: confira antes de alterar.",
+    ],
+    keywords: ["cancelar cobrança", "erro", "valor errado", "estornar"],
+    relatedRoutes: [{ label: "Faturamento", href: routes.billing }],
+  },
+  {
+    id: "switch-clinic",
+    categoryId: "clinic",
+    question: "Como troco de clínica no sistema?",
+    answer: [
+      "No topo da tela aparece a clínica atual. Toque nela para escolher outra da qual você faz parte.",
+      "Cada clínica tem seus pacientes, agenda e equipe — os dados não se misturam.",
+    ],
+    keywords: ["trocar", "outra clínica", "selecionar clínica", "switcher"],
+    relatedRoutes: [
+      { label: "Escolher clínica", href: routes.selectClinic },
+    ],
+  },
+  {
+    id: "patient-alerts",
+    categoryId: "patients",
+    question: "Como aviso a equipe sobre alergia ou atenção especial?",
+    answer: [
+      "Na ficha do paciente você registra alertas (por exemplo, alergia a medicamento). Eles ficam em destaque para quem atende.",
+    ],
+    keywords: ["alerta", "alergia", "atenção", "ficha"],
+    relatedRoutes: [{ label: "Pacientes", href: routes.patients }],
+  },
+  {
+    id: "invite-not-accepted",
+    categoryId: "team",
+    question: "A pessoa não aceitou o convite. O que faço?",
+    answer: [
+      "Em Equipe (ou em Profissionais, se for médico/enfermeiro) você vê convites pendentes.",
+      "Peça para a pessoa verificar o e-mail (incluindo spam). Se o link expirou, envie um novo convite.",
+    ],
+    keywords: ["convite pendente", "não chegou e-mail", "expirado", "reenviar"],
+    relatedRoutes: [
+      { label: "Equipe", href: routes.users },
+      { label: "Profissionais", href: routes.professionals },
+    ],
+  },
+  {
+    id: "who-starts-attendance",
+    categoryId: "appointments",
+    question: "Quem pode iniciar o atendimento?",
+    answer: [
+      "Quem atende clinicamente: médicos, enfermeiros e, se você também atende, o seu perfil de dono com perfil clínico.",
+      "A recepção organiza a agenda e o pagamento, mas não inicia o atendimento clínico.",
+    ],
+    keywords: ["iniciar", "quem pode", "recepção", "médico"],
+    relatedRoutes: [{ label: "Agenda", href: routes.appointments }],
+  },
 ]
-
-export const HELP_FAQ_BY_ID = Object.fromEntries(
-  HELP_FAQ.map((item) => [item.id, item]),
-) as Record<string, HelpFaqItem>

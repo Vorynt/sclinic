@@ -38,7 +38,7 @@ Shell fino em `/settings/*`; domínio real em clinics / audit / medical-records 
 
 ## Ajuda
 
-Central de FAQ em `/help` (módulo `help`) — ver [Dominio-Ajuda](Dominio-Ajuda). Item na sidebar + atalho na home do owner.
+Central de FAQ em `/help` (módulo `help`) — conteúdo **por papel**; ver [Dominio-Ajuda](Dominio-Ajuda). Item na sidebar + atalho Ajuda nas homes de todos os papéis.
 
 ## Decisão
 

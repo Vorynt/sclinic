@@ -1,6 +1,10 @@
 "use client"
 
-import { CalendarBlankIcon, UsersIcon } from "@phosphor-icons/react"
+import {
+  CalendarBlankIcon,
+  QuestionIcon,
+  UsersIcon,
+} from "@phosphor-icons/react"
 
 import { routes } from "@/config/routes"
 import { HomeDayOpsStats } from "@/modules/dashboard/components/home/shared/HomeDayOpsStats"
@@ -37,6 +41,11 @@ export function DoctorHome() {
               label: "Pacientes",
               href: routes.patients,
               icon: UsersIcon,
+            },
+            {
+              label: "Ajuda",
+              href: routes.help,
+              icon: QuestionIcon,
             },
           ]}
         />

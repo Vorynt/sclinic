@@ -20,6 +20,6 @@ Fonte canônica: `src/config/routes.ts`. Route groups `(auth)`, `(dashboard)` et
 - Dashboard / attendance / account: e-mail verificado, senha ok, membership, entitlement.
 - Settings: `settings.manage`; subtítulos `audit.read` / owner-only usage.
 - Patient clinical tabs: `records.read`.
-- `/help`: FAQ curado (módulo `help`); item Ajuda na sidebar habilitado.
+- `/help`: FAQ curado por papel (módulo `help`); item Ajuda na sidebar habilitado para todos.
 
 Nav: `src/modules/dashboard/constants/nav.ts` (itens somem sem permissão).

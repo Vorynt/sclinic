@@ -23,6 +23,7 @@ export function HelpCategoryFilter({
       aria-label="Assuntos da ajuda"
       role="tablist"
       type="single"
+      defaultValue="all"
       className="flex flex-wrap gap-1.5 w-full max-w-full overflow-x-auto"
       value={active}
       onValueChange={onChange}>
@@ -34,7 +35,9 @@ export function HelpCategoryFilter({
           {total}
         </Badge>
       </ToggleGroupItem>
-      {HELP_CATEGORIES.map((category) => {
+      {HELP_CATEGORIES.filter(
+        (category) => (counts[category.id] ?? 0) > 0,
+      ).map((category) => {
         const count = counts[category.id] ?? 0;
         const isActive = active === category.id;
         return (

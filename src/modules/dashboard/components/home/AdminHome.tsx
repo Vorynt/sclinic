@@ -2,6 +2,7 @@
 
 import {
   CalendarBlankIcon,
+  QuestionIcon,
   StethoscopeIcon,
   UsersIcon,
   UsersThreeIcon,
@@ -110,6 +111,11 @@ export function AdminHome() {
               label: "Agendamentos",
               href: routes.appointments,
               icon: CalendarBlankIcon,
+            },
+            {
+              label: "Ajuda",
+              href: routes.help,
+              icon: QuestionIcon,
             },
           ]}
         />

@@ -1,6 +1,10 @@
 "use client"
 
-import { CalendarBlankIcon, UsersIcon } from "@phosphor-icons/react"
+import {
+  CalendarBlankIcon,
+  QuestionIcon,
+  UsersIcon,
+} from "@phosphor-icons/react"
 
 import { routes } from "@/config/routes"
 import { HomeGreeting } from "@/modules/dashboard/components/home/shared/HomeGreeting"
@@ -24,6 +28,11 @@ export function DefaultHome() {
               label: "Agendamentos",
               href: routes.appointments,
               icon: CalendarBlankIcon,
+            },
+            {
+              label: "Ajuda",
+              href: routes.help,
+              icon: QuestionIcon,
             },
           ]}
         />
