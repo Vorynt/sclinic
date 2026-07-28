@@ -1,4 +1,4 @@
-import { and, count, desc, eq, ilike, isNull, sql, sum } from "drizzle-orm"
+import { and, count, desc, eq, ilike, inArray, isNull, sql, sum } from "drizzle-orm"
 
 import { db } from "@/db"
 import { appointments, charges, patients, payments } from "@/db/schema"
@@ -114,6 +114,29 @@ export const chargeRepository = {
         .limit(1)
 
       return row ? toCharge(row) : null
+    })
+  },
+
+  async findActiveByAppointmentIds(
+    appointmentIds: string[],
+    clinicId: string,
+  ): Promise<Charge[]> {
+    if (appointmentIds.length === 0) return []
+
+    return withDbError(async () => {
+      const rows = await db
+        .select()
+        .from(charges)
+        .where(
+          and(
+            eq(charges.clinicId, clinicId),
+            isNull(charges.deletedAt),
+            inArray(charges.appointmentId, appointmentIds),
+            sql`${charges.status} <> 'canceled'`,
+          ),
+        )
+
+      return rows.map(toCharge)
     })
   },
 

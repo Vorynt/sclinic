@@ -1,5 +1,7 @@
 import { Permission } from "@/config/permissions"
+import { logger } from "@/core/logger"
 import { hasAnyPermission } from "@/core/permissions"
+import { publishClinicOps } from "@/core/realtime"
 import {
   auditErrorFields,
   recordAudit,
@@ -287,6 +289,13 @@ export const appointmentService = {
         changes: { after: appointmentSnapshot(appointment) },
       })
 
+      publishClinicOps({
+        clinicId: auth.clinicId,
+        type: "appointment.created",
+        entityType: "appointment",
+        entityId: appointment.id,
+      })
+
       return appointment
     } catch (error) {
       recordAudit({
@@ -348,6 +357,20 @@ export const appointmentService = {
         canceledReason: data.canceledReason ?? null,
       })
 
+      try {
+        await chargeService.cancelPendingForAppointment({
+          appointmentId: appointment.id,
+          clinicId: auth.clinicId,
+          canceledBy: auth.user.id,
+          actor,
+        })
+      } catch (error) {
+        logger.error(
+          { error, appointmentId: appointment.id },
+          "Failed to cancel pending charge after appointment cancel",
+        )
+      }
+
       recordAudit({
         ...actor,
         action: AUDIT_ACTIONS.APPOINTMENT_CANCEL,
@@ -358,6 +381,13 @@ export const appointmentService = {
           before: appointmentSnapshot(existing),
           after: appointmentSnapshot(appointment),
         },
+      })
+
+      publishClinicOps({
+        clinicId: auth.clinicId,
+        type: "appointment.canceled",
+        entityType: "appointment",
+        entityId: appointment.id,
       })
 
       return appointment
@@ -597,6 +627,13 @@ export const appointmentService = {
           before: appointmentSnapshot(existing),
           after: appointmentSnapshot(appointment),
         },
+      })
+
+      publishClinicOps({
+        clinicId: auth.clinicId,
+        type: "appointment.updated",
+        entityType: "appointment",
+        entityId: appointment.id,
       })
 
       return appointment

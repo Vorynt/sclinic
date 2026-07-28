@@ -238,7 +238,7 @@ export function ChargesTable({ filters, onPageChange }: ChargesTableProps) {
         <EmptyHeader>
           <EmptyTitle>Nenhuma cobrança encontrada</EmptyTitle>
           <EmptyDescription>
-            Crie uma cobrança ao agendar ou ao concluir o atendimento.
+            Crie uma cobrança ao agendar a consulta.
           </EmptyDescription>
         </EmptyHeader>
       </Empty>

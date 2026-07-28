@@ -10,12 +10,12 @@ import { routes } from "@/config/routes"
 import { HomeGreeting } from "@/modules/dashboard/components/home/shared/HomeGreeting"
 import { HomeQuickActions } from "@/modules/dashboard/components/home/shared/HomeQuickActions"
 import { HomeSection } from "@/modules/dashboard/components/home/shared/HomeSection"
-import { TodaysAppointmentsPreview } from "@/modules/dashboard/components/home/shared/TodaysAppointmentsPreview"
+import { ReceptionOpsBoard } from "@/modules/dashboard/components/home/ReceptionOpsBoard"
 
 export function ReceptionistHome() {
   return (
     <div className="flex flex-col gap-8">
-      <HomeGreeting subtitle="Receba pacientes e organize a agenda do dia." />
+      <HomeGreeting subtitle="Receba pacientes, acompanhe o dia e registre pagamentos no balcão." />
 
       <HomeSection title="Ações rápidas">
         <HomeQuickActions
@@ -39,10 +39,7 @@ export function ReceptionistHome() {
         />
       </HomeSection>
 
-      <TodaysAppointmentsPreview
-        title="Próximos de hoje"
-        emptyMessage="Nenhum agendamento restante para hoje."
-      />
+      <ReceptionOpsBoard />
     </div>
   )
 }

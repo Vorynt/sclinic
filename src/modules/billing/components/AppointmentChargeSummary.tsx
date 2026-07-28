@@ -73,8 +73,8 @@ export function AppointmentChargeSummary({
           </p>
         ) : !chargeQuery.data ? (
           <p className="text-sm text-muted-foreground">
-            Nenhuma cobrança registrada. Você pode criar ao agendar ou ao
-            concluir o atendimento.
+            Nenhuma cobrança registrada. Informe o valor ao agendar para gerar
+            a cobrança no balcão.
           </p>
         ) : (
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

@@ -526,6 +526,9 @@ export function AppointmentForm({
                     CURRENCY_MASK_OPTIONS,
                   )}
                 />
+                <p className="text-xs text-muted-foreground">
+                  Gera cobrança pendente para pagamento na recepção.
+                </p>
                 <FieldError errors={[errors.amountBrl]} />
               </Field>
             ) : null}
