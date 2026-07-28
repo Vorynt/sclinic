@@ -1,7 +1,7 @@
 "use client"
 
 import { StarIcon } from "@phosphor-icons/react"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -82,17 +82,11 @@ export function PrescriptionTemplateEditorDialog({
 
   if (formKey !== loadedKey) {
     setLoadedKey(formKey)
+    setValidationError(null)
     if (formKey !== null) {
       setDraft(toDraft(template, suggestedName))
-      setValidationError(null)
     }
   }
-
-  useEffect(() => {
-    if (!open) {
-      setValidationError(null)
-    }
-  }, [open])
 
   const busy = isSaving || Boolean(isSettingDefault)
 

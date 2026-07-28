@@ -1,7 +1,7 @@
 import assert from "node:assert/strict"
 import { describe, it } from "node:test"
 
-import { classifyReceptionBoardColumn } from "@/modules/dashboard/utils/reception-board"
+import { classifyReceptionBoardColumn, countReceptionBoardColumns } from "@/modules/dashboard/utils/reception-board"
 
 describe("classifyReceptionBoardColumn", () => {
   it("puts scheduled/confirmed in upcoming", () => {
@@ -57,6 +57,28 @@ describe("classifyReceptionBoardColumn", () => {
     assert.equal(
       classifyReceptionBoardColumn({ status: "no_show" }, null),
       null,
+    )
+  })
+})
+
+describe("countReceptionBoardColumns", () => {
+  it("aggregates column counts", () => {
+    assert.deepEqual(
+      countReceptionBoardColumns([
+        { appointment: { status: "scheduled" }, charge: null },
+        { appointment: { status: "confirmed" }, charge: null },
+        { appointment: { status: "checked_in" }, charge: null },
+        {
+          appointment: { status: "completed" },
+          charge: { status: "pending" },
+        },
+        { appointment: { status: "canceled" }, charge: null },
+      ]),
+      {
+        upcoming: 2,
+        in_progress: 1,
+        awaiting_payment: 1,
+      },
     )
   })
 })

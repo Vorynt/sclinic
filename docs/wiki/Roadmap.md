@@ -30,7 +30,6 @@ Derivado do **código implementado** + ADRs 001–008 + gaps explícitos no repo
 | Broker realtime multi-instância | ADR-006 | Hub in-process → Redis/NATS/etc. |
 | Cotas de storage | ADR-004 | `assertPlanCapacity(..., "storage")` futuro |
 | Help center `/help` | `routes.help` disabled | Conteúdo + enable nav |
-| Filtro “minha agenda” na home do médico | UI DoctorHome | Texto admite gap |
 
 ## Depois (Later)
 

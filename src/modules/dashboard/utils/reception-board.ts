@@ -6,6 +6,8 @@ export type ReceptionBoardColumnId =
   | "in_progress"
   | "awaiting_payment"
 
+export type ReceptionBoardColumnCounts = Record<ReceptionBoardColumnId, number>
+
 /** Maps appointment + optional active charge to a reception board column (ADR-006). */
 export function classifyReceptionBoardColumn(
   appointment: Pick<Appointment, "status">,
@@ -26,3 +28,25 @@ export function classifyReceptionBoardColumn(
   }
   return null
 }
+
+/** Counts appointments into reception board columns. */
+export function countReceptionBoardColumns(
+  items: ReadonlyArray<{
+    appointment: Pick<Appointment, "status">
+    charge: Pick<Charge, "status"> | null
+  }>,
+): ReceptionBoardColumnCounts {
+  const counts: ReceptionBoardColumnCounts = {
+    upcoming: 0,
+    in_progress: 0,
+    awaiting_payment: 0,
+  }
+
+  for (const item of items) {
+    const column = classifyReceptionBoardColumn(item.appointment, item.charge)
+    if (column) counts[column] += 1
+  }
+
+  return counts
+}
+

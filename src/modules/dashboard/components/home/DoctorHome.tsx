@@ -1,8 +1,9 @@
 "use client"
 
-import { CalendarBlankIcon } from "@phosphor-icons/react"
+import { CalendarBlankIcon, UsersIcon } from "@phosphor-icons/react"
 
 import { routes } from "@/config/routes"
+import { HomeDayOpsStats } from "@/modules/dashboard/components/home/shared/HomeDayOpsStats"
 import { HomeGreeting } from "@/modules/dashboard/components/home/shared/HomeGreeting"
 import { HomeQuickActions } from "@/modules/dashboard/components/home/shared/HomeQuickActions"
 import { HomeSection } from "@/modules/dashboard/components/home/shared/HomeSection"
@@ -11,12 +12,17 @@ import { TodaysAppointmentsPreview } from "@/modules/dashboard/components/home/s
 export function DoctorHome() {
   return (
     <div className="flex flex-col gap-8">
-      <HomeGreeting subtitle="Seus próximos atendimentos e atalhos clínicos." />
+      <HomeGreeting subtitle="Sua agenda do dia e atalhos clínicos." />
+
+      <HomeDayOpsStats
+        title="Sua agenda hoje"
+        description="Resumo dos seus atendimentos de hoje."
+      />
 
       <TodaysAppointmentsPreview
         title="Próximos atendimentos"
-        description="Lista do dia da clínica. Filtro pela sua agenda virá em breve."
-        emptyMessage="Nenhum atendimento previsto para hoje."
+        description="Sua agenda de hoje."
+        emptyMessage="Nenhum atendimento previsto para você hoje."
       />
 
       <HomeSection title="Ações rápidas">
@@ -26,6 +32,11 @@ export function DoctorHome() {
               label: "Minha agenda",
               href: routes.appointments,
               icon: CalendarBlankIcon,
+            },
+            {
+              label: "Pacientes",
+              href: routes.patients,
+              icon: UsersIcon,
             },
           ]}
         />

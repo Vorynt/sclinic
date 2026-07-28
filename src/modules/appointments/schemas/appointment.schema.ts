@@ -32,6 +32,17 @@ export const listAppointmentsSchema = z
     path: ["to"],
   })
 
+export const countAppointmentsSchema = z
+  .object({
+    from: z.coerce.date(),
+    to: z.coerce.date(),
+    excludeCanceled: z.boolean().default(true),
+  })
+  .refine((data) => data.from < data.to, {
+    message: "A data inicial deve ser anterior à data final.",
+    path: ["to"],
+  })
+
 export const createAppointmentSchema = z
   .object({
     patientId: z.string().uuid("Paciente inválido"),
@@ -130,6 +141,7 @@ export const listPatientAppointmentsSchema = z.object({
 })
 
 export type ListAppointmentsInput = z.infer<typeof listAppointmentsSchema>
+export type CountAppointmentsInput = z.infer<typeof countAppointmentsSchema>
 export type CreateAppointmentInput = z.infer<typeof createAppointmentSchema>
 export type CancelAppointmentInput = z.infer<typeof cancelAppointmentSchema>
 export type RescheduleAppointmentInput = z.infer<

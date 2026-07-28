@@ -15,6 +15,7 @@ import { routes } from "@/config/routes"
 import { useBillingSummaryQuery } from "@/modules/billing/hooks/use-charges"
 import { formatCentsToBrl } from "@/modules/billing/utils/money"
 import { HomeGreeting } from "@/modules/dashboard/components/home/shared/HomeGreeting"
+import { HomePendingChargesPreview } from "@/modules/dashboard/components/home/shared/HomePendingChargesPreview"
 import { HomeQuickActions } from "@/modules/dashboard/components/home/shared/HomeQuickActions"
 import { HomeSection } from "@/modules/dashboard/components/home/shared/HomeSection"
 
@@ -72,6 +73,8 @@ export function FinancialHome() {
           </div>
         )}
       </HomeSection>
+
+      <HomePendingChargesPreview />
 
       <HomeSection title="Ações rápidas">
         <HomeQuickActions

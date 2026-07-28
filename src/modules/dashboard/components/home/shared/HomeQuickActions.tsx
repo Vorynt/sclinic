@@ -1,3 +1,5 @@
+"use client"
+
 import type { Icon } from "@phosphor-icons/react"
 import Link from "next/link"
 
@@ -5,8 +7,9 @@ import { Button } from "@/components/ui/button"
 
 export type HomeQuickAction = {
   label: string
-  href: string
   icon: Icon
+  href?: string
+  onClick?: () => void
 }
 
 type HomeQuickActionsProps = {
@@ -18,14 +21,32 @@ export function HomeQuickActions({ actions }: HomeQuickActionsProps) {
 
   return (
     <div className="flex flex-wrap gap-2">
-      {actions.map((action) => (
-        <Button key={action.href + action.label} variant="outline" size="sm" asChild>
-          <Link href={action.href}>
+      {actions.map((action) =>
+        action.onClick ? (
+          <Button
+            key={action.label}
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={action.onClick}
+          >
             <action.icon data-icon="inline-start" />
             {action.label}
-          </Link>
-        </Button>
-      ))}
+          </Button>
+        ) : action.href ? (
+          <Button
+            key={action.href + action.label}
+            variant="outline"
+            size="sm"
+            asChild
+          >
+            <Link href={action.href}>
+              <action.icon data-icon="inline-start" />
+              {action.label}
+            </Link>
+          </Button>
+        ) : null,
+      )}
     </div>
   )
 }

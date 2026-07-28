@@ -1,5 +1,6 @@
 import { queryOptions } from "@tanstack/react-query"
 
+import { countAppointmentsAction } from "@/modules/appointments/actions/count-appointments"
 import { getAppointmentAction } from "@/modules/appointments/actions/get-appointment"
 import { getCalendarClinicHoursAction } from "@/modules/appointments/actions/get-calendar-clinic-hours"
 import { listAppointmentsAction } from "@/modules/appointments/actions/list-appointments"
@@ -10,6 +11,12 @@ export type AppointmentsRangeFilters = {
   from: Date
   to: Date
   professionalIds?: string[]
+}
+
+export type AppointmentsCountFilters = {
+  from: Date
+  to: Date
+  excludeCanceled?: boolean
 }
 
 export type PatientAppointmentsFilters = {
@@ -32,6 +39,16 @@ export const appointmentsQueryKeys = {
           : undefined,
       },
     ] as const,
+  counts: () => [...appointmentsQueryKeys.all, "count"] as const,
+  count: (filters: AppointmentsCountFilters) =>
+    [
+      ...appointmentsQueryKeys.counts(),
+      {
+        from: filters.from.toISOString(),
+        to: filters.to.toISOString(),
+        excludeCanceled: filters.excludeCanceled ?? true,
+      },
+    ] as const,
   patientLists: () => [...appointmentsQueryKeys.all, "patient"] as const,
   patientList: (filters: PatientAppointmentsFilters) =>
     [...appointmentsQueryKeys.patientLists(), filters] as const,
@@ -47,6 +64,13 @@ export const appointmentsQueries = {
       queryKey: appointmentsQueryKeys.list(filters),
       queryFn: async () =>
         unwrapActionResult(await listAppointmentsAction(filters)),
+    }),
+
+  count: (filters: AppointmentsCountFilters) =>
+    queryOptions({
+      queryKey: appointmentsQueryKeys.count(filters),
+      queryFn: async () =>
+        unwrapActionResult(await countAppointmentsAction(filters)),
     }),
 
   patientList: (filters: PatientAppointmentsFilters) =>

@@ -1,4 +1,17 @@
-import { and, asc, desc, eq, gt, inArray, isNull, lt, ne } from "drizzle-orm"
+import {
+  and,
+  asc,
+  count,
+  desc,
+  eq,
+  gte,
+  gt,
+  inArray,
+  isNull,
+  lt,
+  ne,
+  notInArray,
+} from "drizzle-orm"
 
 import { db } from "@/db"
 import {
@@ -67,6 +80,36 @@ export const appointmentRepository = {
         .orderBy(asc(appointments.startsAt))
 
       return rows.map(toAppointment)
+    })
+  },
+
+  async countInRange(params: {
+    clinicId: string
+    from: Date
+    to: Date
+    professionalIds?: string[]
+    excludeStatuses?: AppointmentStatus[]
+  }): Promise<number> {
+    return withDbError(async () => {
+      const [row] = await db
+        .select({ total: count() })
+        .from(appointments)
+        .where(
+          and(
+            eq(appointments.clinicId, params.clinicId),
+            isNull(appointments.deletedAt),
+            gte(appointments.startsAt, params.from),
+            lt(appointments.startsAt, params.to),
+            params.professionalIds?.length
+              ? inArray(appointments.professionalId, params.professionalIds)
+              : undefined,
+            params.excludeStatuses?.length
+              ? notInArray(appointments.status, params.excludeStatuses)
+              : undefined,
+          ),
+        )
+
+      return row?.total ?? 0
     })
   },
 
