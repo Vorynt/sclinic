@@ -149,3 +149,9 @@ export const paymentProviderEnum = pgEnum("payment_provider", [
   "none",
   "asaas",
 ])
+
+/** Simple prescription lifecycle (medical-records). */
+export const prescriptionStatusEnum = pgEnum("prescription_status", [
+  "draft",
+  "issued",
+])
