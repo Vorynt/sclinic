@@ -135,6 +135,7 @@ Módulos: `patients`, `professionals`, `appointments`, `medical-records`, `billi
 - [ ] Mutations: `MutationCallbacks` + `invalidateQueries` no hook; form usa `mutate()` sem try/catch (007)
 - [ ] Sem estado de domínio no Zustand
 - [ ] Docs de Next em `node_modules/next/dist/docs/` consultados se a API for incerta
+- [ ] Handbook em `docs/wiki/` atualizado (skill `system-docs-sync`); oferecer `npm run docs:wiki:sync`
 
 ## Anti-padrões (recusar / corrigir)
 
