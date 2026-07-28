@@ -147,8 +147,7 @@ export const memberService = {
         targetRoleKey: member.roleKey,
       })
 
-      // Soft-deactivate: keep the clinic link so the member sees the
-      // membership-inactive screen instead of owner onboarding.
+      // Soft-remove: keep the row for FK/history; hide from team list and free seat.
       await memberRepository.softRemove(membershipId, auth.clinicId)
 
       recordAudit({

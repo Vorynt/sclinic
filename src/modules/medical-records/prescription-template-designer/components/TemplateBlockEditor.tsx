@@ -47,7 +47,7 @@ export function TemplateBlockEditor({
   }
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(280px,360px)]">
+    <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(360px,480px)]">
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="template-name">Nome do modelo</Label>
@@ -107,7 +107,7 @@ export function TemplateBlockEditor({
         </div>
       </div>
 
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-2 ">
         <p className="text-sm font-medium">Visualização</p>
         <TemplateLiveCanvas model={model} className="min-h-105" />
       </div>

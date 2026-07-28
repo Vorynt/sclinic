@@ -32,7 +32,7 @@ Fontes: `src/config/permissions.ts`, `src/db/seed/rbac.ts` (`npm run db:seed:rba
 
 - **Self-schedule:** doctor/nurse só a si.
 - **Iniciar atendimento:** owner, admin, doctor, nurse (recepcionista **não**).
-- **Equipe:** não alterar owner nem a si; remove → `suspended`.
+- **Equipe:** não alterar owner nem a si; soft-remove → `removed` + `deletedAt` (some da listagem); suspender ≠ remover.
 - **Uso do plano:** `/settings/usage` só owner.
 - **`collect` ≠ `view`:** cobrar na agenda sem acessar `/billing`.
 - **Owner + perfil clínico (ADR-007):** membership permanece `owner` (sem dual-role). Perfil em `professionals` é opcional e independente; não confundir com membership `doctor`/`nurse`.

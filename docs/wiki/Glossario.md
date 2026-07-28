@@ -3,7 +3,7 @@
 | Termo | Definição |
 |-------|-----------|
 | **Clinic / clínica** | Tenant operacional; dados escopados por `clinicId` |
-| **Membership** | Vínculo user ↔ clínica com role (`active` / `suspended`) |
+| **Membership** | Vínculo user ↔ clínica com role (`active` / `suspended` / `removed`) |
 | **Owner** | Papel que cria a clínica e paga a assinatura SaaS |
 | **Perfil clínico** | Registro em `professionals` agendável; pode coexistir com membership `owner` (ADR-007) — não é dual-role RBAC |
 | **Entitled** | Assinatura viva: `trialing` \| `active` \| `past_due` |
