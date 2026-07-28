@@ -1,55 +1,55 @@
-"use client"
+"use client";
 
-import { CheckCircleIcon } from "@phosphor-icons/react"
-import { useState } from "react"
-import { toast } from "sonner"
+import { CheckCircleIcon } from "@phosphor-icons/react";
+import { useState } from "react";
+import { toast } from "sonner";
 
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Spinner } from "@/components/ui/spinner"
-import { Permission } from "@/config/permissions"
-import { MarkChargePaidDialog } from "@/modules/billing/components/MarkChargePaidDialog"
-import { CHARGE_STATUS_LABELS } from "@/modules/billing/constants/charges"
-import { useMarkChargePaidMutation } from "@/modules/billing/hooks/use-charge-mutations"
-import { useChargeByAppointmentQuery } from "@/modules/billing/hooks/use-charges"
-import { formatCentsToBrl } from "@/modules/billing/utils/money"
-import { useAuth } from "@/providers/AuthProvider"
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
+import { Permission } from "@/config/permissions";
+import { MarkChargePaidDialog } from "@/modules/billing/components/MarkChargePaidDialog";
+import { CHARGE_STATUS_LABELS } from "@/modules/billing/constants/charges";
+import { useMarkChargePaidMutation } from "@/modules/billing/hooks/use-charge-mutations";
+import { useChargeByAppointmentQuery } from "@/modules/billing/hooks/use-charges";
+import { formatCentsToBrl } from "@/modules/billing/utils/money";
+import { useAuth } from "@/providers/AuthProvider";
 
 type AppointmentChargeSummaryProps = {
-  appointmentId: string
-}
+  appointmentId: string;
+};
 
 /** Dedicated charge section for the appointment detail drawer body. */
 export function AppointmentChargeSummary({
   appointmentId,
 }: AppointmentChargeSummaryProps) {
-  const { canAny, isLoading: authLoading } = useAuth()
+  const { canAny, isLoading: authLoading } = useAuth();
   const canSee = canAny(
     Permission.FINANCIAL_VIEW,
     Permission.FINANCIAL_COLLECT,
     Permission.FINANCIAL_MANAGE,
-  )
+  );
   const canCollect = canAny(
     Permission.FINANCIAL_COLLECT,
     Permission.FINANCIAL_MANAGE,
-  )
+  );
 
   const chargeQuery = useChargeByAppointmentQuery(
     appointmentId,
     !authLoading && canSee,
-  )
-  const [payOpen, setPayOpen] = useState(false)
+  );
+  const [payOpen, setPayOpen] = useState(false);
 
   const markPaid = useMarkChargePaidMutation({
     onSuccess: () => {
-      toast.success("Pagamento registrado")
-      setPayOpen(false)
+      toast.success("Pagamento registrado");
+      setPayOpen(false);
     },
     onError: (error) => toast.error(error.message),
-  })
+  });
 
   if (authLoading || !canSee) {
-    return null
+    return null;
   }
 
   return (
@@ -57,8 +57,8 @@ export function AppointmentChargeSummary({
       <section className="flex flex-col gap-3 rounded-md border border-border px-4 py-4">
         <div className="flex flex-col gap-1">
           <h3 className="text-sm font-medium text-foreground">Cobrança</h3>
-          <p className="text-sm text-muted-foreground">
-            Valor e status de pagamento deste agendamento.
+          <p className="text-xs text-muted-foreground">
+            Cobrança registrada para este agendamento.
           </p>
         </div>
 
@@ -73,8 +73,8 @@ export function AppointmentChargeSummary({
           </p>
         ) : !chargeQuery.data ? (
           <p className="text-sm text-muted-foreground">
-            Nenhuma cobrança registrada. Você pode criar ao agendar ou ao
-            concluir o atendimento.
+            Nenhuma cobrança registrada. Informe o valor ao agendar para gerar
+            a cobrança no balcão.
           </p>
         ) : (
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -85,8 +85,7 @@ export function AppointmentChargeSummary({
               <Badge
                 variant={
                   chargeQuery.data.status === "paid" ? "secondary" : "outline"
-                }
-              >
+                }>
                 {CHARGE_STATUS_LABELS[chargeQuery.data.status] ??
                   chargeQuery.data.status}
               </Badge>
@@ -97,8 +96,7 @@ export function AppointmentChargeSummary({
                 variant="secondary"
                 size="sm"
                 className="w-fit shrink-0"
-                onClick={() => setPayOpen(true)}
-              >
+                onClick={() => setPayOpen(true)}>
                 <CheckCircleIcon />
                 Marcar pago
               </Button>
@@ -114,11 +112,11 @@ export function AppointmentChargeSummary({
           description={formatCentsToBrl(chargeQuery.data.amountCents)}
           isPending={markPaid.isPending}
           onConfirm={(method) => {
-            if (!chargeQuery.data) return
-            markPaid.mutate({ chargeId: chargeQuery.data.id, method })
+            if (!chargeQuery.data) return;
+            markPaid.mutate({ chargeId: chargeQuery.data.id, method });
           }}
         />
       ) : null}
     </>
-  )
+  );
 }

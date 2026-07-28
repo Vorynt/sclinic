@@ -19,6 +19,16 @@ export function useChargeByAppointmentQuery(
   })
 }
 
+export function useActiveChargesByAppointmentsQuery(
+  appointmentIds: string[],
+  enabled = true,
+) {
+  return useQuery({
+    ...chargesQueries.byAppointments(appointmentIds),
+    enabled: enabled && appointmentIds.length > 0,
+  })
+}
+
 export function useBillingSummaryQuery(enabled = true) {
   return useQuery({
     ...chargesQueries.summary(),

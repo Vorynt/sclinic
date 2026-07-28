@@ -52,3 +52,4 @@ Chosen option: **"Subdomínio clínico em `billing`"** — tabelas `charges` / `
 - `src/db/schema/billing.ts` (SaaS)
 - `src/db/schema/clinical-billing.ts` (clínico)
 - `src/config/permissions.ts`
+- Fluxo operacional do balcão: [ADR-006](./006-reception-ops-sse.md)

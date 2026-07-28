@@ -1,47 +1,43 @@
-import type { Metadata } from "next"
-import { redirect } from "next/navigation"
+import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 
-import { routes } from "@/config/routes"
-import { CreateClinicForm } from "@/modules/clinics/components/CreateClinicForm"
-import { getAuthRequestContext } from "@/modules/authentication/utils/request-context"
-import { authService } from "@/modules/authentication/services/auth.service"
+import { routes } from "@/config/routes";
+import { authService } from "@/modules/authentication/services/auth.service";
+import { getAuthRequestContext } from "@/modules/authentication/utils/request-context";
+import { CreateClinicForm } from "@/modules/clinics/components/CreateClinicForm";
 
 export const metadata: Metadata = {
   title: "Criar clínica · sclinic",
-}
+};
 
 type OnboardingClinicPageProps = {
-  searchParams: Promise<{ planId?: string; intent?: string }>
-}
+  searchParams: Promise<{ planId?: string; intent?: string }>;
+};
 
 export default async function OnboardingClinicPage({
   searchParams,
 }: OnboardingClinicPageProps) {
-  const session = await authService.getSession(await getAuthRequestContext())
+  const session = await authService.getSession(await getAuthRequestContext());
+  const { planId, intent } = await searchParams;
 
   if (!session) {
-    redirect(routes.login)
+    redirect(routes.login);
   }
 
   if (!session.user.emailVerified) {
-    redirect(routes.verifyEmail)
+    redirect(routes.verifyEmail);
   }
 
-  if (session.membership) {
-    redirect(routes.home)
+  if (session.membership && intent !== "create-clinic") {
+    redirect(routes.home);
   }
 
-  const { planId, intent } = await searchParams
-
-  if (
-    session.hasSuspendedMembershipOnly &&
-    intent !== "create-clinic"
-  ) {
-    redirect(routes.membershipInactive)
+  if (session.hasSuspendedMembershipOnly && intent !== "create-clinic") {
+    redirect(routes.membershipInactive);
   }
 
   if (session.needsClinicSelection && intent !== "create-clinic") {
-    redirect(routes.selectClinic)
+    redirect(routes.selectClinic);
   }
 
   if (!planId) {
@@ -49,8 +45,8 @@ export default async function OnboardingClinicPage({
       session.hasSuspendedMembershipOnly
         ? `${routes.onboardingPlan}?intent=create-clinic`
         : routes.onboardingPlan,
-    )
+    );
   }
 
-  return <CreateClinicForm planId={planId} />
+  return <CreateClinicForm planId={planId} />;
 }

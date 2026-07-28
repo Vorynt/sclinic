@@ -11,16 +11,16 @@ import {
   uuid,
 } from "drizzle-orm/pg-core"
 
-import { clinics } from "./clinics"
+import { user } from "./auth"
 import {
   billingCycleEnum,
   subscriptionStatusEnum,
 } from "./enums"
 import {
-  clinicIsolation,
   primaryUuid,
   softDelete,
   timestamps,
+  tenantUserId,
 } from "./helpers"
 import { sclinicAppRole } from "./rls"
 
@@ -50,13 +50,17 @@ export const plans = pgTable(
   ],
 )
 
+/**
+ * SaaS subscription — payer is the user (ADR-003).
+ * Entitles at most one owned clinic in the MVP (1:1).
+ */
 export const subscriptions = pgTable(
   "subscriptions",
   {
     id: primaryUuid(),
-    clinicId: uuid("clinic_id")
+    userId: text("user_id")
       .notNull()
-      .references(() => clinics.id, { onDelete: "cascade" }),
+      .references(() => user.id, { onDelete: "cascade" }),
     planId: uuid("plan_id")
       .notNull()
       .references(() => plans.id, { onDelete: "restrict" }),
@@ -78,26 +82,29 @@ export const subscriptions = pgTable(
     ...softDelete,
   },
   (t) => [
-    uniqueIndex("subscriptions_clinic_active_uidx")
-      .on(t.clinicId)
+    uniqueIndex("subscriptions_user_active_uidx")
+      .on(t.userId)
       .where(
         sql`${t.deletedAt} IS NULL AND ${t.status} IN ('trialing', 'active', 'past_due')`,
       ),
     uniqueIndex("subscriptions_gateway_subscription_uidx")
       .on(t.gatewaySubscriptionId)
       .where(sql`${t.gatewaySubscriptionId} IS NOT NULL`),
-    index("subscriptions_clinic_id_idx").on(t.clinicId),
+    uniqueIndex("subscriptions_gateway_customer_uidx")
+      .on(t.gatewayCustomerId)
+      .where(sql`${t.gatewayCustomerId} IS NOT NULL`),
+    index("subscriptions_user_id_idx").on(t.userId),
     index("subscriptions_plan_id_idx").on(t.planId),
-    pgPolicy("subscriptions_tenant_isolation", {
+    pgPolicy("subscriptions_owner_isolation", {
       as: "permissive",
       to: sclinicAppRole,
       for: "all",
-      using: clinicIsolation(t.clinicId),
-      withCheck: clinicIsolation(t.clinicId),
+      using: sql`${t.userId} = ${tenantUserId()}`,
+      withCheck: sql`${t.userId} = ${tenantUserId()}`,
     }),
     /**
-     * Onboarding attaches a plan before tenant GUC is reliably set (Neon HTTP).
-     * Permissive OR with tenant isolation above.
+     * Onboarding / webhook bootstrap before session GUCs are reliable (Neon HTTP).
+     * Permissive OR with owner isolation above.
      */
     pgPolicy("subscriptions_insert_onboarding", {
       as: "permissive",
@@ -108,5 +115,28 @@ export const subscriptions = pgTable(
   ],
 )
 
+/**
+ * Stripe webhook idempotency (no tenant — processed by system).
+ */
+export const stripeWebhookEvents = pgTable(
+  "stripe_webhook_events",
+  {
+    id: primaryUuid(),
+    stripeEventId: text("stripe_event_id").notNull(),
+    type: text("type").notNull(),
+    processedAt: timestamp("processed_at", { withTimezone: true, mode: "date" })
+      .defaultNow()
+      .notNull(),
+    ...timestamps,
+  },
+  (t) => [
+    uniqueIndex("stripe_webhook_events_stripe_event_id_uidx").on(
+      t.stripeEventId,
+    ),
+    index("stripe_webhook_events_type_idx").on(t.type),
+  ],
+)
+
 export type Plan = typeof plans.$inferSelect
 export type Subscription = typeof subscriptions.$inferSelect
+export type StripeWebhookEvent = typeof stripeWebhookEvents.$inferSelect

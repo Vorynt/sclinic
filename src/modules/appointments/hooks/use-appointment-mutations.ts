@@ -59,9 +59,14 @@ export function useCancelAppointmentMutation({
   return useMutation({
     ...appointmentsMutations.cancel(),
     onSuccess: async (data) => {
-      await queryClient.invalidateQueries({
-        queryKey: appointmentsQueryKeys.all,
-      })
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: appointmentsQueryKeys.all,
+        }),
+        queryClient.invalidateQueries({
+          queryKey: chargesQueryKeys.all,
+        }),
+      ])
       onSuccess?.(data)
     },
     onError: (error) => {

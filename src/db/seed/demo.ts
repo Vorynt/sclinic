@@ -15,6 +15,9 @@
  *   patricia.almeida@sclinic.local / senha123 (nurse)
  *   helena.barbosa@sclinic.local / senha123 (financial)
  *   tiago.ramos@sclinic.local / senha123    (manager, suspended)
+ *
+ * No SaaS subscription is seeded — owner must pick a plan on access
+ * (clinic.subscription_status = none → entitlement guard).
  */
 import { randomUUID } from "node:crypto"
 
@@ -46,14 +49,20 @@ import {
   rolePermissions,
   roles,
   session,
-  subscriptions,
   user,
   verification,
   vitalSigns,
 } from "@/db/schema"
 import { AUDIT_ACTIONS, AUDIT_ENTITY_TYPES } from "@/modules/audit/constants/audit"
+import { PLAN_CATALOG } from "@/modules/billing/constants/catalog"
 import { buildOnboardingHoursDraft } from "@/modules/clinics/constants/default-hours"
 import { toDbTime } from "@/modules/clinics/mappers/clinic-hours.mapper"
+import {
+  CLINICAL_NOTE_TEMPLATES,
+  getTemplateDefaultValues,
+  type ClinicalNoteTemplateId,
+} from "@/modules/medical-records/constants/clinical-note-templates"
+import { compileClinicalNoteForm } from "@/modules/medical-records/utils/compile-clinical-note-form"
 import {
   createInviteToken,
   hashInviteToken,
@@ -320,44 +329,18 @@ const ROLE_PERMISSION_MATRIX: Record<string, readonly string[]> = {
   ],
 }
 
-const STUB_PLANS = [
-  {
-    name: "Essencial",
-    description: "Para clínicas começando a digitalizar o atendimento.",
-    priceCents: 9900,
-    currency: "BRL",
-    billingCycle: "monthly" as const,
-    maxUsers: 3,
-    maxProfessionals: 2,
-    maxStorageBytes: 1 * 1024 * 1024 * 1024,
-    stripePriceId: null,
-    isActive: true,
-  },
-  {
-    name: "Profissional",
-    description: "Operação completa com mais usuários e profissionais.",
-    priceCents: 19900,
-    currency: "BRL",
-    billingCycle: "monthly" as const,
-    maxUsers: 10,
-    maxProfessionals: 8,
-    maxStorageBytes: 2 * 1024 * 1024 * 1024 - 1,
-    stripePriceId: null,
-    isActive: true,
-  },
-  {
-    name: "Enterprise",
-    description: "Limites ampliados para redes e alto volume.",
-    priceCents: 39900,
-    currency: "BRL",
-    billingCycle: "monthly" as const,
-    maxUsers: 50,
-    maxProfessionals: 40,
-    maxStorageBytes: 2 * 1024 * 1024 * 1024 - 1,
-    stripePriceId: null,
-    isActive: true,
-  },
-]
+const STUB_PLANS = PLAN_CATALOG.map((plan) => ({
+  name: plan.name,
+  description: plan.description,
+  priceCents: plan.priceCents,
+  currency: plan.currency,
+  billingCycle: plan.billingCycle,
+  maxUsers: plan.maxUsers,
+  maxProfessionals: plan.maxProfessionals,
+  maxStorageBytes: plan.maxStorageBytes,
+  stripePriceId: null as string | null,
+  isActive: true,
+}))
 
 const PROFESSIONAL_SEEDS = [
   {
@@ -576,6 +559,118 @@ const CLINICAL_NOTE_TEXTS = [
   "Renovação de receita de uso contínuo. Sem efeitos adversos relatados. Exames recentes estáveis. Próximo retorno em 90 dias.",
 ]
 
+const DEMO_NOTE_TEMPLATE_IDS = CLINICAL_NOTE_TEMPLATES.map(
+  (template) => template.id,
+) as ClinicalNoteTemplateId[]
+
+function buildDemoFormValues(
+  templateId: ClinicalNoteTemplateId,
+  index: number,
+): Record<string, unknown> {
+  const template = CLINICAL_NOTE_TEMPLATES.find((item) => item.id === templateId)!
+  const values = getTemplateDefaultValues(template)
+  const sampleText = CLINICAL_NOTE_TEXTS[index % CLINICAL_NOTE_TEXTS.length]!
+
+  switch (templateId) {
+    case "blank":
+      return { ...values, body: sampleText }
+    case "first_visit":
+      return {
+        ...values,
+        visit_type: "first",
+        has_companion: index % 3 === 0,
+        companion_relation: index % 3 === 0 ? "Cônjuge" : "",
+        referral: index % 2 === 0 ? "spontaneous" : "professional",
+        chief_complaint: "Cefaleia e mal-estar há alguns dias",
+        symptom_duration: `${3 + (index % 10)} dias`,
+        symptom_intensity: `${4 + (index % 5)}/10`,
+        hpi_onset: "Início insidioso, sem febre alta",
+        hpi_character: "Dor em pressão, bilateral",
+        allergies: index % 4 === 0 ? "Dipirona — reação cutânea" : "Nega alergias",
+        current_meds: "Uso contínuo conforme receita anterior",
+        chronic_conditions: index % 2 === 0 ? ["htn"] : [],
+        habits: index % 3 === 0 ? ["exercise"] : [],
+        vitals: "PA 120x80 · FC 72 · Tax 36.5",
+        pe_general: "BEG, corado, hidratado",
+        pe_focused: "Sem sinais de alarme neurológico",
+        primary_dx: "Cefaleia tensional",
+        differential_dx: "Enxaqueca sem aura",
+        cid_codes: "G44.2",
+        plan_exams: "Hemograma se persistir",
+        plan_rx: "Analgesia e hidratação",
+        plan_alarm: "Retornar se piora ou sinais de alarme",
+        next_visit: "30 dias",
+      }
+    case "follow_up":
+      return {
+        ...values,
+        return_reason: "Reavaliação após tratamento",
+        interval_since_last: `${14 + (index % 20)} dias`,
+        complaint_vs_prior: "Melhora parcial da queixa inicial",
+        clinical_course: index % 3 === 0 ? "worsened" : "improved",
+        course_details: sampleText,
+        new_symptoms: false,
+        er_visit: false,
+        adherence: "full",
+        tolerance: "Boa tolerância",
+        exam_results_today: "Exames trazidos dentro da normalidade",
+        vitals_today: "PA controlada",
+        pe_today: "Exame sem novas alterações",
+        response_to_plan: "Resposta favorável ao plano anterior",
+        current_dx: "Em acompanhamento",
+        cid_codes: "Z09",
+        plan_meds: "Manter terapêutica atual",
+        plan_goals: "Manter adesão e medidas não farmacológicas",
+        next_visit: "60 dias",
+      }
+    case "soap":
+      return {
+        ...values,
+        s_chief: "Dor torácica atípica há 2 dias",
+        s_hpi: sampleText,
+        s_ros: "Nega dispneia, síncope ou palpitação sustentada",
+        s_meds_allergies: "Em uso de anti-hipertensivo; nega alergias",
+        s_concerns: "Preocupação com evento cardíaco",
+        o_vitals: "PA 128x82 · FC 78 · SpO₂ 98%",
+        o_exam: "Ausculta cardíaca e pulmonar sem alterações",
+        o_labs: "ECG disponível sem alterações agudas",
+        a_status: "new",
+        a_primary: "Dor torácica não específica — baixo risco",
+        a_differential: "Ansiedade / refluxo",
+        a_cid: "R07.4",
+        a_risks: "Baixo risco imediato",
+        p_workup: "Troponina se recorrência; observar",
+        p_treatment: "Analgesia e orientação de alarme",
+        p_education: "Sinais de alarme para PS",
+        p_followup: "Retorno em 7 dias ou antes se piora",
+      }
+    case "procedure":
+      return {
+        ...values,
+        procedure_name: "Excisão de lesão cutânea",
+        indication: "Lesão pigmentada para anatomia patológica",
+        laterality: index % 2 === 0 ? "Membro superior direito" : "Face",
+        consent_obtained: true,
+        allergies_reviewed: "Revisadas — sem contraindicação",
+        antisepsis: "PVPI / clorexidina",
+        anesthesia: "Lidocaína 2% — 3 ml",
+        materials: "Bisturi 15, fio nylon 5-0",
+        technique: "Excisão elíptica com margem e sutura simples",
+        closure: "Sutura e curativo oclusivo",
+        specimen_sent: true,
+        specimen_detail: "Frasco com formol — anatomia patológica",
+        had_complication: false,
+        patient_status: "Estável, sem sangramento",
+        post_rx: "Analgésico se dor; curativo diário",
+        home_care: "Manter curativo seco por 24h",
+        alarm_signs: "Sangramento, febre, secreção",
+        follow_up: "Retirada de pontos em 7–10 dias",
+      }
+    default:
+      return values
+  }
+}
+
 /** Typical private-practice consultation fees (BRL cents). */
 const CHARGE_AMOUNT_CENTS = [
   15_000, // R$ 150
@@ -695,18 +790,6 @@ function atLocalTime(date: Date, hour: number, minute: number): Date {
   return next
 }
 
-function tiptapDoc(plainText: string) {
-  return {
-    type: "doc",
-    content: [
-      {
-        type: "paragraph",
-        content: [{ type: "text", text: plainText }],
-      },
-    ],
-  }
-}
-
 function slugifyEmailPart(value: string): string {
   return value
     .normalize("NFD")
@@ -812,6 +895,10 @@ async function seedPlans() {
     throw new Error("Failed to seed Profissional plan")
   }
 
+  console.log(
+    "  Tip: run `npm run stripe:sync-plans` to attach Stripe price IDs after demo wipe.",
+  )
+
   return professionalPlan
 }
 
@@ -905,7 +992,7 @@ async function seedTeamMembers(params: {
   return seeded
 }
 
-async function seedClinic(ownerId: string, planId: string) {
+async function seedClinic(ownerId: string) {
   const [clinic] = await db
     .insert(clinics)
     .values({
@@ -916,7 +1003,8 @@ async function seedClinic(ownerId: string, planId: string) {
       phone: "1133334444",
       website: "https://horizontesaude.local",
       timezone: "America/Sao_Paulo",
-      subscriptionStatus: "active",
+      // No subscription row — owner must checkout a plan after login.
+      subscriptionStatus: "none",
       addressStreet: "Av. Paulista",
       addressNumber: "1000",
       addressComplement: "Conj. 1201",
@@ -930,19 +1018,6 @@ async function seedClinic(ownerId: string, planId: string) {
     .returning()
 
   if (!clinic) throw new Error("Failed to create clinic")
-
-  const now = new Date()
-  const periodEnd = addDays(now, 30)
-
-  await db.insert(subscriptions).values({
-    clinicId: clinic.id,
-    planId,
-    gateway: "stripe",
-    status: "active",
-    currentPeriodStart: now,
-    currentPeriodEnd: periodEnd,
-    cancelAtPeriodEnd: false,
-  })
 
   const weekly = buildOnboardingHoursDraft()
   await db.insert(clinicBusinessHours).values(
@@ -1353,15 +1428,23 @@ async function seedClinicalNotesAndVitals(params: {
   const completed = appointmentRows.filter((row) => row.status === "completed")
 
   const noteRows = completed.map((appointment, index) => {
-    const plainText =
-      CLINICAL_NOTE_TEXTS[index % CLINICAL_NOTE_TEXTS.length]!
+    const templateId =
+      DEMO_NOTE_TEMPLATE_IDS[index % DEMO_NOTE_TEMPLATE_IDS.length]!
+    const template = CLINICAL_NOTE_TEMPLATES.find(
+      (item) => item.id === templateId,
+    )!
+    const formValues = buildDemoFormValues(templateId, index)
+    const compiled = compileClinicalNoteForm(template, formValues)
+
     return {
       clinicId,
       patientId: appointment.patientId,
       appointmentId: appointment.id,
       professionalId: appointment.professionalId,
-      content: tiptapDoc(plainText),
-      plainText,
+      content: compiled.content,
+      plainText: compiled.plainText,
+      templateId,
+      formValues,
       createdBy: ownerId,
       updatedBy: ownerId,
     }
@@ -1627,9 +1710,59 @@ async function seedAuditLogs(params: {
         after: { status: "canceled" },
       },
     },
+    {
+      action: AUDIT_ACTIONS.CLINICAL_NOTE_UPSERT,
+      entityType: AUDIT_ENTITY_TYPES.CLINICAL_NOTE,
+      status: "success",
+      changes: {
+        after: { templateId: "soap", plainTextPreview: true },
+      },
+    },
+    {
+      action: AUDIT_ACTIONS.VITAL_SIGNS_UPSERT,
+      entityType: AUDIT_ENTITY_TYPES.VITAL_SIGNS,
+      status: "success",
+      changes: {
+        after: { systolicMmHg: 120, diastolicMmHg: 80, heartRateBpm: 72 },
+      },
+    },
+    {
+      action: AUDIT_ACTIONS.CLINICAL_ALERT_CREATE,
+      entityType: AUDIT_ENTITY_TYPES.CLINICAL_ALERT,
+      status: "success",
+      changes: {
+        after: { severity: "high", title: "Alergia a penicilina" },
+      },
+    },
+    {
+      action: AUDIT_ACTIONS.CLINICAL_ALERT_DELETE,
+      entityType: AUDIT_ENTITY_TYPES.CLINICAL_ALERT,
+      status: "success",
+      changes: {
+        before: { severity: "medium" },
+        after: { deleted: true },
+      },
+    },
+    {
+      action: AUDIT_ACTIONS.PROFESSIONAL_CREATE,
+      entityType: AUDIT_ENTITY_TYPES.PROFESSIONAL,
+      status: "success",
+      changes: {
+        after: { fullName: "Dra. Ana Nogueira" },
+      },
+    },
+    {
+      action: AUDIT_ACTIONS.PROFESSIONAL_UPDATE,
+      entityType: AUDIT_ENTITY_TYPES.PROFESSIONAL,
+      status: "success",
+      changes: {
+        before: { specialty: "Clínica Geral" },
+        after: { specialty: "Clínica Médica" },
+      },
+    },
   ]
 
-  const rows = Array.from({ length: 60 }, (_, index) => {
+  const rows = Array.from({ length: 80 }, (_, index) => {
     const actor = actors[index % actors.length]!
     const createdAt = addDays(new Date(), -(index % 40))
     createdAt.setHours(8 + (index % 10), (index * 7) % 60, 0, 0)
@@ -1661,7 +1794,7 @@ async function seedAuditLogs(params: {
     const appointmentId = appointmentIds[index % appointmentIds.length]!
     const chargeId =
       chargeIds.length > 0 ? chargeIds[index % chargeIds.length]! : null
-    const cycle = index % 7
+    const cycle = index % 10
 
     if (cycle === 0) {
       return {
@@ -1777,6 +1910,71 @@ async function seedAuditLogs(params: {
       }
     }
 
+    if (cycle === 6) {
+      return {
+        clinicId,
+        actorUserId: actor.id,
+        actorName: actor.name,
+        actorEmail: actor.email,
+        action: AUDIT_ACTIONS.CLINICAL_NOTE_UPSERT,
+        status: "success" as const,
+        entityType: AUDIT_ENTITY_TYPES.CLINICAL_NOTE,
+        entityId: appointmentId,
+        changes: {
+          after: {
+            appointmentId,
+            templateId:
+              DEMO_NOTE_TEMPLATE_IDS[index % DEMO_NOTE_TEMPLATE_IDS.length],
+          },
+        },
+        errorMessage: null,
+        errorCode: null,
+        createdAt,
+      }
+    }
+
+    if (cycle === 7) {
+      return {
+        clinicId,
+        actorUserId: actor.id,
+        actorName: actor.name,
+        actorEmail: actor.email,
+        action: AUDIT_ACTIONS.VITAL_SIGNS_UPSERT,
+        status: "success" as const,
+        entityType: AUDIT_ENTITY_TYPES.VITAL_SIGNS,
+        entityId: appointmentId,
+        changes: {
+          after: {
+            appointmentId,
+            systolicMmHg: 110 + (index % 30),
+            diastolicMmHg: 70 + (index % 15),
+          },
+        },
+        errorMessage: null,
+        errorCode: null,
+        createdAt,
+      }
+    }
+
+    if (cycle === 8) {
+      return {
+        clinicId,
+        actorUserId: actor.id,
+        actorName: actor.name,
+        actorEmail: actor.email,
+        action: AUDIT_ACTIONS.CLINICAL_ALERT_CREATE,
+        status: "success" as const,
+        entityType: AUDIT_ENTITY_TYPES.CLINICAL_ALERT,
+        entityId: patientId,
+        changes: {
+          after: { patientId, severity: index % 2 === 0 ? "high" : "medium" },
+        },
+        errorMessage: null,
+        errorCode: null,
+        createdAt,
+      }
+    }
+
     return {
       clinicId,
       actorUserId: actor.id,
@@ -1808,9 +2006,9 @@ async function seed() {
     console.log("Wiping database…")
     await wipeAllData()
 
-    console.log("Seeding RBAC + plans…")
+    console.log("Seeding RBAC + plans catalog…")
     const allRoles = await seedRbac()
-    const professionalPlan = await seedPlans()
+    await seedPlans()
     const ownerRole = allRoles.find((role) => role.key === "owner")
     if (!ownerRole) throw new Error("Owner role missing after RBAC seed")
 
@@ -1820,8 +2018,8 @@ async function seed() {
     console.log("Seeding owner user…")
     const ownerId = await seedOwnerUser(passwordHash)
 
-    console.log("Seeding clinic, hours, subscription…")
-    const clinicId = await seedClinic(ownerId, professionalPlan.id)
+    console.log("Seeding clinic + hours (no subscription)…")
+    const clinicId = await seedClinic(ownerId)
     await seedMembership(ownerId, clinicId, ownerRole.id)
 
     console.log("Seeding team members…")
@@ -1923,6 +2121,7 @@ async function seed() {
     console.log(`  Clinical alerts: ${alertCount}`)
     console.log(`  Invitations: ${invitationCount}`)
     console.log(`  Audit logs: ${auditCount}`)
+    console.log(`  Subscription: none (entitlement guard active)`)
     console.log(`  Password (all): ${DEMO_PASSWORD}`)
     console.log(`  Owner login: ${DEMO_OWNER.email} / ${DEMO_PASSWORD}`)
   } finally {

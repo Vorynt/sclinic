@@ -1,4 +1,8 @@
-import type { ClinicalNoteContent } from "@/db/schema"
+import type {
+  ClinicalNoteContent,
+  ClinicalNoteFormValues,
+} from "@/db/schema"
+import type { ClinicalNoteTemplateId } from "@/modules/medical-records/constants/clinical-note-templates"
 
 export type ClinicalNote = {
   id: string
@@ -9,6 +13,8 @@ export type ClinicalNote = {
   professionalName: string | null
   content: ClinicalNoteContent
   plainText: string
+  templateId: ClinicalNoteTemplateId | null
+  formValues: ClinicalNoteFormValues | null
   appointmentStartsAt: Date | null
   createdAt: Date
   updatedAt: Date

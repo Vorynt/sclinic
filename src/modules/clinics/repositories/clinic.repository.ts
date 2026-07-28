@@ -8,13 +8,12 @@ import {
   invitations,
   patients,
   professionalClinics,
-  subscriptions,
 } from "@/db/schema"
 import { withDbError } from "@/db/with-db-error"
 import type { CreateClinicDto } from "@/modules/clinics/dto/create-clinic.dto"
 import type { UpdateClinicDto } from "@/modules/clinics/dto/update-clinic.dto"
 import { toClinic } from "@/modules/clinics/mappers/clinic.mapper"
-import type { Clinic } from "@/modules/clinics/types/clinic"
+import type { Clinic, ClinicSubscriptionStatus } from "@/modules/clinics/types/clinic"
 
 export const clinicRepository = {
   async findById(id: string): Promise<Clinic | null> {
@@ -116,9 +115,22 @@ export const clinicRepository = {
     })
   },
 
+  async updateSubscriptionStatus(
+    clinicId: string,
+    subscriptionStatus: ClinicSubscriptionStatus,
+  ): Promise<void> {
+    return withDbError(async () => {
+      await db
+        .update(clinics)
+        .set({ subscriptionStatus })
+        .where(and(eq(clinics.id, clinicId), isNull(clinics.deletedAt)))
+    })
+  },
+
   /**
    * Soft-deletes the clinic and its operational data (tenant wipe).
    * Memberships / sessions are handled by auth after this.
+   * SaaS subscription stays on the user (ADR-003).
    */
   async softDeleteTenant(params: {
     id: string
@@ -170,20 +182,6 @@ export const clinicRepository = {
           and(
             eq(professionalClinics.clinicId, params.id),
             isNull(professionalClinics.deletedAt),
-          ),
-        )
-
-      await db
-        .update(subscriptions)
-        .set({
-          deletedAt: now,
-          status: "canceled",
-          updatedAt: now,
-        })
-        .where(
-          and(
-            eq(subscriptions.clinicId, params.id),
-            isNull(subscriptions.deletedAt),
           ),
         )
 

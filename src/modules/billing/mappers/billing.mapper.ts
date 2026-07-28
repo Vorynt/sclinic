@@ -35,12 +35,15 @@ export function toPlan(row: PlanRow): Plan {
 export function toSubscription(row: SubscriptionRow): Subscription {
   return {
     id: row.id,
-    clinicId: row.clinicId,
+    userId: row.userId,
     planId: row.planId,
     gateway: row.gateway,
     gatewayCustomerId: row.gatewayCustomerId,
     gatewaySubscriptionId: row.gatewaySubscriptionId,
     status: SUBSCRIPTION_STATUSES.has(row.status) ? row.status : "incomplete",
+    trialEndsAt: row.trialEndsAt,
+    currentPeriodStart: row.currentPeriodStart,
+    currentPeriodEnd: row.currentPeriodEnd,
     cancelAtPeriodEnd: row.cancelAtPeriodEnd,
   }
 }

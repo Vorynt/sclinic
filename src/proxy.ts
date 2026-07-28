@@ -24,6 +24,7 @@ export function proxy(request: NextRequest) {
     pathname === routes.professionalInvite ||
     pathname.startsWith(routes.professionalInvite) ||
     pathname.startsWith("/api/auth") ||
+    pathname.startsWith("/api/stripe/webhook") ||
     isAuthRoute
 
   if (!sessionCookie && !isPublicRoute) {

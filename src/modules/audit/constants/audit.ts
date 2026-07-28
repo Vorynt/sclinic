@@ -20,6 +20,20 @@ export const AUDIT_ACTIONS = {
   CHARGE_CREATE: "charge.create",
   CHARGE_MARK_PAID: "charge.mark_paid",
   CHARGE_CANCEL: "charge.cancel",
+  CLINICAL_NOTE_UPSERT: "clinical_note.upsert",
+  VITAL_SIGNS_UPSERT: "vital_signs.upsert",
+  CLINICAL_ALERT_CREATE: "clinical_alert.create",
+  CLINICAL_ALERT_DELETE: "clinical_alert.delete",
+  PRESCRIPTION_CREATE: "prescription.create",
+  PRESCRIPTION_UPDATE: "prescription.update",
+  PRESCRIPTION_ISSUE: "prescription.issue",
+  PRESCRIPTION_DELETE: "prescription.delete",
+  PRESCRIPTION_LAYOUT_UPSERT: "prescription_layout.upsert",
+  PRESCRIPTION_LAYOUT_RESET: "prescription_layout.reset",
+  PROFESSIONAL_CREATE: "professional.create",
+  PROFESSIONAL_UPDATE: "professional.update",
+  PROFESSIONAL_DELETE: "professional.delete",
+  PROFESSIONAL_INVITE_PROFILE_UPDATE: "professional.invite_profile_update",
 } as const
 
 export type AuditAction = (typeof AUDIT_ACTIONS)[keyof typeof AUDIT_ACTIONS]
@@ -32,6 +46,12 @@ export const AUDIT_ENTITY_TYPES = {
   MEMBER: "member",
   INVITATION: "invitation",
   CHARGE: "charge",
+  CLINICAL_NOTE: "clinical_note",
+  VITAL_SIGNS: "vital_signs",
+  CLINICAL_ALERT: "clinical_alert",
+  PRESCRIPTION: "prescription",
+  PRESCRIPTION_LAYOUT: "prescription_layout",
+  PROFESSIONAL: "professional",
 } as const
 
 export type AuditEntityType =
@@ -59,6 +79,21 @@ export const AUDIT_ACTION_LABELS: Record<string, string> = {
   [AUDIT_ACTIONS.CHARGE_CREATE]: "Cobrança criada",
   [AUDIT_ACTIONS.CHARGE_MARK_PAID]: "Cobrança marcada como paga",
   [AUDIT_ACTIONS.CHARGE_CANCEL]: "Cobrança cancelada",
+  [AUDIT_ACTIONS.CLINICAL_NOTE_UPSERT]: "Anotação clínica salva",
+  [AUDIT_ACTIONS.VITAL_SIGNS_UPSERT]: "Sinais vitais salvos",
+  [AUDIT_ACTIONS.CLINICAL_ALERT_CREATE]: "Alerta clínico criado",
+  [AUDIT_ACTIONS.CLINICAL_ALERT_DELETE]: "Alerta clínico excluído",
+  [AUDIT_ACTIONS.PRESCRIPTION_CREATE]: "Receita criada",
+  [AUDIT_ACTIONS.PRESCRIPTION_UPDATE]: "Receita atualizada",
+  [AUDIT_ACTIONS.PRESCRIPTION_ISSUE]: "Receita emitida",
+  [AUDIT_ACTIONS.PRESCRIPTION_DELETE]: "Receita excluída",
+  [AUDIT_ACTIONS.PRESCRIPTION_LAYOUT_UPSERT]: "Modelo de receita salvo",
+  [AUDIT_ACTIONS.PRESCRIPTION_LAYOUT_RESET]: "Modelo de receita restaurado",
+  [AUDIT_ACTIONS.PROFESSIONAL_CREATE]: "Profissional criado",
+  [AUDIT_ACTIONS.PROFESSIONAL_UPDATE]: "Profissional atualizado",
+  [AUDIT_ACTIONS.PROFESSIONAL_DELETE]: "Profissional excluído",
+  [AUDIT_ACTIONS.PROFESSIONAL_INVITE_PROFILE_UPDATE]:
+    "Perfil do profissional (convite) atualizado",
 }
 
 export const AUDIT_ENTITY_LABELS: Record<string, string> = {
@@ -69,4 +104,10 @@ export const AUDIT_ENTITY_LABELS: Record<string, string> = {
   [AUDIT_ENTITY_TYPES.MEMBER]: "Membro",
   [AUDIT_ENTITY_TYPES.INVITATION]: "Convite",
   [AUDIT_ENTITY_TYPES.CHARGE]: "Cobrança",
+  [AUDIT_ENTITY_TYPES.CLINICAL_NOTE]: "Anotação clínica",
+  [AUDIT_ENTITY_TYPES.VITAL_SIGNS]: "Sinais vitais",
+  [AUDIT_ENTITY_TYPES.CLINICAL_ALERT]: "Alerta clínico",
+  [AUDIT_ENTITY_TYPES.PRESCRIPTION]: "Receita",
+  [AUDIT_ENTITY_TYPES.PRESCRIPTION_LAYOUT]: "Modelo de receita",
+  [AUDIT_ENTITY_TYPES.PROFESSIONAL]: "Profissional",
 }

@@ -15,6 +15,11 @@ function requireEnv(name: string): string {
   return value;
 }
 
+function optionalEnv(name: string): string | undefined {
+  const value = process.env[name];
+  return value && value.length > 0 ? value : undefined;
+}
+
 export const env = {
   NODE_ENV: process.env.NODE_ENV ?? "development",
   get DATABASE_URL() {
@@ -39,5 +44,16 @@ export const env = {
   /** Default From address, e.g. `sclinic <noreply@yourdomain.com>`. */
   get EMAIL_FROM() {
     return requireEnv("EMAIL_FROM");
+  },
+  /** Stripe secret key — required only when calling Stripe APIs. */
+  get STRIPE_SECRET_KEY() {
+    return requireEnv("STRIPE_SECRET_KEY");
+  },
+  get STRIPE_WEBHOOK_SECRET() {
+    return requireEnv("STRIPE_WEBHOOK_SECRET");
+  },
+  /** True when Checkout / Portal can run (secret key present). */
+  get isStripeConfigured() {
+    return Boolean(optionalEnv("STRIPE_SECRET_KEY"));
   },
 };

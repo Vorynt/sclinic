@@ -18,8 +18,6 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Spinner } from "@/components/ui/spinner"
-import { Permission } from "@/config/permissions"
 import {
   APPOINTMENT_STATUS_LABELS,
   APPOINTMENT_TYPE_LABELS,
@@ -31,9 +29,7 @@ import type {
   Appointment,
   AppointmentStatus,
 } from "@/modules/appointments/types/appointment"
-import { CompleteAttendancePaymentDialog } from "@/modules/billing/components/CompleteAttendancePaymentDialog"
 import { PatientClinicalAlertBadges } from "@/modules/medical-records/components/PatientClinicalAlertBadges"
-import { useAuth } from "@/providers/AuthProvider"
 
 type AttendanceHeaderProps = {
   appointment: Appointment
@@ -51,16 +47,16 @@ function statusBadgeVariant(
 export function AttendanceHeader({ appointment }: AttendanceHeaderProps) {
   const router = useRouter()
   const agendaHref = useAgendaReturnHref()
-  const { canAny } = useAuth()
-  const canCollect = canAny(
-    Permission.FINANCIAL_COLLECT,
-    Permission.FINANCIAL_MANAGE,
-  )
 
   const [completeOpen, setCompleteOpen] = useState(false)
   const [afterCompleteOpen, setAfterCompleteOpen] = useState(false)
 
   const completeAttendance = useUpdateAppointmentStatusMutation({
+    onSuccess: () => {
+      toast.success("Atendimento concluído")
+      setCompleteOpen(false)
+      setAfterCompleteOpen(true)
+    },
     onError: (error) => toast.error(error.message),
   })
 
@@ -103,21 +99,34 @@ export function AttendanceHeader({ appointment }: AttendanceHeaderProps) {
         ) : null}
       </header>
 
-      <CompleteAttendancePaymentDialog
-        open={completeOpen}
-        onOpenChange={setCompleteOpen}
-        appointmentId={appointment.id}
-        canCollect={canCollect}
-        isCompleting={completeAttendance.isPending}
-        onComplete={async () => {
-          await completeAttendance.mutateAsync({
-            id: appointment.id,
-            status: "completed",
-          })
-          toast.success("Atendimento concluído")
-        }}
-        onAfterComplete={() => setAfterCompleteOpen(true)}
-      />
+      <AlertDialog open={completeOpen} onOpenChange={setCompleteOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Concluir atendimento?</AlertDialogTitle>
+            <AlertDialogDescription>
+              O paciente seguirá para a recepção para efetuar o pagamento, se
+              houver cobrança pendente.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={completeAttendance.isPending}>
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction
+              disabled={completeAttendance.isPending}
+              onClick={(event) => {
+                event.preventDefault()
+                completeAttendance.mutate({
+                  id: appointment.id,
+                  status: "completed",
+                })
+              }}
+            >
+              Concluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <AlertDialog open={afterCompleteOpen} onOpenChange={setAfterCompleteOpen}>
         <AlertDialogContent>

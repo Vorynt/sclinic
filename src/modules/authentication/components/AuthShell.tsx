@@ -61,7 +61,7 @@ export function AuthShell({ children, wide = false }: AuthShellProps) {
         <div
           className={
             wide
-              ? "animate-auth-fade-up w-full max-w-fit rounded-2xl border border-border/70 bg-background/75 p-8 shadow-[0_24px_80px_-32px_color-mix(in_oklch,var(--foreground)_28%,transparent)] ring-1 ring-foreground/5 backdrop-blur-xl supports-backdrop-filter:bg-background/60"
+              ? "animate-auth-fade-up w-full max-w-3xl rounded-2xl border border-border/70 bg-background/75 p-8 shadow-[0_24px_80px_-32px_color-mix(in_oklch,var(--foreground)_28%,transparent)] ring-1 ring-foreground/5 backdrop-blur-xl supports-backdrop-filter:bg-background/60"
               : "animate-auth-fade-up w-full max-w-md rounded-2xl border border-border/70 bg-background/75 p-8 shadow-[0_24px_80px_-32px_color-mix(in_oklch,var(--foreground)_28%,transparent)] ring-1 ring-foreground/5 backdrop-blur-xl supports-backdrop-filter:bg-background/60"
           }>
           {children}
