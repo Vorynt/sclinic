@@ -191,6 +191,23 @@ export const professionalService = {
     return professional
   },
 
+  /**
+   * Read professional profile for clinical documents (e.g. prescription snapshots).
+   * Does not require professionals.manage — only records access in the tenant.
+   */
+  async getByIdForRecords(
+    id: string,
+    ctx: AuthRequestContext,
+  ): Promise<ProfessionalListItem | null> {
+    const auth = await requireAnyPermission(
+      ctx,
+      Permission.RECORDS_READ,
+      Permission.RECORDS_WRITE,
+      Permission.PROFESSIONALS_MANAGE,
+    )
+    return professionalRepository.findById(id, auth.clinicId)
+  },
+
   async create(
     data: CreateProfessionalDto,
     ctx: AuthRequestContext,

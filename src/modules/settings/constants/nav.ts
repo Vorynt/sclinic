@@ -26,6 +26,11 @@ export const SETTINGS_NAV_ITEMS: SettingsNavItem[] = [
     description: "Funcionamento semanal da clínica",
   },
   {
+    title: "Receitas",
+    href: routes.settingsPrescriptions,
+    description: "Modelo e timbrado de receita",
+  },
+  {
     title: "Uso do plano",
     href: routes.settingsUsage,
     description: "Limites e consumo de recursos do plano",

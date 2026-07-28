@@ -23,6 +23,7 @@ Ver também:
 - [ADR-002 — faturamento clínico](../docs/adr/002-clinical-billing.md)
 - [ADR-003 — assinatura SaaS por usuário](../docs/adr/003-user-saas-subscription.md)
 - [ADR-004 — downgrade e modo over_limit](../docs/adr/004-plan-downgrade-over-limit.md)
+- [ADR-005 — receitas médicas (prescrição)](../docs/adr/005-prescriptions.md)
 
 ## Fluxo de camadas
 

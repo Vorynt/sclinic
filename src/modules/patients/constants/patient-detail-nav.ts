@@ -65,5 +65,13 @@ export function getPatientDetailNavItems(
       match: "prefix",
       permissions: [Permission.RECORDS_READ],
     },
+    {
+      id: "prescriptions",
+      title: "Receitas",
+      description: "Prescrições emitidas",
+      href: routes.patientDetailPrescriptions(patientId),
+      match: "prefix",
+      permissions: [Permission.RECORDS_READ],
+    },
   ]
 }
