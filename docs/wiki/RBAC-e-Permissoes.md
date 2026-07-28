@@ -35,5 +35,6 @@ Fontes: `src/config/permissions.ts`, `src/db/seed/rbac.ts` (`npm run db:seed:rba
 - **Equipe:** não alterar owner nem a si; remove → `suspended`.
 - **Uso do plano:** `/settings/usage` só owner.
 - **`collect` ≠ `view`:** cobrar na agenda sem acessar `/billing`.
+- **Owner + perfil clínico (ADR-007):** membership permanece `owner` (sem dual-role). Perfil em `professionals` é opcional e independente; não confundir com membership `doctor`/`nurse`.
 
 Guards: `src/modules/authentication/permissions/guards.ts`.

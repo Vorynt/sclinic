@@ -16,6 +16,7 @@ import {
   updateProfessionalInviteProfileSchema,
   updateProfessionalSchema,
 } from "@/modules/professionals/schemas/professional.schema"
+import { createOwnerClinicalProfileSchema } from "@/modules/professionals/schemas/owner-clinical-profile.schema"
 import { DEFAULT_LIST_PAGE_SIZE } from "@/shared/validators"
 
 const VALID_UUID = "11111111-1111-4111-8111-111111111111"
@@ -226,5 +227,49 @@ describe("listProfessionalsSchema", () => {
     assert.equal(parsed.page, 1)
     assert.equal(parsed.pageSize, DEFAULT_LIST_PAGE_SIZE)
     assert.equal(parsed.q, undefined)
+  })
+})
+
+describe("createOwnerClinicalProfileSchema", () => {
+  it("accepts doctor profile with required agenda fields", () => {
+    const parsed = createOwnerClinicalProfileSchema.parse({
+      clinicalPracticeType: "doctor",
+      fullName: " Ana Silva ",
+      treatmentPronoun: "dra",
+      councilType: "CRM",
+      councilNumber: "12345",
+      councilState: "rj",
+      specialty: "Dermatologia",
+    })
+    assert.equal(parsed.clinicalPracticeType, "doctor")
+    assert.equal(parsed.fullName, "Ana Silva")
+    assert.equal(parsed.councilState, "RJ")
+  })
+
+  it("accepts nurse as clinicalPracticeType", () => {
+    const parsed = createOwnerClinicalProfileSchema.parse({
+      clinicalPracticeType: "nurse",
+      fullName: "Carlos Enfermagem",
+      treatmentPronoun: "enf",
+      councilType: "COREN",
+    })
+    assert.equal(parsed.clinicalPracticeType, "nurse")
+  })
+
+  it("rejects missing fullName or treatmentPronoun", () => {
+    assert.equal(
+      createOwnerClinicalProfileSchema.safeParse({
+        clinicalPracticeType: "doctor",
+        treatmentPronoun: "dr",
+      }).success,
+      false,
+    )
+    assert.equal(
+      createOwnerClinicalProfileSchema.safeParse({
+        clinicalPracticeType: "doctor",
+        fullName: "Ana",
+      }).success,
+      false,
+    )
   })
 })

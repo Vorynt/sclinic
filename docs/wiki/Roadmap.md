@@ -16,10 +16,11 @@ Derivado do **código implementado** + ADRs 001–006 + gaps explícitos no repo
 1. Plataforma multi-clínica + auth + RBAC
 2. Onboarding SaaS (planos Stripe) + gates de entitlement / over_limit
 3. Cadastros: pacientes, profissionais, equipe
-4. Agenda + máquina de status + attendance
-5. Prontuário MVP: notas, vitais, alertas, receitas
-6. Loop balcão: charge + board recepção + SSE
-7. Auditoria + settings + landing
+4. Owner com perfil clínico opcional (consultório solo — ADR-007)
+5. Agenda + máquina de status + attendance
+6. Prontuário MVP: notas, vitais, alertas, receitas
+7. Loop balcão: charge + board recepção + SSE
+8. Auditoria + settings + landing
 
 ## Próximo (Next) — extensões dos ADRs
 

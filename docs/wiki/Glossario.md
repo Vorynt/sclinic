@@ -5,6 +5,7 @@
 | **Clinic / clínica** | Tenant operacional; dados escopados por `clinicId` |
 | **Membership** | Vínculo user ↔ clínica com role (`active` / `suspended`) |
 | **Owner** | Papel que cria a clínica e paga a assinatura SaaS |
+| **Perfil clínico** | Registro em `professionals` agendável; pode coexistir com membership `owner` (ADR-007) — não é dual-role RBAC |
 | **Entitled** | Assinatura viva: `trialing` \| `active` \| `past_due` |
 | **Over limit** | Uso > cotas do plano após downgrade; não derruba sessão |
 | **Charge** | Cobrança clínica 1:1 com appointment (ADR-002) |

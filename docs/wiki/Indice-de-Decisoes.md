@@ -12,6 +12,7 @@ Decisões canônicas: **ADRs** em `docs/adr/`. Notas curtas de implementação: 
 | [004](https://github.com/ViniciusSantos31/sclinic/blob/main/docs/adr/004-plan-downgrade-over-limit.md) | Downgrade over_limit | Accepted | banner + assertPlanCapacity |
 | [005](https://github.com/ViniciusSantos31/sclinic/blob/main/docs/adr/005-prescriptions.md) | Receitas médicas | Accepted | draft→issued; print HTML |
 | [006](https://github.com/ViniciusSantos31/sclinic/blob/main/docs/adr/006-reception-ops-sse.md) | Recepção + SSE | Accepted | board; médico não cobra |
+| [007](https://github.com/ViniciusSantos31/sclinic/blob/main/docs/adr/007-owner-clinical-profile.md) | Perfil clínico do owner | Accepted | solo; membership owner + professionals |
 
 Paths locais: `docs/adr/00N-*.md`.
 
@@ -26,6 +27,7 @@ Paths locais: `docs/adr/00N-*.md`.
 | Receita | Entidade própria; snapshot na emissão | ADR-005 |
 | Caixa | Separado do “concluir” clínico | ADR-006 |
 | Realtime MVP | SSE in-process, extensível a broker | ADR-006 |
+| Owner atende | Perfil clínico opcional; sem dual membership | ADR-007, [Profissionais](Dominio-Profissionais) |
 | Módulo referência | `patients` como template | architecture/001 |
 
 ## Notebooks (implementação)

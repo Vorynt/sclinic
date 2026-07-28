@@ -1,11 +1,13 @@
 import { mutationOptions } from "@tanstack/react-query"
 
 import { acceptProfessionalInviteAction } from "@/modules/professionals/actions/accept-professional-invite"
+import { createOwnerClinicalProfileAction } from "@/modules/professionals/actions/create-owner-clinical-profile"
 import { createProfessionalAction } from "@/modules/professionals/actions/create-professional"
 import { deleteProfessionalAction } from "@/modules/professionals/actions/delete-professional"
 import { setProfessionalStatusAction } from "@/modules/professionals/actions/set-professional-status"
 import { updateProfessionalAction } from "@/modules/professionals/actions/update-professional"
 import { updateProfessionalInviteProfileAction } from "@/modules/professionals/actions/update-professional-invite-profile"
+import type { CreateOwnerClinicalProfileDto } from "@/modules/professionals/dto/create-owner-clinical-profile.dto"
 import type { CreateProfessionalDto } from "@/modules/professionals/dto/create-professional.dto"
 import type {
   ProfessionalInviteTokenDto,
@@ -17,6 +19,10 @@ import { unwrapActionResult } from "@/shared/errors"
 
 export const professionalsMutationKeys = {
   create: ["professionals", "create"] as const,
+  createOwnerClinicalProfile: [
+    "professionals",
+    "create-owner-clinical-profile",
+  ] as const,
   update: ["professionals", "update"] as const,
   setStatus: ["professionals", "set-status"] as const,
   delete: ["professionals", "delete"] as const,
@@ -30,6 +36,13 @@ export const professionalsMutations = {
       mutationKey: professionalsMutationKeys.create,
       mutationFn: async (data: CreateProfessionalDto) =>
         unwrapActionResult(await createProfessionalAction(data)),
+    }),
+
+  createOwnerClinicalProfile: () =>
+    mutationOptions({
+      mutationKey: professionalsMutationKeys.createOwnerClinicalProfile,
+      mutationFn: async (data: CreateOwnerClinicalProfileDto) =>
+        unwrapActionResult(await createOwnerClinicalProfileAction(data)),
     }),
 
   update: () =>

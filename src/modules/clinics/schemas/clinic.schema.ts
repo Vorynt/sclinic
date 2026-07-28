@@ -1,5 +1,7 @@
 import { z } from "zod"
 
+import { createOwnerClinicalProfileSchema } from "@/modules/professionals/schemas/owner-clinical-profile.schema"
+
 function optionalString(max: number, message: string) {
   return z
     .string()
@@ -9,13 +11,16 @@ function optionalString(max: number, message: string) {
     .transform((value) => (value && value.length > 0 ? value : undefined))
 }
 
-export const createClinicSchema = z.object({
+const clinicBaseSchema = z.object({
   name: z
     .string()
     .trim()
     .min(1, "Nome da clínica é obrigatório")
     .max(200, "Nome deve ter no máximo 200 caracteres"),
-  tradeName: optionalString(200, "Nome fantasia deve ter no máximo 200 caracteres"),
+  tradeName: optionalString(
+    200,
+    "Nome fantasia deve ter no máximo 200 caracteres",
+  ),
   document: optionalString(18, "CNPJ/CPF inválido"),
   email: z
     .string()
@@ -40,9 +45,87 @@ export const createClinicSchema = z.object({
     }),
   addressZip: optionalString(16, "CEP inválido"),
   planId: z.string().uuid("Plano inválido"),
+  alsoPractices: z.boolean().default(false),
+  clinicalPracticeType:
+    createOwnerClinicalProfileSchema.shape.clinicalPracticeType.optional(),
+  fullName: createOwnerClinicalProfileSchema.shape.fullName.optional(),
+  treatmentPronoun:
+    createOwnerClinicalProfileSchema.shape.treatmentPronoun.optional(),
+  councilType: createOwnerClinicalProfileSchema.shape.councilType.optional(),
+  councilNumber:
+    createOwnerClinicalProfileSchema.shape.councilNumber.optional(),
+  councilState: createOwnerClinicalProfileSchema.shape.councilState.optional(),
+  specialty: createOwnerClinicalProfileSchema.shape.specialty.optional(),
+})
+
+export const createClinicSchema = clinicBaseSchema.superRefine((data, ctx) => {
+  if (!data.alsoPractices) return
+
+  const profile = createOwnerClinicalProfileSchema.safeParse({
+    clinicalPracticeType: data.clinicalPracticeType,
+    fullName: data.fullName,
+    treatmentPronoun: data.treatmentPronoun,
+    councilType: data.councilType,
+    councilNumber: data.councilNumber,
+    councilState: data.councilState,
+    specialty: data.specialty,
+  })
+
+  if (profile.success) return
+
+  for (const issue of profile.error.issues) {
+    ctx.addIssue({
+      code: "custom",
+      message: issue.message,
+      path: issue.path,
+    })
+  }
 })
 
 export type CreateClinicInput = z.infer<typeof createClinicSchema>
+
+export type ClinicCreateFields = Omit<
+  CreateClinicInput,
+  | "alsoPractices"
+  | "clinicalPracticeType"
+  | "fullName"
+  | "treatmentPronoun"
+  | "councilType"
+  | "councilNumber"
+  | "councilState"
+  | "specialty"
+>
+
+export function toClinicCreateFields(data: CreateClinicInput): ClinicCreateFields {
+  return {
+    name: data.name,
+    tradeName: data.tradeName,
+    document: data.document,
+    email: data.email,
+    phone: data.phone,
+    addressStreet: data.addressStreet,
+    addressNumber: data.addressNumber,
+    addressComplement: data.addressComplement,
+    addressNeighborhood: data.addressNeighborhood,
+    addressCity: data.addressCity,
+    addressState: data.addressState,
+    addressZip: data.addressZip,
+    planId: data.planId,
+  }
+}
+
+export function toOwnerClinicalProfileFields(data: CreateClinicInput) {
+  if (!data.alsoPractices) return null
+  return createOwnerClinicalProfileSchema.parse({
+    clinicalPracticeType: data.clinicalPracticeType,
+    fullName: data.fullName,
+    treatmentPronoun: data.treatmentPronoun,
+    councilType: data.councilType,
+    councilNumber: data.councilNumber,
+    councilState: data.councilState,
+    specialty: data.specialty,
+  })
+}
 
 export const getClinicSchema = z.object({
   clinicId: z.string().uuid("ID da clínica inválido"),
@@ -63,7 +146,10 @@ export const updateClinicSchema = z.object({
     .trim()
     .min(1, "Nome da clínica é obrigatório")
     .max(200, "Nome deve ter no máximo 200 caracteres"),
-  tradeName: optionalString(200, "Nome fantasia deve ter no máximo 200 caracteres"),
+  tradeName: optionalString(
+    200,
+    "Nome fantasia deve ter no máximo 200 caracteres",
+  ),
   document: optionalString(18, "CNPJ/CPF inválido"),
   email: z
     .string()
@@ -105,4 +191,3 @@ export const deleteClinicSchema = z.object({
 })
 
 export type DeleteClinicInput = z.infer<typeof deleteClinicSchema>
-
