@@ -1,0 +1,14 @@
+---
+description: Exige atualizar docs/wiki (handbook) ao mudar comportamento ou decisões
+alwaysApply: true
+---
+
+# Documentação do sistema
+
+Ao implementar ou alterar feature com comportamento observável, ADR, RBAC, schema, rota ou item de roadmap:
+
+1. Atualizar `docs/wiki/` (skill `system-docs-sync`).
+2. Refletir status em Catálogo / Épicos / Roadmap quando couber.
+3. Oferecer `npm run docs:wiki:sync`.
+
+A documentação do sistema faz parte da entrega — não só o código.

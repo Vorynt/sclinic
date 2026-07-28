@@ -19,6 +19,7 @@ Documentos obrigatórios do projeto. Cada arquivo define uma regra que o código
 
 Ver também:
 
+- [Handbook do sistema (wiki)](../docs/wiki/README.md) — produto, arquitetura, módulos, roadmap, épicos, decisões
 - [ADR-001 — módulo de auditoria](../docs/adr/001-clinic-audit-module.md)
 - [ADR-002 — faturamento clínico](../docs/adr/002-clinical-billing.md)
 - [ADR-003 — assinatura SaaS por usuário](../docs/adr/003-user-saas-subscription.md)
