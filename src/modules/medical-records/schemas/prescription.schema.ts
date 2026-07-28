@@ -5,7 +5,7 @@ import { prescriptionDocumentModelSchema } from "@/modules/medical-records/presc
 export const prescriptionIdSchema = z.string().uuid("ID inválido")
 export const appointmentIdSchema = z.string().uuid("ID inválido")
 export const patientIdSchema = z.string().uuid("ID inválido")
-export const layoutIdSchema = z.string().uuid("ID do modelo inválido")
+export const layoutIdSchema = z.string().uuid("Modelo inválido")
 
 export const createPrescriptionSchema = z.object({
   appointmentId: appointmentIdSchema,
@@ -79,8 +79,8 @@ export const upsertPrescriptionLayoutSchema = z.object({
   html: z
     .string()
     .trim()
-    .min(1, "Informe o HTML do modelo.")
-    .max(200_000, "HTML muito longo."),
+    .min(1, "Informe o conteúdo do modelo.")
+    .max(200_000, "Modelo muito longo."),
 })
 
 export type CreatePrescriptionInput = z.infer<typeof createPrescriptionSchema>

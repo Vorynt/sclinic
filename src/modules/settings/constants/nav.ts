@@ -28,7 +28,7 @@ export const SETTINGS_NAV_ITEMS: SettingsNavItem[] = [
   {
     title: "Receitas",
     href: routes.settingsPrescriptions,
-    description: "Modelo e timbrado de receita",
+    description: "Modelos de receita para impressão",
   },
   {
     title: "Uso do plano",

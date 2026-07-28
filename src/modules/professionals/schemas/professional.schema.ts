@@ -116,11 +116,11 @@ export const listProfessionalsForSchedulingSchema = z.object({
 })
 
 export const professionalInviteTokenSchema = z.object({
-  token: z.string().trim().min(1, "Token é obrigatório"),
+  token: z.string().trim().min(1, "Link do convite inválido"),
 })
 
 export const updateProfessionalInviteProfileSchema = z.object({
-  token: z.string().trim().min(1, "Token é obrigatório"),
+  token: z.string().trim().min(1, "Link do convite inválido"),
   fullName: z
     .string()
     .trim()

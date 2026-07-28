@@ -25,20 +25,20 @@ export const inviteMemberSchema = z.object({
 })
 
 export const revokeInvitationSchema = z.object({
-  invitationId: z.string().uuid("ID do convite inválido"),
+  invitationId: z.string().uuid("Convite inválido"),
 })
 
 export const acceptInvitationSchema = z.object({
-  token: z.string().trim().min(1, "Token é obrigatório"),
+  token: z.string().trim().min(1, "Link do convite inválido"),
 })
 
 export const inviteAccessTokenSchema = z.object({
-  token: z.string().trim().min(1, "Token é obrigatório"),
+  token: z.string().trim().min(1, "Link do convite inválido"),
 })
 
 export const setPasswordFromInviteSchema = z
   .object({
-    token: z.string().trim().min(1, "Token é obrigatório"),
+    token: z.string().trim().min(1, "Link do convite inválido"),
     newPassword: passwordSchema,
     confirmPassword: z.string().min(1, "Confirme a nova senha"),
   })

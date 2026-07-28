@@ -118,11 +118,11 @@ export function PlanPicker() {
         <p className="text-sm text-muted-foreground">
           {intent === "reactivate"
             ? useStripeCheckout
-              ? "Você será direcionado ao Stripe para reativar a assinatura e voltar a usar sua clínica."
+              ? "Você será direcionado a uma página segura para reativar a assinatura e voltar a usar sua clínica."
               : "Selecione o plano para reativar a assinatura da sua clínica."
             : useStripeCheckout
-              ? "Você será direcionado ao Stripe para concluir o pagamento e, em seguida, cadastrar sua clínica."
-              : "Selecione o plano da sua conta. Com Stripe configurado e preço vinculado, o checkout abre automaticamente."}
+              ? "Você será direcionado a uma página segura para concluir o pagamento e, em seguida, cadastrar sua clínica."
+              : "Selecione o plano da sua conta para continuar."}
         </p>
       </div>
 

@@ -48,7 +48,7 @@ const spacerPropsSchema = z.object({
   heightMm: z.number().int().min(2).max(80),
 })
 
-const blockIdSchema = z.string().uuid("ID do bloco inválido")
+const blockIdSchema = z.string().uuid("Bloco inválido")
 
 export const prescriptionBlockSchema = z.discriminatedUnion("type", [
   z.object({
@@ -109,7 +109,7 @@ export const prescriptionDocumentModelSchema = z
     if (bodyCount !== 1) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "O modelo precisa ter exatamente um bloco de conteúdo (body).",
+        message: "O modelo precisa ter exatamente um bloco de conteúdo.",
         path: ["blocks"],
       })
     }
@@ -118,7 +118,7 @@ export const prescriptionDocumentModelSchema = z
     if (new Set(ids).size !== ids.length) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "IDs de bloco duplicados.",
+        message: "Há blocos duplicados no modelo. Remova ou ajuste e tente novamente.",
         path: ["blocks"],
       })
     }

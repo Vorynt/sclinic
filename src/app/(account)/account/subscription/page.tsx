@@ -12,7 +12,7 @@ export default function AccountSubscriptionPage() {
     <div className="flex flex-col gap-6">
       <AccountPageHeader
         title="Assinatura"
-        description="Plano, status de pagamento e acesso ao portal Stripe."
+        description="Plano, status de pagamento e gerenciamento da assinatura."
       />
       <AccountSubscriptionPanel />
     </div>

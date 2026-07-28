@@ -199,7 +199,9 @@ function BlockPropsEditor({
             }
           />
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor={`${block.id}-minh`}>Altura mínima (mm)</Label>
+            <Label htmlFor={`${block.id}-minh`}>
+              Altura mínima (milímetros)
+            </Label>
             <Input
               id={`${block.id}-minh`}
               type="number"
@@ -293,7 +295,7 @@ function BlockPropsEditor({
     case "divider":
       return (
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor={`${block.id}-th`}>Espessura (px)</Label>
+          <Label htmlFor={`${block.id}-th`}>Espessura da linha</Label>
           <Input
             id={`${block.id}-th`}
             type="number"
@@ -315,7 +317,7 @@ function BlockPropsEditor({
     case "spacer":
       return (
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor={`${block.id}-h`}>Altura (mm)</Label>
+          <Label htmlFor={`${block.id}-h`}>Altura (milímetros)</Label>
           <Input
             id={`${block.id}-h`}
             type="number"

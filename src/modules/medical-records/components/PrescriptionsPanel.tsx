@@ -141,7 +141,7 @@ function PrescriptionsPanelContent({
             Receitas
           </h2>
           <p className="text-sm text-muted-foreground">
-            Emita receitas com preview antes de imprimir.
+            Emita receitas e confira a visualização antes de imprimir.
           </p>
         </div>
         {editable ? (

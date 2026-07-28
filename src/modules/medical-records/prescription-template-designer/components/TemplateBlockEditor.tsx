@@ -108,7 +108,7 @@ export function TemplateBlockEditor({
       </div>
 
       <div className="flex flex-col gap-2">
-        <p className="text-sm font-medium">Preview</p>
+        <p className="text-sm font-medium">Visualização</p>
         <TemplateLiveCanvas model={model} className="min-h-105" />
       </div>
     </div>

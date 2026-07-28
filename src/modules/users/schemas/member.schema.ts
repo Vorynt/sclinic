@@ -8,16 +8,16 @@ const assignableRoleKeySchema = z.enum(ASSIGNABLE_ROLE_KEYS)
 export const listMembersSchema = listQuerySchema
 
 export const updateMemberRoleSchema = z.object({
-  membershipId: z.string().uuid("ID do membro inválido"),
+  membershipId: z.string().uuid("Membro inválido"),
   roleKey: assignableRoleKeySchema,
 })
 
 export const removeMemberSchema = z.object({
-  membershipId: z.string().uuid("ID do membro inválido"),
+  membershipId: z.string().uuid("Membro inválido"),
 })
 
 export const updateMemberStatusSchema = z.object({
-  membershipId: z.string().uuid("ID do membro inválido"),
+  membershipId: z.string().uuid("Membro inválido"),
   status: z.enum(["active", "suspended"]),
 })
 

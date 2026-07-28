@@ -71,7 +71,7 @@ export type BlockCatalogItem = {
 export const PRESCRIPTION_BLOCK_CATALOG: BlockCatalogItem[] = [
   {
     type: "letterhead",
-    label: "Timbrado",
+    label: "Cabeçalho",
     description: "Nome e dados da clínica",
     unique: false,
   },

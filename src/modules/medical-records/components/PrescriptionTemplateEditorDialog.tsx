@@ -105,7 +105,7 @@ export function PrescriptionTemplateEditorDialog({
     const parsed = prescriptionDocumentModelSchema.safeParse(draft.model)
     if (!parsed.success) {
       setValidationError(
-        parsed.error.issues[0]?.message ?? "Modelo de blocos inválido.",
+        parsed.error.issues[0]?.message ?? "Não foi possível validar o modelo.",
       )
       return
     }
@@ -131,8 +131,8 @@ export function PrescriptionTemplateEditorDialog({
             {isEdit ? "Editar modelo de receita" : "Novo modelo de receita"}
           </DialogTitle>
           <DialogDescription>
-            Monte o timbrado com blocos empilhados. O HTML é gerado
-            automaticamente para preview e impressão.
+            Monte o cabeçalho e a estrutura da folha com blocos. A visualização
+            ao lado mostra como a receita sai na impressão.
           </DialogDescription>
         </DialogHeader>
 

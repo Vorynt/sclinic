@@ -127,10 +127,10 @@ export function PrescriptionLayoutSettingsPanel() {
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm text-muted-foreground">
-          Até {maxTemplates} modelos por clínica. Cada card mostra o preview do
-          timbrado; edite em tela cheia.
+          Até {maxTemplates} modelos por clínica. Cada card mostra como a folha
+          fica; edite em tela cheia.
           {templates.length === 0
-            ? " Sem modelos customizados, a emissão usa o padrão do sistema."
+            ? " Sem modelos próprios, a emissão usa o padrão do sistema."
             : null}
         </p>
         <Button
@@ -147,7 +147,7 @@ export function PrescriptionLayoutSettingsPanel() {
       {templates.length === 0 ? (
         <div className="rounded-xl border border-dashed border-border px-4 py-12 text-center">
           <p className="text-sm text-muted-foreground">
-            Nenhum modelo customizado. Use o padrão do sistema ou crie o
+            Nenhum modelo próprio ainda. Use o padrão do sistema ou crie o
             primeiro.
           </p>
           <Button

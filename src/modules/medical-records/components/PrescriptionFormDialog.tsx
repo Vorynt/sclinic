@@ -116,7 +116,8 @@ export function PrescriptionFormDialog({
             {isEdit ? "Editar receita" : "Nova receita"}
           </DialogTitle>
           <DialogDescription>
-            Escreva o conteúdo e confira o preview antes de salvar ou emitir.
+            Escreva o conteúdo e confira a visualização antes de salvar ou
+            emitir.
           </DialogDescription>
         </DialogHeader>
 
@@ -129,7 +130,7 @@ export function PrescriptionFormDialog({
               </TabsTrigger>
               <TabsTrigger value="preview" className="flex-1 gap-1.5">
                 <EyeIcon />
-                Preview
+                Visualizar
               </TabsTrigger>
             </TabsList>
           </Tabs>
@@ -185,7 +186,7 @@ export function PrescriptionFormDialog({
             )}
           >
             <p className="hidden text-xs font-medium text-muted-foreground uppercase md:block">
-              Preview da impressão
+              Como fica na impressão
             </p>
             <PrescriptionLivePreview
               layoutHtml={layoutHtml}

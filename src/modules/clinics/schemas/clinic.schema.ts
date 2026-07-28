@@ -128,12 +128,12 @@ export function toOwnerClinicalProfileFields(data: CreateClinicInput) {
 }
 
 export const getClinicSchema = z.object({
-  clinicId: z.string().uuid("ID da clínica inválido"),
+  clinicId: z.string().uuid("Clínica inválida"),
 })
 
 export const listClinicsByIdsSchema = z.object({
   clinicIds: z
-    .array(z.string().uuid("ID da clínica inválido"))
+    .array(z.string().uuid("Clínica inválida"))
     .max(50, "Máximo de 50 clínicas por consulta"),
 })
 
