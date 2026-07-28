@@ -49,7 +49,6 @@ Implementado de ponta a ponta:
 | Inventário / estoque | Domínio reservado, **sem features** |
 | Gateway de pagamento clínico (PIX/Asaas etc.) | Planejado (ADR-002) |
 | PDF persistido de receita | Fora (HTML + print) |
-| Página `/help` | Placeholder no nav |
 | Multi-assinatura por user (N clínicas owned) | MVP 1:1 (ADR-003) |
 
 ## Norte de produto

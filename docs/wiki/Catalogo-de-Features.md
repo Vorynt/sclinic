@@ -100,7 +100,7 @@ Inventário do que o sistema faz hoje. Status: **Done** | **Partial** | **Planne
 | UI `/settings/audit` | Done | audit.read |
 | Settings geral/hours/danger | Done | settings + clinics |
 | Uso do plano (owner) | Done | `/settings/usage` |
-| Help `/help` | Planned | nav disabled |
+| Help `/help` | Done | módulo `help`; nav habilitado |
 
 ## E9 — Marketing
 

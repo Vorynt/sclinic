@@ -31,6 +31,7 @@
 - [Assinatura SaaS](Dominio-Assinatura-SaaS)
 - [Auditoria](Dominio-Auditoria)
 - [Dashboard e settings](Dominio-Dashboard-e-Settings)
+- [Ajuda](Dominio-Ajuda)
 - [Marketing](Dominio-Marketing)
 
 **Decisões & ops**

@@ -40,7 +40,7 @@ src/
   stores/              # Zustand
 ```
 
-Módulos canônicos: `patients`, `professionals`, `appointments`, `medical-records`, `billing`, `inventory` (vazio), `dashboard`, `settings`, `users`, `authentication`, `clinics`, `audit`, `marketing`.
+Módulos canônicos: `patients`, `professionals`, `appointments`, `medical-records`, `billing`, `inventory` (vazio), `dashboard`, `settings`, `users`, `authentication`, `clinics`, `audit`, `marketing`, `help`.
 
 ## Estado
 

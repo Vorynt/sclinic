@@ -4,6 +4,7 @@ import {
   CalendarBlankIcon,
   ChartBarIcon,
   CreditCardIcon,
+  QuestionIcon,
   UsersThreeIcon,
 } from "@phosphor-icons/react"
 import { addMonths, format, startOfMonth } from "date-fns"
@@ -176,6 +177,11 @@ export function OwnerHome() {
               label: "Agendamentos",
               href: routes.appointments,
               icon: CalendarBlankIcon,
+            },
+            {
+              label: "Ajuda",
+              href: routes.help,
+              icon: QuestionIcon,
             },
           ]}
         />

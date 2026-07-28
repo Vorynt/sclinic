@@ -9,7 +9,7 @@ Fonte canônica: `src/config/routes.ts`. Route groups `(auth)`, `(dashboard)` et
 | Marketing | `/` |
 | Auth | `/login`, `/sign-up`, `/forgot-password`, `/reset-password`, `/verify-email`, `/change-password`, `/invite`, `/invite/professional`, `/select-clinic`, `/membership-inactive` |
 | Onboarding | `/onboarding/plan`, `/onboarding/clinic`, `/onboarding/hours` |
-| App | `/home`, `/patients`, `/patients/[id]/*`, `/professionals`, `/appointments`, `/billing`, `/users`, `/settings/*` |
+| App | `/home`, `/patients`, `/patients/[id]/*`, `/professionals`, `/appointments`, `/billing`, `/users`, `/settings/*`, `/help` |
 | Attendance | `/appointments/[id]/attendance/*` |
 | Account | `/account/overview`, `profile`, `security`, `subscription` |
 | Print | `/prescriptions/[id]/print` |
@@ -20,6 +20,6 @@ Fonte canônica: `src/config/routes.ts`. Route groups `(auth)`, `(dashboard)` et
 - Dashboard / attendance / account: e-mail verificado, senha ok, membership, entitlement.
 - Settings: `settings.manage`; subtítulos `audit.read` / owner-only usage.
 - Patient clinical tabs: `records.read`.
-- `/help`: referenciado com `enabled: false` — página ainda não existe.
+- `/help`: FAQ curado (módulo `help`); item Ajuda na sidebar habilitado.
 
 Nav: `src/modules/dashboard/constants/nav.ts` (itens somem sem permissão).

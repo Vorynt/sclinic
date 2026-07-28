@@ -11,7 +11,7 @@
 | **E5** | Prontuário e documentos clínicos | Done | 005 | medical-records |
 | **E6** | Contas a receber da clínica | Done | 002, 006 | billing (charges) |
 | **E7** | Operação da recepção em tempo real | Done | 006 | dashboard, core/realtime |
-| **E8** | Governança, auditoria e settings | Done | 001 | audit, settings, clinics |
+| **E8** | Governança, auditoria, settings e ajuda | Done | 001 | audit, settings, clinics, help |
 | **E9** | Aquisição (marketing site) | Done | — | marketing |
 | **E10** | Pagamentos clínicos automatizados | Next | 002 | billing |
 | **E11** | Inventário / estoque | Deferred | — | inventory (vazio) |
@@ -41,7 +41,7 @@ Charge 1:1, markPaid/cancel, listagem `/billing`, collect vs view.
 Board derivado de status+charge, SSE `clinic.ops`, desacoplar pagamento do “concluir” médico.
 
 ### E8 — Governança
-Audit logs, settings (geral, hours, prescriptions, usage, danger), RBAC seed.
+Audit logs, settings (geral, hours, prescriptions, usage, danger), RBAC seed, central de ajuda `/help`.
 
 ### E9 — Marketing
 Landing pública.
