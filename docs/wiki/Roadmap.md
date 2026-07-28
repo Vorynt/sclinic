@@ -1,6 +1,6 @@
 # Roadmap
 
-Derivado do **código implementado** + ADRs 001–006 + gaps explícitos no repositório. Não há board externo de produto; esta página é a fonte até existir uma.
+Derivado do **código implementado** + ADRs 001–008 + gaps explícitos no repositório. Não há board externo de produto; esta página é a fonte até existir uma.
 
 ## Legenda
 
@@ -18,7 +18,7 @@ Derivado do **código implementado** + ADRs 001–006 + gaps explícitos no repo
 3. Cadastros: pacientes, profissionais, equipe
 4. Owner com perfil clínico opcional (consultório solo — ADR-007)
 5. Agenda + máquina de status + attendance
-6. Prontuário MVP: notas, vitais, alertas, receitas
+6. Prontuário MVP: notas, vitais, alertas, receitas (+ templates em blocos, ADR-008)
 7. Loop balcão: charge + board recepção + SSE
 8. Auditoria + settings + landing
 
@@ -37,6 +37,7 @@ Derivado do **código implementado** + ADRs 001–006 + gaps explícitos no repo
 | Item | Motivação |
 |------|-----------|
 | Tipos de receita além da simples | ADR-005 (sem `kind` no MVP) |
+| Canvas posição livre no template | ADR-008 (MVP = blocos empilhados) |
 | PDF / assinatura digital de receita | Alternativa ao print HTML |
 | Multi-clínica owned por assinatura | ADR-003 MVP é 1:1 |
 | Instrumentação audit em 100% dos mutators | ADR-001 (manual por service) |

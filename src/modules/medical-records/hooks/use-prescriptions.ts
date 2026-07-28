@@ -35,9 +35,9 @@ export function usePrescriptionRenderedQuery(id: string, enabled = true) {
   })
 }
 
-export function usePrescriptionLayoutQuery(enabled = true) {
+export function usePrescriptionLayoutsQuery(enabled = true) {
   return useQuery({
-    ...prescriptionsQueries.layout(),
+    ...prescriptionsQueries.layouts(),
     enabled,
   })
 }

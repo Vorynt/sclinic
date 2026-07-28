@@ -11,6 +11,7 @@
 | **Charge** | Cobrança clínica 1:1 com appointment (ADR-002) |
 | **Attendance** | Workspace de atendimento `/appointments/[id]/attendance` |
 | **Prescription** | Receita médica (`draft` → `issued`) |
+| **Prescription template** | Modelo de timbrado da clínica (até 3); DocumentModel de blocos → HTML |
 | **Board** | Painel operacional da recepção (ADR-006) |
 | **SSE** | Server-Sent Events em `/api/realtime/clinic` |
 | **ADR** | Architecture Decision Record em `docs/adr/` |

@@ -12,7 +12,7 @@ export default function SettingsPrescriptionsPage() {
     <div className="flex flex-col gap-6">
       <SettingsPageHeader
         title="Receitas"
-        description="Modelo HTML (timbrado) usado na emissão e impressão de receitas."
+        description="Modelos de receita (até 3): monte o timbrado com blocos empilhados para emissão e impressão."
       />
       <PrescriptionLayoutSettingsPanel />
     </div>

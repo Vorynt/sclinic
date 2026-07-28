@@ -69,6 +69,8 @@ Inventário do que o sistema faz hoje. Status: **Done** | **Partial** | **Planne
 | Receitas draft/issued | Done | ADR-005 |
 | Print HTML | Done | `(print)` |
 | Layout custom por clínica | Done | `/settings/prescriptions` |
+| Designer de templates (blocos) | Done | ADR-008 |
+| Até 3 templates nomeados | Done | ADR-008 |
 | Tipos avançados de receita / PDF | Planned/Later | ADR-005 |
 
 ## E6 — Recebíveis

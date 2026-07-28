@@ -32,6 +32,7 @@ export async function saveAndIssuePrescriptionAction(
             id: parsed.id,
             body: parsed.body,
             plainText: parsed.plainText,
+            layoutId: parsed.layoutId,
           },
           ctx,
         )
@@ -40,6 +41,7 @@ export async function saveAndIssuePrescriptionAction(
             appointmentId: parsed.appointmentId,
             body: parsed.body,
             plainText: parsed.plainText,
+            layoutId: parsed.layoutId,
           },
           ctx,
         )

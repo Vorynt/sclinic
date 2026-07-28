@@ -32,7 +32,7 @@ CRUD pacientes (CPF único/clínica), convite e perfil de profissionais com quot
 Calendário, status machine, attendance workspace, self-schedule, disponibilidade por horário da clínica.
 
 ### E5 — Prontuário
-Notas (templates), vitais, alertas do paciente, receitas draft→issued + print + layout settings.
+Notas (templates), vitais, alertas do paciente, receitas draft→issued + print + designer de templates (blocos, até 3).
 
 ### E6 — Recebíveis
 Charge 1:1, markPaid/cancel, listagem `/billing`, collect vs view.

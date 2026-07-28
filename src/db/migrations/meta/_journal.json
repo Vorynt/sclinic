@@ -126,6 +126,13 @@
       "when": 1785261600000,
       "tag": "0017_prescriptions",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1785268800000,
+      "tag": "0018_prescription_template_designer",
+      "breakpoints": true
     }
   ],
   "version": "7"

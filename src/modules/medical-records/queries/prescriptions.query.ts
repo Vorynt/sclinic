@@ -1,10 +1,10 @@
 import { queryOptions } from "@tanstack/react-query"
 
 import { getPrescriptionAction } from "@/modules/medical-records/actions/get-prescription"
-import { getPrescriptionLayoutAction } from "@/modules/medical-records/actions/get-prescription-layout"
 import { getPrescriptionRenderedHtmlAction } from "@/modules/medical-records/actions/get-prescription-rendered-html"
 import { listAppointmentPrescriptionsAction } from "@/modules/medical-records/actions/list-appointment-prescriptions"
 import { listPatientPrescriptionsAction } from "@/modules/medical-records/actions/list-patient-prescriptions"
+import { listPrescriptionLayoutsAction } from "@/modules/medical-records/actions/list-prescription-layouts"
 import { unwrapActionResult } from "@/shared/errors"
 
 export type PatientPrescriptionsFilters = {
@@ -24,7 +24,7 @@ export const prescriptionsQueryKeys = {
     [...prescriptionsQueryKeys.all, "detail", id] as const,
   rendered: (id: string) =>
     [...prescriptionsQueryKeys.all, "rendered", id] as const,
-  layout: () => [...prescriptionsQueryKeys.all, "layout"] as const,
+  layouts: () => [...prescriptionsQueryKeys.all, "layouts"] as const,
 }
 
 export const prescriptionsQueries = {
@@ -58,10 +58,10 @@ export const prescriptionsQueries = {
         unwrapActionResult(await getPrescriptionRenderedHtmlAction({ id })),
     }),
 
-  layout: () =>
+  layouts: () =>
     queryOptions({
-      queryKey: prescriptionsQueryKeys.layout(),
+      queryKey: prescriptionsQueryKeys.layouts(),
       queryFn: async () =>
-        unwrapActionResult(await getPrescriptionLayoutAction()),
+        unwrapActionResult(await listPrescriptionLayoutsAction()),
     }),
 }

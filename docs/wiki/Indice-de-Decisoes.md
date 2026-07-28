@@ -10,9 +10,10 @@ Decisões canônicas: **ADRs** em `docs/adr/`. Notas curtas de implementação: 
 | [002](https://github.com/ViniciusSantos31/sclinic/blob/main/docs/adr/002-clinical-billing.md) | Faturamento clínico | Accepted | charges/payments; collect vs view |
 | [003](https://github.com/ViniciusSantos31/sclinic/blob/main/docs/adr/003-user-saas-subscription.md) | Assinatura por user | Accepted | Stripe Portal-first; entitlement |
 | [004](https://github.com/ViniciusSantos31/sclinic/blob/main/docs/adr/004-plan-downgrade-over-limit.md) | Downgrade over_limit | Accepted | banner + assertPlanCapacity |
-| [005](https://github.com/ViniciusSantos31/sclinic/blob/main/docs/adr/005-prescriptions.md) | Receitas médicas | Accepted | draft→issued; print HTML |
+| [005](https://github.com/ViniciusSantos31/sclinic/blob/main/docs/adr/005-prescriptions.md) | Receitas médicas | Accepted (layout parcial → 008) | draft→issued; print HTML |
 | [006](https://github.com/ViniciusSantos31/sclinic/blob/main/docs/adr/006-reception-ops-sse.md) | Recepção + SSE | Accepted | board; médico não cobra |
 | [007](https://github.com/ViniciusSantos31/sclinic/blob/main/docs/adr/007-owner-clinical-profile.md) | Perfil clínico do owner | Accepted | solo; membership owner + professionals |
+| [008](https://github.com/ViniciusSantos31/sclinic/blob/main/docs/adr/008-prescription-template-designer.md) | Designer de templates de receita | Accepted | DocumentModel + até 3 templates |
 
 Paths locais: `docs/adr/00N-*.md`.
 
@@ -25,6 +26,7 @@ Paths locais: `docs/adr/00N-*.md`.
 | Pagador = user | Não clinicId na subscription | ADR-003 |
 | Downgrade | Nunca apagar dados; bloquear creates | ADR-004 |
 | Receita | Entidade própria; snapshot na emissão | ADR-005 |
+| Templates de receita | DocumentModel (blocos); ≤3 por clínica | ADR-008 |
 | Caixa | Separado do “concluir” clínico | ADR-006 |
 | Realtime MVP | SSE in-process, extensível a broker | ADR-006 |
 | Owner atende | Perfil clínico opcional; sem dual membership | ADR-007, [Profissionais](Dominio-Profissionais) |
