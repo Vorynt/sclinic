@@ -1,13 +1,14 @@
-import {
-  auditErrorFields,
-  recordAudit,
-} from "@/modules/audit/emit"
+import { Permission } from "@/config/permissions"
+import { publishClinicOps } from "@/core/realtime"
 import {
   AUDIT_ACTIONS,
   AUDIT_ENTITY_TYPES,
 } from "@/modules/audit/constants/audit"
+import {
+  auditErrorFields,
+  recordAudit,
+} from "@/modules/audit/emit"
 import { auditActorFromAuth } from "@/modules/audit/utils/audit-actor"
-import { Permission } from "@/config/permissions"
 import {
   requireAnyPermission,
   requirePermission,
@@ -97,6 +98,17 @@ export const chargeService = {
     return chargeRepository.findByAppointment(appointmentId, auth.clinicId)
   },
 
+  async listActiveByAppointmentIds(
+    appointmentIds: string[],
+    ctx: AuthRequestContext,
+  ): Promise<Charge[]> {
+    const auth = await requireAnyPermission(ctx, ...FINANCIAL_VIEW_OR_COLLECT)
+    return chargeRepository.findActiveByAppointmentIds(
+      appointmentIds,
+      auth.clinicId,
+    )
+  },
+
   async getSummary(ctx: AuthRequestContext): Promise<BillingSummary> {
     const auth = await requirePermission(ctx, Permission.FINANCIAL_VIEW)
     return chargeRepository.getSummary(auth.clinicId)
@@ -148,6 +160,13 @@ export const chargeService = {
         entityType: AUDIT_ENTITY_TYPES.CHARGE,
         entityId: charge.id,
         changes: { after: chargeSnapshot(charge) },
+      })
+
+      publishClinicOps({
+        clinicId: auth.clinicId,
+        type: "charge.created",
+        entityType: "charge",
+        entityId: charge.id,
       })
 
       return charge
@@ -211,6 +230,13 @@ export const chargeService = {
         },
       })
 
+      publishClinicOps({
+        clinicId: auth.clinicId,
+        type: "charge.updated",
+        entityType: "charge",
+        entityId: charge.id,
+      })
+
       return charge
     } catch (error) {
       recordAudit({
@@ -224,6 +250,55 @@ export const chargeService = {
       })
       throw error
     }
+  },
+
+  /**
+   * Side effect of appointment cancel — does not require financial.collect.
+   * Caller must already have authorized the appointment cancel in-clinic.
+   */
+  async cancelPendingForAppointment(params: {
+    appointmentId: string
+    clinicId: string
+    canceledBy: string
+    actor: ReturnType<typeof auditActorFromAuth>
+  }): Promise<Charge | null> {
+    const existing = await chargeRepository.findActiveByAppointment(
+      params.appointmentId,
+      params.clinicId,
+    )
+    if (!existing || existing.status !== "pending") {
+      return null
+    }
+
+    const charge = await chargeRepository.cancel({
+      chargeId: existing.id,
+      clinicId: params.clinicId,
+      updatedBy: params.canceledBy,
+    })
+
+    recordAudit({
+      ...params.actor,
+      action: AUDIT_ACTIONS.CHARGE_CANCEL,
+      status: "success",
+      entityType: AUDIT_ENTITY_TYPES.CHARGE,
+      entityId: charge.id,
+      changes: {
+        before: chargeSnapshot(existing),
+        after: {
+          ...chargeSnapshot(charge),
+          reason: "appointment_canceled",
+        },
+      },
+    })
+
+    publishClinicOps({
+      clinicId: params.clinicId,
+      type: "charge.canceled",
+      entityType: "charge",
+      entityId: charge.id,
+    })
+
+    return charge
   },
 
   async cancel(
@@ -265,6 +340,13 @@ export const chargeService = {
             reason: data.reason ?? null,
           },
         },
+      })
+
+      publishClinicOps({
+        clinicId: auth.clinicId,
+        type: "charge.canceled",
+        entityType: "charge",
+        entityId: charge.id,
       })
 
       return charge

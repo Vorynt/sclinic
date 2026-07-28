@@ -1,10 +1,10 @@
-"use client";
+"use client"
 
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { toast } from "sonner";
+import { format } from "date-fns"
+import { ptBR } from "date-fns/locale"
+import { useRouter } from "next/navigation"
+import { useState } from "react"
+import { toast } from "sonner"
 
 import {
   AlertDialog,
@@ -15,55 +15,52 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Permission } from "@/config/permissions";
+} from "@/components/ui/alert-dialog"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import {
   APPOINTMENT_STATUS_LABELS,
   APPOINTMENT_TYPE_LABELS,
   canCompleteAttendance,
-} from "@/modules/appointments/constants/appointments";
-import { useAgendaReturnHref } from "@/modules/appointments/hooks/use-agenda-return-href";
-import { useUpdateAppointmentStatusMutation } from "@/modules/appointments/hooks/use-appointment-mutations";
+} from "@/modules/appointments/constants/appointments"
+import { useAgendaReturnHref } from "@/modules/appointments/hooks/use-agenda-return-href"
+import { useUpdateAppointmentStatusMutation } from "@/modules/appointments/hooks/use-appointment-mutations"
 import type {
   Appointment,
   AppointmentStatus,
-} from "@/modules/appointments/types/appointment";
-import { CompleteAttendancePaymentDialog } from "@/modules/billing/components/CompleteAttendancePaymentDialog";
-import { PatientClinicalAlertBadges } from "@/modules/medical-records/components/PatientClinicalAlertBadges";
-import { useAuth } from "@/providers/AuthProvider";
+} from "@/modules/appointments/types/appointment"
+import { PatientClinicalAlertBadges } from "@/modules/medical-records/components/PatientClinicalAlertBadges"
 
 type AttendanceHeaderProps = {
-  appointment: Appointment;
-};
+  appointment: Appointment
+}
 
 function statusBadgeVariant(
   status: AppointmentStatus,
 ): "secondary" | "outline" | "destructive" {
-  if (status === "canceled" || status === "no_show") return "destructive";
-  if (status === "completed") return "secondary";
-  if (status === "checked_in") return "outline";
-  return "outline";
+  if (status === "canceled" || status === "no_show") return "destructive"
+  if (status === "completed") return "secondary"
+  if (status === "checked_in") return "outline"
+  return "outline"
 }
 
 export function AttendanceHeader({ appointment }: AttendanceHeaderProps) {
-  const router = useRouter();
-  const agendaHref = useAgendaReturnHref();
-  const { canAny } = useAuth();
-  const canCollect = canAny(
-    Permission.FINANCIAL_COLLECT,
-    Permission.FINANCIAL_MANAGE,
-  );
+  const router = useRouter()
+  const agendaHref = useAgendaReturnHref()
 
-  const [completeOpen, setCompleteOpen] = useState(false);
-  const [afterCompleteOpen, setAfterCompleteOpen] = useState(false);
+  const [completeOpen, setCompleteOpen] = useState(false)
+  const [afterCompleteOpen, setAfterCompleteOpen] = useState(false)
 
   const completeAttendance = useUpdateAppointmentStatusMutation({
+    onSuccess: () => {
+      toast.success("Atendimento concluído")
+      setCompleteOpen(false)
+      setAfterCompleteOpen(true)
+    },
     onError: (error) => toast.error(error.message),
-  });
+  })
 
-  const canComplete = canCompleteAttendance(appointment.status);
+  const canComplete = canCompleteAttendance(appointment.status)
 
   return (
     <>
@@ -102,21 +99,34 @@ export function AttendanceHeader({ appointment }: AttendanceHeaderProps) {
         ) : null}
       </header>
 
-      <CompleteAttendancePaymentDialog
-        open={completeOpen}
-        onOpenChange={setCompleteOpen}
-        appointmentId={appointment.id}
-        canCollect={canCollect}
-        isCompleting={completeAttendance.isPending}
-        onComplete={async () => {
-          await completeAttendance.mutateAsync({
-            id: appointment.id,
-            status: "completed",
-          });
-          toast.success("Atendimento concluído");
-        }}
-        onAfterComplete={() => setAfterCompleteOpen(true)}
-      />
+      <AlertDialog open={completeOpen} onOpenChange={setCompleteOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Concluir atendimento?</AlertDialogTitle>
+            <AlertDialogDescription>
+              O paciente seguirá para a recepção para efetuar o pagamento, se
+              houver cobrança pendente.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={completeAttendance.isPending}>
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction
+              disabled={completeAttendance.isPending}
+              onClick={(event) => {
+                event.preventDefault()
+                completeAttendance.mutate({
+                  id: appointment.id,
+                  status: "completed",
+                })
+              }}
+            >
+              Concluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <AlertDialog open={afterCompleteOpen} onOpenChange={setAfterCompleteOpen}>
         <AlertDialogContent>
@@ -135,5 +145,5 @@ export function AttendanceHeader({ appointment }: AttendanceHeaderProps) {
         </AlertDialogContent>
       </AlertDialog>
     </>
-  );
+  )
 }

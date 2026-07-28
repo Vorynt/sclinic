@@ -24,6 +24,7 @@ Ver também:
 - [ADR-003 — assinatura SaaS por usuário](../docs/adr/003-user-saas-subscription.md)
 - [ADR-004 — downgrade e modo over_limit](../docs/adr/004-plan-downgrade-over-limit.md)
 - [ADR-005 — receitas médicas (prescrição)](../docs/adr/005-prescriptions.md)
+- [ADR-006 — fluxo operacional da recepção + SSE](../docs/adr/006-reception-ops-sse.md)
 
 ## Fluxo de camadas
 
@@ -36,6 +37,7 @@ Page → Server Action → Service → Repository → Database (Drizzle)
 - **Server state** → TanStack Query (`queries/` / `mutations/` do módulo)
 - **Client state** → Zustand em `src/stores/` (Auth, Theme, Sidebar, Preferences, Notification)
 - **Dados de domínio** → nunca no Zustand
+- **Realtime operacional** → SSE (`/api/realtime/clinic`) + `core/realtime` (ADR-006)
 
 ## `shared/` vs topo de `src/`
 
