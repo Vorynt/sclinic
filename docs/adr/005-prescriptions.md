@@ -1,7 +1,7 @@
 # ADR-005: Receitas médicas (prescrição simples)
 
 - **Date**: 2026-07-28
-- **Status**: Accepted
+- **Status**: Accepted (layout source/cardinality partially superseded by [ADR-008](008-prescription-template-designer.md))
 - **Deciders**: Time sclinic
 - **Tags**: architecture, medical-records, prescriptions, print
 
@@ -43,7 +43,7 @@ Chosen option: **"Entidade `prescriptions` + `prescription_layouts` em `medical-
 
 ### Modelo (resumo)
 
-- **`prescription_layouts`**: HTML por clínica, `version` incremental, no máximo um ativo (`is_active`) por clínica. Sem linha = usa default do sistema.
+- **`prescription_layouts`**: timbrado por clínica (ver ADR-008: DocumentModel + até 3 templates). Sem linha ativa = default do sistema.
 - **`prescriptions`**: FKs clinic/patient/appointment/professional; `status` `draft` \| `issued`; corpo editável só em draft; campos de snapshot preenchidos só em `issued`.
 - Placeholders do layout: `{{clinic.*}}`, `{{patient.*}}`, `{{professional.*}}`, `{{body}}`, `{{issuedAt}}` (contrato detalhado na implementação).
 - HTML custom sanitizado no save (allowlist).

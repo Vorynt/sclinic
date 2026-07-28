@@ -70,7 +70,7 @@ export function PrescriptionLivePreview({
             transformOrigin: "top left",
           }}>
           <iframe
-            title="Preview da receita"
+            title="Visualização da receita"
             srcDoc={html}
             width={A4_WIDTH_PX}
             height={A4_HEIGHT_PX}

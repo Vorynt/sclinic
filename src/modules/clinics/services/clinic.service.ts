@@ -38,6 +38,10 @@ export const clinicService = {
   /**
    * Owner onboarding: clinic + owner membership + user SaaS subscription (ADR-003).
    */
+  /**
+   * Owner onboarding: clinic + owner membership + user SaaS subscription (ADR-003).
+   * Optional clinical profile is orchestrated by createClinicAction (ADR-007).
+   */
   async createForOwner(
     data: CreateClinicDto,
     ctx: { userId: string; sessionId: string },

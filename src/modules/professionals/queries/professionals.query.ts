@@ -1,6 +1,7 @@
 import { queryOptions } from "@tanstack/react-query"
 
 import type { ListQueryParams } from "@/hooks/use-list-query-params"
+import { getOwnerClinicalProfileStatusAction } from "@/modules/professionals/actions/get-owner-clinical-profile-status"
 import { getProfessionalAction } from "@/modules/professionals/actions/get-professional"
 import { getProfessionalInvitePreviewAction } from "@/modules/professionals/actions/get-professional-invite-preview"
 import { listProfessionalsAction } from "@/modules/professionals/actions/list-professionals"
@@ -18,6 +19,8 @@ export const professionalsQueryKeys = {
   detail: (id: string) => [...professionalsQueryKeys.details(), id] as const,
   invitePreview: (token: string) =>
     [...professionalsQueryKeys.all, "invite-preview", token] as const,
+  ownerClinicalProfileStatus: () =>
+    [...professionalsQueryKeys.all, "owner-clinical-profile-status"] as const,
 }
 
 export const professionalsQueries = {
@@ -49,5 +52,12 @@ export const professionalsQueries = {
         unwrapActionResult(
           await getProfessionalInvitePreviewAction({ token }),
         ),
+    }),
+
+  ownerClinicalProfileStatus: () =>
+    queryOptions({
+      queryKey: professionalsQueryKeys.ownerClinicalProfileStatus(),
+      queryFn: async () =>
+        unwrapActionResult(await getOwnerClinicalProfileStatusAction()),
     }),
 }

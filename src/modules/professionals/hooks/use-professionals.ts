@@ -24,3 +24,12 @@ export function useProfessionalsForSchedulingQuery(
     ...options,
   })
 }
+
+export function useOwnerClinicalProfileStatusQuery(options?: {
+  enabled?: boolean
+}) {
+  return useQuery({
+    ...professionalsQueries.ownerClinicalProfileStatus(),
+    ...options,
+  })
+}

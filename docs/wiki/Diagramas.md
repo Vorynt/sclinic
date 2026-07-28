@@ -31,7 +31,10 @@ flowchart TD
   H -->|nenhuma| K[/onboarding/plan]
   H -->|ativa + entitled| L[/home]
   K --> M[/onboarding/clinic]
-  M --> N[/onboarding/hours]
+  M --> M2{alsoPractices?}
+  M2 -->|sim| M3[Perfil clínico do owner]
+  M2 -->|não| N[/onboarding/hours]
+  M3 --> N
   N --> L
 ```
 

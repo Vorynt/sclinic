@@ -1,4 +1,6 @@
 import type { PrescriptionPartySnapshot } from "@/db/schema"
+import type { PrescriptionDocumentModel } from "@/modules/medical-records/prescription-template-designer"
+import { prescriptionDocumentModelSchema } from "@/modules/medical-records/prescription-template-designer"
 import type {
   Prescription,
   PrescriptionLayout,
@@ -12,6 +14,7 @@ type PrescriptionRow = {
   appointmentId: string
   professionalId: string | null
   professionalName: string | null
+  layoutId: string | null
   status: PrescriptionStatus
   body: string
   plainText: string
@@ -29,11 +32,18 @@ type PrescriptionRow = {
 type PrescriptionLayoutRow = {
   id: string
   clinicId: string
+  name: string
   version: number
+  documentModel: unknown
   html: string
   isActive: boolean
+  isDefault: boolean
   createdAt: Date
   updatedAt: Date
+}
+
+function toDocumentModel(raw: unknown): PrescriptionDocumentModel {
+  return prescriptionDocumentModelSchema.parse(raw)
 }
 
 export function toPrescription(row: PrescriptionRow): Prescription {
@@ -44,6 +54,7 @@ export function toPrescription(row: PrescriptionRow): Prescription {
     appointmentId: row.appointmentId,
     professionalId: row.professionalId,
     professionalName: row.professionalName,
+    layoutId: row.layoutId,
     status: row.status,
     body: row.body,
     plainText: row.plainText,
@@ -65,9 +76,12 @@ export function toPrescriptionLayout(
   return {
     id: row.id,
     clinicId: row.clinicId,
+    name: row.name,
     version: row.version,
+    documentModel: toDocumentModel(row.documentModel),
     html: row.html,
     isActive: row.isActive,
+    isDefault: row.isDefault,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   }

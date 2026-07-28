@@ -125,14 +125,68 @@ export function useDeletePrescriptionDraftMutation({
   })
 }
 
-export function useUpsertPrescriptionLayoutMutation({
+export function useCreatePrescriptionLayoutMutation({
   onSuccess,
   onError,
 }: MutationCallbacks<PrescriptionLayout> = {}) {
   const queryClient = useQueryClient()
 
   return useMutation({
-    ...prescriptionsMutations.upsertLayout(),
+    ...prescriptionsMutations.createLayout(),
+    onSuccess: async (data) => {
+      await invalidatePrescriptionQueries(queryClient)
+      onSuccess?.(data)
+    },
+    onError: (error) => {
+      onError?.(toAppError(error))
+    },
+  })
+}
+
+export function useUpdatePrescriptionLayoutMutation({
+  onSuccess,
+  onError,
+}: MutationCallbacks<PrescriptionLayout> = {}) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    ...prescriptionsMutations.updateLayout(),
+    onSuccess: async (data) => {
+      await invalidatePrescriptionQueries(queryClient)
+      onSuccess?.(data)
+    },
+    onError: (error) => {
+      onError?.(toAppError(error))
+    },
+  })
+}
+
+export function useSetDefaultPrescriptionLayoutMutation({
+  onSuccess,
+  onError,
+}: MutationCallbacks<PrescriptionLayout> = {}) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    ...prescriptionsMutations.setDefaultLayout(),
+    onSuccess: async (data) => {
+      await invalidatePrescriptionQueries(queryClient)
+      onSuccess?.(data)
+    },
+    onError: (error) => {
+      onError?.(toAppError(error))
+    },
+  })
+}
+
+export function useDeletePrescriptionLayoutMutation({
+  onSuccess,
+  onError,
+}: MutationCallbacks<void> = {}) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    ...prescriptionsMutations.deleteLayout(),
     onSuccess: async (data) => {
       await invalidatePrescriptionQueries(queryClient)
       onSuccess?.(data)

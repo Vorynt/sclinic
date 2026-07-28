@@ -5,10 +5,10 @@ import { createClinicAction } from "@/modules/clinics/actions/create-clinic"
 import { deleteClinicAction } from "@/modules/clinics/actions/delete-clinic"
 import { updateClinicAction } from "@/modules/clinics/actions/update-clinic"
 import { upsertClinicHoursAction } from "@/modules/clinics/actions/upsert-clinic-hours"
-import type { CreateClinicDto } from "@/modules/clinics/dto/create-clinic.dto"
 import type { DeleteClinicDto } from "@/modules/clinics/dto/delete-clinic.dto"
 import type { UpdateClinicDto } from "@/modules/clinics/dto/update-clinic.dto"
 import type { UpsertClinicHoursDto } from "@/modules/clinics/dto/upsert-clinic-hours.dto"
+import type { CreateClinicInput } from "@/modules/clinics/schemas/clinic.schema"
 import { unwrapActionResult } from "@/shared/errors"
 
 export const clinicMutationKeys = {
@@ -23,7 +23,7 @@ export const clinicMutations = {
   create: () =>
     mutationOptions({
       mutationKey: clinicMutationKeys.create,
-      mutationFn: async (data: CreateClinicDto) =>
+      mutationFn: async (data: CreateClinicInput) =>
         unwrapActionResult(await createClinicAction(data)),
     }),
 

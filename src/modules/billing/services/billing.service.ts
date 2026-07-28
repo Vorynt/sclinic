@@ -302,7 +302,7 @@ export const billingService = {
 
     if (!session.url) {
       throw new AppError(ErrorCode.INTERNAL_ERROR, {
-        message: "Não foi possível iniciar o checkout.",
+        message: "Não foi possível iniciar o pagamento.",
       });
     }
 

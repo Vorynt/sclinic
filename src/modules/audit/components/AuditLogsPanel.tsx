@@ -61,7 +61,7 @@ export function AuditLogsPanel() {
           <DataTableSearch
             value={q ?? ""}
             onValueChange={setQ}
-            placeholder="Buscar por ação, ator ou entidade"
+            placeholder="Buscar por ação, responsável ou tipo"
           />
         </div>
 
@@ -92,12 +92,12 @@ export function AuditLogsPanel() {
           >
             <SelectTrigger
               className="w-full sm:w-48"
-              aria-label="Entidade"
+              aria-label="Tipo de registro"
             >
-              <SelectValue placeholder="Entidade" />
+              <SelectValue placeholder="Tipo" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Todas as entidades</SelectItem>
+              <SelectItem value="all">Todos os tipos</SelectItem>
               <SelectItem value={AUDIT_ENTITY_TYPES.PATIENT}>Paciente</SelectItem>
               <SelectItem value={AUDIT_ENTITY_TYPES.APPOINTMENT}>
                 Agendamento

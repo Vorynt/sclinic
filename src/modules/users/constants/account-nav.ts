@@ -17,7 +17,7 @@ export const ACCOUNT_NAV_ITEMS: AccountNavItem[] = [
   {
     title: "Assinatura",
     href: routes.accountSubscription,
-    description: "Plano e portal de pagamento",
+    description: "Plano e pagamento",
     requiresLivingSubscription: true,
   },
   {

@@ -34,23 +34,23 @@ export const signInSchema = z.object({
 })
 
 export const switchClinicSchema = z.object({
-  clinicId: z.string().uuid("ID da clínica inválido"),
+  clinicId: z.string().uuid("Clínica inválida"),
 })
 
 export const requestPasswordResetSchema = z.object({
   email: emailSchema,
-  redirectTo: z.string().url("URL de redirecionamento inválida").optional(),
+  redirectTo: z.string().url("Endereço de retorno inválido").optional(),
 })
 
 export const resetPasswordSchema = z.object({
-  token: z.string().min(1, "Token é obrigatório"),
+  token: z.string().min(1, "Link de redefinição inválido"),
   newPassword: passwordSchema,
 })
 
 /** Client form schema — includes confirm; action uses `resetPasswordSchema`. */
 export const resetPasswordFormSchema = z
   .object({
-    token: z.string().min(1, "Token é obrigatório"),
+    token: z.string().min(1, "Link de redefinição inválido"),
     newPassword: passwordSchema,
     confirmPassword: z.string().min(1, "Confirme a nova senha"),
   })

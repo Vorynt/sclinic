@@ -1,3 +1,3 @@
-import type { CreateClinicInput } from "@/modules/clinics/schemas/clinic.schema"
+import type { ClinicCreateFields } from "@/modules/clinics/schemas/clinic.schema"
 
-export type CreateClinicDto = CreateClinicInput
+export type CreateClinicDto = ClinicCreateFields

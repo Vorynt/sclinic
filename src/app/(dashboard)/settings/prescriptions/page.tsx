@@ -12,7 +12,7 @@ export default function SettingsPrescriptionsPage() {
     <div className="flex flex-col gap-6">
       <SettingsPageHeader
         title="Receitas"
-        description="Modelo HTML (timbrado) usado na emissão e impressão de receitas."
+        description="Até 3 modelos por clínica: monte o cabeçalho e a estrutura da folha para emissão e impressão."
       />
       <PrescriptionLayoutSettingsPanel />
     </div>

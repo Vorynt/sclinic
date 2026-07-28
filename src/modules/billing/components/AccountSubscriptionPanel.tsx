@@ -117,7 +117,7 @@ function SubscriptionSummary({
           <AlertTitle>Problema na assinatura</AlertTitle>
           <AlertDescription>
             Não conseguimos processar o último pagamento. Atualize o método de
-            pagamento no portal Stripe.
+            pagamento em Gerenciar assinatura.
           </AlertDescription>
         </Alert>
       ) : null}
@@ -171,7 +171,7 @@ function SubscriptionSummary({
           {portal.isPending ? (
             <>
               <Spinner data-icon="inline-start" />
-              Abrindo portal…
+              Abrindo…
             </>
           ) : (
             <>
@@ -181,12 +181,12 @@ function SubscriptionSummary({
           )}
         </Button>
         <p className="text-xs text-muted-foreground">
-          Cartão, faturas, cancelamento e troca de plano ficam no portal do
-          Stripe. Para reativar a renovação, use o portal.
+          Cartão, faturas, cancelamento e troca de plano abrem em uma página
+          segura de pagamento. Para reativar a renovação, use o mesmo botão.
         </p>
         {!canOpenPortal ? (
           <p className="text-xs text-muted-foreground">
-            O portal fica disponível após o primeiro checkout com Stripe.
+            Disponível após a primeira assinatura com pagamento online.
           </p>
         ) : null}
       </div>

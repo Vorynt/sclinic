@@ -1,12 +1,16 @@
 import type {
   CreatePrescriptionInput,
+  CreatePrescriptionLayoutInput,
   DeletePrescriptionDraftInput,
+  DeletePrescriptionLayoutInput,
   GetPrescriptionInput,
+  GetPrescriptionLayoutByIdInput,
   IssuePrescriptionInput,
   ListAppointmentPrescriptionsInput,
   ListPatientPrescriptionsInput,
+  SetDefaultPrescriptionLayoutInput,
   UpdatePrescriptionDraftInput,
-  UpsertPrescriptionLayoutInput,
+  UpdatePrescriptionLayoutInput,
 } from "@/modules/medical-records/schemas/prescription.schema"
 
 export type CreatePrescriptionDto = CreatePrescriptionInput
@@ -16,4 +20,8 @@ export type DeletePrescriptionDraftDto = DeletePrescriptionDraftInput
 export type ListAppointmentPrescriptionsDto = ListAppointmentPrescriptionsInput
 export type ListPatientPrescriptionsDto = ListPatientPrescriptionsInput
 export type GetPrescriptionDto = GetPrescriptionInput
-export type UpsertPrescriptionLayoutDto = UpsertPrescriptionLayoutInput
+export type CreatePrescriptionLayoutDto = CreatePrescriptionLayoutInput
+export type UpdatePrescriptionLayoutDto = UpdatePrescriptionLayoutInput
+export type SetDefaultPrescriptionLayoutDto = SetDefaultPrescriptionLayoutInput
+export type DeletePrescriptionLayoutDto = DeletePrescriptionLayoutInput
+export type GetPrescriptionLayoutByIdDto = GetPrescriptionLayoutByIdInput

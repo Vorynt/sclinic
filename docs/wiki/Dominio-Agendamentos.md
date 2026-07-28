@@ -34,7 +34,8 @@ Só `owner`, `admin`, `doctor`, `nurse`. Recepcionista **não** inicia.
 - Tipos: consultation, follow_up, procedure, evaluation, other
 - Dentro do horário da clínica
 - Sem overlap com appointments ≠ `canceled` (inclui completed/no_show)
-- Self-schedule: doctor/nurse só a si
+- Self-schedule: doctor/nurse só a si (owner com perfil clínico **não** entra em self-schedule — vê a agenda completa)
+- Assignee pode ser o owner se existir professional ativo vinculado ao seu `userId` (ADR-007)
 - `amountCents` exige `financial.collect|manage`
 
 ## Cancelamento

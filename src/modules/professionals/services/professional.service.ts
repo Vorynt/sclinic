@@ -26,6 +26,7 @@ import {
   PROFESSIONALS_CONSTANTS,
   type ProfessionalRoleKey,
 } from "@/modules/professionals/constants/professionals"
+import type { CreateOwnerClinicalProfileDto } from "@/modules/professionals/dto/create-owner-clinical-profile.dto"
 import type { CreateProfessionalDto } from "@/modules/professionals/dto/create-professional.dto"
 import type {
   ListProfessionalsDto,
@@ -33,6 +34,7 @@ import type {
   SetProfessionalStatusDto,
   UpdateProfessionalInviteProfileDto,
 } from "@/modules/professionals/dto/professional.dto"
+import { USERS_CONSTANTS } from "@/modules/users/constants/users"
 import type { UpdateProfessionalDto } from "@/modules/professionals/dto/update-professional.dto"
 import { professionalRepository } from "@/modules/professionals/repositories/professional.repository"
 import type {
@@ -676,4 +678,187 @@ export const professionalService = {
 
     return { success: true }
   },
+
+  /**
+   * ADR-007: owner creates a clinical profile for themselves (no invite, membership stays owner).
+   */
+  async createOwnerClinicalProfile(
+    data: CreateOwnerClinicalProfileDto,
+    ctx: AuthRequestContext,
+  ): Promise<ProfessionalListItem> {
+    const auth = await requirePermission(ctx, Permission.PROFESSIONALS_MANAGE)
+
+    if (auth.membership.roleKey !== USERS_CONSTANTS.OWNER_ROLE_KEY) {
+      throw new AppError(ErrorCode.FORBIDDEN, {
+        message:
+          "Apenas o dono da clínica pode criar o próprio perfil clínico.",
+      })
+    }
+
+    return createOwnerClinicalProfileCore(data, {
+      userId: auth.user.id,
+      clinicId: auth.clinicId,
+      actorUserId: auth.user.id,
+    })
+  },
+
+  /**
+   * Bootstrap from clinic onboarding after owner membership is created.
+   */
+  async createOwnerClinicalProfileForClinic(
+    data: CreateOwnerClinicalProfileDto,
+    params: { userId: string; clinicId: string },
+  ): Promise<ProfessionalListItem> {
+    return createOwnerClinicalProfileCore(data, {
+      userId: params.userId,
+      clinicId: params.clinicId,
+      actorUserId: params.userId,
+    })
+  },
+
+  async hasOwnerClinicalProfile(
+    ctx: AuthRequestContext,
+  ): Promise<{ hasProfile: boolean }> {
+    const auth = await requirePermission(ctx, Permission.PROFESSIONALS_MANAGE)
+
+    if (auth.membership.roleKey !== USERS_CONSTANTS.OWNER_ROLE_KEY) {
+      return { hasProfile: true }
+    }
+
+    const mine = await professionalRepository.findActiveForSchedulingByUserId(
+      auth.user.id,
+      auth.clinicId,
+    )
+    return { hasProfile: Boolean(mine) }
+  },
+}
+
+async function createOwnerClinicalProfileCore(
+  data: CreateOwnerClinicalProfileDto,
+  params: { userId: string; clinicId: string; actorUserId: string },
+): Promise<ProfessionalListItem> {
+  const actor = {
+    clinicId: params.clinicId,
+    actorUserId: params.actorUserId,
+  }
+
+  const existingActive =
+    await professionalRepository.findActiveForSchedulingByUserId(
+      params.userId,
+      params.clinicId,
+    )
+  if (existingActive) {
+    throw new AppError(ErrorCode.CONFLICT, {
+      message: "Você já possui um perfil clínico ativo nesta clínica.",
+    })
+  }
+
+  await billingService.assertPlanCapacity(params.clinicId, "professionals")
+
+  const profileFields = {
+    fullName: data.fullName,
+    treatmentPronoun: data.treatmentPronoun,
+    councilType: data.councilType ?? null,
+    councilNumber: data.councilNumber ?? null,
+    councilState: data.councilState ?? null,
+    specialty: data.specialty ?? null,
+    status: "active" as const,
+  }
+
+  try {
+    const existingByUser = await professionalRepository.findByUserId(
+      params.userId,
+    )
+
+    let professionalId: string
+
+    if (existingByUser) {
+      const affiliation =
+        await professionalRepository.findByProfessionalAndClinic(
+          existingByUser.id,
+          params.clinicId,
+        )
+
+      if (affiliation) {
+        await professionalRepository.update({
+          id: existingByUser.id,
+          clinicId: params.clinicId,
+          data: {
+            ...profileFields,
+            affiliationType: "attending",
+          },
+        })
+      } else {
+        await professionalRepository.createAffiliation({
+          professionalId: existingByUser.id,
+          clinicId: params.clinicId,
+          affiliationType: "attending",
+          status: "active",
+        })
+        await professionalRepository.update({
+          id: existingByUser.id,
+          clinicId: params.clinicId,
+          data: profileFields,
+        })
+      }
+
+      professionalId = existingByUser.id
+    } else {
+      const created = await professionalRepository.create({
+        ...profileFields,
+        userId: params.userId,
+      })
+      await professionalRepository.createAffiliation({
+        professionalId: created.id,
+        clinicId: params.clinicId,
+        affiliationType: "attending",
+        status: "active",
+      })
+      professionalId = created.id
+    }
+
+    const listItem = await professionalRepository.findById(
+      professionalId,
+      params.clinicId,
+    )
+    if (!listItem) {
+      throw new AppError(ErrorCode.INTERNAL_ERROR, {
+        message: "Falha ao carregar perfil clínico após criação.",
+      })
+    }
+
+    recordAudit({
+      ...actor,
+      action: AUDIT_ACTIONS.PROFESSIONAL_CREATE,
+      status: "success",
+      entityType: AUDIT_ENTITY_TYPES.PROFESSIONAL,
+      entityId: listItem.id,
+      changes: {
+        after: {
+          id: listItem.id,
+          fullName: listItem.fullName,
+          clinicalPracticeType: data.clinicalPracticeType,
+          source: "owner_clinical_profile",
+        },
+      },
+    })
+
+    return listItem
+  } catch (error) {
+    recordAudit({
+      ...actor,
+      action: AUDIT_ACTIONS.PROFESSIONAL_CREATE,
+      status: "error",
+      entityType: AUDIT_ENTITY_TYPES.PROFESSIONAL,
+      changes: {
+        after: {
+          fullName: data.fullName,
+          clinicalPracticeType: data.clinicalPracticeType,
+          source: "owner_clinical_profile",
+        },
+      },
+      ...auditErrorFields(error),
+    })
+    throw error
+  }
 }

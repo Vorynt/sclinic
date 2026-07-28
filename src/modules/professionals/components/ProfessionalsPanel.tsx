@@ -5,6 +5,7 @@ import { useState } from "react"
 import { DataTableSearch } from "@/components/data-table/DataTableSearch"
 import { Button } from "@/components/ui/button"
 import { useListQueryParams } from "@/hooks/use-list-query-params"
+import { OwnerClinicalProfileCallout } from "@/modules/professionals/components/OwnerClinicalProfileCallout"
 import { ProfessionalFormDialog } from "@/modules/professionals/components/ProfessionalFormDialog"
 import { ProfessionalsTable } from "@/modules/professionals/components/ProfessionalsTable"
 import type { ProfessionalListItem } from "@/modules/professionals/types/professional"
@@ -40,6 +41,8 @@ export function ProfessionalsPanel() {
           Novo profissional
         </Button>
       </div>
+
+      <OwnerClinicalProfileCallout />
 
       <DataTableSearch
         value={q ?? ""}

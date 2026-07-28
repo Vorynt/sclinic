@@ -26,6 +26,12 @@ import { patients } from "./patients"
 import { professionals } from "./professionals"
 import { sclinicAppRole } from "./rls"
 
+/** Opaque JSON shape; validated in medical-records (ADR-008). */
+export type PrescriptionLayoutDocumentModel = {
+  version: 1
+  blocks: unknown[]
+}
+
 /**
  * Frozen identity block copied onto a prescription at issue time.
  * Shape is enforced in the medical-records service/DTO layer.
@@ -46,11 +52,12 @@ export type PrescriptionPartySnapshot = {
 }
 
 /**
- * Clinic-owned prescription letterhead (HTML with placeholders).
- * No active row → system default from code is used at preview/issue.
- * Editing creates a new `version`; at most one `isActive` row per clinic.
+ * Clinic-owned prescription templates (stacked-block DocumentModel).
+ * Up to 3 active rows per clinic; one may be `isDefault`.
+ * `html` is the compiled cache used at preview/issue.
  *
  * @see docs/adr/005-prescriptions.md
+ * @see docs/adr/008-prescription-template-designer.md
  */
 export const prescriptionLayouts = pgTable(
   "prescription_layouts",
@@ -59,24 +66,33 @@ export const prescriptionLayouts = pgTable(
     clinicId: uuid("clinic_id")
       .notNull()
       .references(() => clinics.id, { onDelete: "cascade" }),
-    /** Monotonic per clinic; referenced by issued prescriptions. */
+    /** Display name in settings and template picker. */
+    name: text("name").notNull(),
+    /** Per-template edit counter; frozen onto issued prescriptions. */
     version: integer("version").notNull(),
-    /** Full HTML template; placeholders resolved at render/issue. */
+    /** Source of truth — stacked blocks (ADR-008). */
+    documentModel: jsonb("document_model")
+      .$type<PrescriptionLayoutDocumentModel>()
+      .notNull(),
+    /** Compiled HTML cache; placeholders resolved at render/issue. */
     html: text("html").notNull(),
     isActive: boolean("is_active").default(true).notNull(),
+    /** At most one default among active templates per clinic. */
+    isDefault: boolean("is_default").default(false).notNull(),
     ...timestamps,
     ...softDelete,
     ...auditBy,
   },
   (t) => [
-    uniqueIndex("prescription_layouts_clinic_version_uidx").on(
-      t.clinicId,
-      t.version,
-    ),
-    uniqueIndex("prescription_layouts_clinic_active_uidx")
+    uniqueIndex("prescription_layouts_clinic_default_uidx")
+      .on(t.clinicId)
+      .where(
+        sql`${t.deletedAt} IS NULL AND ${t.isActive} = true AND ${t.isDefault} = true`,
+      ),
+    index("prescription_layouts_clinic_idx").on(t.clinicId),
+    index("prescription_layouts_clinic_active_idx")
       .on(t.clinicId)
       .where(sql`${t.deletedAt} IS NULL AND ${t.isActive} = true`),
-    index("prescription_layouts_clinic_idx").on(t.clinicId),
     pgPolicy("prescription_layouts_tenant_isolation", {
       as: "permissive",
       to: sclinicAppRole,
@@ -108,6 +124,13 @@ export const prescriptions = pgTable(
       .notNull()
       .references(() => appointments.id, { onDelete: "restrict" }),
     professionalId: uuid("professional_id").references(() => professionals.id, {
+      onDelete: "set null",
+    }),
+    /**
+     * Template chosen for this draft (null = clinic default / system).
+     * Kept after issue for audit; render uses frozen layoutHtml.
+     */
+    layoutId: uuid("layout_id").references(() => prescriptionLayouts.id, {
       onDelete: "set null",
     }),
     status: prescriptionStatusEnum("status").default("draft").notNull(),

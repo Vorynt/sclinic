@@ -109,7 +109,11 @@ function PrescriptionsPanelContent({
     setDialogOpen(true)
   }
 
-  function handleSaveDraft(input: { body: string; plainText: string }) {
+  function handleSaveDraft(input: {
+    body: string
+    plainText: string
+    layoutId: string | null
+  }) {
     if (editing) {
       updateDraft.mutate({ id: editing.id, ...input })
       return
@@ -117,7 +121,11 @@ function PrescriptionsPanelContent({
     create.mutate({ appointmentId, ...input })
   }
 
-  function handleIssue(input: { body: string; plainText: string }) {
+  function handleIssue(input: {
+    body: string
+    plainText: string
+    layoutId: string | null
+  }) {
     saveAndIssue.mutate({
       appointmentId,
       id: editing?.id,
@@ -133,7 +141,7 @@ function PrescriptionsPanelContent({
             Receitas
           </h2>
           <p className="text-sm text-muted-foreground">
-            Emita receitas com preview antes de imprimir.
+            Emita receitas e confira a visualização antes de imprimir.
           </p>
         </div>
         {editable ? (
@@ -195,6 +203,7 @@ function PrescriptionsPanelContent({
           if (!open) setEditing(null)
         }}
         preview={data.preview}
+        templates={data.templates}
         prescription={editing}
         isSaving={create.isPending || updateDraft.isPending}
         isIssuing={saveAndIssue.isPending}

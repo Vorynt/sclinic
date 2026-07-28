@@ -98,7 +98,7 @@ export const clinicWeeklyHoursSchema = z
   })
 
 export const getClinicHoursSchema = z.object({
-  clinicId: z.string().uuid("ID da clínica inválido").optional(),
+  clinicId: z.string().uuid("Clínica inválida").optional(),
 })
 
 export type ClinicWeeklyHoursInput = z.infer<typeof clinicWeeklyHoursSchema>

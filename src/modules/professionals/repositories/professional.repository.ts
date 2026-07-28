@@ -92,6 +92,12 @@ export const professionalRepository = {
     fullName?: string | null;
     treatmentPronoun?: TreatmentPronoun | null;
     status?: ProfessionalStatus;
+    userId?: string | null;
+    councilType?: CouncilType | null;
+    councilNumber?: string | null;
+    councilState?: string | null;
+    specialty?: string | null;
+    biography?: string | null;
   }): Promise<{
     id: string;
     fullName: string | null;
@@ -105,6 +111,12 @@ export const professionalRepository = {
           fullName: params.fullName ?? null,
           treatmentPronoun: params.treatmentPronoun ?? null,
           status: params.status ?? "inactive",
+          userId: params.userId ?? null,
+          councilType: params.councilType ?? null,
+          councilNumber: params.councilNumber ?? null,
+          councilState: params.councilState ?? null,
+          specialty: params.specialty ?? null,
+          biography: params.biography ?? null,
         })
         .returning({
           id: professionals.id,
@@ -122,6 +134,30 @@ export const professionalRepository = {
         fullName: row.fullName,
         treatmentPronoun: (row.treatmentPronoun as TreatmentPronoun | null) ?? null,
         status: (row.status as ProfessionalStatus) ?? "inactive",
+      };
+    });
+  },
+
+  async findByUserId(
+    userId: string,
+  ): Promise<{ id: string; status: ProfessionalStatus } | null> {
+    return withDbError(async () => {
+      const [row] = await db
+        .select({
+          id: professionals.id,
+          status: professionals.status,
+        })
+        .from(professionals)
+        .where(
+          and(eq(professionals.userId, userId), isNull(professionals.deletedAt)),
+        )
+        .limit(1);
+
+      if (!row) return null;
+
+      return {
+        id: row.id,
+        status: row.status as ProfessionalStatus,
       };
     });
   },

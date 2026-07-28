@@ -462,7 +462,7 @@ function AuditLogCard({ log }: { log: AuditLog }) {
             {log.entityId ? (
               <div className="sm:col-span-2">
                 <dt className="text-xs text-muted-foreground">
-                  ID do registro
+                  Referência
                 </dt>
                 <dd className="font-mono text-xs text-muted-foreground">
                   {log.entityId}

@@ -7,7 +7,6 @@ import { toPrescription } from "@/modules/medical-records/mappers/prescription.m
 import {
   createPrescriptionSchema,
   issuePrescriptionSchema,
-  upsertPrescriptionLayoutSchema,
 } from "@/modules/medical-records/schemas/prescription.schema"
 import { renderPrescriptionHtml } from "@/modules/medical-records/utils/render-prescription"
 import { sanitizePrescriptionHtml } from "@/modules/medical-records/utils/sanitize-prescription-html"
@@ -91,16 +90,19 @@ describe("prescription schemas", () => {
     )
   })
 
-  it("accepts issue and layout upsert", () => {
+  it("accepts issue and create layout payload", () => {
     assert.equal(
       issuePrescriptionSchema.parse({ id: VALID_UUID }).id,
       VALID_UUID,
     )
     assert.match(
-      upsertPrescriptionLayoutSchema.parse({
-        html: DEFAULT_PRESCRIPTION_LAYOUT_HTML,
-      }).html,
-      /{{body}}/,
+      createPrescriptionSchema.parse({
+        appointmentId: VALID_UUID,
+        body: "<p>Receita</p>",
+        plainText: "Receita",
+        layoutId: VALID_UUID,
+      }).plainText,
+      /Receita/,
     )
   })
 })
@@ -115,6 +117,7 @@ describe("toPrescription", () => {
       appointmentId: VALID_UUID,
       professionalId: null,
       professionalName: null,
+      layoutId: null,
       status: "draft",
       body: "<p>x</p>",
       plainText: "x",
@@ -130,5 +133,6 @@ describe("toPrescription", () => {
     })
     assert.equal(prescription.status, "draft")
     assert.equal(prescription.plainText, "x")
+    assert.equal(prescription.layoutId, null)
   })
 })

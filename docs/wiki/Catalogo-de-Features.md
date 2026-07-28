@@ -13,6 +13,7 @@ Inventário do que o sistema faz hoje. Status: **Done** | **Partial** | **Planne
 | Convite de profissional | Done | `/invite/professional` |
 | Aceite de invite marca e-mail verificado | Done | notebook auth-invite |
 | Criar clínica + membership owner | Done | onboarding |
+| Owner com perfil clínico (alsoPractices + CTA) | Done | ADR-007; onboarding + `/professionals` |
 | Horários da clínica | Done | onboarding/hours, settings |
 | Switcher multi-clínica | Done | membership active/suspended |
 | Tela membership inactive | Done | `/membership-inactive` |
@@ -41,6 +42,7 @@ Inventário do que o sistema faz hoje. Status: **Done** | **Partial** | **Planne
 | Detalhe paciente + abas | Done | patient detail nav |
 | Convite/gestão profissionais | Done | `/professionals` |
 | Perfil profissional (conselho, etc.) | Done | invite onboarding |
+| Owner cria próprio perfil clínico (sem invite) | Done | ADR-007 |
 | Active/inactive profissional | Done | professionals |
 
 ## E4 — Agenda
@@ -67,6 +69,8 @@ Inventário do que o sistema faz hoje. Status: **Done** | **Partial** | **Planne
 | Receitas draft/issued | Done | ADR-005 |
 | Print HTML | Done | `(print)` |
 | Layout custom por clínica | Done | `/settings/prescriptions` |
+| Designer de templates (blocos) | Done | ADR-008 |
+| Até 3 templates nomeados | Done | ADR-008 |
 | Tipos avançados de receita / PDF | Planned/Later | ADR-005 |
 
 ## E6 — Recebíveis

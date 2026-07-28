@@ -1,7 +1,7 @@
 import { ErrorCode } from "@/shared/errors/codes"
 
 const clientMessages: Record<string, string> = {
-  [ErrorCode.NOT_FOUND]: "Recurso não encontrado.",
+  [ErrorCode.NOT_FOUND]: "Não encontramos o que você procura.",
   [ErrorCode.CONFLICT]: "Este registro já existe ou conflita com outro.",
   [ErrorCode.FORBIDDEN]: "Você não tem permissão para esta ação.",
   [ErrorCode.UNAUTHORIZED]: "Faça login para continuar.",
@@ -9,7 +9,8 @@ const clientMessages: Record<string, string> = {
   [ErrorCode.INTERNAL_ERROR]: "Algo deu errado. Tente novamente.",
   [ErrorCode.DB_CONNECTION_FAILED]: "Algo deu errado. Tente novamente.",
   [ErrorCode.DB_UNIQUE_VIOLATION]: "Este registro já existe ou conflita com outro.",
-  [ErrorCode.DB_FOREIGN_KEY_VIOLATION]: "Operação inválida por dependência de dados.",
+  [ErrorCode.DB_FOREIGN_KEY_VIOLATION]:
+    "Não foi possível concluir. Há informações relacionadas que impedem esta ação.",
   [ErrorCode.DB_NOT_NULL_VIOLATION]: "Verifique os campos e tente novamente.",
   [ErrorCode.DB_QUERY_FAILED]: "Algo deu errado. Tente novamente.",
   [ErrorCode.EMAIL_SEND_FAILED]: "Não foi possível enviar o e-mail. Tente novamente.",
@@ -27,8 +28,8 @@ const clientMessages: Record<string, string> = {
     "A assinatura desta clínica está suspensa.",
   [ErrorCode.PLAN_LIMIT_EXCEEDED]:
     "Limite do plano atingido. Atualize o plano ou reduza o uso para continuar.",
-  [ErrorCode.INVALID_TOKEN]: "Token inválido.",
-  [ErrorCode.TOKEN_EXPIRED]: "Token expirado. Solicite um novo.",
+  [ErrorCode.INVALID_TOKEN]: "Este link é inválido.",
+  [ErrorCode.TOKEN_EXPIRED]: "Este link expirou. Solicite um novo.",
   [ErrorCode.PASSWORD_CHANGE_REQUIRED]:
     "Altere sua senha provisória para continuar.",
   [ErrorCode.INVITATION_NOT_FOUND]: "Convite não encontrado.",

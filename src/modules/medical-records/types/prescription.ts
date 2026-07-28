@@ -1,4 +1,5 @@
 import type { PrescriptionPartySnapshot } from "@/db/schema"
+import type { PrescriptionDocumentModel } from "@/modules/medical-records/prescription-template-designer"
 
 export type PrescriptionStatus = "draft" | "issued"
 
@@ -9,6 +10,7 @@ export type Prescription = {
   appointmentId: string
   professionalId: string | null
   professionalName: string | null
+  layoutId: string | null
   status: PrescriptionStatus
   body: string
   plainText: string
@@ -26,19 +28,30 @@ export type Prescription = {
 export type PrescriptionLayout = {
   id: string
   clinicId: string
+  name: string
   version: number
+  documentModel: PrescriptionDocumentModel
   html: string
   isActive: boolean
+  isDefault: boolean
   createdAt: Date
   updatedAt: Date
 }
 
-/** Active layout for the clinic, or system default when none is configured. */
+/** Resolved letterhead for preview/issue. */
 export type PrescriptionLayoutSource = {
   html: string
   version: number | null
   source: "system_default" | "clinic_custom"
   layout: PrescriptionLayout | null
+}
+
+/** Named template option for the create-prescription picker. */
+export type PrescriptionTemplateOption = {
+  id: string
+  name: string
+  isDefault: boolean
+  html: string
 }
 
 /** Live preview context for draft composition (not frozen). */
@@ -54,5 +67,7 @@ export type PrescriptionsForAppointment = {
   appointmentId: string
   patientId: string
   editable: boolean
+  /** Active clinic templates (empty → system default via preview.layoutHtml). */
+  templates: PrescriptionTemplateOption[]
   preview: PrescriptionPreviewContext
 }

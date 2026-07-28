@@ -47,6 +47,26 @@ export function useCreateProfessionalMutation({
   })
 }
 
+export function useCreateOwnerClinicalProfileMutation({
+  onSuccess,
+  onError,
+}: MutationCallbacks<ProfessionalListItem> = {}) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    ...professionalsMutations.createOwnerClinicalProfile(),
+    onSuccess: async (data) => {
+      await queryClient.invalidateQueries({
+        queryKey: professionalsQueryKeys.all,
+      })
+      onSuccess?.(data)
+    },
+    onError: (error) => {
+      onError?.(toAppError(error))
+    },
+  })
+}
+
 export function useUpdateProfessionalMutation({
   onSuccess,
   onError,

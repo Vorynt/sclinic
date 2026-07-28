@@ -63,7 +63,8 @@ export const prescriptionService = {
       appointmentId: appointment.id,
     })
 
-    const layout = await prescriptionLayoutService.resolveActiveLayout(ctx)
+    const templates = await prescriptionLayoutService.listTemplateOptions(ctx)
+    const layout = await prescriptionLayoutService.resolveDefaultLayout(ctx)
     const clinic = await clinicService.getById(appointment.clinicId, ctx)
     const patient = await patientService.getById(appointment.patientId, ctx)
 
@@ -85,6 +86,7 @@ export const prescriptionService = {
       appointmentId: appointment.id,
       patientId: appointment.patientId,
       editable: canEditPrescription(appointment.status),
+      templates,
       preview: {
         layoutHtml: layout.html,
         clinic: toClinicSnapshot(clinic),
@@ -153,7 +155,10 @@ export const prescriptionService = {
       }
     }
 
-    const layout = await prescriptionLayoutService.resolveActiveLayout(ctx)
+    const layout = await prescriptionLayoutService.resolveById(
+      prescription.layoutId,
+      ctx,
+    )
     const clinic = await clinicService.getById(prescription.clinicId, ctx)
     const patient = await patientService.getById(prescription.patientId, ctx)
     let professionalSnapshot =
@@ -211,12 +216,22 @@ export const prescriptionService = {
       })
     }
 
+    let layoutId: string | null = data.layoutId ?? null
+    if (layoutId) {
+      await prescriptionLayoutService.resolveById(layoutId, ctx)
+    } else {
+      const defaultLayout =
+        await prescriptionLayoutService.resolveDefaultLayout(ctx)
+      layoutId = defaultLayout.layout?.id ?? null
+    }
+
     try {
       const prescription = await prescriptionRepository.create({
         clinicId: auth.clinicId,
         patientId: appointment.patientId,
         appointmentId: appointment.id,
         professionalId: appointment.professionalId,
+        layoutId,
         body,
         plainText,
         createdBy: auth.user.id,
@@ -290,11 +305,16 @@ export const prescriptionService = {
       })
     }
 
+    if (data.layoutId !== undefined && data.layoutId !== null) {
+      await prescriptionLayoutService.resolveById(data.layoutId, ctx)
+    }
+
     try {
       const prescription = await prescriptionRepository.updateDraft({
         id: existing.id,
         clinicId: auth.clinicId,
         professionalId: appointment.professionalId,
+        layoutId: data.layoutId,
         body,
         plainText,
         updatedBy: auth.user.id,
@@ -364,7 +384,10 @@ export const prescriptionService = {
       })
     }
 
-    const layout = await prescriptionLayoutService.resolveActiveLayout(ctx)
+    const layout = await prescriptionLayoutService.resolveById(
+      existing.layoutId,
+      ctx,
+    )
     const clinic = await clinicService.getById(auth.clinicId, ctx)
     const patient = await patientService.getById(appointment.patientId, ctx)
 
