@@ -8,15 +8,16 @@ Handbook oficial do produto e da engenharia. Público-alvo: **qualquer novo cola
 
 1. [Onboarding do colaborador](Onboarding-do-Colaborador)
 2. [Visão do produto](Visao-do-Produto)
-3. [Arquitetura](Arquitetura)
-4. [Módulos e boundaries](Modulos-e-Boundaries)
-5. [Catálogo de features](Catalogo-de-Features) · [Épicos](Epicos) · [Roadmap](Roadmap)
+3. [Requisitos](Requisitos) (RF, RNF, personas)
+4. [Arquitetura](Arquitetura)
+5. [Módulos e boundaries](Modulos-e-Boundaries)
+6. [Catálogo de features](Catalogo-de-Features) · [Épicos](Epicos) · [Roadmap](Roadmap)
 
 ## Mapa da documentação
 
 | Seção | Páginas |
 |-------|---------|
-| **Produto** | [Visão](Visao-do-Produto), [Glossário](Glossario), [Roadmap](Roadmap), [Épicos](Epicos), [Features](Catalogo-de-Features) |
+| **Produto** | [Visão](Visao-do-Produto), [Requisitos](Requisitos), [Glossário](Glossario), [Roadmap](Roadmap), [Épicos](Epicos), [Features](Catalogo-de-Features) |
 | **Arquitetura** | [Arquitetura](Arquitetura), [Módulos](Modulos-e-Boundaries), [Rotas](Rotas-e-Navegacao), [RBAC](RBAC-e-Permissoes), [Diagramas](Diagramas) |
 | **Domínio** | Auth, Clínicas, Equipe, Pacientes, Profissionais, Agenda, Prontuário, Recepção, Faturamento, SaaS, Auditoria, Dashboard/Settings, Ajuda, Marketing |
 | **Decisões** | [Índice de decisões](Indice-de-Decisoes) → ADRs em `docs/adr/` |

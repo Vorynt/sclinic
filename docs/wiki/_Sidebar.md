@@ -7,6 +7,7 @@
 
 **Produto**
 - [Visão do produto](Visao-do-Produto)
+- [Requisitos](Requisitos)
 - [Roadmap](Roadmap)
 - [Épicos](Epicos)
 - [Catálogo de features](Catalogo-de-Features)
