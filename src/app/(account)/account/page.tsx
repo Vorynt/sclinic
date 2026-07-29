@@ -1,7 +1,7 @@
-import { redirect } from "next/navigation"
+import { redirect } from "next/navigation";
 
-import { routes } from "@/config/routes"
+import { routes } from "@/config/routes";
 
 export default function AccountIndexPage() {
-  redirect(routes.accountOverview)
+  return redirect(routes.accountOverview);
 }
