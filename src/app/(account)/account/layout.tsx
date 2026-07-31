@@ -1,15 +1,15 @@
-import type { Metadata } from "next"
-import type { ReactNode } from "react"
+import type { Metadata } from "next";
+import type { ReactNode } from "react";
 
-import { AccountNav } from "@/modules/users/components/AccountNav"
+import { AccountNav } from "@/modules/users/components/AccountNav";
 
 export const metadata: Metadata = {
   title: "Minha conta · sclinic",
-}
+};
 
 type AccountLayoutProps = {
-  children: ReactNode
-}
+  children: ReactNode;
+};
 
 export default function AccountLayout({ children }: AccountLayoutProps) {
   return (
@@ -30,5 +30,5 @@ export default function AccountLayout({ children }: AccountLayoutProps) {
         <div className="min-w-0">{children}</div>
       </div>
     </div>
-  )
+  );
 }

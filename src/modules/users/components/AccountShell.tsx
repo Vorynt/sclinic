@@ -8,19 +8,24 @@ import { routes } from "@/config/routes"
 
 type AccountShellProps = {
   children: ReactNode
+  /** Defaults to dashboard home; use select-clinic when product access is blocked. */
+  backHref?: string
 }
 
 /**
  * Clinic-agnostic chrome for /account — no AppShell sidebar.
  */
-export function AccountShell({ children }: AccountShellProps) {
+export function AccountShell({
+  children,
+  backHref = routes.home,
+}: AccountShellProps) {
   return (
     <div className="flex min-h-svh flex-col bg-background">
       <header className="sticky top-0 z-10 border-b border-border/70 bg-background/80 backdrop-blur-xl supports-backdrop-filter:bg-background/65">
         <div className="mx-auto flex h-14 w-full max-w-5xl items-center justify-between gap-4 px-4 md:px-6">
           <div className="flex min-w-0 items-center gap-3">
             <Button variant="ghost" size="sm" asChild className="-ml-2">
-              <Link href={routes.home}>
+              <Link href={backHref}>
                 <ArrowLeftIcon />
                 Voltar
               </Link>

@@ -188,6 +188,8 @@ export const deleteClinicSchema = z.object({
     .string()
     .trim()
     .min(1, "Digite o nome da clínica para confirmar"),
+  /** Required when the session has no active clinic (e.g. unpaid subscription). */
+  clinicId: z.string().uuid("Clínica inválida").optional(),
 })
 
 export type DeleteClinicInput = z.infer<typeof deleteClinicSchema>

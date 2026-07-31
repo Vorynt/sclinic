@@ -17,7 +17,7 @@ Inventário do que o sistema faz hoje. Status: **Done** | **Partial** | **Planne
 | Horários da clínica | Done | onboarding/hours, settings |
 | Switcher multi-clínica | Done | membership active/suspended |
 | Tela membership inactive | Done | `/membership-inactive` |
-| Select-clinic / subscription blocked | Done | ADR-003 guard |
+| Select-clinic / subscription blocked | Done | ADR-003; regularizar + excluir |
 
 ## E2 — SaaS
 
@@ -25,7 +25,9 @@ Inventário do que o sistema faz hoje. Status: **Done** | **Partial** | **Planne
 |---------|--------|------|
 | Catálogo de planos + cotas | Done | seed plans |
 | Checkout Stripe | Done | PlanPicker |
-| Customer Portal | Done | `/account/subscription` |
+| Customer Portal | Done | `/account/subscription` (também sem entitlement) |
+| Regularização Portal-first | Done | unpaid/canceled → Portal |
+| Delete clinic cancela Stripe | Done | MVP 1:1; teardown sem entitlement |
 | Webhook sync | Done | `/api/stripe/webhook` |
 | Entitlement `trialing\|active\|past_due` | Done | requireClinic |
 | Modo over_limit + banner | Done | ADR-004 |

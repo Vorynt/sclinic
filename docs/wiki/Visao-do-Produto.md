@@ -27,7 +27,8 @@ Misturar os dois é erro de modelagem — ver ADR-002 e ADR-003.
 | Médico / Enfermeiro | Atendimento, prontuário, receitas |
 | Financeiro | Listagem de cobranças clínicas |
 
-Detalhe: [RBAC](RBAC-e-Permissoes).
+Personas detalhadas, RF/RNF e jornadas: [Requisitos](Requisitos).  
+Matriz de permissões: [RBAC](RBAC-e-Permissoes).
 
 ## Escopo atual (MVP avançado)
 

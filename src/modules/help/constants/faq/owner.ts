@@ -97,11 +97,13 @@ export const HELP_FAQ_OWNER: HelpFaqItem[] = [
     question: "Consigo apagar a clínica?",
     answer: [
       "Sim. Em Configurações → Zona de perigo você encontra essa opção. Só o dono da clínica consegue concluir.",
+      "Se a assinatura estiver inadimplente ou cancelada, você também pode excluir pela tela de escolher clínica — e a cobrança no Stripe é encerrada na hora.",
       "Atenção: depois de apagar, não dá para desfazer. Use só se tiver certeza.",
     ],
-    keywords: ["apagar", "excluir", "remover clínica", "zona de perigo"],
+    keywords: ["apagar", "excluir", "remover clínica", "zona de perigo", "assinatura"],
     relatedRoutes: [
       { label: "Zona de perigo", href: routes.settingsDanger },
+      { label: "Assinatura", href: routes.accountSubscription },
     ],
   },
   {

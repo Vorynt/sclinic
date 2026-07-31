@@ -55,7 +55,7 @@ Não atualizar por: refactor interno sem mudança observável; só tipagem; poli
 | Tema | Página |
 |------|--------|
 | Onboarding colaboradores | `Onboarding-do-Colaborador.md` |
-| Produto | `Visao-do-Produto.md`, `Glossario.md` |
+| Produto | `Visao-do-Produto.md`, `Requisitos.md`, `Glossario.md` |
 | Planejamento | `Roadmap.md`, `Epicos.md`, `Catalogo-de-Features.md` |
 | Arquitetura | `Arquitetura.md`, `Modulos-e-Boundaries.md`, `Rotas-e-Navegacao.md`, `RBAC-e-Permissoes.md`, `Diagramas.md` |
 | authentication | `Dominio-Autenticacao.md` |

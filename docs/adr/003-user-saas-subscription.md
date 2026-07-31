@@ -1,7 +1,7 @@
 # ADR-003: Assinatura SaaS por usuário (Stripe Portal-first)
 
 - **Date**: 2026-07-27
-- **Status**: Accepted
+- **Status**: Accepted (amended 2026-07-31)
 - **Deciders**: Time sclinic
 - **Tags**: architecture, billing, saas, stripe, subscriptions
 
@@ -46,6 +46,26 @@ Chosen option: **Assinatura SaaS por `userId`**, subdomínio em `billing` (servi
 - Migration quebra o stub `clinicId` → exige re-seed / migração de dados
 - Enforcement e sync owner→clinic precisam disciplina nos webhooks
 - 1:N clínicas por assinatura fica para fase futura
+
+## Amendment (2026-07-31) — lifecycle pós-falha
+
+Corrige inconsistências de regularização, exclusão e self-service quando a assinatura deixa de ser entitled (`unpaid` / `canceled` / `incomplete`).
+
+### Três zonas de acesso
+
+| Zona | Gate | Pode |
+|------|------|------|
+| Produto (dashboard, agenda…) | `requireClinic` + entitlement | Uso normal |
+| Billing self-service (`/account/subscription`) | Auth + owner bloqueado | Portal / regularizar |
+| Tenant teardown | `requireOwnedClinicTeardown` (sem entitlement) | Excluir clínica owned |
+
+### Regras
+
+1. **Grace `past_due`** — mantém entitlement (acesso ao produto) + alerta para atualizar pagamento no Portal.
+2. **Regularização Portal-first** — se existe `gatewayCustomerId`, abre Billing Portal; Checkout só quando não há customer Stripe (ou fallback sem customer).
+3. **Checkout de reativação** — cancela sub Stripe órfã antes de criar nova, e reutiliza row local `canceled`/`unpaid`/`incomplete` (não cria órfão).
+4. **Exclusão da clínica (MVP 1:1)** — owner pode excluir mesmo sem entitlement; cancela a assinatura Stripe **imediatamente** e soft-delete do tenant.
+5. **Copy** — UI usa status reais (`pagamento pendente`, `inadimplente`, `cancelada`); “suspensa” fica reservada a membership.
 
 ## Links
 

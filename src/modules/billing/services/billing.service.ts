@@ -201,7 +201,7 @@ export const billingService = {
 
   /**
    * Ensures the user has a local subscription row for `planId`.
-   * Reuses a living Stripe-backed sub (post-Checkout); otherwise creates/updates incomplete.
+   * Reuses living or terminal (canceled/unpaid/incomplete) rows; avoids orphan rows.
    */
   async attachPlanToUser(
     userId: string,
@@ -215,11 +215,95 @@ export const billingService = {
     }
 
     const existing = await subscriptionRepository.findByUserId(userId);
-    if (existing && existing.status === "incomplete") {
-      return subscriptionRepository.updateStatus(existing.id, { planId });
+    if (
+      existing &&
+      (existing.status === "incomplete" ||
+        existing.status === "canceled" ||
+        existing.status === "unpaid")
+    ) {
+      return subscriptionRepository.updateStatus(existing.id, {
+        planId,
+        status: "incomplete",
+      });
     }
 
     return subscriptionRepository.createIncomplete({ userId, planId });
+  },
+
+  /**
+   * Cancels the owner's Stripe subscription immediately and mirrors local status.
+   * Used when deleting the owned clinic (MVP 1:1 — ADR-003 amend).
+   */
+  async cancelSubscriptionForUser(
+    userId: string,
+    options?: { reason?: string },
+  ): Promise<void> {
+    const local = await subscriptionRepository.findByUserId(userId);
+    if (!local) return;
+
+    if (isStripeEnabled() && local.gatewaySubscriptionId) {
+      const stripe = getStripe();
+      try {
+        await stripe.subscriptions.cancel(local.gatewaySubscriptionId);
+      } catch (error) {
+        logger.warn(
+          {
+            err: error,
+            userId,
+            stripeSubscriptionId: local.gatewaySubscriptionId,
+            reason: options?.reason ?? null,
+          },
+          "stripe.subscription.cancel_failed",
+        );
+      }
+    }
+
+    if (local.status !== "canceled") {
+      await subscriptionRepository.updateStatus(local.id, {
+        status: "canceled",
+        cancelAtPeriodEnd: false,
+      });
+      await syncOwnedClinicsStatus(userId, "canceled");
+    }
+
+    logger.info(
+      { userId, reason: options?.reason ?? null },
+      "subscription.canceled_for_user",
+    );
+  },
+
+  /**
+   * Portal-first regularization: open Billing Portal when a Stripe customer
+   * already exists; otherwise start Checkout for a new subscription.
+   */
+  async createRegularizeSession(input: {
+    userId: string;
+    email: string;
+    name: string;
+    planId?: string;
+    successPath?: string;
+    cancelPath?: string;
+  }): Promise<{ url: string }> {
+    const existing = await subscriptionRepository.findByUserId(input.userId);
+    if (existing?.gatewayCustomerId && isStripeEnabled()) {
+      return this.createBillingPortalSession({ userId: input.userId });
+    }
+
+    if (!input.planId) {
+      throw new AppError(ErrorCode.VALIDATION_FAILED, {
+        message: "Selecione um plano para reativar a assinatura.",
+      });
+    }
+
+    return this.createCheckoutSession({
+      userId: input.userId,
+      email: input.email,
+      name: input.name,
+      planId: input.planId,
+      successPath: input.successPath ?? routes.home,
+      cancelPath:
+        input.cancelPath ?? `${routes.onboardingPlan}?intent=reactivate`,
+    });
   },
 
   async createCheckoutSession(input: {
@@ -253,9 +337,24 @@ export const billingService = {
     }
 
     const stripe = getStripe();
-    let customerId =
-      (await subscriptionRepository.findByUserId(input.userId))
-        ?.gatewayCustomerId ?? null;
+    const existing = await subscriptionRepository.findByUserId(input.userId);
+    let customerId = existing?.gatewayCustomerId ?? null;
+
+    // Avoid a second Stripe subscription when reactivating unpaid/canceled.
+    if (existing?.gatewaySubscriptionId) {
+      try {
+        await stripe.subscriptions.cancel(existing.gatewaySubscriptionId);
+      } catch (error) {
+        logger.warn(
+          {
+            err: error,
+            userId: input.userId,
+            stripeSubscriptionId: existing.gatewaySubscriptionId,
+          },
+          "stripe.subscription.cancel_before_checkout_failed",
+        );
+      }
+    }
 
     if (!customerId) {
       const customer = await stripe.customers.create({

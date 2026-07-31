@@ -8,7 +8,7 @@ Decisões canônicas: **ADRs** em `docs/adr/`. Notas curtas de implementação: 
 |-----|--------|--------|---------|
 | [001](https://github.com/ViniciusSantos31/sclinic/blob/main/docs/adr/001-clinic-audit-module.md) | Módulo de auditoria | Accepted | `audit` + `core/events` |
 | [002](https://github.com/ViniciusSantos31/sclinic/blob/main/docs/adr/002-clinical-billing.md) | Faturamento clínico | Accepted | charges/payments; collect vs view |
-| [003](https://github.com/ViniciusSantos31/sclinic/blob/main/docs/adr/003-user-saas-subscription.md) | Assinatura por user | Accepted | Stripe Portal-first; entitlement |
+| [003](https://github.com/ViniciusSantos31/sclinic/blob/main/docs/adr/003-user-saas-subscription.md) | Assinatura por user | Accepted (amend 2026-07-31) | Stripe Portal-first; entitlement; teardown |
 | [004](https://github.com/ViniciusSantos31/sclinic/blob/main/docs/adr/004-plan-downgrade-over-limit.md) | Downgrade over_limit | Accepted | banner + assertPlanCapacity |
 | [005](https://github.com/ViniciusSantos31/sclinic/blob/main/docs/adr/005-prescriptions.md) | Receitas médicas | Accepted (layout parcial → 008) | draft→issued; print HTML |
 | [006](https://github.com/ViniciusSantos31/sclinic/blob/main/docs/adr/006-reception-ops-sse.md) | Recepção + SSE | Accepted | board; médico não cobra |
@@ -23,7 +23,7 @@ Paths locais: `docs/adr/00N-*.md`.
 |------|---------|-----------------|
 | Audit desacoplado | Events em vez de importar repository | ADR-001, [Auditoria](Dominio-Auditoria) |
 | SaaS ≠ clínico | Subdomínios no módulo billing | ADR-002/003 |
-| Pagador = user | Não clinicId na subscription | ADR-003 |
+| Pagador = user | Não clinicId na subscription; lifecycle pós-falha (Portal / teardown) | ADR-003 |
 | Downgrade | Nunca apagar dados; bloquear creates | ADR-004 |
 | Receita | Entidade própria; snapshot na emissão | ADR-005 |
 | Templates de receita | DocumentModel (blocos); ≤3 por clínica | ADR-008 |

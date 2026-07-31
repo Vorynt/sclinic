@@ -82,7 +82,8 @@ export function DeleteClinicDangerZone({
         </h3>
         <p className="mt-1 text-sm text-muted-foreground">
           Remove permanentemente o acesso a esta clínica, pacientes,
-          agendamentos, equipe e demais dados. Esta ação não pode ser desfeita.
+          agendamentos, equipe e demais dados. A assinatura SaaS também será
+          cancelada imediatamente. Esta ação não pode ser desfeita.
         </p>
         <Button
           type="button"
@@ -111,8 +112,9 @@ export function DeleteClinicDangerZone({
           <AlertDialogHeader>
             <AlertDialogTitle>Excluir “{clinic.name}”?</AlertDialogTitle>
             <AlertDialogDescription>
-              Todos os dados da clínica ficarão inacessíveis. Para confirmar,
-              digite o nome da clínica exatamente como aparece abaixo.
+              Todos os dados da clínica ficarão inacessíveis e a assinatura
+              será cancelada imediatamente. Para confirmar, digite o nome da
+              clínica exatamente como aparece abaixo.
             </AlertDialogDescription>
           </AlertDialogHeader>
 
@@ -147,6 +149,7 @@ export function DeleteClinicDangerZone({
                 setFormError(null);
                 deleteClinic.mutate({
                   confirmationName: confirmationName.trim(),
+                  clinicId: clinic.id,
                 });
               }}>
               {deleteClinic.isPending ? (

@@ -14,6 +14,7 @@ import {
 } from "@/modules/billing/constants/subscription"
 import { toSubscription } from "@/modules/billing/mappers/billing.mapper"
 import { createCheckoutSessionSchema } from "@/modules/billing/schemas/checkout.schema"
+import { createRegularizeSessionSchema } from "@/modules/billing/schemas/regularize.schema"
 import { buildClinicPlanQuota } from "@/modules/billing/utils/plan-quota"
 import { formatStorageBytes } from "@/modules/billing/utils/format-storage"
 
@@ -81,6 +82,20 @@ describe("createCheckoutSessionSchema", () => {
   it("rejects invalid planId", () => {
     const result = createCheckoutSessionSchema.safeParse({ planId: "x" })
     assert.equal(result.success, false)
+  })
+})
+
+describe("createRegularizeSessionSchema", () => {
+  it("accepts empty object for Portal-first", () => {
+    const parsed = createRegularizeSessionSchema.parse({})
+    assert.equal(parsed.planId, undefined)
+  })
+
+  it("accepts optional planId uuid", () => {
+    const parsed = createRegularizeSessionSchema.parse({
+      planId: VALID_UUID,
+    })
+    assert.equal(parsed.planId, VALID_UUID)
   })
 })
 
