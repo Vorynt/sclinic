@@ -14,6 +14,7 @@ import {
   createInviteToken,
   hashInviteToken,
 } from "@/modules/users/utils/invite-token"
+import { DEFAULT_LIST_PAGE_SIZE } from "@/shared/validators"
 import {
   assertAssignableRoleKey,
   assertCanManageMember,
@@ -140,7 +141,7 @@ describe("listMembersSchema", () => {
   it("defaults page and pageSize", () => {
     const parsed = listMembersSchema.parse({})
     assert.equal(parsed.page, 1)
-    assert.equal(parsed.pageSize, 20)
+    assert.equal(parsed.pageSize, DEFAULT_LIST_PAGE_SIZE)
     assert.equal(parsed.q, undefined)
   })
 })

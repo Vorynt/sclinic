@@ -7,6 +7,7 @@ import {
   isWithinClinicHours,
   timeToMinutes,
 } from "@/modules/clinics/utils/clinic-hours-window"
+import { formatDayHoursSummary } from "@/modules/clinics/utils/format-day-hours-summary"
 import type { ClinicBusinessHours } from "@/db/schema"
 
 describe("clinicWeeklyHoursSchema", () => {
@@ -111,5 +112,38 @@ describe("isWithinClinicHours", () => {
   it("converts HH:mm to minutes", () => {
     assert.equal(timeToMinutes("07:00"), 420)
     assert.equal(timeToMinutes("19:00"), 1140)
+  })
+})
+
+describe("formatDayHoursSummary", () => {
+  it("returns Fechado when closed or empty", () => {
+    assert.equal(
+      formatDayHoursSummary({ isClosed: true, intervals: [] }),
+      "Fechado",
+    )
+    assert.equal(
+      formatDayHoursSummary({ isClosed: false, intervals: [] }),
+      "Fechado",
+    )
+  })
+
+  it("joins one or two intervals", () => {
+    assert.equal(
+      formatDayHoursSummary({
+        isClosed: false,
+        intervals: [{ opensAt: "08:00", closesAt: "18:00" }],
+      }),
+      "08:00–18:00",
+    )
+    assert.equal(
+      formatDayHoursSummary({
+        isClosed: false,
+        intervals: [
+          { opensAt: "08:00", closesAt: "12:00" },
+          { opensAt: "14:00", closesAt: "18:00" },
+        ],
+      }),
+      "08:00–12:00, 14:00–18:00",
+    )
   })
 })
