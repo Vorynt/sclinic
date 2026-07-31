@@ -20,8 +20,9 @@ export function OnboardingHoursPanel() {
           Horário de funcionamento
         </h1>
         <p className="text-sm text-muted-foreground">
-          Informe os dias e horários de atendimento. Se a clínica fecha no
-          almoço, use Pausa para separar manhã e tarde.
+          Selecione cada dia para definir o horário. Se a clínica fecha no
+          almoço, adicione uma pausa e, se quiser, copie o padrão para outros
+          dias.
         </p>
       </div>
 

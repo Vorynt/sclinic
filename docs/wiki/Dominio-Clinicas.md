@@ -11,6 +11,7 @@ CRUD da clínica, horários semanais, criação para owner (com attach de plano)
 - Onboarding `/onboarding/clinic` + `/onboarding/hours`
 - Opção **“Você também atende pacientes nesta clínica?”** no create (ADR-007)
 - Settings geral / hours / danger
+- UI de horários: seletor por dia (aba da semana + editor focado) com copiar para seg–sex / semana / outro dia
 - Switcher + select-clinic (membership suspended ≠ assinatura bloqueada)
 - `subscriptionStatus` denormalizado (espelho da assinatura do owner)
 - Exclusão com assinatura bloqueada (select-clinic) cancela Stripe imediatamente (ADR-003 amend)
