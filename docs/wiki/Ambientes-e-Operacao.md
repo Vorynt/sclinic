@@ -19,6 +19,34 @@ npm run stripe:sync-plans
 # webhook → /api/stripe/webhook
 ```
 
+## Docker local (QA / homologação sem Vercel)
+
+Útil quando não há preview/staging na Vercel (plano gratuito). A **app** sobe no Docker; o **banco** continua no Neon (branch ou projeto de teste).
+
+```bash
+cp .env.docker.example .env.docker
+# Preencher DATABASE_URL do Neon de teste + secrets (nunca produção)
+
+npm run docker:setup   # migrate + seeds (rbac, plans, demo) no Neon de teste
+npm run docker:up      # http://localhost:3000
+```
+
+Login demo (após `docker:setup`): `admin@sclinic.local` / `senha123`  
+(ver lista completa no cabeçalho de `src/db/seed/demo.ts`).
+
+Notas:
+
+- `BETTER_AUTH_URL` deve ser a URL que a pessoa abre no browser (`http://localhost:3000`).
+- Demo seed deixa `subscription_status = none` — o owner precisa escolher plano (Stripe test) ou regularizar no Neon.
+- Emails (Resend) e Checkout (Stripe) só funcionam com chaves reais de teste no `.env.docker`.
+- Parar: `npm run docker:down`.
+
+| Script | Uso |
+|--------|-----|
+| `npm run docker:setup` | Migrate + seeds no Neon apontado por `.env.docker` |
+| `npm run docker:up` | Sobe a app em http://localhost:3000 |
+| `npm run docker:down` | Derruba o compose |
+
 ## Scripts úteis
 
 | Script | Uso |
@@ -33,7 +61,7 @@ npm run stripe:sync-plans
 
 ## Variáveis
 
-Ver `.env.example` (DB, Better Auth, Stripe, Resend, etc.).
+Ver `.env.example` (dev) e `.env.docker.example` (QA via Docker). DB, Better Auth, Stripe, Resend, etc.
 
 ## Migrations no deploy (Vercel)
 
@@ -56,6 +84,7 @@ Config no repo:
 |---------|--------|
 | `vercel.json` | `buildCommand` → `bash scripts/vercel-build.sh` |
 | `scripts/vercel-build.sh` | Migrate **só** se `VERCEL_ENV=production`, depois `next build` |
+| `Dockerfile` / `docker-compose.yml` | App local para QA; DB = Neon de teste via `.env.docker` |
 
 Preview deploys **não** rodam migrate (evita SQL de feature branch no banco compartilhado).
 
@@ -82,6 +111,7 @@ Se o build falhar em `[vercel-build] ERROR: DATABASE_URL is not set`, a env de P
 - SSE in-process: em multi-instância o board pode não sincronizar sem broker (ADR-006).
 - Nunca use `db:push` em produção; só migrations versionadas.
 - Seeds (`db:seed:*`) **não** rodam no deploy — só migrations de schema.
+- `docker:setup` **apaga e reseeda** dados operacionais no Neon apontado (usa `db:seed:demo`) — nunca aponte para produção.
 
 ## Proxy
 
