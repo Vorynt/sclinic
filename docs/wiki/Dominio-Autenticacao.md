@@ -16,7 +16,9 @@ Sessão (Better Auth), redirects pós-login, guards de permissão/clínica, util
 ## Regras
 
 - Proxy/cookie: paths públicos vs autenticados (`src/proxy.ts`)
-- `requireClinic` / `assertClinicEntitled` bloqueiam clínica sem assinatura viva
+- `requireClinic` / `assertClinicEntitled` bloqueiam clínica sem assinatura viva (produto)
+- `requireOwnedClinicTeardown` — exclusão de clínica owned **sem** exigir entitlement
+- Conta (`/account`): owner com assinatura bloqueada acessa self-service de billing
 - Permissões resolvidas por membership + seed RBAC
 
 ## Decisões relacionadas

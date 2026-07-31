@@ -4,8 +4,8 @@ export type AccountNavItem = {
   title: string;
   href: string;
   description: string;
-  /** When true, item is shown only if the user has a living SaaS subscription. */
-  requiresLivingSubscription?: boolean;
+  /** When true, item is shown only if the user has a SaaS subscription row (any status). */
+  requiresAccountSubscription?: boolean;
 };
 
 export const ACCOUNT_NAV_ITEMS: AccountNavItem[] = [
@@ -18,7 +18,7 @@ export const ACCOUNT_NAV_ITEMS: AccountNavItem[] = [
     title: "Assinatura",
     href: routes.accountSubscription,
     description: "Plano e pagamento",
-    requiresLivingSubscription: true,
+    requiresAccountSubscription: true,
   },
   {
     title: "Dados pessoais",

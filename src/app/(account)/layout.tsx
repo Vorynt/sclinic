@@ -12,7 +12,7 @@ type AccountRootLayoutProps = {
 
 /**
  * Isolated from `(dashboard)` so account UI is not clinic-scoped (no AppShell).
- * Auth gates mirror the dashboard; membership is still required to leave onboarding.
+ * Owner with blocked SaaS entitlement may still access billing self-service.
  */
 export default async function AccountRootLayout({
   children,
@@ -34,6 +34,12 @@ export default async function AccountRootLayout({
   if (!session.membership) {
     if (session.hasSuspendedMembershipOnly) {
       redirect(routes.membershipInactive)
+    }
+    // Billing self-service zone: owner can regularize without product entitlement.
+    if (session.subscriptionBlockedClinic?.isOwner) {
+      return (
+        <AccountShell backHref={routes.selectClinic}>{children}</AccountShell>
+      )
     }
     if (session.subscriptionBlockedClinic || session.needsClinicSelection) {
       redirect(routes.selectClinic)

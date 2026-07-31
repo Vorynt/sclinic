@@ -130,7 +130,7 @@ export const clinicRepository = {
   /**
    * Soft-deletes the clinic and its operational data (tenant wipe).
    * Memberships / sessions are handled by auth after this.
-   * SaaS subscription stays on the user (ADR-003).
+   * SaaS subscription is canceled by billingService before this (ADR-003 amend).
    */
   async softDeleteTenant(params: {
     id: string

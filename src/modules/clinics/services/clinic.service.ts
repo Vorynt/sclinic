@@ -9,7 +9,10 @@ import {
   AUDIT_ENTITY_TYPES,
 } from "@/modules/audit/constants/audit"
 import { auditActorFromAuth } from "@/modules/audit/utils/audit-actor"
-import { requirePermission } from "@/modules/authentication/permissions/guards"
+import {
+  requireOwnedClinicTeardown,
+  requirePermission,
+} from "@/modules/authentication/permissions/guards"
 import { authService } from "@/modules/authentication/services/auth.service"
 import { billingService } from "@/modules/billing/services/billing.service"
 import type { CreateClinicDto } from "@/modules/clinics/dto/create-clinic.dto"
@@ -186,19 +189,26 @@ export const clinicService = {
   },
 
   /**
-   * Owner-only: soft-deletes the active clinic and all tenant data.
+   * Owner-only: soft-deletes the clinic and all tenant data.
+   * Works without SaaS entitlement (blocked/unpaid). Cancels Stripe immediately (MVP 1:1).
    */
   async delete(
     data: DeleteClinicDto,
     ctx: AuthRequestContext,
   ): Promise<DeleteClinicResult> {
-    const auth = await requirePermission(ctx, Permission.SETTINGS_MANAGE)
-    const actor = auditActorFromAuth(auth)
+    let clinicId = data.clinicId ?? null
 
-    if (auth.membership.roleKey !== "owner") {
-      throw new AppError(ErrorCode.FORBIDDEN, {
-        message: "Apenas o proprietário pode excluir a clínica.",
-      })
+    if (!clinicId) {
+      const entitled = await requirePermission(ctx, Permission.SETTINGS_MANAGE)
+      clinicId = entitled.clinicId
+    }
+
+    const auth = await requireOwnedClinicTeardown(ctx, clinicId)
+    const actor = {
+      clinicId: auth.clinicId,
+      actorUserId: auth.user.id,
+      actorName: auth.user.name,
+      actorEmail: auth.user.email,
     }
 
     const clinic = await clinicRepository.findById(auth.clinicId)
@@ -214,6 +224,11 @@ export const clinicService = {
           message: "O nome informado não confere com o nome da clínica.",
         })
       }
+
+      // MVP 1:1 — cancel SaaS billing before wiping the tenant.
+      await billingService.cancelSubscriptionForUser(auth.user.id, {
+        reason: "clinic_deleted",
+      })
 
       await clinicRepository.softDeleteTenant({
         id: clinic.id,

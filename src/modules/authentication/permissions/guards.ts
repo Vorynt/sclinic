@@ -1,5 +1,6 @@
 import type { PermissionKey } from "@/config/permissions"
 import { hasAllPermissions, hasAnyPermission } from "@/core/permissions"
+import { membershipRepository } from "@/modules/authentication/repositories/membership.repository"
 import { authService } from "@/modules/authentication/services/auth.service"
 import type { AuthContext } from "@/modules/authentication/types/auth"
 import { billingService } from "@/modules/billing/services/billing.service"
@@ -10,6 +11,12 @@ import { ErrorCode } from "@/shared/errors/codes"
 export type AuthContextWithClinic = AuthContext & {
   membership: NonNullable<AuthContext["membership"]>
   clinicId: string
+}
+
+/** Owner teardown: auth without SaaS entitlement (ADR-003 amend). */
+export type AuthContextOwnedClinicTeardown = AuthContext & {
+  clinicId: string
+  membership: NonNullable<AuthContext["membership"]>
 }
 
 /**
@@ -76,6 +83,34 @@ export async function requirePermission(
   }
 
   return authContext
+}
+
+/**
+ * Owner-only clinic teardown without SaaS entitlement.
+ * Use for deleting a clinic when the subscription is unpaid/canceled.
+ */
+export async function requireOwnedClinicTeardown(
+  ctx: AuthRequestContext,
+  clinicId: string,
+): Promise<AuthContextOwnedClinicTeardown> {
+  const authContext = await requirePasswordReady(ctx)
+
+  const membership = await membershipRepository.findActiveByUserAndClinic(
+    authContext.user.id,
+    clinicId,
+  )
+
+  if (!membership || membership.roleKey !== "owner") {
+    throw new AppError(ErrorCode.FORBIDDEN, {
+      message: "Apenas o proprietário pode excluir a clínica.",
+    })
+  }
+
+  return {
+    ...authContext,
+    membership,
+    clinicId,
+  }
 }
 
 /**

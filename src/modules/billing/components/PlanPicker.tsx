@@ -17,7 +17,10 @@ import { Spinner } from "@/components/ui/spinner";
 import { routes } from "@/config/routes";
 import { cn } from "@/lib/utils";
 import { usePlans } from "@/modules/billing/hooks/use-plans";
-import { useCreateCheckoutSession } from "@/modules/billing/hooks/use-subscription-mutations";
+import {
+  useCreateCheckoutSession,
+  useCreateRegularizeSession,
+} from "@/modules/billing/hooks/use-subscription-mutations";
 import type { Plan } from "@/modules/billing/types/billing";
 import type { AppError } from "@/shared/errors";
 import { CheckCircleIcon } from "@phosphor-icons/react";
@@ -62,10 +65,20 @@ export function PlanPicker() {
     },
   });
 
+  const regularize = useCreateRegularizeSession({
+    onSuccess: (data) => {
+      window.location.assign(data.url);
+    },
+    onError: (error: AppError) => {
+      toast.error(error.message);
+    },
+  });
+
   const intent = searchParams.get("intent");
 
   const selectedPlan = plans?.find((plan) => plan.id === selectedPlanId);
   const useStripeCheckout = Boolean(selectedPlan?.stripePriceId);
+  const isPending = checkout.isPending || regularize.isPending;
 
   const onContinue = () => {
     if (!selectedPlanId || !selectedPlan) return;
@@ -77,6 +90,15 @@ export function PlanPicker() {
         : currentIntent
           ? `${routes.onboardingPlan}?intent=${encodeURIComponent(currentIntent)}`
           : routes.onboardingPlan;
+
+    if (currentIntent === "reactivate" && useStripeCheckout) {
+      regularize.mutate({
+        planId: selectedPlanId,
+        successPath,
+        cancelPath,
+      });
+      return;
+    }
 
     if (useStripeCheckout) {
       checkout.mutate({
@@ -199,9 +221,9 @@ export function PlanPicker() {
           type="button"
           size="lg"
           className="w-full sm:w-auto sm:self-center"
-          disabled={!selectedPlanId || checkout.isPending}
+          disabled={!selectedPlanId || isPending}
           onClick={onContinue}>
-          {checkout.isPending ? (
+          {isPending ? (
             <>
               <Spinner data-icon="inline-start" />
               Redirecionando…

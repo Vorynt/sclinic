@@ -231,7 +231,7 @@ Convenção de ID: `RF-<DOMÍNIO>-NNN`.
 | RF-CLI-005 | Settings hours | Horários semanais | P1, P6 | Done |
 | RF-CLI-006 | Danger zone | Exclusão de clínica | P1, P6 | Done |
 | RF-CLI-007 | Clinic switcher | Troca de clínica; suspended disabled | Multi-clínica | Done |
-| RF-CLI-008 | Select-clinic | Seleção com estados suspended / assinatura bloqueada | Membros | Done |
+| RF-CLI-008 | Select-clinic | Seleção com estados membership suspended / assinatura bloqueada; owner regulariza ou exclui | Membros | Done |
 | RF-CLI-009 | Espelho de assinatura | `subscriptionStatus` denormalizado na clínica | Sistema | Done |
 
 ### 4.3 Usuários e equipe — `RF-USR`
@@ -336,13 +336,15 @@ Convenção de ID: `RF-<DOMÍNIO>-NNN`.
 | RF-SAAS-002 | Unique viva | `trialing` \| `active` \| `past_due` | Sistema | Done |
 | RF-SAAS-003 | Entitlement de convidados | Usa assinatura do owner | Membros | Done |
 | RF-SAAS-004 | Checkout Stripe | + webhook sync | P1 | Done |
-| RF-SAAS-005 | Customer Portal | Portal-first; sem lista de faturas no app | P1 | Done |
+| RF-SAAS-005 | Customer Portal | Portal-first; self-service mesmo sem entitlement | P1 | Done |
 | RF-SAAS-006 | Planos + cotas | Essencial / Profissional / Enterprise (seed) | — | Done |
 | RF-SAAS-007 | Metering + over_limit | Banner; bloqueia creates; não derruba sessão | Todos / P1 | Done |
 | RF-SAAS-008 | UI usage | `/settings/usage` | P1 | Done |
 | RF-SAAS-009 | Downgrade livre | Sem apagar dados | P1 | Done |
 | RF-SAAS-010 | N clínicas owned | 1:N por assinatura | — | Later |
 | RF-SAAS-011 | Cota storage | `assertPlanCapacity(..., "storage")` | — | Planned |
+| RF-SAAS-012 | Regularização Portal-first | unpaid/canceled → Portal; Checkout só sem customer | P1 | Done |
+| RF-SAAS-013 | Delete + cancel Stripe | Teardown sem entitlement; cancel imediato (1:1) | P1 | Done |
 
 ### 4.11 Auditoria — `RF-AUD`
 

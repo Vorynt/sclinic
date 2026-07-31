@@ -69,6 +69,10 @@ export default async function SelectClinicPage({
       }
     })
 
+  const blockedMembership = blocked
+    ? memberships.find((m) => m.clinicId === blocked.clinicId)
+    : null
+
   return (
     <SelectClinicBlock
       clinics={clinics}
@@ -79,6 +83,8 @@ export default async function SelectClinicPage({
               clinicId: blocked.clinicId,
               clinicName: blocked.clinicName,
               isOwner: blocked.isOwner,
+              subscriptionStatus:
+                blockedMembership?.clinicSubscriptionStatus ?? undefined,
             }
           : null
       }

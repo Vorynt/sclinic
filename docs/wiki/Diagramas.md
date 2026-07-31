@@ -85,6 +85,9 @@ flowchart TB
     U[User owner] --> Sub[subscriptions]
     Sub --> Stripe[Stripe Checkout/Portal]
     Sub --> CS[clinics.subscriptionStatus]
+    CS -->|não entitled| Select[/select-clinic]
+    Select -->|owner| Account[/account/subscription]
+    Select -->|owner delete| Cancel[cancel Stripe + soft-delete]
   end
   subgraph Clinico
     Ap[appointment] --> Ch[charges]
