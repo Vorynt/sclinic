@@ -25,6 +25,7 @@ import {
   type ClinicPlanQuota,
   type PlanQuotaDimension,
 } from "@/modules/billing/utils/plan-quota";
+import { resolveSubscriptionPlanId } from "@/modules/billing/utils/resolve-subscription-plan-id";
 import { clinicRepository } from "@/modules/clinics/repositories/clinic.repository";
 import type { ClinicSubscriptionStatus } from "@/modules/clinics/types/clinic";
 import { AppError, ErrorCode } from "@/shared/errors";
@@ -430,7 +431,7 @@ export const billingService = {
     const baseUrl = env.BETTER_AUTH_URL.replace(/\/$/, "");
     const session = await stripe.billingPortal.sessions.create({
       customer: subscription.gatewayCustomerId,
-      return_url: `${baseUrl}${routes.accountSubscription}`,
+      return_url: `${baseUrl}${routes.accountSubscription}?portal=1`,
     });
 
     return { url: session.url };
@@ -582,19 +583,24 @@ export const billingService = {
     stripeSub: Stripe.Subscription,
   ): Promise<void> {
     const metadataUserId = stripeSub.metadata?.userId ?? null;
-    let metadataPlanId: string | null = stripeSub.metadata?.planId ?? null;
-    const priceId = stripeSub.items.data[0]?.price.id;
+    const metadataPlanId = stripeSub.metadata?.planId ?? null;
+    const priceId = stripeSub.items.data[0]?.price.id ?? null;
 
-    if (!metadataPlanId && priceId) {
+    let planIdFromPrice: string | null = null;
+    if (priceId) {
       const plan = await planRepository.findByStripePriceId(priceId);
-      metadataPlanId = plan?.id ?? null;
+      planIdFromPrice = plan?.id ?? null;
     }
 
     const existing = await subscriptionRepository.findByGatewaySubscriptionId(
       stripeSub.id,
     );
     const resolvedUserId = metadataUserId ?? existing?.userId ?? null;
-    const resolvedPlanId = metadataPlanId ?? existing?.planId ?? null;
+    const resolvedPlanId = resolveSubscriptionPlanId({
+      planIdFromPrice,
+      metadataPlanId,
+      existingPlanId: existing?.planId ?? null,
+    });
 
     if (!resolvedUserId || !resolvedPlanId) {
       return;
@@ -606,6 +612,8 @@ export const billingService = {
       typeof stripeSub.customer === "string"
         ? stripeSub.customer
         : stripeSub.customer.id;
+
+    const previousPlanId = existing?.planId ?? null;
 
     await subscriptionRepository.upsertFromGateway({
       userId: resolvedUserId,
@@ -621,6 +629,37 @@ export const billingService = {
       cancelAtPeriodEnd: stripeSub.cancel_at_period_end,
     });
     await syncOwnedClinicsStatus(resolvedUserId, status);
+
+    if (planIdFromPrice && metadataPlanId !== planIdFromPrice) {
+      try {
+        const stripe = getStripe();
+        await stripe.subscriptions.update(stripeSub.id, {
+          metadata: { planId: planIdFromPrice },
+        });
+      } catch (error) {
+        logger.warn(
+          {
+            err: error,
+            stripeSubscriptionId: stripeSub.id,
+            planId: planIdFromPrice,
+          },
+          "stripe.subscription.metadata_plan_sync_failed",
+        );
+      }
+    }
+
+    if (previousPlanId && previousPlanId !== resolvedPlanId) {
+      logger.info(
+        {
+          userId: resolvedUserId,
+          stripeSubscriptionId: stripeSub.id,
+          previousPlanId,
+          planId: resolvedPlanId,
+          priceId,
+        },
+        "stripe.subscription.plan_synced",
+      );
+    }
 
     if (stripeSub.cancel_at_period_end || status === "canceled") {
       logger.info(

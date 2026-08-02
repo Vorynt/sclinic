@@ -6,7 +6,7 @@ import {
   WarningCircleIcon,
 } from "@phosphor-icons/react"
 import Link from "next/link"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { toast } from "sonner"
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
@@ -35,7 +35,10 @@ const STATUS_LABELS: Record<SubscriptionStatus, string> = {
   incomplete: "Incompleta",
 }
 
-/** Brief poll after mount so Portal cancel lands via webhook. */
+/** Snapshot of plan before opening Stripe Portal (detect upgrade on return). */
+const PORTAL_PLAN_SNAPSHOT_KEY = "sclinic:billing:plan-before-portal"
+
+/** Brief poll after mount so Portal changes land via webhook. */
 const PORTAL_SYNC_POLL_MS = 2_500
 const PORTAL_SYNC_WINDOW_MS = 30_000
 
@@ -86,10 +89,26 @@ function statusBadgeVariant(
   return "secondary"
 }
 
+function readPortalReturnFlag(): boolean {
+  if (typeof window === "undefined") return false
+  return new URLSearchParams(window.location.search).get("portal") === "1"
+}
+
+function clearPortalReturnFlag(): void {
+  if (typeof window === "undefined") return
+  const url = new URL(window.location.href)
+  if (!url.searchParams.has("portal")) return
+  url.searchParams.delete("portal")
+  const next = `${url.pathname}${url.search}${url.hash}`
+  window.history.replaceState({}, "", next)
+}
+
 function SubscriptionSummary({
   subscription,
+  updatedPlanName,
 }: {
   subscription: SubscriptionWithPlan
+  updatedPlanName: string | null
 }) {
   const portal = useCreateBillingPortalSession({
     onSuccess: (data) => {
@@ -128,11 +147,24 @@ function SubscriptionSummary({
       )
       return
     }
+    sessionStorage.setItem(PORTAL_PLAN_SNAPSHOT_KEY, subscription.plan.id)
     portal.mutate()
   }
 
   return (
     <div className="flex flex-col gap-6">
+      {updatedPlanName ? (
+        <Alert>
+          <CheckCircleIcon />
+          <AlertTitle>Plano atualizado</AlertTitle>
+          <AlertDescription>
+            Sua assinatura foi alterada para{" "}
+            <span className="font-medium text-foreground">{updatedPlanName}</span>
+            . Os limites do novo plano já estão valendo nesta conta.
+          </AlertDescription>
+        </Alert>
+      ) : null}
+
       {subscription.cancelAtPeriodEnd && isLiving ? (
         <Alert>
           <CheckCircleIcon />
@@ -267,10 +299,35 @@ function SubscriptionSummary({
 
 export function AccountSubscriptionPanel() {
   const [pollUntil] = useState(() => Date.now() + PORTAL_SYNC_WINDOW_MS)
+  const [fromPortal] = useState(readPortalReturnFlag)
+  const [updatedPlanName, setUpdatedPlanName] = useState<string | null>(null)
+
   const query = useMySubscription({
     refetchInterval: () =>
       Date.now() < pollUntil ? PORTAL_SYNC_POLL_MS : false,
   })
+
+  useEffect(() => {
+    if (!fromPortal || !query.data) return
+
+    const previousPlanId = sessionStorage.getItem(PORTAL_PLAN_SNAPSHOT_KEY)
+    if (!previousPlanId) return
+
+    if (query.data.plan.id !== previousPlanId) {
+      setUpdatedPlanName(query.data.plan.name)
+      sessionStorage.removeItem(PORTAL_PLAN_SNAPSHOT_KEY)
+      clearPortalReturnFlag()
+    }
+  }, [fromPortal, query.data])
+
+  useEffect(() => {
+    if (!fromPortal) return
+    const timeoutId = window.setTimeout(() => {
+      sessionStorage.removeItem(PORTAL_PLAN_SNAPSHOT_KEY)
+      clearPortalReturnFlag()
+    }, PORTAL_SYNC_WINDOW_MS)
+    return () => window.clearTimeout(timeoutId)
+  }, [fromPortal])
 
   if (query.isLoading) {
     return (
@@ -311,5 +368,10 @@ export function AccountSubscriptionPanel() {
     )
   }
 
-  return <SubscriptionSummary subscription={query.data} />
+  return (
+    <SubscriptionSummary
+      subscription={query.data}
+      updatedPlanName={updatedPlanName}
+    />
+  )
 }

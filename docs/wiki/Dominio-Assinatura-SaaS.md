@@ -38,6 +38,16 @@ Metering `users`: memberships com `status=active` e `deletedAt` nulo. Suspensos 
 2. Com `gatewayCustomerId` → Stripe Billing Portal
 3. Sem customer → Checkout (após escolher plano); cancela sub órfã no Stripe antes
 
+## Troca de plano (Customer Portal)
+
+1. Owner abre Portal em `/account/subscription` → altera o price da assinatura
+2. Stripe dispara `customer.subscription.updated`
+3. Sync resolve o `planId` **pelo `price.id` atual** (`plans.stripe_price_id`), não pelo `metadata.planId` do checkout (que fica congelado)
+4. Upsert local atualiza plano, status, período e cotas; metadata Stripe `planId` é realinhado quando diverge
+5. Retorno com `?portal=1` + poll: se o plano mudou, alert **"Plano atualizado"** em `/account/subscription`
+
+Pré-requisito: prices do Portal precisam existir em `plans.stripe_price_id` (`npm run stripe:sync-plans` / webhooks de product/price).
+
 ## Exclusão de clínica
 
 - Disponível no danger zone (assinatura viva) e em `/select-clinic` (assinatura bloqueada)
@@ -45,7 +55,7 @@ Metering `users`: memberships com `status=active` e `deletedAt` nulo. Suspensos 
 
 ## UI
 
-`/onboarding/plan`, `/account/subscription`, `/settings/usage` (owner), `PlanOverLimitBanner`, select-clinic (regularizar / excluir).
+`/onboarding/plan`, `/account/subscription` (alert de plano atualizado pós-Portal), `/settings/usage` (owner), `PlanOverLimitBanner`, select-clinic (regularizar / excluir).
 
 ## Decisões
 
