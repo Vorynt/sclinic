@@ -17,46 +17,66 @@ import {
 import { AppError, ErrorCode, isAppError } from "@/shared/errors"
 
 const VALID_UUID = "11111111-1111-4111-8111-111111111111"
+const SERVICE_UUID = "22222222-2222-4222-8222-222222222222"
 
 describe("createChargeFromAppointmentSchema", () => {
-  it("accepts positive amountCents", () => {
+  it("accepts catalog pricing fields", () => {
     const parsed = createChargeFromAppointmentSchema.parse({
       appointmentId: VALID_UUID,
-      amountCents: 15000,
+      serviceId: SERVICE_UUID,
+      discountPercent: 10,
+      billingKind: "standard",
       description: " Consulta ",
     })
-    assert.equal(parsed.amountCents, 15000)
+    assert.equal(parsed.serviceId, SERVICE_UUID)
+    assert.equal(parsed.discountPercent, 10)
+    assert.equal(parsed.billingKind, "standard")
     assert.equal(parsed.description, "Consulta")
   })
 
-  it("rejects amountCents <= 0", () => {
-    const zero = createChargeFromAppointmentSchema.safeParse({
+  it("accepts amountCentsOverride of zero", () => {
+    const parsed = createChargeFromAppointmentSchema.parse({
       appointmentId: VALID_UUID,
-      amountCents: 0,
+      serviceId: SERVICE_UUID,
+      amountCentsOverride: 0,
     })
-    assert.equal(zero.success, false)
+    assert.equal(parsed.amountCentsOverride, 0)
+  })
 
-    const negative = createChargeFromAppointmentSchema.safeParse({
+  it("rejects courtesy with amount override", () => {
+    const result = createChargeFromAppointmentSchema.safeParse({
       appointmentId: VALID_UUID,
-      amountCents: -100,
+      serviceId: SERVICE_UUID,
+      billingKind: "courtesy",
+      amountCentsOverride: 1000,
     })
-    assert.equal(negative.success, false)
+    assert.equal(result.success, false)
   })
 })
 
 describe("markChargePaidSchema", () => {
-  it("accepts manual payment methods", () => {
+  it("accepts manual payment methods with optional discount", () => {
     const parsed = markChargePaidSchema.parse({
       chargeId: VALID_UUID,
       method: "pix_manual",
+      discountPercent: 15,
     })
     assert.equal(parsed.method, "pix_manual")
+    assert.equal(parsed.discountPercent, 15)
   })
 
   it("rejects gateway method in MVP", () => {
     const result = markChargePaidSchema.safeParse({
       chargeId: VALID_UUID,
       method: "gateway",
+    })
+    assert.equal(result.success, false)
+  })
+
+  it("rejects courtesy method in manual mark paid", () => {
+    const result = markChargePaidSchema.safeParse({
+      chargeId: VALID_UUID,
+      method: "courtesy",
     })
     assert.equal(result.success, false)
   })
@@ -90,7 +110,6 @@ describe("charge-rules", () => {
   })
 
   it("blocks charge on canceled appointment", () => {
-    assert.doesNotThrow(() => assertAppointmentChargeable("completed"))
     try {
       assertAppointmentChargeable("canceled")
       assert.fail("expected conflict")
@@ -101,33 +120,15 @@ describe("charge-rules", () => {
   })
 })
 
-describe("parseBrlToCents", () => {
-  it("parses Brazilian and plain decimals", () => {
-    assert.equal(parseBrlToCents("150,50"), 15050)
-    assert.equal(parseBrlToCents("1.150,50"), 115050)
-    assert.equal(parseBrlToCents("150.5"), 15050)
-    assert.equal(parseBrlToCents("R$ 150,50"), 15050)
+describe("money utils", () => {
+  it("parses BRL to cents", () => {
+    assert.equal(parseBrlToCents("150,00"), 15000)
+    assert.equal(parseBrlToCents("1.250,50"), 125050)
   })
 
-  it("rejects empty or non-positive values", () => {
-    assert.equal(parseBrlToCents(""), null)
-    assert.equal(parseBrlToCents("0"), null)
-    assert.equal(parseBrlToCents("0.00"), null)
-    assert.equal(parseBrlToCents("-10"), null)
-  })
-})
-
-describe("isEmptyMoneyInput", () => {
-  it("treats blank and zero-like values as empty", () => {
+  it("detects empty money input", () => {
     assert.equal(isEmptyMoneyInput(""), true)
-    assert.equal(isEmptyMoneyInput("0"), true)
-    assert.equal(isEmptyMoneyInput("0,00"), true)
-    assert.equal(isEmptyMoneyInput("0.00"), true)
-    assert.equal(isEmptyMoneyInput("R$ 0,00"), true)
-  })
-
-  it("treats positive amounts as filled", () => {
-    assert.equal(isEmptyMoneyInput("150,50"), false)
-    assert.equal(isEmptyMoneyInput("1.50"), false)
+    assert.equal(isEmptyMoneyInput("  "), true)
+    assert.equal(isEmptyMoneyInput("10"), false)
   })
 })

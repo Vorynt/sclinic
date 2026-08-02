@@ -69,6 +69,7 @@ describe("createAppointmentSchema", () => {
     const parsed = createAppointmentSchema.parse({
       patientId: VALID_UUID,
       professionalId: OTHER_UUID,
+      serviceId: VALID_UUID,
       startsAt: startsAt.toISOString(),
       endsAt: endsAt.toISOString(),
     })
@@ -83,6 +84,7 @@ describe("createAppointmentSchema", () => {
     const result = createAppointmentSchema.safeParse({
       patientId: "not-a-uuid",
       professionalId: OTHER_UUID,
+      serviceId: VALID_UUID,
       startsAt: startsAt.toISOString(),
       endsAt: endsAt.toISOString(),
     })
@@ -94,6 +96,7 @@ describe("createAppointmentSchema", () => {
     const result = createAppointmentSchema.safeParse({
       patientId: VALID_UUID,
       professionalId: OTHER_UUID,
+      serviceId: VALID_UUID,
       startsAt: startsAt.toISOString(),
       endsAt: startsAt.toISOString(),
     })
@@ -105,6 +108,7 @@ describe("createAppointmentSchema", () => {
     const result = createAppointmentSchema.safeParse({
       patientId: VALID_UUID,
       professionalId: OTHER_UUID,
+      serviceId: VALID_UUID,
       startsAt: startsAt.toISOString(),
       endsAt: endsAt.toISOString(),
     })
@@ -117,6 +121,7 @@ describe("createAppointmentSchema", () => {
     const result = createAppointmentSchema.safeParse({
       patientId: VALID_UUID,
       professionalId: OTHER_UUID,
+      serviceId: VALID_UUID,
       startsAt: startsAt.toISOString(),
       endsAt: endsAt.toISOString(),
     })
@@ -128,6 +133,7 @@ describe("createAppointmentSchema", () => {
     const parsed = createAppointmentSchema.parse({
       patientId: VALID_UUID,
       professionalId: OTHER_UUID,
+      serviceId: VALID_UUID,
       startsAt: startsAt.toISOString(),
       endsAt: endsAt.toISOString(),
       reason: "  Dor de cabeça  ",
@@ -142,6 +148,7 @@ describe("createAppointmentSchema", () => {
     const parsed = createAppointmentSchema.parse({
       patientId: VALID_UUID,
       professionalId: OTHER_UUID,
+      serviceId: VALID_UUID,
       startsAt: startsAt.toISOString(),
       endsAt: endsAt.toISOString(),
       type: "follow_up",
@@ -149,37 +156,31 @@ describe("createAppointmentSchema", () => {
     assert.equal(parsed.type, "follow_up")
   })
 
-  it("accepts optional amountCents when positive", () => {
+  it("requires serviceId", () => {
+    const { startsAt, endsAt } = futureRange()
+    const missing = createAppointmentSchema.safeParse({
+      patientId: VALID_UUID,
+      professionalId: OTHER_UUID,
+      startsAt: startsAt.toISOString(),
+      endsAt: endsAt.toISOString(),
+    })
+    assert.equal(missing.success, false)
+  })
+
+  it("accepts catalog pricing fields", () => {
     const { startsAt, endsAt } = futureRange()
     const parsed = createAppointmentSchema.parse({
       patientId: VALID_UUID,
       professionalId: OTHER_UUID,
       startsAt: startsAt.toISOString(),
       endsAt: endsAt.toISOString(),
-      amountCents: 15000,
+      serviceId: VALID_UUID,
+      discountPercent: 10,
+      billingKind: "courtesy",
     })
-    assert.equal(parsed.amountCents, 15000)
-  })
-
-  it("rejects amountCents <= 0 when provided", () => {
-    const { startsAt, endsAt } = futureRange()
-    const zero = createAppointmentSchema.safeParse({
-      patientId: VALID_UUID,
-      professionalId: OTHER_UUID,
-      startsAt: startsAt.toISOString(),
-      endsAt: endsAt.toISOString(),
-      amountCents: 0,
-    })
-    assert.equal(zero.success, false)
-
-    const negative = createAppointmentSchema.safeParse({
-      patientId: VALID_UUID,
-      professionalId: OTHER_UUID,
-      startsAt: startsAt.toISOString(),
-      endsAt: endsAt.toISOString(),
-      amountCents: -1,
-    })
-    assert.equal(negative.success, false)
+    assert.equal(parsed.serviceId, VALID_UUID)
+    assert.equal(parsed.discountPercent, 10)
+    assert.equal(parsed.billingKind, "courtesy")
   })
 })
 
@@ -450,6 +451,7 @@ describe("toAppointment mapper", () => {
       patientName: "Maria Silva",
       professionalId: OTHER_UUID,
       professionalName: "Dr. João",
+      serviceId: VALID_UUID,
       startsAt: now,
       endsAt: now,
       type: "consultation",
@@ -478,6 +480,7 @@ describe("toAppointment mapper", () => {
       patientName: "João Souza",
       professionalId: null,
       professionalName: null,
+      serviceId: null,
       startsAt: now,
       endsAt: now,
       type: "unknown-type",

@@ -1,5 +1,6 @@
 import type { Charge as ChargeRow, Payment as PaymentRow } from "@/db/schema"
 import type {
+  BillingKind,
   Charge,
   ChargeListItem,
   ChargeStatus,
@@ -14,9 +15,14 @@ export function toCharge(row: ChargeRow): Charge {
     clinicId: row.clinicId,
     patientId: row.patientId,
     appointmentId: row.appointmentId,
+    serviceId: row.serviceId,
+    serviceName: row.serviceName,
+    listAmountCents: row.listAmountCents,
+    discountPercent: row.discountPercent,
     amountCents: row.amountCents,
     currency: row.currency,
     status: row.status as ChargeStatus,
+    billingKind: row.billingKind as BillingKind,
     description: row.description,
     dueAt: row.dueAt,
     provider: row.provider as PaymentProvider,

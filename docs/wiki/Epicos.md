@@ -9,7 +9,7 @@
 | **E3** | Cadastro clínico (pacientes & profissionais) | Done | 007 | patients, professionals |
 | **E4** | Agenda e atendimento | Done | 006 | appointments, dashboard |
 | **E5** | Prontuário e documentos clínicos | Done | 005 | medical-records |
-| **E6** | Contas a receber da clínica | Done | 002, 006 | billing (charges) |
+| **E6** | Contas a receber da clínica | Done | 002, 006, 009 | billing (charges) |
 | **E7** | Operação da recepção em tempo real | Done | 006 | dashboard, core/realtime |
 | **E8** | Governança, auditoria, settings e ajuda | Done | 001 | audit, settings, clinics, help |
 | **E9** | Aquisição (marketing site) | Done | — | marketing |
@@ -35,7 +35,7 @@ Calendário, status machine, attendance workspace, self-schedule, disponibilidad
 Notas (templates), vitais, alertas do paciente, receitas draft→issued + print + designer de templates (blocos, até 3).
 
 ### E6 — Recebíveis
-Charge 1:1, markPaid/cancel, listagem `/billing`, collect vs view.
+Charge 1:1, markPaid/cancel, listagem `/billing`, collect vs view. Catálogo de serviços, desconto %, cortesia/retorno (ADR-009).
 
 ### E7 — Recepção
 Board derivado de status+charge, SSE `clinic.ops`, desacoplar pagamento do “concluir” médico.

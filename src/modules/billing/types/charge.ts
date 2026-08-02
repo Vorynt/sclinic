@@ -7,7 +7,9 @@ export type ManualPaymentMethod =
   | "transfer"
   | "other"
 
-export type PaymentMethod = ManualPaymentMethod | "gateway"
+export type BillingKind = "standard" | "courtesy" | "return"
+
+export type PaymentMethod = ManualPaymentMethod | "gateway" | "courtesy"
 
 export type PaymentProvider = "none" | "asaas"
 
@@ -16,9 +18,14 @@ export type Charge = {
   clinicId: string
   patientId: string
   appointmentId: string
+  serviceId: string | null
+  serviceName: string | null
+  listAmountCents: number | null
+  discountPercent: number
   amountCents: number
   currency: string
   status: ChargeStatus
+  billingKind: BillingKind
   description: string | null
   dueAt: Date | null
   provider: PaymentProvider

@@ -31,6 +31,12 @@ export const SETTINGS_NAV_ITEMS: SettingsNavItem[] = [
     description: "Modelos de receita para impressão",
   },
   {
+    title: "Serviços",
+    href: routes.settingsServices,
+    description: "Catálogo de serviços e preços da clínica",
+    permission: Permission.FINANCIAL_MANAGE,
+  },
+  {
     title: "Uso do plano",
     href: routes.settingsUsage,
     description: "Limites e consumo de recursos do plano",

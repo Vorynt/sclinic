@@ -20,6 +20,8 @@ import {
 } from "@/components/ui/field";
 import { FormErrorAlert } from "@/components/ui/form-error-alert";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Select,
   SelectContent,
@@ -38,11 +40,19 @@ import {
 } from "@/modules/appointments/constants/appointments";
 import { useCreateAppointmentMutation } from "@/modules/appointments/hooks/use-appointment-mutations";
 import { appointmentTypeSchema } from "@/modules/appointments/schemas/appointment.schema";
+import type { CreateAppointmentInput } from "@/modules/appointments/schemas/appointment.schema";
 import type { AppointmentType } from "@/modules/appointments/types/appointment";
 import { APPOINTMENT_DURATION_OPTIONS } from "@/modules/appointments/utils/calendar-constants";
 import { readSuggestedSlotsFromMeta } from "@/modules/appointments/utils/suggested-slots";
 import { useAuthSession } from "@/modules/authentication/hooks/use-auth";
+import { BILLING_KIND_LABELS } from "@/modules/billing/constants/charges";
+import { useActiveClinicServices } from "@/modules/billing/hooks/use-clinic-services";
 import {
+  computeChargeAmountCents,
+  type BillingKind,
+} from "@/modules/billing/utils/charge-pricing";
+import {
+  formatCentsToBrl,
   isEmptyMoneyInput,
   parseBrlToCents,
 } from "@/modules/billing/utils/money";
@@ -62,6 +72,8 @@ const appointmentTypeOptions = Object.entries(APPOINTMENT_TYPE_LABELS) as [
   string,
 ][];
 
+const billingKindSchema = z.enum(["standard", "courtesy", "return"]);
+
 const scheduleFormSchema = z
   .object({
     patientId: z.string().uuid("Selecione um paciente"),
@@ -78,6 +90,13 @@ const scheduleFormSchema = z
       .trim()
       .max(300, "Motivo deve ter no máximo 300 caracteres")
       .optional(),
+    serviceId: z.string().uuid("Selecione um serviço"),
+    discountPercent: z.coerce
+      .number()
+      .min(0, "Desconto mínimo é 0%")
+      .max(100, "Desconto máximo é 100%")
+      .default(0),
+    billingKind: billingKindSchema.default("standard"),
     amountBrl: z.string().optional(),
   })
   .superRefine((data, ctx) => {
@@ -181,15 +200,17 @@ export function AppointmentForm({
       : defaultType;
 
   const sessionQuery = useAuthSession();
-  const { canAny } = useAuth();
+  const { can, canAny } = useAuth();
   const canCollect = canAny(
     Permission.FINANCIAL_COLLECT,
     Permission.FINANCIAL_MANAGE,
   );
+  const canManageFinancial = can(Permission.FINANCIAL_MANAGE);
   const isProfessionalLocked = isSelfScheduleOnlyRole(
     sessionQuery.data?.membership?.roleKey,
   );
   const professionalsQuery = useProfessionalsForSchedulingQuery();
+  const activeServicesQuery = useActiveClinicServices();
 
   const form = useForm<ScheduleFormValues, unknown, ScheduleFormOutput>({
     resolver: zodResolver(scheduleFormSchema),
@@ -203,6 +224,9 @@ export function AppointmentForm({
       ).padStart(2, "0")}`,
       durationMinutes: "30",
       reason: "",
+      serviceId: "",
+      discountPercent: 0,
+      billingKind: "standard",
       amountBrl: "",
     },
   });
@@ -212,12 +236,33 @@ export function AppointmentForm({
     control,
     handleSubmit,
     setValue,
+    watch,
     formState: { errors },
   } = form;
 
   const registerWithMask = useHookFormMask(register);
 
   const professionals = professionalsQuery.data ?? [];
+  const activeServices = activeServicesQuery.data ?? [];
+  const selectedServiceId = watch("serviceId");
+  const selectedDiscount = watch("discountPercent");
+  const selectedBillingKind = watch("billingKind") as BillingKind;
+  const selectedOverrideBrl = watch("amountBrl") ?? "";
+  const selectedService = activeServices.find(
+    (service) => service.id === selectedServiceId,
+  );
+
+  const previewAmountCents = selectedService
+    ? computeChargeAmountCents({
+        listAmountCents: selectedService.priceCents,
+        discountPercent: Number(selectedDiscount) || 0,
+        billingKind: selectedBillingKind,
+        amountCentsOverride:
+          canManageFinancial && !isEmptyMoneyInput(selectedOverrideBrl)
+            ? (parseBrlToCents(selectedOverrideBrl) ?? undefined)
+            : undefined,
+      })
+    : null;
   const lockedProfessionalLabel = isProfessionalLocked
     ? professionals[0]
       ? formatProfessionalSchedulingLabel({
@@ -297,23 +342,35 @@ export function AppointmentForm({
     const endsAt = addMinutes(startsAt, Number(data.durationMinutes));
 
     const amountRaw = data.amountBrl?.trim() ?? "";
-    const amountCents =
-      canCollect && !isEmptyMoneyInput(amountRaw)
+    const amountCentsOverride =
+      canManageFinancial && !isEmptyMoneyInput(amountRaw)
         ? parseBrlToCents(amountRaw)
         : undefined;
 
-    createAppointment.mutate({
+    const payload: CreateAppointmentInput = {
       patientId: data.patientId,
       professionalId: data.professionalId,
       startsAt,
       endsAt,
       type: data.type,
       reason: data.reason,
-      ...(amountCents != null ? { amountCents } : {}),
-    });
+      serviceId: data.serviceId,
+      discountPercent: canCollect ? (data.discountPercent ?? 0) : 0,
+      billingKind: canCollect
+        ? (data.billingKind ?? "standard")
+        : "standard",
+      ...(amountCentsOverride != null
+        ? { amountCentsOverride }
+        : {}),
+    };
+
+    createAppointment.mutate(payload);
   });
 
   const hasProfessionals = professionals.length > 0;
+  const hasActiveServices = activeServices.length > 0;
+  const isServicesEmpty =
+    !activeServicesQuery.isLoading && !hasActiveServices;
   const isProfessionalsEmpty =
     !professionalsQuery.isLoading && !hasProfessionals;
   const isPending = createAppointment.isPending;
@@ -509,17 +566,147 @@ export function AppointmentForm({
               <FieldError errors={[errors.reason]} />
             </Field>
 
+            <Field data-invalid={Boolean(errors.serviceId) || undefined}>
+              <FieldLabel>Serviço</FieldLabel>
+              <Controller
+                name="serviceId"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    value={field.value}
+                    onValueChange={field.onChange}
+                    disabled={isPending || activeServicesQuery.isLoading}
+                  >
+                    <SelectTrigger
+                      aria-invalid={Boolean(errors.serviceId) || undefined}
+                    >
+                      <SelectValue placeholder="Selecione o serviço" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {activeServices.map((service) => (
+                        <SelectItem key={service.id} value={service.id}>
+                          {service.name} · {formatCentsToBrl(service.priceCents)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+              {isServicesEmpty ? (
+                <p className="text-sm text-muted-foreground">
+                  Cadastre serviços em{" "}
+                  <Link
+                    href={routes.settingsServices}
+                    className="font-medium text-primary underline-offset-4 hover:underline"
+                  >
+                    Configurações → Serviços
+                  </Link>
+                  .
+                </p>
+              ) : selectedService ? (
+                <p className="text-xs text-muted-foreground">
+                  Preço de lista:{" "}
+                  <span className="font-medium tabular-nums text-foreground">
+                    {formatCentsToBrl(selectedService.priceCents)}
+                  </span>
+                </p>
+              ) : null}
+              <FieldError errors={[errors.serviceId]} />
+            </Field>
+
             {canCollect ? (
+              <>
+                <Field
+                  data-invalid={Boolean(errors.discountPercent) || undefined}
+                >
+                  <FieldLabel htmlFor="appointment-discount">
+                    Desconto (%)
+                  </FieldLabel>
+                  <Input
+                    id="appointment-discount"
+                    type="number"
+                    min={0}
+                    max={100}
+                    step={1}
+                    disabled={
+                      isPending ||
+                      selectedBillingKind === "courtesy" ||
+                      selectedBillingKind === "return"
+                    }
+                    aria-invalid={Boolean(errors.discountPercent) || undefined}
+                    {...register("discountPercent", { valueAsNumber: true })}
+                  />
+                  <FieldError errors={[errors.discountPercent]} />
+                </Field>
+
+                <Field data-invalid={Boolean(errors.billingKind) || undefined}>
+                  <FieldLabel>Tipo de cobrança</FieldLabel>
+                  <Controller
+                    name="billingKind"
+                    control={control}
+                    render={({ field }) => (
+                      <RadioGroup
+                        value={field.value}
+                        onValueChange={(value) => {
+                          field.onChange(value);
+                          if (value === "courtesy" || value === "return") {
+                            setValue("discountPercent", 0);
+                          }
+                        }}
+                        disabled={isPending}
+                        className="flex flex-col gap-2"
+                      >
+                        {(
+                          Object.entries(BILLING_KIND_LABELS) as [
+                            BillingKind,
+                            string,
+                          ][]
+                        ).map(([value, label]) => (
+                          <div
+                            key={value}
+                            className="flex items-center gap-2"
+                          >
+                            <RadioGroupItem
+                              value={value}
+                              id={`billing-kind-${value}`}
+                            />
+                            <Label htmlFor={`billing-kind-${value}`}>
+                              {label}
+                            </Label>
+                          </div>
+                        ))}
+                      </RadioGroup>
+                    )}
+                  />
+                  <FieldError errors={[errors.billingKind]} />
+                </Field>
+
+                {previewAmountCents != null ? (
+                  <p className="text-sm text-muted-foreground">
+                    Valor final estimado:{" "}
+                    <span className="font-medium tabular-nums text-foreground">
+                      {formatCentsToBrl(previewAmountCents)}
+                    </span>
+                  </p>
+                ) : null}
+              </>
+            ) : null}
+
+            {canManageFinancial ? (
               <Field data-invalid={Boolean(errors.amountBrl) || undefined}>
-                <FieldLabel htmlFor="appointment-amount">
-                  Valor da consulta
+                <FieldLabel htmlFor="appointment-amount-override">
+                  Valor final (override)
                 </FieldLabel>
                 <Input
-                  id="appointment-amount"
+                  id="appointment-amount-override"
                   inputMode="decimal"
-                  placeholder="R$ 0,00"
+                  placeholder="Opcional — substitui desconto"
                   aria-invalid={Boolean(errors.amountBrl) || undefined}
-                  disabled={isPending}
+                  disabled={
+                    isPending ||
+                    selectedBillingKind === "courtesy" ||
+                    selectedBillingKind === "return"
+                  }
                   {...registerWithMask(
                     "amountBrl",
                     MASKS.currency,
@@ -527,7 +714,8 @@ export function AppointmentForm({
                   )}
                 />
                 <p className="text-xs text-muted-foreground">
-                  Gera cobrança pendente para pagamento na recepção.
+                  Apenas gestores financeiros podem alterar o valor fora da
+                  fórmula de desconto.
                 </p>
                 <FieldError errors={[errors.amountBrl]} />
               </Field>
@@ -544,7 +732,7 @@ export function AppointmentForm({
                 Cancelar
               </Button>
             ) : null}
-            <Button type="submit" disabled={isPending}>
+            <Button type="submit" disabled={isPending || isServicesEmpty}>
               {isPending ? <Spinner /> : null}
               Agendar
             </Button>

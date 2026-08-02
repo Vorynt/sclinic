@@ -16,6 +16,7 @@ import type { Appointment } from "@/modules/appointments/types/appointment"
 import { MarkChargePaidDialog } from "@/modules/billing/components/MarkChargePaidDialog"
 import { useMarkChargePaidMutation } from "@/modules/billing/hooks/use-charge-mutations"
 import { useActiveChargesByAppointmentsQuery } from "@/modules/billing/hooks/use-charges"
+import type { MarkChargePaidDto } from "@/modules/billing/dto/mark-charge-paid.dto"
 import type { Charge } from "@/modules/billing/types/charge"
 import { formatCentsToBrl } from "@/modules/billing/utils/money"
 import { HomeSection } from "@/modules/dashboard/components/home/shared/HomeSection"
@@ -123,11 +124,12 @@ function BoardColumn({
 export function ReceptionOpsBoard() {
   useClinicOpsRealtime(true)
 
-  const { canAny, isLoading: authLoading } = useAuth()
+  const { can, canAny, isLoading: authLoading } = useAuth()
   const canCollect = canAny(
     Permission.FINANCIAL_COLLECT,
     Permission.FINANCIAL_MANAGE,
   )
+  const canManageFinancial = can(Permission.FINANCIAL_MANAGE)
   const canSeeCharges = canAny(
     Permission.FINANCIAL_VIEW,
     Permission.FINANCIAL_COLLECT,
@@ -242,9 +244,25 @@ export function ReceptionOpsBoard() {
             if (!open) setChargeToPay(null)
           }}
           description={formatCentsToBrl(chargeToPay.amountCents)}
+          listAmountCents={
+            chargeToPay.listAmountCents ?? chargeToPay.amountCents
+          }
+          discountPercent={chargeToPay.discountPercent ?? 0}
+          serviceName={chargeToPay.serviceName ?? undefined}
+          billingKind={chargeToPay.billingKind ?? "standard"}
+          canManage={canManageFinancial}
           isPending={markPaid.isPending}
-          onConfirm={(method) => {
-            markPaid.mutate({ chargeId: chargeToPay.id, method })
+          onConfirm={(payload) => {
+            markPaid.mutate({
+              chargeId: chargeToPay.id,
+              method: payload.method,
+              ...(payload.discountPercent !== undefined
+                ? { discountPercent: payload.discountPercent }
+                : {}),
+              ...(payload.amountCentsOverride !== undefined
+                ? { amountCentsOverride: payload.amountCentsOverride }
+                : {}),
+            } as MarkChargePaidDto)
           }}
         />
       ) : null}

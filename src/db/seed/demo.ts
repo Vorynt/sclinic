@@ -36,6 +36,7 @@ import {
   charges,
   clinicBusinessHours,
   clinicMemberships,
+  clinicServices,
   clinics,
   clinicalNotes,
   invitations,
@@ -161,6 +162,7 @@ const RLS_TABLES = [
   "audit_logs",
   "payments",
   "charges",
+  "clinic_services",
   "vital_signs",
   "patient_clinical_alerts",
   "clinical_notes",
@@ -672,15 +674,22 @@ function buildDemoFormValues(
 }
 
 /** Typical private-practice consultation fees (BRL cents). */
-const CHARGE_AMOUNT_CENTS = [
-  15_000, // R$ 150
-  18_000,
-  20_000,
-  22_000,
-  25_000,
-  28_000,
-  30_000,
-  35_000,
+const DEMO_CLINIC_SERVICES = [
+  {
+    name: "Consulta",
+    description: "Consulta clínica padrão",
+    priceCents: 20_000,
+  },
+  {
+    name: "Retorno",
+    description: "Retorno em até 30 dias",
+    priceCents: 10_000,
+  },
+  {
+    name: "Avaliação",
+    description: "Avaliação inicial",
+    priceCents: 25_000,
+  },
 ] as const
 
 const PAYMENT_METHODS = [
@@ -826,6 +835,7 @@ async function wipeAllData() {
       patient_clinical_alerts,
       clinical_notes,
       appointments,
+      clinic_services,
       patients,
       professional_clinics,
       professionals,
@@ -837,7 +847,6 @@ async function wipeAllData() {
       role_permissions,
       permissions,
       roles,
-      plans,
       session,
       account,
       verification,
@@ -884,7 +893,19 @@ async function seedRbac() {
 }
 
 async function seedPlans() {
-  await db.insert(plans).values(STUB_PLANS)
+  const existing = await db
+    .select()
+    .from(plans)
+    .where(isNull(plans.deletedAt))
+
+  if (existing.length === 0) {
+    await db.insert(plans).values(STUB_PLANS)
+  } else {
+    console.log(
+      `  Preserving ${existing.length} existing plan(s) (Stripe price IDs intact).`,
+    )
+  }
+
   const [professionalPlan] = await db
     .select()
     .from(plans)
@@ -892,11 +913,11 @@ async function seedPlans() {
     .limit(1)
 
   if (!professionalPlan) {
-    throw new Error("Failed to seed Profissional plan")
+    throw new Error("Failed to resolve Profissional plan")
   }
 
   console.log(
-    "  Tip: run `npm run stripe:sync-plans` to attach Stripe price IDs after demo wipe.",
+    "  Tip: run `npm run stripe:sync-plans` if Stripe price IDs are missing.",
   )
 
   return professionalPlan
@@ -1168,13 +1189,35 @@ async function seedPatients(clinicId: string, ownerId: string) {
   return db.insert(patients).values(rows).returning()
 }
 
+async function seedClinicServices(params: {
+  clinicId: string
+  ownerId: string
+}) {
+  return db
+    .insert(clinicServices)
+    .values(
+      DEMO_CLINIC_SERVICES.map((service) => ({
+        clinicId: params.clinicId,
+        name: service.name,
+        description: service.description,
+        priceCents: service.priceCents,
+        currency: "BRL" as const,
+        isActive: true,
+        createdBy: params.ownerId,
+        updatedBy: params.ownerId,
+      })),
+    )
+    .returning()
+}
+
 async function seedAppointments(params: {
   clinicId: string
   ownerId: string
   patientIds: string[]
   professionalIds: string[]
+  serviceIds: string[]
 }) {
-  const { clinicId, ownerId, patientIds, professionalIds } = params
+  const { clinicId, ownerId, patientIds, professionalIds, serviceIds } = params
   const today = new Date()
   today.setHours(0, 0, 0, 0)
 
@@ -1220,6 +1263,7 @@ async function seedAppointments(params: {
       clinicId,
       patientId: patientIds[index % patientIds.length]!,
       professionalId: professionalIds[index % professionalIds.length]!,
+      serviceId: serviceIds[index % serviceIds.length]!,
       startsAt,
       endsAt,
       type: APPOINTMENT_TYPES[index % APPOINTMENT_TYPES.length]!,
@@ -1242,21 +1286,33 @@ async function seedChargesAndPayments(params: {
   clinicId: string
   ownerId: string
   recordedByUserId: string
+  services: Array<{ id: string; name: string; priceCents: number }>
   appointments: Array<{
     id: string
     patientId: string
+    serviceId: string | null
     startsAt: Date
     status: string
   }>
 }) {
-  const { clinicId, ownerId, recordedByUserId, appointments: appointmentRows } =
-    params
+  const {
+    clinicId,
+    ownerId,
+    recordedByUserId,
+    services,
+    appointments: appointmentRows,
+  } = params
 
   type ChargeInsert = {
     clinicId: string
     patientId: string
     appointmentId: string
+    serviceId: string
+    serviceName: string
+    listAmountCents: number
+    discountPercent: number
     amountCents: number
+    billingKind: "standard"
     currency: string
     status: "pending" | "paid" | "canceled" | "failed"
     description: string
@@ -1272,13 +1328,27 @@ async function seedChargesAndPayments(params: {
     (typeof PAYMENT_METHODS)[number] | null
   > = []
 
+  function serviceFor(index: number, serviceId: string | null) {
+    const fromId = serviceId
+      ? services.find((service) => service.id === serviceId)
+      : undefined
+    return fromId ?? services[index % services.length]!
+  }
+
   for (const [index, appointment] of appointmentRows.entries()) {
-    const amountCents =
-      CHARGE_AMOUNT_CENTS[index % CHARGE_AMOUNT_CENTS.length]!
+    const service = serviceFor(index, appointment.serviceId)
+    const amountCents = service.priceCents
     const dueAt = addDays(appointment.startsAt, 0)
     dueAt.setHours(23, 59, 0, 0)
 
-    const description = `Consulta — ${REASONS[index % REASONS.length]!}`
+    const description = `${service.name} — ${REASONS[index % REASONS.length]!}`
+    const snapshot = {
+      serviceId: service.id,
+      serviceName: service.name,
+      listAmountCents: service.priceCents,
+      discountPercent: 0,
+      billingKind: "standard" as const,
+    }
 
     // ~1 in 4 future appointments already have a pending charge from booking
     if (
@@ -1291,6 +1361,7 @@ async function seedChargesAndPayments(params: {
         clinicId,
         patientId: appointment.patientId,
         appointmentId: appointment.id,
+        ...snapshot,
         amountCents,
         currency: "BRL",
         status: "pending",
@@ -1311,6 +1382,7 @@ async function seedChargesAndPayments(params: {
         clinicId,
         patientId: appointment.patientId,
         appointmentId: appointment.id,
+        ...snapshot,
         amountCents,
         currency: "BRL",
         status: "canceled",
@@ -1331,6 +1403,7 @@ async function seedChargesAndPayments(params: {
         clinicId,
         patientId: appointment.patientId,
         appointmentId: appointment.id,
+        ...snapshot,
         amountCents,
         currency: "BRL",
         status,
@@ -1358,6 +1431,7 @@ async function seedChargesAndPayments(params: {
         clinicId,
         patientId: appointment.patientId,
         appointmentId: appointment.id,
+        ...snapshot,
         amountCents,
         currency: "BRL",
         status,
@@ -2041,6 +2115,9 @@ async function seed() {
       userIdByProfessionalName,
     })
 
+    console.log("Seeding clinic services…")
+    const serviceRows = await seedClinicServices({ clinicId, ownerId })
+
     console.log("Seeding patients…")
     const patientRows = await seedPatients(clinicId, ownerId)
 
@@ -2050,6 +2127,7 @@ async function seed() {
       ownerId,
       patientIds: patientRows.map((p) => p.id),
       professionalIds: professionalRows.map((p) => p.id),
+      serviceIds: serviceRows.map((s) => s.id),
     })
 
     const financialMember = teamMembers.find(
@@ -2062,6 +2140,11 @@ async function seed() {
       clinicId,
       ownerId,
       recordedByUserId,
+      services: serviceRows.map((s) => ({
+        id: s.id,
+        name: s.name,
+        priceCents: s.priceCents,
+      })),
       appointments: appointmentRows,
     })
 

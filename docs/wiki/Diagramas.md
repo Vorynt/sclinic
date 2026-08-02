@@ -48,15 +48,18 @@ sequenceDiagram
   participant B as Board / SSE
   participant C as Charge
 
-  R->>A: Cria appointment (+ amount)
-  A->>C: charge pending
+  R->>A: Cria appointment (+ serviço / amount)
+  A->>C: charge pending (ou R$ 0 paid se cortesia)
   M->>A: start → checked_in
   M->>A: complete → completed
   A-->>B: clinic.ops
   B->>R: Aguardando pagamento
-  R->>C: markPaid
+  R->>C: markPaid (ajuste % opcional)
   C-->>B: some da coluna pagamento
 ```
+
+> ADR-009 (Planned): serviço do catálogo substitui valor digitado; cortesia/retorno não passa pela coluna de pagamento.
+
 
 ## 4. Máquina de status do appointment
 

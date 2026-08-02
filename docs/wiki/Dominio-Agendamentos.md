@@ -1,13 +1,14 @@
 # Domínio — Agendamentos
 
-**Módulo:** `src/modules/appointments/` · **Épicos:** E4, E7 · **ADR-006**
+**Módulo:** `src/modules/appointments/` · **Épicos:** E4, E7 · **ADR-006**, **ADR-009**
 
 ## Features
 
 - Calendário `/appointments`
 - Workspace `(attendance)` com notas/vitais/receitas
 - Transições de status + cancelamento
-- Valor opcional → charge (ADR-002)
+- Valor opcional → charge (ADR-002) — legado
+- Serviço obrigatório + desconto % / cortesia (ADR-009) — Done
 
 ## Máquina de status
 
@@ -36,7 +37,8 @@ Só `owner`, `admin`, `doctor`, `nurse`. Recepcionista **não** inicia.
 - Sem overlap com appointments ≠ `canceled` (inclui completed/no_show)
 - Self-schedule: doctor/nurse só a si (owner com perfil clínico **não** entra em self-schedule — vê a agenda completa)
 - Assignee pode ser o owner se existir professional ativo vinculado ao seu `userId` (ADR-007)
-- `amountCents` exige `financial.collect|manage`
+- `amountCents` exige `financial.collect|manage` (legado até ADR-009)
+- **ADR-009:** `serviceId` obrigatório em creates novos; desconto % e cortesia/retorno no form; override de valor só `financial.manage`
 
 ## Cancelamento
 

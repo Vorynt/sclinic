@@ -44,8 +44,8 @@ import { useChargesQuery } from "@/modules/billing/hooks/use-charges";
 import type {
   ChargeListItem,
   ChargeStatus,
-  ManualPaymentMethod,
 } from "@/modules/billing/types/charge";
+import type { MarkChargePaidDto } from "@/modules/billing/dto/mark-charge-paid.dto";
 import { formatCentsToBrl } from "@/modules/billing/utils/money";
 import { useAuth } from "@/providers/AuthProvider";
 import { DEFAULT_LIST_PAGE_SIZE } from "@/shared/validators";
@@ -181,11 +181,12 @@ function ChargeCard({
 }
 
 export function ChargesTable({ filters, onPageChange }: ChargesTableProps) {
-  const { canAny } = useAuth();
+  const { can, canAny } = useAuth();
   const canCollect = canAny(
     Permission.FINANCIAL_COLLECT,
     Permission.FINANCIAL_MANAGE,
   );
+  const canManageFinancial = can(Permission.FINANCIAL_MANAGE);
   const canPeekAppointment = canAny(
     Permission.APPOINTMENTS_CREATE,
     Permission.APPOINTMENTS_UPDATE,
@@ -288,10 +289,26 @@ export function ChargesTable({ filters, onPageChange }: ChargesTableProps) {
             ? `${chargeToPay.patientName} · ${formatCentsToBrl(chargeToPay.amountCents)}`
             : undefined
         }
+        listAmountCents={
+          chargeToPay?.listAmountCents ?? chargeToPay?.amountCents
+        }
+        discountPercent={chargeToPay?.discountPercent ?? 0}
+        serviceName={chargeToPay?.serviceName ?? undefined}
+        billingKind={chargeToPay?.billingKind ?? "standard"}
+        canManage={canManageFinancial}
         isPending={markPaid.isPending}
-        onConfirm={(method: ManualPaymentMethod) => {
+        onConfirm={(payload) => {
           if (!chargeToPay) return;
-          markPaid.mutate({ chargeId: chargeToPay.id, method });
+          markPaid.mutate({
+            chargeId: chargeToPay.id,
+            method: payload.method,
+            ...(payload.discountPercent !== undefined
+              ? { discountPercent: payload.discountPercent }
+              : {}),
+            ...(payload.amountCentsOverride !== undefined
+              ? { amountCentsOverride: payload.amountCentsOverride }
+              : {}),
+          } as MarkChargePaidDto);
         }}
       />
 

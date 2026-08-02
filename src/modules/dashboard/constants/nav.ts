@@ -199,6 +199,14 @@ const PAGE_META: Record<string, PageMeta> = {
       { label: "Horários" },
     ],
   },
+  [routes.settingsServices]: {
+    title: "Serviços",
+    breadcrumbs: [
+      { label: "Início", href: routes.home },
+      { label: "Configurações", href: routes.settingsGeneral },
+      { label: "Serviços" },
+    ],
+  },
   [routes.settingsUsage]: {
     title: "Uso do plano",
     breadcrumbs: [
