@@ -1,0 +1,43 @@
+# App Next.js for local QA. Database = Neon (DATABASE_URL in .env.docker).
+#
+# First time (migrate + demo seed on the Neon test branch):
+#   cp .env.docker.example .env.docker   # fill secrets + Neon URL
+#   docker compose --profile setup run --rm setup
+#   docker compose up --build
+#
+# Day to day:
+#   docker compose up --build
+
+services:
+  app:
+    build:
+      context: .
+      target: runner
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env.docker
+    environment:
+      NODE_ENV: production
+      # Auth cookies / redirects must match the URL QA opens in the browser
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:3000}
+    restart: unless-stopped
+
+  setup:
+    profiles: ["setup"]
+    build:
+      context: .
+      target: tools
+    env_file:
+      - .env.docker
+    environment:
+      # dotenv in seeds also reads these from the process env
+      NODE_ENV: development
+    command:
+      - sh
+      - -c
+      - |
+        npm run db:migrate
+        npm run db:seed:rbac
+        npm run db:seed:plans
+        npm run db:seed:demo
