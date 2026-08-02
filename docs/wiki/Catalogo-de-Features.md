@@ -26,6 +26,7 @@ Inventário do que o sistema faz hoje. Status: **Done** | **Partial** | **Planne
 | Catálogo de planos + cotas | Done | seed plans |
 | Checkout Stripe | Done | PlanPicker |
 | Customer Portal | Done | `/account/subscription` (também sem entitlement) |
+| Sync de troca de plano (Portal) | Done | webhook prioriza `price.id`; alert em `/account/subscription` |
 | Regularização Portal-first | Done | unpaid/canceled → Portal |
 | Delete clinic cancela Stripe | Done | MVP 1:1; teardown sem entitlement |
 | Webhook sync | Done | `/api/stripe/webhook` |

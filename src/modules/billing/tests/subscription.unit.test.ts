@@ -15,8 +15,9 @@ import {
 import { toSubscription } from "@/modules/billing/mappers/billing.mapper"
 import { createCheckoutSessionSchema } from "@/modules/billing/schemas/checkout.schema"
 import { createRegularizeSessionSchema } from "@/modules/billing/schemas/regularize.schema"
-import { buildClinicPlanQuota } from "@/modules/billing/utils/plan-quota"
 import { formatStorageBytes } from "@/modules/billing/utils/format-storage"
+import { buildClinicPlanQuota } from "@/modules/billing/utils/plan-quota"
+import { resolveSubscriptionPlanId } from "@/modules/billing/utils/resolve-subscription-plan-id"
 
 const VALID_UUID = "11111111-1111-4111-8111-111111111111"
 
@@ -194,5 +195,54 @@ describe("formatStorageBytes", () => {
     assert.equal(formatStorageBytes(1536), "1,5 KB")
     assert.equal(formatStorageBytes(1024 * 1024), "1 MB")
     assert.equal(formatStorageBytes(1024 * 1024 * 1024), "1 GB")
+  })
+})
+
+describe("resolveSubscriptionPlanId", () => {
+  const planA = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+  const planB = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb"
+
+  it("prefers the plan mapped from the current Stripe price", () => {
+    assert.equal(
+      resolveSubscriptionPlanId({
+        planIdFromPrice: planB,
+        metadataPlanId: planA,
+        existingPlanId: planA,
+      }),
+      planB,
+    )
+  })
+
+  it("falls back to metadata when price has no local plan", () => {
+    assert.equal(
+      resolveSubscriptionPlanId({
+        planIdFromPrice: null,
+        metadataPlanId: planA,
+        existingPlanId: planB,
+      }),
+      planA,
+    )
+  })
+
+  it("falls back to the existing local plan last", () => {
+    assert.equal(
+      resolveSubscriptionPlanId({
+        planIdFromPrice: null,
+        metadataPlanId: null,
+        existingPlanId: planA,
+      }),
+      planA,
+    )
+  })
+
+  it("returns null when nothing can be resolved", () => {
+    assert.equal(
+      resolveSubscriptionPlanId({
+        planIdFromPrice: null,
+        metadataPlanId: null,
+        existingPlanId: null,
+      }),
+      null,
+    )
   })
 })
