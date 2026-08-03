@@ -146,7 +146,7 @@ export function AuthShell({ children, wide = false }: AuthShellProps) {
               className={
                 wide
                   ? "animate-auth-fade-up m-auto w-full max-w-3xl px-6 py-8 md:px-10"
-                  : "animate-auth-fade-up m-auto w-full max-w-[24rem] px-6 py-8 md:px-10"
+                  : "animate-auth-fade-up m-auto w-full max-w-lg px-6 py-8"
               }>
               {children}
             </div>
