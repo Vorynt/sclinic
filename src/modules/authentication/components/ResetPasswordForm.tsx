@@ -67,17 +67,17 @@ export function ResetPasswordForm() {
 
   if (!token) {
     return (
-      <div className="flex w-full max-w-sm flex-col gap-6 text-center">
+      <div className="flex w-full flex-col gap-8">
         <div className="flex flex-col gap-2">
-          <h1 className="font-heading text-2xl font-semibold tracking-tight">
+          <h1 className="font-heading text-2xl font-semibold tracking-tight text-foreground">
             Link inválido
           </h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm leading-relaxed text-muted-foreground">
             Este link de redefinição está incompleto ou expirou. Solicite um
             novo.
           </p>
         </div>
-        <Button asChild>
+        <Button size="lg" className="w-full" asChild>
           <Link href={routes.forgotPassword}>Solicitar novo link</Link>
         </Button>
       </div>
@@ -95,14 +95,14 @@ export function ResetPasswordForm() {
   return (
     <form
       onSubmit={onSubmit}
-      className="flex w-full max-w-sm flex-col gap-6"
+      className="flex w-full flex-col gap-8"
       noValidate
     >
-      <div className="flex flex-col gap-2 text-center">
-        <h1 className="font-heading text-2xl font-semibold tracking-tight">
+      <div className="flex flex-col gap-2">
+        <h1 className="font-heading text-2xl font-semibold tracking-tight text-foreground">
           Redefinir senha
         </h1>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm leading-relaxed text-muted-foreground">
           Escolha uma nova senha para a sua conta.
         </p>
       </div>
@@ -113,14 +113,16 @@ export function ResetPasswordForm() {
 
       <input type="hidden" {...register("token")} />
 
-      <FieldGroup className="flex flex-col gap-4">
+      <FieldGroup className="gap-5">
         <Field data-invalid={Boolean(errors.newPassword)}>
           <FieldLabel htmlFor="reset-new-password">Nova senha</FieldLabel>
           <Input
             id="reset-new-password"
             type="password"
             autoComplete="new-password"
+            placeholder="Mínimo 8 caracteres"
             aria-invalid={Boolean(errors.newPassword)}
+            disabled={resetPassword.isPending}
             {...register("newPassword")}
           />
           <FieldError>{errors.newPassword?.message}</FieldError>
@@ -134,16 +136,29 @@ export function ResetPasswordForm() {
             id="reset-confirm-password"
             type="password"
             autoComplete="new-password"
+            placeholder="Repita a nova senha"
             aria-invalid={Boolean(errors.confirmPassword)}
+            disabled={resetPassword.isPending}
             {...register("confirmPassword")}
           />
           <FieldError>{errors.confirmPassword?.message}</FieldError>
         </Field>
       </FieldGroup>
 
-      <Button type="submit" disabled={resetPassword.isPending}>
-        {resetPassword.isPending ? <Spinner /> : null}
-        Salvar nova senha
+      <Button
+        type="submit"
+        size="lg"
+        className="w-full"
+        disabled={resetPassword.isPending}
+      >
+        {resetPassword.isPending ? (
+          <>
+            <Spinner />
+            Salvando…
+          </>
+        ) : (
+          "Salvar nova senha"
+        )}
       </Button>
     </form>
   )

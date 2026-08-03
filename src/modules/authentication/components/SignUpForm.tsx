@@ -39,7 +39,6 @@ export function SignUpForm() {
   const {
     register,
     handleSubmit,
-    setError,
     formState: { errors },
   } = useForm<SignUpValues, unknown, SignUpOutput>({
     resolver: zodResolver(signUpSchema),
@@ -79,14 +78,14 @@ export function SignUpForm() {
   return (
     <form
       onSubmit={onSubmit}
-      className="flex w-full max-w-sm flex-col gap-8"
+      className="flex w-full flex-col gap-8"
       noValidate>
-      <div className="flex flex-col gap-2 text-center">
+      <div className="flex flex-col gap-2">
         <h1 className="font-heading text-2xl font-semibold tracking-tight text-foreground">
-          Seja um parceiro
+          Criar conta
         </h1>
-        <p className="text-sm text-muted-foreground">
-          Crie sua conta para começar a usar o sclinic.
+        <p className="text-sm leading-relaxed text-muted-foreground">
+          Cadastre-se para configurar sua clínica no sclinic.
         </p>
       </div>
 
@@ -94,7 +93,7 @@ export function SignUpForm() {
         <FormErrorAlert message={formError.message} code={formError.code} />
       ) : null}
 
-      <FieldGroup className="gap-4">
+      <FieldGroup className="gap-5">
         <Field data-invalid={Boolean(errors.name) || undefined}>
           <FieldLabel htmlFor="sign-up-name">Nome</FieldLabel>
           <Input
@@ -138,7 +137,7 @@ export function SignUpForm() {
         </Field>
       </FieldGroup>
 
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-4">
         <Button
           type="submit"
           size="lg"
@@ -153,9 +152,14 @@ export function SignUpForm() {
             "Criar conta"
           )}
         </Button>
-        <Button variant="ghost" size="sm" asChild>
-          <Link href={routes.login}>Já tenho conta</Link>
-        </Button>
+        <p className="text-center text-sm text-muted-foreground">
+          Já tem conta?{" "}
+          <Link
+            href={routes.login}
+            className="font-medium text-foreground underline-offset-4 hover:underline">
+            Entrar
+          </Link>
+        </p>
       </div>
     </form>
   );

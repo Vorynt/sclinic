@@ -1,13 +1,13 @@
-import type { Metadata } from "next"
-import { Suspense } from "react"
+import type { Metadata } from "next";
+import { Suspense } from "react";
 
-import { Spinner } from "@/components/ui/spinner"
-import { ResetPasswordForm } from "@/modules/authentication/components/ResetPasswordForm"
+import { Spinner } from "@/components/ui/spinner";
+import { ResetPasswordForm } from "@/modules/authentication/components/ResetPasswordForm";
 
 export const metadata: Metadata = {
-  title: "Redefinir senha · sclinic",
+  title: "Redefinir senha",
   description: "Defina uma nova senha para a sua conta",
-}
+};
 
 export default function ResetPasswordPage() {
   return (
@@ -16,9 +16,8 @@ export default function ResetPasswordPage() {
         <div className="flex justify-center py-10">
           <Spinner className="size-6" />
         </div>
-      }
-    >
+      }>
       <ResetPasswordForm />
     </Suspense>
-  )
+  );
 }
