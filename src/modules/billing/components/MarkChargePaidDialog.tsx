@@ -20,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { Slider } from "@/components/ui/slider"
 import {
   BILLING_KIND_LABELS,
   PAYMENT_METHOD_LABELS,
@@ -36,6 +37,8 @@ import {
   parseBrlToCents,
 } from "@/modules/billing/utils/money"
 
+const DISCOUNT_PRESETS = [5, 10, 15, 20] as const
+
 export type MarkChargePaidConfirmPayload = {
   method: ManualPaymentMethod
   discountPercent?: number
@@ -49,6 +52,7 @@ type MarkChargePaidDialogProps = {
   description?: string
   confirmLabel?: string
   isPending?: boolean
+  patientName?: string
   listAmountCents?: number
   discountPercent?: number
   serviceName?: string
@@ -66,9 +70,10 @@ export function MarkChargePaidDialog({
   open,
   onOpenChange,
   title = "Registrar pagamento",
-  description,
-  confirmLabel = "Confirmar",
+  description = "Confirme o valor e como o paciente pagou.",
+  confirmLabel = "Receber pagamento",
   isPending = false,
+  patientName,
   listAmountCents,
   discountPercent = 0,
   serviceName,
@@ -107,18 +112,13 @@ export function MarkChargePaidDialog({
     })
   }, [amountCentsOverride, billingKind, discount, listAmountCents])
 
-  const summaryLines = [
-    serviceName ? `Serviço: ${serviceName}` : null,
-    listAmountCents != null
-      ? `Valor de lista: ${formatCentsToBrl(listAmountCents)}`
-      : null,
-    billingKind !== "standard"
-      ? `Tipo: ${BILLING_KIND_LABELS[billingKind]}`
-      : null,
-    finalAmountCents != null
-      ? `Valor final: ${formatCentsToBrl(finalAmountCents)}`
-      : null,
-  ].filter(Boolean)
+  const showPricing = listAmountCents != null
+
+  function resetFields() {
+    setMethod("pix_manual")
+    setDiscount(clampDiscount(discountPercent))
+    setOverrideBrl("")
+  }
 
   function handleConfirm() {
     const payload: MarkChargePaidConfirmPayload = { method }
@@ -138,73 +138,106 @@ export function MarkChargePaidDialog({
     <AlertDialog
       open={open}
       onOpenChange={(next) => {
-        if (!next) {
-          setMethod("pix_manual")
-          setDiscount(clampDiscount(discountPercent))
-          setOverrideBrl("")
-        }
+        if (!next) resetFields()
         onOpenChange(next)
       }}
     >
-      <AlertDialogContent>
+      <AlertDialogContent className="sm:max-w-md">
         <AlertDialogHeader>
           <AlertDialogTitle>{title}</AlertDialogTitle>
-          {description ? (
-            <AlertDialogDescription>{description}</AlertDialogDescription>
-          ) : null}
-          {summaryLines.length > 0 ? (
-            <div className="flex flex-col gap-1 pt-1 text-sm text-muted-foreground">
-              {summaryLines.map((line) => (
-                <p key={line}>{line}</p>
-              ))}
-            </div>
-          ) : null}
+          <AlertDialogDescription>{description}</AlertDialogDescription>
         </AlertDialogHeader>
 
-        <div className="flex flex-col gap-4 py-2">
-          {!isZeroKind && listAmountCents != null ? (
-            <div className="flex flex-col gap-2">
-              <label
-                className="text-sm font-medium"
-                htmlFor="mark-paid-discount"
-              >
-                Desconto (%)
-              </label>
-              <Input
-                id="mark-paid-discount"
-                type="number"
-                min={0}
-                max={100}
-                step={1}
-                value={discount}
-                onChange={(event) =>
-                  setDiscount(clampDiscount(Number(event.target.value)))
-                }
-              />
+        <div className="flex flex-col gap-5 py-1">
+          {(patientName || serviceName || billingKind !== "standard") && (
+            <div className="flex flex-col gap-1 text-sm">
+              {patientName ? (
+                <p className="font-medium text-foreground">{patientName}</p>
+              ) : null}
+              {serviceName ? (
+                <p className="text-muted-foreground">{serviceName}</p>
+              ) : null}
+              {billingKind !== "standard" ? (
+                <p className="text-muted-foreground">
+                  {BILLING_KIND_LABELS[billingKind]} — sem cobrança
+                </p>
+              ) : null}
             </div>
-          ) : null}
+          )}
 
-          {canManage && !isZeroKind && listAmountCents != null ? (
-            <div className="flex flex-col gap-2">
-              <label
-                className="text-sm font-medium"
-                htmlFor="mark-paid-override"
-              >
-                Valor final (override)
-              </label>
-              <Input
-                id="mark-paid-override"
-                inputMode="decimal"
-                placeholder="Opcional — ex.: 150,00"
-                value={overrideBrl}
-                onChange={(event) => setOverrideBrl(event.target.value)}
-              />
+          {showPricing ? (
+            <div className="flex flex-col gap-3">
+              <div className="flex items-baseline justify-between gap-3 text-sm">
+                <span className="text-muted-foreground">Valor do serviço</span>
+                <span className="tabular-nums text-foreground">
+                  {formatCentsToBrl(listAmountCents)}
+                </span>
+              </div>
+
+              {!isZeroKind ? (
+                <div className="flex flex-col gap-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <label
+                      className="text-sm font-medium text-foreground"
+                      htmlFor="mark-paid-discount"
+                    >
+                      Desconto no valor
+                    </label>
+                    <span className="text-sm tabular-nums text-muted-foreground">
+                      {discount}%
+                    </span>
+                  </div>
+                  <Slider
+                    id="mark-paid-discount"
+                    min={0}
+                    max={100}
+                    step={5}
+                    value={[discount]}
+                    disabled={isPending}
+                    onValueChange={([value]) =>
+                      setDiscount(clampDiscount(value ?? 0))
+                    }
+                  />
+                  <div className="flex flex-wrap gap-2">
+                    {DISCOUNT_PRESETS.map((preset) => {
+                      const isSelected = discount === preset
+                      return (
+                        <Button
+                          key={preset}
+                          type="button"
+                          size="sm"
+                          variant={isSelected ? "default" : "outline"}
+                          disabled={isPending}
+                          aria-pressed={isSelected}
+                          onClick={() => setDiscount(preset)}
+                        >
+                          {preset}%
+                        </Button>
+                      )
+                    })}
+                  </div>
+                </div>
+              ) : null}
+
+              <div className="flex items-baseline justify-between gap-3 border-t border-border pt-3">
+                <span className="text-sm font-medium text-foreground">
+                  Total a receber
+                </span>
+                <span className="text-base font-semibold tabular-nums text-foreground">
+                  {finalAmountCents != null
+                    ? formatCentsToBrl(finalAmountCents)
+                    : "—"}
+                </span>
+              </div>
             </div>
           ) : null}
 
           <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium" htmlFor="mark-paid-method">
-              Forma de pagamento
+            <label
+              className="text-sm font-medium text-foreground"
+              htmlFor="mark-paid-method"
+            >
+              Como pagou?
             </label>
             <Select
               value={method}
@@ -222,15 +255,34 @@ export function MarkChargePaidDialog({
               </SelectContent>
             </Select>
           </div>
+
+          {canManage && !isZeroKind && listAmountCents != null ? (
+            <div className="flex flex-col gap-2">
+              <label
+                className="text-sm font-medium text-foreground"
+                htmlFor="mark-paid-override"
+              >
+                Outro valor
+              </label>
+              <Input
+                id="mark-paid-override"
+                inputMode="decimal"
+                placeholder="Opcional — ex.: 150,00"
+                value={overrideBrl}
+                disabled={isPending}
+                onChange={(event) => setOverrideBrl(event.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">
+                Use só se o valor cobrado for diferente do calculado com
+                desconto.
+              </p>
+            </div>
+          ) : null}
         </div>
 
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isPending}>Voltar</AlertDialogCancel>
-          <Button
-            type="button"
-            disabled={isPending}
-            onClick={handleConfirm}
-          >
+          <AlertDialogCancel disabled={isPending}>Cancelar</AlertDialogCancel>
+          <Button type="button" disabled={isPending} onClick={handleConfirm}>
             {confirmLabel}
           </Button>
         </AlertDialogFooter>

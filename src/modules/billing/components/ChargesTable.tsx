@@ -284,11 +284,7 @@ export function ChargesTable({ filters, onPageChange }: ChargesTableProps) {
         onOpenChange={(open) => {
           if (!open) setChargeToPay(null);
         }}
-        description={
-          chargeToPay
-            ? `${chargeToPay.patientName} · ${formatCentsToBrl(chargeToPay.amountCents)}`
-            : undefined
-        }
+        patientName={chargeToPay?.patientName}
         listAmountCents={
           chargeToPay?.listAmountCents ?? chargeToPay?.amountCents
         }

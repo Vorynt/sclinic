@@ -30,10 +30,15 @@ type BoardItem = {
   charge: Charge | null
 }
 
+type ChargeToPay = {
+  charge: Charge
+  patientName: string
+}
+
 type ReceptionBoardCardProps = {
   item: BoardItem
   canCollect: boolean
-  onPay: (charge: Charge) => void
+  onPay: (payload: ChargeToPay) => void
 }
 
 function ReceptionBoardCard({
@@ -68,7 +73,12 @@ function ReceptionBoardCard({
             type="button"
             size="sm"
             variant="secondary"
-            onClick={() => onPay(charge)}
+            onClick={() =>
+              onPay({
+                charge,
+                patientName: appointment.patientName,
+              })
+            }
           >
             <CheckCircleIcon />
             Receber
@@ -84,7 +94,7 @@ type BoardColumnProps = {
   items: BoardItem[]
   emptyMessage: string
   canCollect: boolean
-  onPay: (charge: Charge) => void
+  onPay: (payload: ChargeToPay) => void
 }
 
 function BoardColumn({
@@ -182,7 +192,7 @@ export function ReceptionOpsBoard() {
     return { upcoming, inProgress, awaitingPayment }
   }, [appointments, chargeByAppointmentId])
 
-  const [chargeToPay, setChargeToPay] = useState<Charge | null>(null)
+  const [chargeToPay, setChargeToPay] = useState<ChargeToPay | null>(null)
 
   const markPaid = useMarkChargePaidMutation({
     onSuccess: () => {
@@ -243,18 +253,18 @@ export function ReceptionOpsBoard() {
           onOpenChange={(open) => {
             if (!open) setChargeToPay(null)
           }}
-          description={formatCentsToBrl(chargeToPay.amountCents)}
+          patientName={chargeToPay.patientName}
           listAmountCents={
-            chargeToPay.listAmountCents ?? chargeToPay.amountCents
+            chargeToPay.charge.listAmountCents ?? chargeToPay.charge.amountCents
           }
-          discountPercent={chargeToPay.discountPercent ?? 0}
-          serviceName={chargeToPay.serviceName ?? undefined}
-          billingKind={chargeToPay.billingKind ?? "standard"}
+          discountPercent={chargeToPay.charge.discountPercent ?? 0}
+          serviceName={chargeToPay.charge.serviceName ?? undefined}
+          billingKind={chargeToPay.charge.billingKind ?? "standard"}
           canManage={canManageFinancial}
           isPending={markPaid.isPending}
           onConfirm={(payload) => {
             markPaid.mutate({
-              chargeId: chargeToPay.id,
+              chargeId: chargeToPay.charge.id,
               method: payload.method,
               ...(payload.discountPercent !== undefined
                 ? { discountPercent: payload.discountPercent }

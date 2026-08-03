@@ -111,7 +111,6 @@ export function AppointmentChargeSummary({
         <MarkChargePaidDialog
           open={payOpen}
           onOpenChange={setPayOpen}
-          description={formatCentsToBrl(chargeQuery.data.amountCents)}
           listAmountCents={
             chargeQuery.data.listAmountCents ?? chargeQuery.data.amountCents
           }

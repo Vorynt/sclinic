@@ -23,7 +23,7 @@ export function AppHeader() {
   const { title, breadcrumbs } = getPageMeta(pathname);
 
   return (
-    <header className="flex h-12 shrink-0 items-center gap-2 border-b border-border/70 px-4">
+    <header className="flex h-12 shrink-0 sticky top-0 z-10 bg-background items-center gap-2 border-b border-border/70 px-4">
       <SidebarTrigger className="-ml-1" />
       <Separator orientation="vertical" className="mx-1" />
 
