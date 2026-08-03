@@ -1,13 +1,13 @@
-import { BuildingsIcon } from "@phosphor-icons/react"
-import Link from "next/link"
+import { BuildingsIcon } from "@phosphor-icons/react";
+import Link from "next/link";
 
-import { Button } from "@/components/ui/button"
-import { routes } from "@/config/routes"
+import { Button } from "@/components/ui/button";
+import { routes } from "@/config/routes";
 
 type CreateOwnedClinicCtaProps = {
   /** Stronger CTA when the account has no clinic at all. */
-  emphasis?: "default" | "primary"
-}
+  emphasis?: "default" | "primary";
+};
 
 /**
  * Soft entry to owner onboarding for users who are only members (or have none).
@@ -36,12 +36,11 @@ export function CreateOwnedClinicCta({
         asChild
         size="sm"
         variant={emphasis === "primary" ? "default" : "outline"}
-        className="self-start"
-      >
+        className="self-start">
         <Link href={`${routes.onboardingPlan}?intent=create-clinic`}>
           Criar minha clínica
         </Link>
       </Button>
     </div>
-  )
+  );
 }

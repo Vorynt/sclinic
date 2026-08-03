@@ -132,7 +132,7 @@ export function PlanPicker() {
   }
 
   return (
-    <div className="flex w-full flex-col gap-8 min-w-1/2">
+    <div className="flex w-full flex-col gap-8 min-w-1/2 @container/plan-picker">
       <div className="flex flex-col gap-2 text-center">
         <h1 className="font-heading text-2xl font-semibold tracking-tight text-foreground">
           Escolha seu plano
@@ -143,12 +143,12 @@ export function PlanPicker() {
               ? "Você será direcionado a uma página segura para reativar a assinatura e voltar a usar sua clínica."
               : "Selecione o plano para reativar a assinatura da sua clínica."
             : useStripeCheckout
-              ? "Você será direcionado a uma página segura para concluir o pagamento e, em seguida, cadastrar sua clínica."
+              ? "7 dias grátis na primeira assinatura. O cartão é cadastrado agora; a cobrança começa só após o teste. Em seguida você cadastra a clínica."
               : "Selecione o plano da sua conta para continuar."}
         </p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 @md/plan-picker:grid-cols-2 @2xl/plan-picker:grid-cols-3">
         {plans.map((plan) => {
           const selected = selectedPlanId === plan.id;
           return (
@@ -229,7 +229,11 @@ export function PlanPicker() {
               Redirecionando…
             </>
           ) : useStripeCheckout ? (
-            "Continuar para o pagamento"
+            intent === "reactivate" ? (
+              "Continuar para o pagamento"
+            ) : (
+              "Começar teste grátis"
+            )
           ) : (
             "Continuar para a clínica"
           )}

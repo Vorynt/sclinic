@@ -1,12 +1,12 @@
-import type { Metadata } from "next"
-import { Suspense } from "react"
+import type { Metadata } from "next";
+import { Suspense } from "react";
 
-import { Spinner } from "@/components/ui/spinner"
-import { ProfessionalInvitePageContent } from "@/modules/professionals/components/ProfessionalInvitePageContent"
+import { Spinner } from "@/components/ui/spinner";
+import { ProfessionalInvitePageContent } from "@/modules/professionals/components/ProfessionalInvitePageContent";
 
 export const metadata: Metadata = {
-  title: "Convite profissional · sclinic",
-}
+  title: "Convite profissional",
+};
 
 export default function ProfessionalInvitePage() {
   return (
@@ -15,9 +15,8 @@ export default function ProfessionalInvitePage() {
         <div className="flex justify-center py-10">
           <Spinner className="size-6" />
         </div>
-      }
-    >
+      }>
       <ProfessionalInvitePageContent />
     </Suspense>
-  )
+  );
 }

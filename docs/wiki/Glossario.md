@@ -9,6 +9,8 @@
 | **Entitled** | Assinatura viva: `trialing` \| `active` \| `past_due` |
 | **Over limit** | Uso > cotas do plano após downgrade; não derruba sessão |
 | **Charge** | Cobrança clínica 1:1 com appointment (ADR-002) |
+| **Serviço (clínica)** | Item do catálogo da clínica com preço fixo; precifica a consulta (ADR-009) |
+| **Billing kind** | Motivo da cobrança: `standard` \| `courtesy` \| `return` (ADR-009) |
 | **Attendance** | Workspace de atendimento `/appointments/[id]/attendance` |
 | **Prescription** | Receita médica (`draft` → `issued`) |
 | **Prescription template** | Modelo de timbrado da clínica (até 3); DocumentModel de blocos → HTML |

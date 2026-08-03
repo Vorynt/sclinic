@@ -10,8 +10,8 @@ export const MOCK_PROFESSIONAL_COLORS = [
 export const MOCK_NAV_ITEMS = [
   { label: "Início", active: false },
   { label: "Pacientes", active: false },
-  { label: "Profissionais", active: false },
   { label: "Agenda", active: true },
+  { label: "Faturamento", active: false },
 ] as const
 
 export const MOCK_CLINIC_NAME = "Clínica Horizonte"
@@ -126,6 +126,55 @@ export const MOCK_ATTENDANCE = {
     bmi: "25,0",
   },
 }
+
+export const MOCK_BILLING_CHARGES = [
+  {
+    patientName: "Ana Souza",
+    description: "Consulta — Dra. Camila",
+    amount: "R$ 280,00",
+    status: "paid" as const,
+    statusLabel: "Pago",
+    date: "21 jul",
+  },
+  {
+    patientName: "Bruno Lima",
+    description: "Retorno — Dr. Rafael",
+    amount: "R$ 180,00",
+    status: "pending" as const,
+    statusLabel: "Pendente",
+    date: "22 jul",
+  },
+  {
+    patientName: "Carla Mendes",
+    description: "Consulta — Dra. Camila",
+    amount: "R$ 280,00",
+    status: "pending" as const,
+    statusLabel: "Pendente",
+    date: "23 jul",
+  },
+  {
+    patientName: "Diego Alves",
+    description: "Procedimento — Enf. Paula",
+    amount: "R$ 95,00",
+    status: "paid" as const,
+    statusLabel: "Pago",
+    date: "23 jul",
+  },
+  {
+    patientName: "Elena Costa",
+    description: "Consulta — Dr. Rafael",
+    amount: "R$ 280,00",
+    status: "canceled" as const,
+    statusLabel: "Cancelado",
+    date: "24 jul",
+  },
+] as const
+
+export const MOCK_BILLING_SUMMARY = [
+  { label: "Recebido no mês", value: "R$ 12.450" },
+  { label: "Pendentes", value: "R$ 1.820" },
+  { label: "Consultas cobradas", value: "47" },
+] as const
 
 export const MOCK_PATIENTS = [
   {

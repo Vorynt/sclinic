@@ -1,6 +1,6 @@
 # Roadmap
 
-Derivado do **código implementado** + ADRs 001–008 + gaps explícitos no repositório. Não há board externo de produto; esta página é a fonte até existir uma.
+Derivado do **código implementado** + ADRs 001–009 + gaps explícitos no repositório. Não há board externo de produto; esta página é a fonte até existir uma.
 
 ## Legenda
 
@@ -20,8 +20,9 @@ Derivado do **código implementado** + ADRs 001–008 + gaps explícitos no repo
 5. Agenda + máquina de status + attendance
 6. Prontuário MVP: notas, vitais, alertas, receitas (+ templates em blocos, ADR-008)
 7. Loop balcão: charge + board recepção + SSE
-8. Auditoria + settings + landing
-9. Central de ajuda `/help` (FAQ curado por papel)
+8. Catálogo de serviços + desconto % + cortesia/retorno (ADR-009)
+9. Auditoria + settings + landing
+10. Central de ajuda `/help` (FAQ curado por papel)
 
 ## Próximo (Next) — extensões dos ADRs
 

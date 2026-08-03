@@ -12,4 +12,11 @@ export const PAYMENT_METHOD_LABELS: Record<string, string> = {
   transfer: "Transferência",
   other: "Outro",
   gateway: "Pagamento online",
+  courtesy: "Cortesia",
 }
+
+export const BILLING_KIND_LABELS = {
+  standard: "Com cobrança",
+  courtesy: "Cortesia",
+  return: "Retorno",
+} as const

@@ -1,7 +1,7 @@
 import {
   CalendarBlankIcon,
+  CurrencyCircleDollarIcon,
   HouseIcon,
-  StethoscopeIcon,
   UsersIcon,
 } from "@phosphor-icons/react/dist/ssr"
 import type { ReactNode } from "react"
@@ -12,7 +12,12 @@ import {
   MOCK_NAV_ITEMS,
 } from "@/modules/marketing/constants/mock-data"
 
-const NAV_ICONS = [HouseIcon, UsersIcon, StethoscopeIcon, CalendarBlankIcon] as const
+const NAV_ICONS = [
+  HouseIcon,
+  UsersIcon,
+  CalendarBlankIcon,
+  CurrencyCircleDollarIcon,
+] as const
 
 type MockAppChromeProps = {
   children: ReactNode

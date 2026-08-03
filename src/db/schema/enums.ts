@@ -142,6 +142,17 @@ export const paymentMethodEnum = pgEnum("payment_method", [
   "transfer",
   "other",
   "gateway",
+  "courtesy",
+])
+
+/**
+ * Why a clinical charge was priced this way (ADR-009).
+ * `courtesy` / `return` settle at R$ 0 paid; do not infer from amount alone.
+ */
+export const chargeBillingKindEnum = pgEnum("charge_billing_kind", [
+  "standard",
+  "courtesy",
+  "return",
 ])
 
 /** Payment provider for clinical charges. MVP always uses `none`. */

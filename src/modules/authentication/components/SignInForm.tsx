@@ -77,14 +77,14 @@ export function SignInForm() {
   return (
     <form
       onSubmit={onSubmit}
-      className="flex w-full max-w-sm flex-col gap-8"
+      className="flex w-full flex-col gap-8"
       noValidate>
-      <div className="flex flex-col gap-2 text-center">
+      <div className="flex flex-col gap-2">
         <h1 className="font-heading text-2xl font-semibold tracking-tight text-foreground">
-          Bem-vindo de volta
+          Entrar na conta
         </h1>
-        <p className="text-sm text-muted-foreground">
-          Entre com seu e-mail e senha para acessar a clínica.
+        <p className="text-sm leading-relaxed text-muted-foreground">
+          Use seu e-mail e senha para acessar a clínica.
         </p>
       </div>
 
@@ -92,7 +92,7 @@ export function SignInForm() {
         <FormErrorAlert message={formError.message} code={formError.code} />
       ) : null}
 
-      <FieldGroup className="gap-4">
+      <FieldGroup className="gap-5">
         <Field data-invalid={Boolean(errors.email) || undefined}>
           <FieldLabel htmlFor="sign-in-email">E-mail</FieldLabel>
           <Input
@@ -108,7 +108,14 @@ export function SignInForm() {
         </Field>
 
         <Field data-invalid={Boolean(errors.password) || undefined}>
-          <FieldLabel htmlFor="sign-in-password">Senha</FieldLabel>
+          <div className="flex items-center justify-between gap-3">
+            <FieldLabel htmlFor="sign-in-password">Senha</FieldLabel>
+            <Link
+              href={routes.forgotPassword}
+              className="text-xs font-medium text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline">
+              Esqueci minha senha
+            </Link>
+          </div>
           <Input
             id="sign-in-password"
             type="password"
@@ -120,28 +127,32 @@ export function SignInForm() {
           />
           <FieldError errors={[errors.password]} />
         </Field>
-
-        <div className="flex justify-end">
-          <Button variant="ghost" size="sm" asChild>
-            <Link href={routes.forgotPassword}>Esqueci minha senha</Link>
-          </Button>
-        </div>
       </FieldGroup>
 
-      <Button
-        type="submit"
-        size="lg"
-        className="w-full"
-        disabled={signIn.isPending}>
-        {signIn.isPending ? (
-          <>
-            <Spinner />
-            Entrando…
-          </>
-        ) : (
-          "Entrar"
-        )}
-      </Button>
+      <div className="flex flex-col gap-4">
+        <Button
+          type="submit"
+          size="lg"
+          className="w-full"
+          disabled={signIn.isPending}>
+          {signIn.isPending ? (
+            <>
+              <Spinner />
+              Entrando…
+            </>
+          ) : (
+            "Entrar"
+          )}
+        </Button>
+        <p className="text-center text-sm text-muted-foreground">
+          Ainda não tem conta?{" "}
+          <Link
+            href={routes.signUp}
+            className="font-medium text-foreground underline-offset-4 hover:underline">
+            Criar conta
+          </Link>
+        </p>
+      </div>
     </form>
   );
 }

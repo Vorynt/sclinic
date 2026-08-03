@@ -48,7 +48,9 @@ const clinicBaseSchema = z.object({
   alsoPractices: z.boolean().default(false),
   clinicalPracticeType:
     createOwnerClinicalProfileSchema.shape.clinicalPracticeType.optional(),
-  fullName: createOwnerClinicalProfileSchema.shape.fullName.optional(),
+  // Empty string from RHF must not fail when alsoPractices is false;
+  // required check runs in superRefine via createOwnerClinicalProfileSchema.
+  fullName: optionalString(200, "Nome deve ter no máximo 200 caracteres"),
   treatmentPronoun:
     createOwnerClinicalProfileSchema.shape.treatmentPronoun.optional(),
   councilType: createOwnerClinicalProfileSchema.shape.councilType.optional(),

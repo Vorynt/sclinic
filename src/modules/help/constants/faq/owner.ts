@@ -396,6 +396,27 @@ export const HELP_FAQ_OWNER: HelpFaqItem[] = [
 
   // ─── Plano ───────────────────────────────────────────────────────────────
   {
+    id: "free-trial",
+    categoryId: "subscription",
+    question: "Como funciona o teste grátis de 7 dias?",
+    answer: [
+      "Na primeira assinatura você tem 7 dias grátis. O cartão é cadastrado no Checkout, mas não há cobrança nesse período.",
+      "Ao fim dos 7 dias, a mensalidade é cobrada automaticamente no cartão, a menos que você cancele antes em Minha conta → Assinatura.",
+      "Reativar uma assinatura cancelada não renova o teste grátis.",
+    ],
+    keywords: [
+      "teste grátis",
+      "trial",
+      "7 dias",
+      "cartão",
+      "quando cobra",
+      "assinatura",
+    ],
+    relatedRoutes: [
+      { label: "Assinatura", href: routes.accountSubscription },
+    ],
+  },
+  {
     id: "change-plan",
     categoryId: "subscription",
     question: "Como vejo ou mudo meu plano?",

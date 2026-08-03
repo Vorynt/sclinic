@@ -78,7 +78,7 @@ export function UserMenu() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
-          <Link href={routes.account}>
+          <Link href={routes.accountOverview}>
             <UserIcon />
             Minha conta
           </Link>

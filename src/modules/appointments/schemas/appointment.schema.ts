@@ -52,11 +52,22 @@ export const createAppointmentSchema = z
     type: appointmentTypeSchema.default("consultation"),
     reason: optionalTrimmed,
     notes: optionalTrimmed,
-    /** Optional clinical charge amount (cents). Requires financial.collect. */
-    amountCents: z.coerce
+    /** Required catalog service (ADR-009). */
+    serviceId: z.string().uuid("Serviço inválido"),
+    discountPercent: z.coerce
+      .number()
+      .int("Desconto deve ser um número inteiro")
+      .min(0, "Desconto mínimo é 0%")
+      .max(100, "Desconto máximo é 100%")
+      .default(0),
+    billingKind: z
+      .enum(["standard", "courtesy", "return"])
+      .default("standard"),
+    /** Absolute final amount; only honored with financial.manage. */
+    amountCentsOverride: z.coerce
       .number()
       .int("Valor deve ser um número inteiro em centavos")
-      .positive("Valor deve ser maior que zero")
+      .min(0, "Valor deve ser maior ou igual a zero")
       .optional(),
   })
   .refine((data) => data.startsAt.getTime() > Date.now(), {

@@ -12,6 +12,7 @@ import { MarkChargePaidDialog } from "@/modules/billing/components/MarkChargePai
 import { CHARGE_STATUS_LABELS } from "@/modules/billing/constants/charges";
 import { useMarkChargePaidMutation } from "@/modules/billing/hooks/use-charge-mutations";
 import { useChargeByAppointmentQuery } from "@/modules/billing/hooks/use-charges";
+import type { MarkChargePaidDto } from "@/modules/billing/dto/mark-charge-paid.dto";
 import { formatCentsToBrl } from "@/modules/billing/utils/money";
 import { useAuth } from "@/providers/AuthProvider";
 
@@ -23,7 +24,7 @@ type AppointmentChargeSummaryProps = {
 export function AppointmentChargeSummary({
   appointmentId,
 }: AppointmentChargeSummaryProps) {
-  const { canAny, isLoading: authLoading } = useAuth();
+  const { can, canAny, isLoading: authLoading } = useAuth();
   const canSee = canAny(
     Permission.FINANCIAL_VIEW,
     Permission.FINANCIAL_COLLECT,
@@ -33,6 +34,7 @@ export function AppointmentChargeSummary({
     Permission.FINANCIAL_COLLECT,
     Permission.FINANCIAL_MANAGE,
   );
+  const canManageFinancial = can(Permission.FINANCIAL_MANAGE);
 
   const chargeQuery = useChargeByAppointmentQuery(
     appointmentId,
@@ -109,11 +111,26 @@ export function AppointmentChargeSummary({
         <MarkChargePaidDialog
           open={payOpen}
           onOpenChange={setPayOpen}
-          description={formatCentsToBrl(chargeQuery.data.amountCents)}
+          listAmountCents={
+            chargeQuery.data.listAmountCents ?? chargeQuery.data.amountCents
+          }
+          discountPercent={chargeQuery.data.discountPercent ?? 0}
+          serviceName={chargeQuery.data.serviceName ?? undefined}
+          billingKind={chargeQuery.data.billingKind ?? "standard"}
+          canManage={canManageFinancial}
           isPending={markPaid.isPending}
-          onConfirm={(method) => {
+          onConfirm={(payload) => {
             if (!chargeQuery.data) return;
-            markPaid.mutate({ chargeId: chargeQuery.data.id, method });
+            markPaid.mutate({
+              chargeId: chargeQuery.data.id,
+              method: payload.method,
+              ...(payload.discountPercent !== undefined
+                ? { discountPercent: payload.discountPercent }
+                : {}),
+              ...(payload.amountCentsOverride !== undefined
+                ? { amountCentsOverride: payload.amountCentsOverride }
+                : {}),
+            } as MarkChargePaidDto);
           }}
         />
       ) : null}

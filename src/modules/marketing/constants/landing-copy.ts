@@ -1,59 +1,114 @@
 export const LANDING_COPY = {
   brand: "sclinic",
   nav: {
+    benefits: "Benefícios",
     features: "Funcionalidades",
     product: "Produto",
     login: "Entrar",
-    signUp: "Começar",
+    signUp: "Teste grátis",
   },
   hero: {
-    headline: "A clínica no ritmo certo.",
+    headline: "Gestão clínica com clareza, do agendamento ao pagamento.",
     supporting:
-      "Agenda, pacientes e atendimento clínico em um só lugar — feito para o dia a dia de consultórios e clínicas.",
-    primaryCta: "Começar agora",
+      "Organize agenda, pacientes, atendimento e cobrança em um único fluxo — feito para consultórios e clínicas que precisam de ritmo e confiança.",
+    primaryCta: "Começar teste grátis",
     secondaryCta: "Já tenho conta",
+    trustNote: "Configure sua clínica e comece a agendar no mesmo dia.",
   },
-  features: {
-    id: "features",
-    eyebrow: "O que você resolve",
-    title: "Operação clínica sem planilha paralela.",
+  trust: {
+    items: [
+      { id: "lgpd", label: "Pensado para LGPD" },
+      { id: "roles", label: "Papéis e permissões" },
+      { id: "multi", label: "Multi-profissional" },
+      { id: "same-day", label: "Operação no mesmo dia" },
+    ],
+  },
+  benefits: {
+    id: "beneficios",
+    eyebrow: "Por que o sclinic",
+    title: "Menos atrito. Mais tempo com o paciente.",
+    supporting:
+      "Troque planilhas, WhatsApp e sistemas desconectados por uma operação clínica alinhada — da recepção ao consultório.",
     items: [
       {
-        id: "agenda",
-        title: "Agenda multi-profissional",
+        id: "time",
+        title: "Economia de tempo no dia a dia",
         description:
-          "Visão semanal com cores por profissional, filtros e fluxo de confirmação — do agendamento ao atendimento.",
+          "Agendamento, confirmação e atendimento no mesmo fluxo. Menos retrabalho, menos idas e vindas entre telas.",
       },
       {
-        id: "attendance",
-        title: "Atendimento com contexto",
+        id: "organization",
+        title: "Tudo organizado em um só lugar",
         description:
-          "Vitais, alertas clínicos e anotações no mesmo workspace. O profissional vê o que importa antes de começar.",
+          "Agenda, ficha do paciente e cobrança reunidas. Sua equipe encontra o que precisa sem abrir cinco ferramentas.",
       },
       {
-        id: "patients",
-        title: "Pacientes organizados",
+        id: "security",
+        title: "Segurança e controle de acesso",
         description:
-          "Cadastro, busca e ficha completa. Histórico de consultas e prontuário ao alcance da recepção e da equipe.",
+          "Cada pessoa vê só o que o papel permite. Dados clínicos e financeiros com delimitação clara entre perfis.",
       },
       {
         id: "team",
-        title: "Equipe sob controle",
+        title: "Equipe alinhada de ponta a ponta",
         description:
-          "Profissionais, papéis e convites. Cada pessoa enxerga só o que precisa para trabalhar.",
+          "Recepção, profissionais e gestão no mesmo ritmo. Menos falha de comunicação, mais previsibilidade na clínica.",
+      },
+    ],
+  },
+  features: {
+    id: "features",
+    eyebrow: "Funcionalidades de destaque",
+    title: "O essencial para operar com confiança.",
+    supporting:
+      "Quatro pilares para o dia a dia da clínica — sem complexidade que atrasa a equipe.",
+    items: [
+      {
+        id: "agenda",
+        title: "Agenda inteligente",
+        description:
+          "Visão semanal multi-profissional, filtros e confirmação. Do horário marcado ao atendimento, sem conflito.",
+        highlight: "Multi-profissional",
+      },
+      {
+        id: "patients",
+        title: "Gestão de pacientes",
+        description:
+          "Cadastro, busca rápida e ficha completa. Histórico e contatos à mão da recepção e do clínico.",
+        highlight: "Ficha unificada",
+      },
+      {
+        id: "attendance",
+        title: "Atendimento e prontuário",
+        description:
+          "Vitais, alertas e anotações no workspace do atendimento. Contexto clínico antes e durante a consulta.",
+        highlight: "Contexto clínico",
+      },
+      {
+        id: "billing",
+        title: "Faturamento no balcão",
+        description:
+          "Cobranças da clínica sob controle: status claros, registro de pagamento e visão financeira operacional.",
+        highlight: "Caixa organizado",
       },
     ],
   },
   showcase: {
     id: "produto",
     eyebrow: "Por dentro do produto",
-    title: "A interface que sua equipe já vai reconhecer.",
+    title: "A interface que sua equipe reconhece no primeiro dia.",
     sections: [
       {
         id: "agenda-showcase",
         title: "Agenda que cabe na semana inteira",
         description:
-          "Grade horária, cards por consulta e filtros por profissional. Menos telefone, menos conflito de horário.",
+          "Grade horária, cores por profissional e filtros. Menos telefone, menos conflito de horário.",
+      },
+      {
+        id: "patients-showcase",
+        title: "Pacientes prontos para a recepção",
+        description:
+          "Busca rápida, documentos formatados e ações de agendar ou editar sem sair da lista.",
       },
       {
         id: "attendance-showcase",
@@ -62,21 +117,22 @@ export const LANDING_COPY = {
           "Abra a consulta e já veja alergias, restrições e sinais vitais. Menos surpresa no meio do atendimento.",
       },
       {
-        id: "patients-showcase",
-        title: "Lista pronta para a recepção",
+        id: "billing-showcase",
+        title: "Cobranças visíveis no fluxo",
         description:
-          "Busca rápida, CPF e telefone formatados, ações de agendar e editar sem sair da tela.",
+          "Acompanhe pendências e pagamentos no balcão. Financeiro operacional sem planilha paralela.",
       },
     ],
   },
   cta: {
-    title: "Pronto para organizar a clínica?",
+    title: "Comece o teste grátis hoje.",
     description:
-      "Crie sua conta, configure a clínica e comece a agendar no mesmo dia.",
-    primaryCta: "Criar conta grátis",
-    secondaryCta: "Entrar",
+      "Crie sua conta, configure a clínica e organize agenda, pacientes e cobrança no mesmo dia — sem cartão para explorar.",
+    primaryCta: "Começar teste grátis",
+    secondaryCta: "Já tenho conta",
+    footnote: "Onboarding guiado · multi-profissional · papéis por equipe",
   },
   footer: {
-    tagline: "Software para clínicas e consultórios.",
+    tagline: "Software clínico para consultórios e clínicas que crescem com ordem.",
   },
-} as const;
+} as const

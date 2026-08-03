@@ -169,12 +169,12 @@ Diagrama: [Diagramas §2](Diagramas).
 
 ### J2 — Dia operacional (balcão → clínico → caixa)
 
-1. Recepção cria appointment (+ `amountCents` opcional) → charge `pending`.  
+1. Recepção cria appointment com serviço (+ desconto/cortesia opcional) → charge `pending` (ou R$ 0 `paid` se cortesia/retorno).  
 2. Médico/enfermeiro inicia (`checked_in`) e conclui (`completed`) **sem** UI de pagamento.  
-3. Board: coluna “Aguardando pagamento” → `markPaid`.  
+3. Board: coluna “Aguardando pagamento” → `markPaid` (pode ajustar desconto % antes).  
 4. SSE `clinic.ops` atualiza o board.  
 
-Diagrama: [Diagramas §3](Diagramas) · ADR-006.
+Diagrama: [Diagramas §3](Diagramas) · ADR-006 · ADR-009.
 
 ### J3 — Atendimento clínico
 
@@ -284,8 +284,9 @@ Convenção de ID: `RF-<DOMÍNIO>-NNN`.
 | RF-AGE-005 | Cancelamento | Cascata: cancela charge `pending` | Quem cancela | Done |
 | RF-AGE-006 | Workspace attendance | Notas/vitais/receitas; leitura em `completed` | P3, P4, P10 | Done |
 | RF-AGE-007 | Iniciar atendimento | Só owner, admin, doctor, nurse | Clínicos | Done |
-| RF-AGE-008 | Valor → charge | `amountCents` + collect | Caixa | Done |
+| RF-AGE-008 | Valor → charge | `amountCents` + collect (legado) | Caixa | Done |
 | RF-AGE-009 | Self-schedule | Doctor/nurse só a si | P3, P4 | Done |
+| RF-AGE-010 | Serviço no agendamento | `serviceId` obrigatório; desconto %; cortesia/retorno | Caixa | Done |
 
 **Editável:** `scheduled\|confirmed\|checked_in`. **Terminais:** `completed\|canceled\|no_show`.
 
@@ -327,6 +328,10 @@ Convenção de ID: `RF-<DOMÍNIO>-NNN`.
 | RF-FAT-005 | Métodos manuais | cash, pix_manual, card, transfer, other | Caixa | Done |
 | RF-FAT-006 | Cascata cancel appointment | Cancela pending automaticamente | Sistema | Done |
 | RF-FAT-007 | Gateway externo | Campos `provider*` | — | Planned |
+| RF-FAT-008 | Catálogo de serviços | CRUD por clínica; preço fixo; `financial.manage` | P5, P1, P6 | Done |
+| RF-FAT-009 | Snapshot na charge | serviço, lista, % desconto, líquido, `billingKind` | Sistema | Done |
+| RF-FAT-010 | Cortesia / retorno | Charge R$ 0 já paid + method `courtesy` | Caixa | Done |
+| RF-FAT-011 | Override de valor | Fora da fórmula só com `financial.manage` | P5, P1 | Done |
 
 ### 4.10 Assinatura SaaS — `RF-SAAS`
 
@@ -335,7 +340,7 @@ Convenção de ID: `RF-<DOMÍNIO>-NNN`.
 | RF-SAAS-001 | Assinatura por owner | Sub por `userId`, não por clinic | P1 | Done |
 | RF-SAAS-002 | Unique viva | `trialing` \| `active` \| `past_due` | Sistema | Done |
 | RF-SAAS-003 | Entitlement de convidados | Usa assinatura do owner | Membros | Done |
-| RF-SAAS-004 | Checkout Stripe | + webhook sync | P1 | Done |
+| RF-SAAS-004 | Checkout Stripe | + webhook sync; trial 7d na 1ª assinatura (cartão agora, cobra depois) | P1 | Done |
 | RF-SAAS-005 | Customer Portal | Portal-first; self-service mesmo sem entitlement | P1 | Done |
 | RF-SAAS-006 | Planos + cotas | Essencial / Profissional / Enterprise (seed) | — | Done |
 | RF-SAAS-007 | Metering + over_limit | Banner; bloqueia creates; não derruba sessão | Todos / P1 | Done |

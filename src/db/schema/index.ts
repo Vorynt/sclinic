@@ -3,9 +3,9 @@
  *
  * Order of domain files mirrors rollout:
  * auth → clinics → clinic-hours → rbac → memberships → invitations →
- * professionals → billing (SaaS) → patients → appointments → clinical-notes →
- * patient-clinical-alerts → vital-signs → prescriptions → clinical-billing →
- * audit-logs.
+ * professionals → billing (SaaS) → patients → clinic-services → appointments →
+ * clinical-notes → patient-clinical-alerts → vital-signs → prescriptions →
+ * clinical-billing → audit-logs.
  *
  * Deferred (not modeled yet): inventory.
  * `billing.ts` = SaaS plans/subscriptions; `clinical-billing.ts` = clinic receivables.
@@ -23,6 +23,7 @@ export * from "./invitations"
 export * from "./professionals"
 export * from "./billing"
 export * from "./patients"
+export * from "./clinic-services"
 export * from "./appointments"
 export * from "./clinical-notes"
 export * from "./patient-clinical-alerts"

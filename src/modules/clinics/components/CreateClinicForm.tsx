@@ -137,10 +137,7 @@ export function CreateClinicForm({ planId }: CreateClinicFormProps) {
   });
 
   return (
-    <form
-      onSubmit={onSubmit}
-      className="flex w-full max-w-lg flex-col gap-8"
-      noValidate>
+    <form onSubmit={onSubmit} className="flex w-full flex-col gap-8" noValidate>
       <div className="flex flex-col gap-2 text-center">
         <h1 className="font-heading text-2xl font-semibold tracking-tight text-foreground">
           Cadastre sua clínica
@@ -340,7 +337,19 @@ export function CreateClinicForm({ planId }: CreateClinicFormProps) {
           render={({ field }) => (
             <RadioGroup
               value={field.value ? "yes" : "no"}
-              onValueChange={(value) => field.onChange(value === "yes")}
+              onValueChange={(value) => {
+                const next = value === "yes";
+                field.onChange(next);
+                if (!next) {
+                  setValue("fullName", "");
+                  setValue("clinicalPracticeType", undefined);
+                  setValue("treatmentPronoun", undefined);
+                  setValue("councilType", undefined);
+                  setValue("councilNumber", "");
+                  setValue("councilState", "");
+                  setValue("specialty", "");
+                }
+              }}
               disabled={createClinic.isPending}
               className="gap-3">
               <Label
@@ -373,23 +382,23 @@ export function CreateClinicForm({ planId }: CreateClinicFormProps) {
           )}
         />
 
-        <Field data-invalid={Boolean(errors.fullName) || undefined}>
-          <FieldLabel htmlFor="owner-full-name">
-            Nome completo na agenda
-          </FieldLabel>
-          <Input
-            id="owner-full-name"
-            autoComplete="name"
-            placeholder="Como você aparece nos agendamentos"
-            aria-invalid={Boolean(errors.fullName) || undefined}
-            disabled={createClinic.isPending}
-            {...register("fullName")}
-          />
-          <FieldError errors={[errors.fullName]} />
-        </Field>
-
         {alsoPractices ? (
           <div className="flex flex-col gap-4 border-t border-border pt-4">
+            <Field data-invalid={Boolean(errors.fullName) || undefined}>
+              <FieldLabel htmlFor="owner-full-name">
+                Nome completo na agenda
+              </FieldLabel>
+              <Input
+                id="owner-full-name"
+                autoComplete="name"
+                placeholder="Como você aparece nos agendamentos"
+                aria-invalid={Boolean(errors.fullName) || undefined}
+                disabled={createClinic.isPending}
+                {...register("fullName")}
+              />
+              <FieldError errors={[errors.fullName]} />
+            </Field>
+
             <Field
               data-invalid={Boolean(errors.clinicalPracticeType) || undefined}>
               <FieldLabel>Tipo de atuação clínica</FieldLabel>
