@@ -37,10 +37,10 @@ const TRUST_POINTS = [
 
 export function AuthShell({ children, wide = false }: AuthShellProps) {
   return (
-    <div className="light relative grid min-h-svh h-screen overflow-y-hidden bg-background lg:grid-cols-2">
+    <div className="grid h-svh overflow-hidden bg-background lg:grid-cols-2">
       <aside
         aria-label="Sobre o sclinic"
-        className="relative hidden overflow-hidden bg-[oklch(0.22_0.03_245)] text-white lg:flex lg:flex-col">
+        className="relative hidden h-full overflow-hidden bg-[oklch(0.22_0.03_245)] text-white lg:flex lg:flex-col">
         <div
           aria-hidden="true"
           className="pointer-events-none absolute inset-0">
@@ -60,10 +60,10 @@ export function AuthShell({ children, wide = false }: AuthShellProps) {
           <div className="animate-auth-orb-alt absolute right-[-12%] bottom-[-10%] size-80 rounded-full bg-chart-2/25 blur-3xl" />
         </div>
 
-        <div className="relative z-10 flex flex-1 flex-col px-10 py-10 xl:px-14 xl:py-12">
+        <div className="relative z-10 flex min-h-0 flex-1 flex-col px-10 py-10 xl:px-14 xl:py-12">
           <Link
             href={routes.landing}
-            className="group inline-flex w-fit items-center gap-2.5">
+            className="group inline-flex w-fit shrink-0 items-center gap-2.5">
             <span className="flex size-9 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-[0_0_0_1px_color-mix(in_oklch,var(--primary)_50%,transparent),0_10px_24px_-10px_var(--primary)] transition-transform duration-300 group-hover:scale-[1.03]">
               <PulseIcon className="size-4" weight="bold" aria-hidden="true" />
             </span>
@@ -72,7 +72,7 @@ export function AuthShell({ children, wide = false }: AuthShellProps) {
             </span>
           </Link>
 
-          <div className="animate-auth-fade-up flex flex-1 flex-col justify-center gap-10 py-12">
+          <div className="animate-auth-fade-up flex min-h-0 flex-1 flex-col justify-center gap-10 py-12">
             <div className="flex max-w-md flex-col gap-4">
               <p className="text-[0.7rem] font-medium tracking-[0.18em] text-white/50 uppercase">
                 Software clínico
@@ -109,20 +109,20 @@ export function AuthShell({ children, wide = false }: AuthShellProps) {
             </ul>
           </div>
 
-          <p className="text-xs tracking-wide text-white/40">
+          <p className="shrink-0 text-xs tracking-wide text-white/40">
             © {new Date().getFullYear()} sclinic · Vorynt
           </p>
         </div>
       </aside>
 
-      <div className="relative flex min-h-svh max-h-screen flex-col border-border lg:border-l">
+      <div className="relative flex h-full min-h-0 flex-col border-border lg:border-l">
         <div
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 overflow-hidden lg:hidden">
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,color-mix(in_oklch,var(--primary)_10%,transparent),transparent_55%)]" />
         </div>
 
-        <header className="relative z-10 flex items-center justify-between px-6 py-5 md:px-10">
+        <header className="relative z-10 flex shrink-0 items-center justify-between px-6 py-5 md:px-10">
           <Link
             href={routes.landing}
             className="group inline-flex items-center gap-2.5 lg:invisible lg:pointer-events-none">
@@ -140,18 +140,20 @@ export function AuthShell({ children, wide = false }: AuthShellProps) {
           </div>
         </header>
 
-        <main className="relative z-10 flex flex-1 overflow-y-auto items-start justify-center px-6 py-8 md:px-10">
-          <div
-            className={
-              wide
-                ? "animate-auth-fade-up w-full max-w-3xl"
-                : "animate-auth-fade-up w-full max-w-[24rem]"
-            }>
-            {children}
+        <main className="relative z-10 min-h-0 flex-1 overflow-y-auto">
+          <div className="flex min-h-full flex-col">
+            <div
+              className={
+                wide
+                  ? "animate-auth-fade-up m-auto w-full max-w-3xl px-6 py-8 md:px-10"
+                  : "animate-auth-fade-up m-auto w-full max-w-[24rem] px-6 py-8 md:px-10"
+              }>
+              {children}
+            </div>
           </div>
         </main>
 
-        <footer className="relative z-10 px-6 py-5 md:px-10 lg:hidden">
+        <footer className="relative z-10 shrink-0 px-6 py-5 md:px-10 lg:hidden">
           <p className="text-center text-xs text-muted-foreground">
             © {new Date().getFullYear()} sclinic · Vorynt
           </p>
