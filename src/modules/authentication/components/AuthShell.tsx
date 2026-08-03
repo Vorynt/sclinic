@@ -37,11 +37,13 @@ const TRUST_POINTS = [
 
 export function AuthShell({ children, wide = false }: AuthShellProps) {
   return (
-    <div className="light relative grid min-h-svh bg-background lg:grid-cols-2">
+    <div className="light relative grid min-h-svh h-screen overflow-y-hidden bg-background lg:grid-cols-2">
       <aside
         aria-label="Sobre o sclinic"
         className="relative hidden overflow-hidden bg-[oklch(0.22_0.03_245)] text-white lg:flex lg:flex-col">
-        <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0">
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_18%_12%,color-mix(in_oklch,var(--primary)_42%,transparent),transparent_52%)]" />
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_90%_88%,color-mix(in_oklch,var(--chart-3)_22%,transparent),transparent_48%)]" />
           <div
@@ -113,7 +115,7 @@ export function AuthShell({ children, wide = false }: AuthShellProps) {
         </div>
       </aside>
 
-      <div className="relative flex min-h-svh flex-col border-border lg:border-l">
+      <div className="relative flex min-h-svh max-h-screen flex-col border-border lg:border-l">
         <div
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 overflow-hidden lg:hidden">
@@ -138,7 +140,7 @@ export function AuthShell({ children, wide = false }: AuthShellProps) {
           </div>
         </header>
 
-        <main className="relative z-10 flex flex-1 items-center justify-center px-6 py-8 md:px-10">
+        <main className="relative z-10 flex flex-1 overflow-y-auto items-start justify-center px-6 py-8 md:px-10">
           <div
             className={
               wide

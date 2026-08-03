@@ -86,6 +86,21 @@ describe("createClinicSchema", () => {
     assert.equal(profile.fullName, "Ana Silva")
   })
 
+  it("accepts empty fullName when alsoPractices is false", () => {
+    const parsed = createClinicSchema.parse({
+      name: "Clínica",
+      planId: PLAN_ID,
+      alsoPractices: false,
+      fullName: "",
+      councilNumber: "",
+      councilState: "",
+      specialty: "",
+    })
+    assert.equal(parsed.alsoPractices, false)
+    assert.equal(parsed.fullName, undefined)
+    assert.equal(toOwnerClinicalProfileFields(parsed), null)
+  })
+
   it("returns null clinical profile when alsoPractices is false", () => {
     const parsed = createClinicSchema.parse({
       name: "Clínica",
