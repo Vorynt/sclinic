@@ -133,6 +133,13 @@
       "when": 1785268800000,
       "tag": "0018_prescription_template_designer",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1785657600000,
+      "tag": "0019_clinic_services_catalog",
+      "breakpoints": true
     }
   ],
   "version": "7"

@@ -144,7 +144,13 @@ export const chargeRepository = {
     clinicId: string
     patientId: string
     appointmentId: string
+    serviceId: string
+    serviceName: string
+    listAmountCents: number
+    discountPercent: number
     amountCents: number
+    billingKind: "standard" | "courtesy" | "return"
+    status: "pending" | "paid"
     description?: string
     createdBy: string
   }): Promise<Charge> {
@@ -155,9 +161,14 @@ export const chargeRepository = {
           clinicId: params.clinicId,
           patientId: params.patientId,
           appointmentId: params.appointmentId,
+          serviceId: params.serviceId,
+          serviceName: params.serviceName,
+          listAmountCents: params.listAmountCents,
+          discountPercent: params.discountPercent,
           amountCents: params.amountCents,
+          billingKind: params.billingKind,
           currency: "BRL",
-          status: "pending",
+          status: params.status,
           description: params.description ?? null,
           provider: "none",
           createdBy: params.createdBy,
@@ -167,6 +178,39 @@ export const chargeRepository = {
 
       if (!row) {
         throw new Error("Failed to create charge")
+      }
+
+      return toCharge(row)
+    })
+  },
+
+  async updatePricing(params: {
+    chargeId: string
+    clinicId: string
+    discountPercent: number
+    amountCents: number
+    updatedBy: string
+  }): Promise<Charge> {
+    return withDbError(async () => {
+      const [row] = await db
+        .update(charges)
+        .set({
+          discountPercent: params.discountPercent,
+          amountCents: params.amountCents,
+          updatedBy: params.updatedBy,
+          updatedAt: new Date(),
+        })
+        .where(
+          and(
+            eq(charges.id, params.chargeId),
+            eq(charges.clinicId, params.clinicId),
+            isNull(charges.deletedAt),
+          ),
+        )
+        .returning()
+
+      if (!row) {
+        throw new Error("Failed to update charge pricing")
       }
 
       return toCharge(row)
@@ -230,7 +274,7 @@ export const chargeRepository = {
     chargeId: string
     clinicId: string
     amountCents: number
-    method: ManualPaymentMethod
+    method: ManualPaymentMethod | "courtesy"
     paidAt: Date
     notes?: string
     recordedBy: string

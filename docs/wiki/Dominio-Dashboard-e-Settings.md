@@ -36,6 +36,8 @@ Shell fino em `/settings/*`; domínio real em clinics / audit / medical-records 
 
 `/settings/prescriptions`: designer de templates (blocos empilhados, até 3) — UI em `medical-records` (ADR-008).
 
+**ADR-009:** CRUD de serviços da clínica em `/settings/services` (`financial.manage`) — domínio em `billing`.
+
 ## Ajuda
 
 Central de FAQ em `/help` (módulo `help`) — conteúdo **por papel**; ver [Dominio-Ajuda](Dominio-Ajuda). Item na sidebar + atalho Ajuda nas homes de todos os papéis.

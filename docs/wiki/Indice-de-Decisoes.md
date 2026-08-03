@@ -14,6 +14,7 @@ Decisões canônicas: **ADRs** em `docs/adr/`. Notas curtas de implementação: 
 | [006](https://github.com/ViniciusSantos31/sclinic/blob/main/docs/adr/006-reception-ops-sse.md) | Recepção + SSE | Accepted | board; médico não cobra |
 | [007](https://github.com/ViniciusSantos31/sclinic/blob/main/docs/adr/007-owner-clinical-profile.md) | Perfil clínico do owner | Accepted | solo; membership owner + professionals |
 | [008](https://github.com/ViniciusSantos31/sclinic/blob/main/docs/adr/008-prescription-template-designer.md) | Designer de templates de receita | Accepted | DocumentModel + até 3 templates |
+| [009](https://github.com/ViniciusSantos31/sclinic/blob/main/docs/adr/009-clinic-services-catalog.md) | Catálogo de serviços da clínica | Accepted | preço fixo; desconto %; cortesia/retorno |
 
 Paths locais: `docs/adr/00N-*.md`.
 
@@ -30,6 +31,7 @@ Paths locais: `docs/adr/00N-*.md`.
 | Caixa | Separado do “concluir” clínico | ADR-006 |
 | Realtime MVP | SSE in-process, extensível a broker | ADR-006 |
 | Owner atende | Perfil clínico opcional; sem dual membership | ADR-007, [Profissionais](Dominio-Profissionais) |
+| Precificação clínica | Catálogo por clínica; snapshot na charge; cortesia = R$ 0 paid | ADR-009, [Faturamento clínico](Dominio-Faturamento-Clinico) |
 | Módulo referência | `patients` como template | architecture/001 |
 
 ## Notebooks (implementação)

@@ -1,4 +1,4 @@
-import type { Icon } from "@phosphor-icons/react"
+import type { Icon } from "@phosphor-icons/react";
 import {
   CalendarBlankIcon,
   CurrencyCircleDollarIcon,
@@ -8,48 +8,48 @@ import {
   StethoscopeIcon,
   UsersIcon,
   UsersThreeIcon,
-} from "@phosphor-icons/react"
+} from "@phosphor-icons/react";
 
-import type { PermissionKey } from "@/config/permissions"
-import { Permission } from "@/config/permissions"
-import { routes } from "@/config/routes"
-import { hasAnyPermission } from "@/core/permissions"
+import type { PermissionKey } from "@/config/permissions";
+import { Permission } from "@/config/permissions";
+import { routes } from "@/config/routes";
+import { hasAnyPermission } from "@/core/permissions";
 
 export type NavItem = {
-  title: string
-  href: string
-  icon: Icon
+  title: string;
+  href: string;
+  icon: Icon;
   /** When set, user must have at least one of these permissions. */
-  permissions?: PermissionKey[]
+  permissions?: PermissionKey[];
   /** Hidden until the module page exists. */
-  enabled: boolean
+  enabled: boolean;
   /** Nested links (rendered as SidebarMenuSub when present and visible). */
-  children?: NavItem[]
-}
+  children?: NavItem[];
+};
 
 export type NavGroup = {
-  id: string
-  label: string
-  collapsible?: boolean
-  defaultOpen?: boolean
-  items: NavItem[]
-}
+  id: string;
+  label: string;
+  collapsible?: boolean;
+  defaultOpen?: boolean;
+  items: NavItem[];
+};
 
 export type NavConfig = {
-  primary: NavItem[]
-  groups: NavGroup[]
-  secondary: NavItem[]
-}
+  primary: NavItem[];
+  groups: NavGroup[];
+  secondary: NavItem[];
+};
 
 export type BreadcrumbSegment = {
-  label: string
-  href?: string
-}
+  label: string;
+  href?: string;
+};
 
 export type PageMeta = {
-  title: string
-  breadcrumbs: BreadcrumbSegment[]
-}
+  title: string;
+  breadcrumbs: BreadcrumbSegment[];
+};
 
 export const NAV_CONFIG: NavConfig = {
   primary: [
@@ -131,7 +131,7 @@ export const NAV_CONFIG: NavConfig = {
       enabled: true,
     },
   ],
-}
+};
 
 const PAGE_META: Record<string, PageMeta> = {
   [routes.home]: {
@@ -140,10 +140,7 @@ const PAGE_META: Record<string, PageMeta> = {
   },
   [routes.users]: {
     title: "Equipe",
-    breadcrumbs: [
-      { label: "Início", href: routes.home },
-      { label: "Equipe" },
-    ],
+    breadcrumbs: [{ label: "Início", href: routes.home }, { label: "Equipe" }],
   },
   [routes.account]: {
     title: "Minha conta",
@@ -199,6 +196,14 @@ const PAGE_META: Record<string, PageMeta> = {
       { label: "Horários" },
     ],
   },
+  [routes.settingsServices]: {
+    title: "Serviços",
+    breadcrumbs: [
+      { label: "Início", href: routes.home },
+      { label: "Configurações", href: routes.settingsGeneral },
+      { label: "Serviços" },
+    ],
+  },
   [routes.settingsUsage]: {
     title: "Uso do plano",
     breadcrumbs: [
@@ -245,25 +250,22 @@ const PAGE_META: Record<string, PageMeta> = {
   },
   [routes.help]: {
     title: "Ajuda",
-    breadcrumbs: [
-      { label: "Início", href: routes.home },
-      { label: "Ajuda" },
-    ],
+    breadcrumbs: [{ label: "Início", href: routes.home }, { label: "Ajuda" }],
   },
-}
+};
 
 const DEFAULT_PAGE_META: PageMeta = {
   title: "sclinic",
   breadcrumbs: [{ label: "Início", href: routes.home }],
-}
+};
 
 function isItemVisible(
   item: NavItem,
   canAny: (...permissions: PermissionKey[]) => boolean,
 ): boolean {
-  if (!item.enabled) return false
-  if (!item.permissions || item.permissions.length === 0) return true
-  return canAny(...item.permissions)
+  if (!item.enabled) return false;
+  if (!item.permissions || item.permissions.length === 0) return true;
+  return canAny(...item.permissions);
 }
 
 /** Recursively keep enabled items the user can access; prune empty children. */
@@ -272,19 +274,21 @@ export function filterVisibleItems(
   canAny: (...permissions: PermissionKey[]) => boolean,
 ): NavItem[] {
   return items.flatMap((item) => {
-    if (!isItemVisible(item, canAny)) return []
+    if (!isItemVisible(item, canAny)) return [];
 
     const children = item.children
       ? filterVisibleItems(item.children, canAny)
-      : undefined
+      : undefined;
 
     return [
       {
         ...item,
-        ...(children && children.length > 0 ? { children } : { children: undefined }),
+        ...(children && children.length > 0
+          ? { children }
+          : { children: undefined }),
       },
-    ]
-  })
+    ];
+  });
 }
 
 export function getVisibleNavConfig(
@@ -299,14 +303,14 @@ export function getVisibleNavConfig(
       }))
       .filter((group) => group.items.length > 0),
     secondary: filterVisibleItems(NAV_CONFIG.secondary, canAny),
-  }
+  };
 }
 
 function flattenNavItems(items: NavItem[]): NavItem[] {
   return items.flatMap((item) => [
     item,
     ...(item.children ? flattenNavItems(item.children) : []),
-  ])
+  ]);
 }
 
 function allNavItems(): NavItem[] {
@@ -314,31 +318,31 @@ function allNavItems(): NavItem[] {
     ...flattenNavItems(NAV_CONFIG.primary),
     ...NAV_CONFIG.groups.flatMap((group) => flattenNavItems(group.items)),
     ...flattenNavItems(NAV_CONFIG.secondary),
-  ]
+  ];
 }
 
 export function getPageMeta(pathname: string): PageMeta {
   if (PAGE_META[pathname]) {
-    return PAGE_META[pathname]
+    return PAGE_META[pathname];
   }
 
   const match = Object.entries(PAGE_META).find(
     ([path]) => pathname === path || pathname.startsWith(`${path}/`),
-  )
+  );
 
-  return match?.[1] ?? DEFAULT_PAGE_META
+  return match?.[1] ?? DEFAULT_PAGE_META;
 }
 
 function findNavItem(pathname: string): NavItem | undefined {
-  const items = allNavItems()
-  const exact = items.find((item) => item.href === pathname)
-  if (exact) return exact
+  const items = allNavItems();
+  const exact = items.find((item) => item.href === pathname);
+  if (exact) return exact;
 
   return items.find(
     (item) =>
       item.href !== routes.home &&
       (pathname === item.href || pathname.startsWith(`${item.href}/`)),
-  )
+  );
 }
 
 /**
@@ -349,7 +353,7 @@ export function canAccessPath(
   pathname: string,
   granted: readonly PermissionKey[],
 ): boolean {
-  const item = findNavItem(pathname)
-  if (!item?.permissions || item.permissions.length === 0) return true
-  return hasAnyPermission(granted, item.permissions)
+  const item = findNavItem(pathname);
+  if (!item?.permissions || item.permissions.length === 0) return true;
+  return hasAnyPermission(granted, item.permissions);
 }

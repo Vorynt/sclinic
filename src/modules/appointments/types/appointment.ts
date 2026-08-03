@@ -25,6 +25,7 @@ export type Appointment = {
   patientName: string
   professionalId: string | null
   professionalName: string | null
+  serviceId: string | null
   startsAt: Date
   endsAt: Date
   type: AppointmentType

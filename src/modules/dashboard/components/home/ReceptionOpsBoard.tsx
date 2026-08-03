@@ -16,6 +16,7 @@ import type { Appointment } from "@/modules/appointments/types/appointment"
 import { MarkChargePaidDialog } from "@/modules/billing/components/MarkChargePaidDialog"
 import { useMarkChargePaidMutation } from "@/modules/billing/hooks/use-charge-mutations"
 import { useActiveChargesByAppointmentsQuery } from "@/modules/billing/hooks/use-charges"
+import type { MarkChargePaidDto } from "@/modules/billing/dto/mark-charge-paid.dto"
 import type { Charge } from "@/modules/billing/types/charge"
 import { formatCentsToBrl } from "@/modules/billing/utils/money"
 import { HomeSection } from "@/modules/dashboard/components/home/shared/HomeSection"
@@ -29,10 +30,15 @@ type BoardItem = {
   charge: Charge | null
 }
 
+type ChargeToPay = {
+  charge: Charge
+  patientName: string
+}
+
 type ReceptionBoardCardProps = {
   item: BoardItem
   canCollect: boolean
-  onPay: (charge: Charge) => void
+  onPay: (payload: ChargeToPay) => void
 }
 
 function ReceptionBoardCard({
@@ -67,7 +73,12 @@ function ReceptionBoardCard({
             type="button"
             size="sm"
             variant="secondary"
-            onClick={() => onPay(charge)}
+            onClick={() =>
+              onPay({
+                charge,
+                patientName: appointment.patientName,
+              })
+            }
           >
             <CheckCircleIcon />
             Receber
@@ -83,7 +94,7 @@ type BoardColumnProps = {
   items: BoardItem[]
   emptyMessage: string
   canCollect: boolean
-  onPay: (charge: Charge) => void
+  onPay: (payload: ChargeToPay) => void
 }
 
 function BoardColumn({
@@ -123,11 +134,12 @@ function BoardColumn({
 export function ReceptionOpsBoard() {
   useClinicOpsRealtime(true)
 
-  const { canAny, isLoading: authLoading } = useAuth()
+  const { can, canAny, isLoading: authLoading } = useAuth()
   const canCollect = canAny(
     Permission.FINANCIAL_COLLECT,
     Permission.FINANCIAL_MANAGE,
   )
+  const canManageFinancial = can(Permission.FINANCIAL_MANAGE)
   const canSeeCharges = canAny(
     Permission.FINANCIAL_VIEW,
     Permission.FINANCIAL_COLLECT,
@@ -180,7 +192,7 @@ export function ReceptionOpsBoard() {
     return { upcoming, inProgress, awaitingPayment }
   }, [appointments, chargeByAppointmentId])
 
-  const [chargeToPay, setChargeToPay] = useState<Charge | null>(null)
+  const [chargeToPay, setChargeToPay] = useState<ChargeToPay | null>(null)
 
   const markPaid = useMarkChargePaidMutation({
     onSuccess: () => {
@@ -241,10 +253,26 @@ export function ReceptionOpsBoard() {
           onOpenChange={(open) => {
             if (!open) setChargeToPay(null)
           }}
-          description={formatCentsToBrl(chargeToPay.amountCents)}
+          patientName={chargeToPay.patientName}
+          listAmountCents={
+            chargeToPay.charge.listAmountCents ?? chargeToPay.charge.amountCents
+          }
+          discountPercent={chargeToPay.charge.discountPercent ?? 0}
+          serviceName={chargeToPay.charge.serviceName ?? undefined}
+          billingKind={chargeToPay.charge.billingKind ?? "standard"}
+          canManage={canManageFinancial}
           isPending={markPaid.isPending}
-          onConfirm={(method) => {
-            markPaid.mutate({ chargeId: chargeToPay.id, method })
+          onConfirm={(payload) => {
+            markPaid.mutate({
+              chargeId: chargeToPay.charge.id,
+              method: payload.method,
+              ...(payload.discountPercent !== undefined
+                ? { discountPercent: payload.discountPercent }
+                : {}),
+              ...(payload.amountCentsOverride !== undefined
+                ? { amountCentsOverride: payload.amountCentsOverride }
+                : {}),
+            } as MarkChargePaidDto)
           }}
         />
       ) : null}

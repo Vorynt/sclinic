@@ -1,30 +1,30 @@
-"use client"
+"use client";
 
 import {
   CheckCircleIcon,
   CreditCardIcon,
   WarningCircleIcon,
-} from "@phosphor-icons/react"
-import Link from "next/link"
-import { useEffect, useState } from "react"
-import { toast } from "sonner"
+} from "@phosphor-icons/react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Spinner } from "@/components/ui/spinner"
-import { routes } from "@/config/routes"
-import { isLivingSubscriptionStatus } from "@/modules/billing/constants/subscription"
-import { useMySubscription } from "@/modules/billing/hooks/use-my-subscription"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
+import { routes } from "@/config/routes";
+import { isLivingSubscriptionStatus } from "@/modules/billing/constants/subscription";
+import { useMySubscription } from "@/modules/billing/hooks/use-my-subscription";
 import {
   useCreateBillingPortalSession,
   useCreateRegularizeSession,
-} from "@/modules/billing/hooks/use-subscription-mutations"
+} from "@/modules/billing/hooks/use-subscription-mutations";
 import type {
   SubscriptionStatus,
   SubscriptionWithPlan,
-} from "@/modules/billing/types/billing"
-import type { AppError } from "@/shared/errors"
+} from "@/modules/billing/types/billing";
+import type { AppError } from "@/shared/errors";
 
 const STATUS_LABELS: Record<SubscriptionStatus, string> = {
   trialing: "Período de teste",
@@ -33,29 +33,29 @@ const STATUS_LABELS: Record<SubscriptionStatus, string> = {
   canceled: "Cancelada",
   unpaid: "Inadimplente",
   incomplete: "Incompleta",
-}
+};
 
 /** Snapshot of plan before opening Stripe Portal (detect upgrade on return). */
-const PORTAL_PLAN_SNAPSHOT_KEY = "sclinic:billing:plan-before-portal"
+const PORTAL_PLAN_SNAPSHOT_KEY = "sclinic:billing:plan-before-portal";
 
 /** Brief poll after mount so Portal changes land via webhook. */
-const PORTAL_SYNC_POLL_MS = 2_500
-const PORTAL_SYNC_WINDOW_MS = 30_000
+const PORTAL_SYNC_POLL_MS = 2_500;
+const PORTAL_SYNC_WINDOW_MS = 30_000;
 
 function formatMoney(cents: number, currency: string): string {
   return new Intl.NumberFormat("pt-BR", {
     style: "currency",
     currency: currency || "BRL",
-  }).format(cents / 100)
+  }).format(cents / 100);
 }
 
 function formatDate(value: Date | null): string {
-  if (!value) return "—"
+  if (!value) return "—";
   return new Intl.DateTimeFormat("pt-BR", {
     day: "2-digit",
     month: "long",
     year: "numeric",
-  }).format(value)
+  }).format(value);
 }
 
 function statusLabel(subscription: SubscriptionWithPlan): string {
@@ -63,9 +63,9 @@ function statusLabel(subscription: SubscriptionWithPlan): string {
     subscription.cancelAtPeriodEnd &&
     isLivingSubscriptionStatus(subscription.status)
   ) {
-    return "Cancelamento agendado"
+    return "Cancelamento agendado";
   }
-  return STATUS_LABELS[subscription.status]
+  return STATUS_LABELS[subscription.status];
 }
 
 function statusBadgeVariant(
@@ -75,64 +75,61 @@ function statusBadgeVariant(
     subscription.cancelAtPeriodEnd &&
     isLivingSubscriptionStatus(subscription.status)
   ) {
-    return "outline"
+    return "outline";
   }
   if (subscription.status === "active" || subscription.status === "trialing") {
-    return "default"
+    return "default";
   }
-  if (
-    subscription.status === "past_due" ||
-    subscription.status === "unpaid"
-  ) {
-    return "destructive"
+  if (subscription.status === "past_due" || subscription.status === "unpaid") {
+    return "destructive";
   }
-  return "secondary"
+  return "secondary";
 }
 
 function readPortalReturnFlag(): boolean {
-  if (typeof window === "undefined") return false
-  return new URLSearchParams(window.location.search).get("portal") === "1"
+  if (typeof window === "undefined") return false;
+  return new URLSearchParams(window.location.search).get("portal") === "1";
 }
 
 function clearPortalReturnFlag(): void {
-  if (typeof window === "undefined") return
-  const url = new URL(window.location.href)
-  if (!url.searchParams.has("portal")) return
-  url.searchParams.delete("portal")
-  const next = `${url.pathname}${url.search}${url.hash}`
-  window.history.replaceState({}, "", next)
+  if (typeof window === "undefined") return;
+  const url = new URL(window.location.href);
+  if (!url.searchParams.has("portal")) return;
+  url.searchParams.delete("portal");
+  const next = `${url.pathname}${url.search}${url.hash}`;
+  window.history.replaceState({}, "", next);
 }
 
 function SubscriptionSummary({
   subscription,
   updatedPlanName,
 }: {
-  subscription: SubscriptionWithPlan
-  updatedPlanName: string | null
+  subscription: SubscriptionWithPlan;
+  updatedPlanName: string | null;
 }) {
   const portal = useCreateBillingPortalSession({
     onSuccess: (data) => {
-      window.location.assign(data.url)
+      window.location.assign(data.url);
     },
     onError: (error: AppError) => {
-      toast.error(error.message)
+      toast.error(error.message);
     },
-  })
+  });
 
   const regularize = useCreateRegularizeSession({
     onSuccess: (data) => {
-      window.location.assign(data.url)
+      window.location.assign(data.url);
     },
     onError: (error: AppError) => {
-      toast.error(error.message)
+      toast.error(error.message);
     },
-  })
+  });
 
-  const canOpenPortal = Boolean(subscription.gatewayCustomerId)
-  const isLiving = isLivingSubscriptionStatus(subscription.status)
-  const needsRegularize = !isLiving
-  const accessUntil = formatDate(subscription.currentPeriodEnd)
-  const isPending = portal.isPending || regularize.isPending
+  const canOpenPortal = Boolean(subscription.gatewayCustomerId);
+  const isLiving = isLivingSubscriptionStatus(subscription.status);
+  const needsRegularize = !isLiving;
+  const accessUntil = formatDate(subscription.currentPeriodEnd);
+  const isPending = portal.isPending || regularize.isPending;
 
   const onManage = () => {
     if (needsRegularize) {
@@ -144,12 +141,12 @@ function SubscriptionSummary({
               successPath: routes.home,
               cancelPath: routes.accountSubscription,
             },
-      )
-      return
+      );
+      return;
     }
-    sessionStorage.setItem(PORTAL_PLAN_SNAPSHOT_KEY, subscription.plan.id)
-    portal.mutate()
-  }
+    sessionStorage.setItem(PORTAL_PLAN_SNAPSHOT_KEY, subscription.plan.id);
+    portal.mutate();
+  };
 
   return (
     <div className="flex flex-col gap-6">
@@ -159,7 +156,9 @@ function SubscriptionSummary({
           <AlertTitle>Plano atualizado</AlertTitle>
           <AlertDescription>
             Sua assinatura foi alterada para{" "}
-            <span className="font-medium text-foreground">{updatedPlanName}</span>
+            <span className="font-medium text-foreground">
+              {updatedPlanName}
+            </span>
             . Os limites do novo plano já estão valendo nesta conta.
           </AlertDescription>
         </Alert>
@@ -171,8 +170,8 @@ function SubscriptionSummary({
           <AlertTitle>Assinatura cancelada</AlertTitle>
           <AlertDescription>
             Cancelamento confirmado. Você continua com acesso ao sistema até{" "}
-            <span className="font-medium text-foreground">{accessUntil}</span>
-            . Depois dessa data a assinatura será encerrada e a renovação não
+            <span className="font-medium text-foreground">{accessUntil}</span>.
+            Depois dessa data a assinatura será encerrada e a renovação não
             ocorrerá.
           </AlertDescription>
         </Alert>
@@ -205,8 +204,8 @@ function SubscriptionSummary({
           <WarningCircleIcon />
           <AlertTitle>Assinatura cancelada</AlertTitle>
           <AlertDescription>
-            Sua assinatura foi encerrada. Reative o pagamento para voltar a
-            usar a clínica.
+            Sua assinatura foi encerrada. Reative o pagamento para voltar a usar
+            a clínica.
           </AlertDescription>
         </Alert>
       ) : null}
@@ -268,8 +267,7 @@ function SubscriptionSummary({
           type="button"
           size="lg"
           disabled={(!canOpenPortal && !needsRegularize) || isPending}
-          onClick={onManage}
-        >
+          onClick={onManage}>
           {isPending ? (
             <>
               <Spinner data-icon="inline-start" />
@@ -278,7 +276,9 @@ function SubscriptionSummary({
           ) : (
             <>
               <CreditCardIcon data-icon="inline-start" />
-              {needsRegularize ? "Regularizar assinatura" : "Gerenciar assinatura"}
+              {needsRegularize
+                ? "Regularizar assinatura"
+                : "Gerenciar assinatura"}
             </>
           )}
         </Button>
@@ -294,40 +294,49 @@ function SubscriptionSummary({
         ) : null}
       </div>
     </div>
-  )
+  );
 }
 
 export function AccountSubscriptionPanel() {
-  const [pollUntil] = useState(() => Date.now() + PORTAL_SYNC_WINDOW_MS)
-  const [fromPortal] = useState(readPortalReturnFlag)
-  const [updatedPlanName, setUpdatedPlanName] = useState<string | null>(null)
+  const [pollUntil] = useState(() => Date.now() + PORTAL_SYNC_WINDOW_MS);
+  const [fromPortal] = useState(readPortalReturnFlag);
+  const [snapshotPlanId, setSnapshotPlanId] = useState<string | null>(() => {
+    if (typeof window === "undefined" || !readPortalReturnFlag()) return null;
+    return sessionStorage.getItem(PORTAL_PLAN_SNAPSHOT_KEY);
+  });
+  const [updatedPlanName, setUpdatedPlanName] = useState<string | null>(null);
 
   const query = useMySubscription({
     refetchInterval: () =>
       Date.now() < pollUntil ? PORTAL_SYNC_POLL_MS : false,
-  })
+  });
+
+  // Adjust state during render when the polled plan differs from the portal snapshot.
+  // Preferred over an effect — see https://react.dev/learn/you-might-not-need-an-effect
+  if (
+    updatedPlanName === null &&
+    snapshotPlanId &&
+    query.data &&
+    query.data.plan.id !== snapshotPlanId
+  ) {
+    setUpdatedPlanName(query.data.plan.name);
+  }
 
   useEffect(() => {
-    if (!fromPortal || !query.data) return
-
-    const previousPlanId = sessionStorage.getItem(PORTAL_PLAN_SNAPSHOT_KEY)
-    if (!previousPlanId) return
-
-    if (query.data.plan.id !== previousPlanId) {
-      setUpdatedPlanName(query.data.plan.name)
-      sessionStorage.removeItem(PORTAL_PLAN_SNAPSHOT_KEY)
-      clearPortalReturnFlag()
-    }
-  }, [fromPortal, query.data])
+    if (!updatedPlanName) return;
+    sessionStorage.removeItem(PORTAL_PLAN_SNAPSHOT_KEY);
+    clearPortalReturnFlag();
+  }, [updatedPlanName]);
 
   useEffect(() => {
-    if (!fromPortal) return
+    if (!fromPortal) return;
     const timeoutId = window.setTimeout(() => {
-      sessionStorage.removeItem(PORTAL_PLAN_SNAPSHOT_KEY)
-      clearPortalReturnFlag()
-    }, PORTAL_SYNC_WINDOW_MS)
-    return () => window.clearTimeout(timeoutId)
-  }, [fromPortal])
+      setSnapshotPlanId(null);
+      sessionStorage.removeItem(PORTAL_PLAN_SNAPSHOT_KEY);
+      clearPortalReturnFlag();
+    }, PORTAL_SYNC_WINDOW_MS);
+    return () => window.clearTimeout(timeoutId);
+  }, [fromPortal]);
 
   if (query.isLoading) {
     return (
@@ -335,7 +344,7 @@ export function AccountSubscriptionPanel() {
         <Spinner />
         <p className="text-sm text-muted-foreground">Carregando assinatura…</p>
       </div>
-    )
+    );
   }
 
   if (query.isError) {
@@ -343,11 +352,9 @@ export function AccountSubscriptionPanel() {
       <Alert variant="destructive">
         <WarningCircleIcon />
         <AlertTitle>Não foi possível carregar</AlertTitle>
-        <AlertDescription>
-          Tente novamente em instantes.
-        </AlertDescription>
+        <AlertDescription>Tente novamente em instantes.</AlertDescription>
       </Alert>
-    )
+    );
   }
 
   if (!query.data) {
@@ -362,10 +369,12 @@ export function AccountSubscriptionPanel() {
           </p>
         </div>
         <Button asChild size="lg" className="w-full sm:w-auto sm:self-start">
-          <Link href={routes.onboardingPlan}>Escolher plano</Link>
+          <Link href={`${routes.onboardingPlan}?intent=reactivate`}>
+            Escolher plano
+          </Link>
         </Button>
       </div>
-    )
+    );
   }
 
   return (
@@ -373,5 +382,5 @@ export function AccountSubscriptionPanel() {
       subscription={query.data}
       updatedPlanName={updatedPlanName}
     />
-  )
+  );
 }

@@ -7,6 +7,7 @@ import {
   uuid,
 } from "drizzle-orm/pg-core"
 
+import { clinicServices } from "./clinic-services"
 import { clinics } from "./clinics"
 import { appointmentStatusEnum, appointmentTypeEnum } from "./enums"
 import {
@@ -33,6 +34,10 @@ export const appointments = pgTable(
     professionalId: uuid("professional_id").references(() => professionals.id, {
       onDelete: "set null",
     }),
+    /** Catalog service used for pricing (ADR-009). Nullable for legacy rows. */
+    serviceId: uuid("service_id").references(() => clinicServices.id, {
+      onDelete: "restrict",
+    }),
     startsAt: timestamp("starts_at", { withTimezone: true, mode: "date" }).notNull(),
     endsAt: timestamp("ends_at", { withTimezone: true, mode: "date" }).notNull(),
     type: appointmentTypeEnum("type").default("consultation").notNull(),
@@ -53,6 +58,7 @@ export const appointments = pgTable(
       t.startsAt,
     ),
     index("appointments_clinic_patient_idx").on(t.clinicId, t.patientId),
+    index("appointments_clinic_service_idx").on(t.clinicId, t.serviceId),
     index("appointments_clinic_status_starts_idx").on(
       t.clinicId,
       t.status,

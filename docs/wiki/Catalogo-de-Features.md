@@ -84,6 +84,9 @@ Inventário do que o sistema faz hoje. Status: **Done** | **Partial** | **Planne
 | markPaid / cancel | Done | charge.service |
 | Listagem `/billing` | Done | financial.view |
 | Métodos manuais | Done | cash, pix_manual, … |
+| Catálogo de serviços (preço fixo) | Done | ADR-009; `/settings/services` |
+| Desconto % na agenda / pagamento | Done | ADR-009 |
+| Cortesia / retorno (charge R$ 0 paid) | Done | ADR-009 |
 | Gateway clínico | Planned | provider fields |
 
 ## E7 — Recepção

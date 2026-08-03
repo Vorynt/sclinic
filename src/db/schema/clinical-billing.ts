@@ -12,8 +12,10 @@ import {
 } from "drizzle-orm/pg-core"
 
 import { appointments } from "./appointments"
+import { clinicServices } from "./clinic-services"
 import { clinics } from "./clinics"
 import {
+  chargeBillingKindEnum,
   chargeStatusEnum,
   paymentMethodEnum,
   paymentProviderEnum,
@@ -45,9 +47,22 @@ export const charges = pgTable(
     appointmentId: uuid("appointment_id")
       .notNull()
       .references(() => appointments.id, { onDelete: "restrict" }),
+    /** Catalog reference at creation time (may be deleted later; use snapshot). */
+    serviceId: uuid("service_id").references(() => clinicServices.id, {
+      onDelete: "set null",
+    }),
+    /** Snapshot of service name (ADR-009). */
+    serviceName: text("service_name"),
+    /** List price before discount (cents). */
+    listAmountCents: integer("list_amount_cents"),
+    /** Discount applied 0–100. */
+    discountPercent: integer("discount_percent").default(0).notNull(),
     amountCents: integer("amount_cents").notNull(),
     currency: text("currency").default("BRL").notNull(),
     status: chargeStatusEnum("status").default("pending").notNull(),
+    billingKind: chargeBillingKindEnum("billing_kind")
+      .default("standard")
+      .notNull(),
     description: text("description"),
     dueAt: timestamp("due_at", { withTimezone: true, mode: "date" }),
     provider: paymentProviderEnum("provider").default("none").notNull(),
@@ -72,6 +87,7 @@ export const charges = pgTable(
     index("charges_clinic_status_idx").on(t.clinicId, t.status),
     index("charges_clinic_patient_idx").on(t.clinicId, t.patientId),
     index("charges_clinic_created_at_idx").on(t.clinicId, t.createdAt),
+    index("charges_clinic_service_idx").on(t.clinicId, t.serviceId),
     pgPolicy("charges_tenant_isolation", {
       as: "permissive",
       to: sclinicAppRole,
