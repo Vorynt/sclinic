@@ -9,6 +9,8 @@ import { planNameFromSlug } from "@/modules/billing/constants/catalog";
 import {
   isClinicEntitledStatus,
   isLivingSubscriptionStatus,
+  shouldOfferSubscriptionTrial,
+  SUBSCRIPTION_TRIAL_DAYS,
 } from "@/modules/billing/constants/subscription";
 import { planQuotaRepository } from "@/modules/billing/repositories/plan-quota.repository";
 import { planRepository } from "@/modules/billing/repositories/plan.repository";
@@ -339,6 +341,7 @@ export const billingService = {
 
     const stripe = getStripe();
     const existing = await subscriptionRepository.findByUserId(input.userId);
+    const offerTrial = shouldOfferSubscriptionTrial(existing);
     let customerId = existing?.gatewayCustomerId ?? null;
 
     // Avoid a second Stripe subscription when reactivating unpaid/canceled.
@@ -397,7 +400,12 @@ export const billingService = {
           userId: input.userId,
           planId: input.planId,
         },
+        ...(offerTrial
+          ? { trial_period_days: SUBSCRIPTION_TRIAL_DAYS }
+          : {}),
       },
+      // Collect card at signup; first invoice is R$0 during trial.
+      payment_method_collection: "always",
     });
 
     if (!session.url) {

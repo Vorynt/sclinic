@@ -24,7 +24,7 @@ Inventário do que o sistema faz hoje. Status: **Done** | **Partial** | **Planne
 | Feature | Status | Onde |
 |---------|--------|------|
 | Catálogo de planos + cotas | Done | seed plans |
-| Checkout Stripe | Done | PlanPicker |
+| Checkout Stripe | Done | PlanPicker; trial 7d na 1ª assinatura |
 | Customer Portal | Done | `/account/subscription` (também sem entitlement) |
 | Sync de troca de plano (Portal) | Done | webhook prioriza `price.id`; alert em `/account/subscription` |
 | Regularização Portal-first | Done | unpaid/canceled → Portal |
@@ -112,7 +112,7 @@ Inventário do que o sistema faz hoje. Status: **Done** | **Partial** | **Planne
 
 | Feature | Status | Onde |
 |---------|--------|------|
-| Landing pública | Done | `/` |
+| Landing pública (captação) | Done | `/` — hero teste grátis, benefícios, features, showcase (agenda/pacientes/atendimento/faturamento) |
 
 ## E11 — Inventário
 

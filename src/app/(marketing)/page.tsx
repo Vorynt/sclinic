@@ -4,10 +4,10 @@ import { LandingPage } from "@/modules/marketing/components/LandingPage"
 
 export const metadata: Metadata = {
   title: {
-    absolute: "sclinic — Software para clínicas e consultórios",
+    absolute: "sclinic — Gestão clínica completa para consultórios",
   },
   description:
-    "Agenda multi-profissional, pacientes e atendimento clínico em um só lugar. Organize a operação da sua clínica com o sclinic.",
+    "Agenda multi-profissional, pacientes, atendimento clínico e faturamento em um só lugar. Comece o teste grátis e organize sua clínica no mesmo dia.",
 }
 
 export default function MarketingHomePage() {

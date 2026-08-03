@@ -10,6 +10,15 @@
 - Membro convidado usa entitlement do owner da clínica
 - Checkout (primeira compra) + Customer Portal (gestão / regularização); webhook sincroniza
 
+## Trial (teste grátis)
+
+- **7 dias** na **primeira** assinatura (`subscription_data.trial_period_days` no Checkout)
+- Cartão obrigatório no Checkout (`payment_method_collection: always`); **não cobra** durante o trial
+- Ao fim do período, Stripe cobra a mensalidade automaticamente (status passa `trialing` → `active`)
+- Cancelar no Portal antes do fim do trial evita a cobrança
+- **Reativação** (já teve `gatewaySubscriptionId`) **não** recebe novo trial
+- `trialEndsAt` espelhado do Stripe via webhook
+
 ## Planos (seed)
 
 Essencial (3u/2p), Profissional (10/8), Enterprise (50/40) — validar no seed do ambiente.

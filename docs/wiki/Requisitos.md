@@ -340,7 +340,7 @@ Convenção de ID: `RF-<DOMÍNIO>-NNN`.
 | RF-SAAS-001 | Assinatura por owner | Sub por `userId`, não por clinic | P1 | Done |
 | RF-SAAS-002 | Unique viva | `trialing` \| `active` \| `past_due` | Sistema | Done |
 | RF-SAAS-003 | Entitlement de convidados | Usa assinatura do owner | Membros | Done |
-| RF-SAAS-004 | Checkout Stripe | + webhook sync | P1 | Done |
+| RF-SAAS-004 | Checkout Stripe | + webhook sync; trial 7d na 1ª assinatura (cartão agora, cobra depois) | P1 | Done |
 | RF-SAAS-005 | Customer Portal | Portal-first; self-service mesmo sem entitlement | P1 | Done |
 | RF-SAAS-006 | Planos + cotas | Essencial / Profissional / Enterprise (seed) | — | Done |
 | RF-SAAS-007 | Metering + over_limit | Banner; bloqueia creates; não derruba sessão | Todos / P1 | Done |

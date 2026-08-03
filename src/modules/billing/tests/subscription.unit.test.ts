@@ -11,6 +11,8 @@ import {
   isClinicEntitledStatus,
   isLivingSubscriptionStatus,
   LIVING_SUBSCRIPTION_STATUSES,
+  shouldOfferSubscriptionTrial,
+  SUBSCRIPTION_TRIAL_DAYS,
 } from "@/modules/billing/constants/subscription"
 import { toSubscription } from "@/modules/billing/mappers/billing.mapper"
 import { createCheckoutSessionSchema } from "@/modules/billing/schemas/checkout.schema"
@@ -69,6 +71,26 @@ describe("isClinicEntitledStatus", () => {
     assert.equal(isClinicEntitledStatus("incomplete"), false)
     assert.equal(isClinicEntitledStatus("canceled"), false)
     assert.equal(isClinicEntitledStatus("unpaid"), false)
+  })
+})
+
+describe("subscription trial", () => {
+  it("uses a 7-day trial window", () => {
+    assert.equal(SUBSCRIPTION_TRIAL_DAYS, 7)
+  })
+
+  it("offers trial only when there was no prior gateway subscription", () => {
+    assert.equal(shouldOfferSubscriptionTrial(null), true)
+    assert.equal(
+      shouldOfferSubscriptionTrial({ gatewaySubscriptionId: null }),
+      true,
+    )
+    assert.equal(
+      shouldOfferSubscriptionTrial({
+        gatewaySubscriptionId: "sub_prior",
+      }),
+      false,
+    )
   })
 })
 
