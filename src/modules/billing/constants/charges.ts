@@ -16,7 +16,7 @@ export const PAYMENT_METHOD_LABELS: Record<string, string> = {
 }
 
 export const BILLING_KIND_LABELS = {
-  standard: "Padrão",
+  standard: "Com cobrança",
   courtesy: "Cortesia",
   return: "Retorno",
 } as const
