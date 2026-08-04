@@ -40,7 +40,7 @@ const clientMessages: Record<string, string> = {
   [ErrorCode.APPOINTMENT_SLOT_UNAVAILABLE]:
     "O profissional já possui um agendamento neste horário.",
   [ErrorCode.PROFESSIONAL_OUTSIDE_WORKING_HOURS]:
-    "Horário fora da disponibilidade do profissional.",
+    "Horário fora do funcionamento da clínica.",
 }
 
 /**

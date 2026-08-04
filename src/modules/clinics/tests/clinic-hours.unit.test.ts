@@ -6,6 +6,7 @@ import { toClinicWeeklyHours } from "@/modules/clinics/mappers/clinic-hours.mapp
 import {
   isWithinClinicHours,
   timeToMinutes,
+  zonedWallTimeToUtc,
 } from "@/modules/clinics/utils/clinic-hours-window"
 import { formatDayHoursSummary } from "@/modules/clinics/utils/format-day-hours-summary"
 import type { ClinicBusinessHours } from "@/db/schema"
@@ -112,6 +113,21 @@ describe("isWithinClinicHours", () => {
   it("converts HH:mm to minutes", () => {
     assert.equal(timeToMinutes("07:00"), 420)
     assert.equal(timeToMinutes("19:00"), 1140)
+  })
+})
+
+describe("zonedWallTimeToUtc", () => {
+  it("maps America/Sao_Paulo wall clock to the correct UTC instant", () => {
+    const instant = zonedWallTimeToUtc({
+      year: 2026,
+      month: 7,
+      day: 23,
+      hour: 9,
+      minute: 0,
+      timeZone: "America/Sao_Paulo",
+    })
+
+    assert.equal(instant.toISOString(), "2026-07-23T12:00:00.000Z")
   })
 })
 

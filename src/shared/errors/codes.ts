@@ -38,7 +38,12 @@ export const ErrorCode = {
   INVITE_EMAIL_MISMATCH: "INVITE_EMAIL_MISMATCH",
 
   // Appointments / availability
+  /** Professional already has an overlapping active appointment. */
   APPOINTMENT_SLOT_UNAVAILABLE: "APPOINTMENT_SLOT_UNAVAILABLE",
+  /**
+   * Requested slot is outside clinic business hours.
+   * Code name kept for compatibility; message refers to the clinic.
+   */
   PROFESSIONAL_OUTSIDE_WORKING_HOURS: "PROFESSIONAL_OUTSIDE_WORKING_HOURS",
 } as const
 

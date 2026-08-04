@@ -1,7 +1,13 @@
-import { addDays, addMinutes, format, isSameDay, startOfDay } from "date-fns"
+import { addMinutes, format, isSameDay, startOfDay } from "date-fns"
 
 import type { BusyInterval } from "@/modules/appointments/types/availability"
 import type { MinuteInterval } from "@/modules/clinics/utils/clinic-hours-window"
+import {
+  addZonedCalendarDays,
+  getZonedDateTimeParts,
+  isSameZonedDay,
+  zonedWallTimeToUtc,
+} from "@/modules/clinics/utils/clinic-hours-window"
 
 /** Default clinic day window until clinic hours are configured. */
 export const DEFAULT_AVAILABILITY_HOUR_RANGE = { start: 7, end: 19 } as const
@@ -22,10 +28,12 @@ type FindNextAvailableStartsParams = {
   after: Date
   durationMs: number
   busy: BusyInterval[]
+  /** Clinic timezone — wall-clock windows are interpreted in this zone. */
+  timeZone: string
   limit?: number
   stepMinutes?: number
   searchWindowDays?: number
-  /** Intervals for the cursor's local calendar day (minutes from midnight). */
+  /** Intervals for the cursor's calendar day in `timeZone` (minutes from midnight). */
   getDayIntervals?: (day: Date) => MinuteInterval[]
 }
 
@@ -37,61 +45,78 @@ function overlaps(
   return startsAt < busy.endsAt && endsAt > busy.startsAt
 }
 
-function minutesOfDay(date: Date): number {
-  return date.getHours() * 60 + date.getMinutes()
-}
-
 function fitsDayIntervals(
   startsAt: Date,
   endsAt: Date,
   intervals: MinuteInterval[],
+  timeZone: string,
 ): boolean {
-  if (!isSameDay(startsAt, endsAt) || intervals.length === 0) {
+  if (!isSameZonedDay(startsAt, endsAt, timeZone) || intervals.length === 0) {
     return false
   }
 
-  const start = minutesOfDay(startsAt)
-  const end = minutesOfDay(endsAt)
+  const start = getZonedDateTimeParts(startsAt, timeZone).minutes
+  const end = getZonedDateTimeParts(endsAt, timeZone).minutes
   return intervals.some(
     (interval) => start >= interval.startMinutes && end <= interval.endMinutes,
   )
 }
 
-function alignToStep(date: Date, stepMinutes: number): Date {
-  const aligned = new Date(date)
-  const remainder = aligned.getMinutes() % stepMinutes
-  if (remainder !== 0) {
-    aligned.setMinutes(aligned.getMinutes() + (stepMinutes - remainder))
+function atZonedDayMinutes(
+  day: Date,
+  minutes: number,
+  timeZone: string,
+): Date {
+  const parts = getZonedDateTimeParts(day, timeZone)
+  return zonedWallTimeToUtc({
+    year: parts.year,
+    month: parts.month,
+    day: parts.day,
+    hour: Math.floor(minutes / 60),
+    minute: minutes % 60,
+    timeZone,
+  })
+}
+
+function alignToStep(date: Date, stepMinutes: number, timeZone: string): Date {
+  const parts = getZonedDateTimeParts(date, timeZone)
+  const remainder = parts.minute % stepMinutes
+  const alignedMinutes =
+    remainder === 0
+      ? parts.minutes
+      : parts.minutes + (stepMinutes - remainder)
+
+  if (alignedMinutes >= 24 * 60) {
+    return atZonedDayMinutes(
+      addZonedCalendarDays(date, 1, timeZone),
+      alignedMinutes - 24 * 60,
+      timeZone,
+    )
   }
-  aligned.setSeconds(0, 0)
-  return aligned
+
+  return atZonedDayMinutes(date, alignedMinutes, timeZone)
 }
 
 /** Next step-aligned instant strictly after `date` (exclusive lower bound). */
-function nextStepAfter(date: Date, stepMinutes: number): Date {
-  const next = new Date(date)
-  next.setSeconds(0, 0)
-  if (next.getTime() <= date.getTime()) {
-    next.setMinutes(next.getMinutes() + 1)
-  }
-  return alignToStep(next, stepMinutes)
-}
-
-function atDayMinutes(day: Date, minutes: number): Date {
-  const next = startOfDay(day)
-  next.setHours(Math.floor(minutes / 60), minutes % 60, 0, 0)
-  return next
+function nextStepAfter(
+  date: Date,
+  stepMinutes: number,
+  timeZone: string,
+): Date {
+  const bumped = new Date(date.getTime() + 60_000)
+  return alignToStep(bumped, stepMinutes, timeZone)
 }
 
 function advanceToNextOpenWindow(
   cursor: Date,
   intervals: MinuteInterval[],
+  timeZone: string,
 ): Date {
-  const currentMinutes = minutesOfDay(cursor)
+  const currentMinutes = getZonedDateTimeParts(cursor, timeZone).minutes
 
   for (const interval of intervals) {
     if (currentMinutes < interval.startMinutes) {
-      return atDayMinutes(cursor, interval.startMinutes)
+      return atZonedDayMinutes(cursor, interval.startMinutes, timeZone)
     }
     if (
       currentMinutes >= interval.startMinutes &&
@@ -101,12 +126,12 @@ function advanceToNextOpenWindow(
     }
   }
 
-  return atDayMinutes(addDays(cursor, 1), 0)
+  return addZonedCalendarDays(cursor, 1, timeZone)
 }
 
 /**
  * Finds the next free `startsAt` values after `after`, skipping busy intervals
- * and staying within clinic day intervals.
+ * and staying within clinic day intervals in the clinic timezone.
  */
 export function findNextAvailableStarts(
   params: FindNextAvailableStartsParams,
@@ -115,6 +140,7 @@ export function findNextAvailableStarts(
     after,
     durationMs,
     busy,
+    timeZone,
     limit = SUGGESTED_SLOTS_LIMIT,
     stepMinutes = SUGGESTED_SLOT_STEP_MINUTES,
     searchWindowDays = SUGGESTED_SLOTS_SEARCH_DAYS,
@@ -125,20 +151,20 @@ export function findNextAvailableStarts(
     return []
   }
 
-  const searchEnd = addDays(after, searchWindowDays)
-  let cursor = nextStepAfter(after, stepMinutes)
+  const searchEnd = addZonedCalendarDays(after, searchWindowDays, timeZone)
+  let cursor = nextStepAfter(after, stepMinutes, timeZone)
   const suggestions: Date[] = []
 
   while (cursor < searchEnd && suggestions.length < limit) {
     const intervals = getDayIntervals(cursor)
     const slotEnd = new Date(cursor.getTime() + durationMs)
 
-    if (!fitsDayIntervals(cursor, slotEnd, intervals)) {
-      const advanced = advanceToNextOpenWindow(cursor, intervals)
+    if (!fitsDayIntervals(cursor, slotEnd, intervals, timeZone)) {
+      const advanced = advanceToNextOpenWindow(cursor, intervals, timeZone)
       if (advanced.getTime() === cursor.getTime()) {
         cursor = addMinutes(cursor, stepMinutes)
       } else if (advanced <= cursor) {
-        cursor = atDayMinutes(addDays(cursor, 1), 0)
+        cursor = addZonedCalendarDays(cursor, 1, timeZone)
       } else {
         cursor = advanced
       }
@@ -163,6 +189,8 @@ export function findNextAvailableStarts(
  * - Today → "Hoje às HH:mm"
  * - Tomorrow → "Amanhã às HH:mm"
  * - Later → "seg. 27/07/2026"
+ *
+ * Uses the browser/local calendar so labels match the appointment form fields.
  */
 const WEEKDAY_SHORT = [
   "dom.",
@@ -179,7 +207,7 @@ export function formatSuggestedSlotLabel(
   now: Date = new Date(),
 ): string {
   const today = startOfDay(now)
-  const tomorrow = addDays(today, 1)
+  const tomorrow = addDaysLocal(today, 1)
   const slotDay = startOfDay(slot)
   const time = format(slot, "HH:mm")
 
@@ -193,6 +221,12 @@ export function formatSuggestedSlotLabel(
 
   const weekday = WEEKDAY_SHORT[slot.getDay()] ?? ""
   return `${weekday} ${format(slot, "dd/MM/yyyy")}`
+}
+
+function addDaysLocal(date: Date, days: number): Date {
+  const next = new Date(date)
+  next.setDate(next.getDate() + days)
+  return next
 }
 
 /** Reads ISO slot suggestions from an AppError / API error meta payload. */

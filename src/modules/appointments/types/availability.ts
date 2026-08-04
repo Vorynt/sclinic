@@ -12,7 +12,8 @@ export type ProfessionalAvailabilityInput = {
 
 /**
  * Why a slot is unavailable.
- * `outside_working_hours` is reserved for when professionals define schedules.
+ * `outside_working_hours` = outside clinic business hours today.
+ * When professionals define their own schedules, that window will be a subset of clinic hours.
  */
 export type UnavailabilityReason = "slot_conflict" | "outside_working_hours"
 
@@ -27,8 +28,8 @@ export type BusyInterval = {
 }
 
 /**
- * Client-safe meta attached to `APPOINTMENT_SLOT_UNAVAILABLE`.
- * `suggestedSlots` are ISO datetimes for candidate `startsAt` values.
+ * Client-safe meta attached to availability errors.
+ * `suggestedSlots` are ISO datetimes for candidate `startsAt` values inside clinic hours.
  */
 export type AvailabilityErrorMeta = {
   suggestedSlots: string[]
