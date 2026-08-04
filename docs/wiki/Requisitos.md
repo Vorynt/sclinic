@@ -278,7 +278,7 @@ Convenção de ID: `RF-<DOMÍNIO>-NNN`.
 | ID | Título | Descrição | Personas | Status |
 |----|--------|-----------|----------|--------|
 | RF-AGE-001 | Calendário | Dia/semana/mês | Agenda | Done |
-| RF-AGE-002 | Criar/editar | startsAt futuro; duração ≤ 8h; horário da clínica; sem overlap ≠ canceled | Quem agenda | Done |
+| RF-AGE-002 | Criar/editar | startsAt futuro; duração ≤ 8h; horário da clínica; sem overlap ≠ canceled; sugerir próximos slots livres | Quem agenda | Done |
 | RF-AGE-003 | Tipos | consultation, follow_up, procedure, evaluation, other | — | Done |
 | RF-AGE-004 | Transições de status | Ver §5 | Clínico / recepção | Done |
 | RF-AGE-005 | Cancelamento | Cascata: cancela charge `pending` | Quem cancela | Done |

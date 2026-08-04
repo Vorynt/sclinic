@@ -34,29 +34,156 @@ export function intervalsToMinutes(
   }))
 }
 
+function readFormatParts(
+  date: Date,
+  timeZone: string,
+  options: Intl.DateTimeFormatOptions,
+): Record<string, string> {
+  const entries = new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    hourCycle: "h23",
+    ...options,
+  })
+    .formatToParts(date)
+    .filter((part) => part.type !== "literal")
+    .map((part) => [part.type, part.value] as const)
+
+  return Object.fromEntries(entries)
+}
+
 /** Wall-clock parts of `date` in `timeZone`. */
 export function getZonedDayParts(
   date: Date,
   timeZone: string,
 ): { dayOfWeek: number; minutes: number } {
-  const parts = new Intl.DateTimeFormat("en-US", {
-    timeZone,
+  const parts = readFormatParts(date, timeZone, {
     weekday: "short",
     hour: "numeric",
     minute: "numeric",
-    hourCycle: "h23",
-  }).formatToParts(date)
+  })
 
-  const weekday = parts.find((part) => part.type === "weekday")?.value ?? "Sun"
-  const hour = Number(parts.find((part) => part.type === "hour")?.value ?? "0")
-  const minute = Number(
-    parts.find((part) => part.type === "minute")?.value ?? "0",
-  )
+  const weekday = parts.weekday ?? "Sun"
+  const hour = Number(parts.hour ?? "0")
+  const minute = Number(parts.minute ?? "0")
 
   return {
     dayOfWeek: WEEKDAY_TO_DOW[weekday] ?? 0,
     minutes: hour * 60 + minute,
   }
+}
+
+/** Full calendar + wall-clock parts of `date` in `timeZone`. */
+export function getZonedDateTimeParts(
+  date: Date,
+  timeZone: string,
+): {
+  year: number
+  month: number
+  day: number
+  dayOfWeek: number
+  hour: number
+  minute: number
+  minutes: number
+} {
+  const parts = readFormatParts(date, timeZone, {
+    weekday: "short",
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+    hour: "numeric",
+    minute: "numeric",
+  })
+
+  const hour = Number(parts.hour ?? "0")
+  const minute = Number(parts.minute ?? "0")
+
+  return {
+    year: Number(parts.year ?? "0"),
+    month: Number(parts.month ?? "1"),
+    day: Number(parts.day ?? "1"),
+    dayOfWeek: WEEKDAY_TO_DOW[parts.weekday ?? "Sun"] ?? 0,
+    hour,
+    minute,
+    minutes: hour * 60 + minute,
+  }
+}
+
+/**
+ * Converts a wall-clock date/time in `timeZone` into the matching UTC `Date`.
+ * Runs a second pass so DST transitions resolve to the correct offset.
+ */
+export function zonedWallTimeToUtc(params: {
+  year: number
+  month: number
+  day: number
+  hour?: number
+  minute?: number
+  timeZone: string
+}): Date {
+  const hour = params.hour ?? 0
+  const minute = params.minute ?? 0
+  const asUtcMs = Date.UTC(
+    params.year,
+    params.month - 1,
+    params.day,
+    hour,
+    minute,
+    0,
+    0,
+  )
+
+  const offsetFor = (instant: Date): number => {
+    const parts = getZonedDateTimeParts(instant, params.timeZone)
+    const asIfUtc = Date.UTC(
+      parts.year,
+      parts.month - 1,
+      parts.day,
+      parts.hour,
+      parts.minute,
+      0,
+      0,
+    )
+    return asIfUtc - instant.getTime()
+  }
+
+  let instant = new Date(asUtcMs)
+  instant = new Date(asUtcMs - offsetFor(instant))
+  const refinedOffset = offsetFor(instant)
+  const refined = new Date(asUtcMs - refinedOffset)
+  if (refined.getTime() !== instant.getTime()) {
+    instant = refined
+  }
+
+  return instant
+}
+
+/** Adds calendar days in `timeZone` and returns midnight (00:00) that day. */
+export function addZonedCalendarDays(
+  date: Date,
+  days: number,
+  timeZone: string,
+): Date {
+  const parts = getZonedDateTimeParts(date, timeZone)
+  const shifted = new Date(Date.UTC(parts.year, parts.month - 1, parts.day + days))
+  return zonedWallTimeToUtc({
+    year: shifted.getUTCFullYear(),
+    month: shifted.getUTCMonth() + 1,
+    day: shifted.getUTCDate(),
+    hour: 0,
+    minute: 0,
+    timeZone,
+  })
+}
+
+/** True when both instants fall on the same calendar day in `timeZone`. */
+export function isSameZonedDay(
+  left: Date,
+  right: Date,
+  timeZone: string,
+): boolean {
+  const a = getZonedDateTimeParts(left, timeZone)
+  const b = getZonedDateTimeParts(right, timeZone)
+  return a.year === b.year && a.month === b.month && a.day === b.day
 }
 
 export function getDayHours(

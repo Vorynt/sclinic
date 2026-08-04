@@ -590,9 +590,12 @@ describe("checkProfessionalAvailability", () => {
 describe("professionalAvailabilityService.ensureAvailable", () => {
   const availabilityMocks = {
     isWithinWorkingHours: async () => true,
-    getDayIntervalsForSuggestions: async () => () => [
-      { startMinutes: 7 * 60, endMinutes: 19 * 60 },
-    ],
+    getSuggestionDayContext: async () => ({
+      timeZone: "America/Sao_Paulo",
+      getDayIntervals: () => [
+        { startMinutes: 7 * 60, endMinutes: 19 * 60 },
+      ],
+    }),
   }
 
   it("resolves when the professional is available", async () => {
@@ -620,6 +623,34 @@ describe("professionalAvailabilityService.ensureAvailable", () => {
         if (
           !(error instanceof AppError) ||
           error.code !== ErrorCode.APPOINTMENT_SLOT_UNAVAILABLE
+        ) {
+          return false
+        }
+
+        const slots = readSuggestedSlotsFromMeta(error.meta)
+        return slots.length > 0
+      },
+    )
+  })
+
+  it("throws PROFESSIONAL_OUTSIDE_WORKING_HOURS with clinic-hour suggestions", async () => {
+    await assert.rejects(
+      () =>
+        professionalAvailabilityService.ensureAvailable(baseInput, {
+          hasOverlappingActiveAppointment: async () => false,
+          listBusyIntervals: async () => [],
+          isWithinWorkingHours: async () => false,
+          getSuggestionDayContext: async () => ({
+            timeZone: "America/Sao_Paulo",
+            getDayIntervals: () => [
+              { startMinutes: 8 * 60, endMinutes: 18 * 60 },
+            ],
+          }),
+        }),
+      (error: unknown) => {
+        if (
+          !(error instanceof AppError) ||
+          error.code !== ErrorCode.PROFESSIONAL_OUTSIDE_WORKING_HOURS
         ) {
           return false
         }
@@ -657,39 +688,78 @@ describe("formatSuggestedSlotLabel", () => {
 })
 
 describe("findNextAvailableStarts", () => {
+  const timeZone = "America/Sao_Paulo"
+
   it("skips a busy interval and returns the next free starts", () => {
-    const after = new Date(2026, 6, 23, 10, 0, 0)
+    // 10:00 BRT on 2026-07-23
+    const after = new Date("2026-07-23T13:00:00.000Z")
     const slots = findNextAvailableStarts({
       after,
       durationMs: 30 * 60 * 1000,
+      timeZone,
       busy: [
         {
-          startsAt: new Date(2026, 6, 23, 10, 0, 0),
-          endsAt: new Date(2026, 6, 23, 11, 0, 0),
+          startsAt: new Date("2026-07-23T13:00:00.000Z"),
+          endsAt: new Date("2026-07-23T14:00:00.000Z"),
         },
       ],
       limit: 2,
     })
 
     assert.equal(slots.length, 2)
-    assert.equal(slots[0]?.getHours(), 11)
-    assert.equal(slots[0]?.getMinutes(), 0)
-    assert.equal(slots[1]?.getHours(), 11)
-    assert.equal(slots[1]?.getMinutes(), 30)
+    assert.equal(slots[0]?.toISOString(), "2026-07-23T14:00:00.000Z") // 11:00 BRT
+    assert.equal(slots[1]?.toISOString(), "2026-07-23T14:30:00.000Z") // 11:30 BRT
   })
 
   it("starts from the next step after an unaligned 'now' without skipping a valid slot", () => {
-    const after = new Date(2026, 6, 23, 15, 7, 0)
+    // 15:07 BRT
+    const after = new Date("2026-07-23T18:07:00.000Z")
     const slots = findNextAvailableStarts({
       after,
       durationMs: 30 * 60 * 1000,
+      timeZone,
       busy: [],
       limit: 1,
     })
 
     assert.equal(slots.length, 1)
-    assert.equal(slots[0]?.getHours(), 15)
-    assert.equal(slots[0]?.getMinutes(), 30)
+    assert.equal(slots[0]?.toISOString(), "2026-07-23T18:30:00.000Z") // 15:30 BRT
+  })
+
+  it("suggests the next clinic open after closing time in the clinic timezone", () => {
+    // 19:00 BRT = closing for default 07–19 window
+    const after = new Date("2026-07-23T22:00:00.000Z")
+    const slots = findNextAvailableStarts({
+      after,
+      durationMs: 30 * 60 * 1000,
+      timeZone,
+      busy: [],
+      limit: 1,
+    })
+
+    assert.equal(slots.length, 1)
+    // Next day 07:00 BRT
+    assert.equal(slots[0]?.toISOString(), "2026-07-24T10:00:00.000Z")
+  })
+
+  it("respects split clinic intervals (skips lunch break)", () => {
+    // 11:45 BRT — morning window closes at 12:00
+    const after = new Date("2026-07-23T14:45:00.000Z")
+    const slots = findNextAvailableStarts({
+      after,
+      durationMs: 30 * 60 * 1000,
+      timeZone,
+      busy: [],
+      limit: 1,
+      getDayIntervals: () => [
+        { startMinutes: 8 * 60, endMinutes: 12 * 60 },
+        { startMinutes: 14 * 60, endMinutes: 18 * 60 },
+      ],
+    })
+
+    assert.equal(slots.length, 1)
+    // 14:00 BRT after lunch
+    assert.equal(slots[0]?.toISOString(), "2026-07-23T17:00:00.000Z")
   })
 })
 
