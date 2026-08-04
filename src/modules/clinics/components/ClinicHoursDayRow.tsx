@@ -27,6 +27,8 @@ type ClinicHoursDayRowProps = {
   register: UseFormRegister<HoursFormValues>
   onToggleOpen: (open: boolean) => void
   onIntervalsChange: (intervals: ClinicTimeInterval[]) => void
+  /** Revalidate the whole day so Zod refine errors on sibling paths clear. */
+  onTimeFieldChange?: () => void
   copyActions?: ReactNode
 }
 
@@ -38,6 +40,7 @@ function TimeRangeInputs({
   closesLabel,
   disabled,
   register,
+  onTimeFieldChange,
   invalidOpens,
   invalidCloses,
 }: {
@@ -48,9 +51,17 @@ function TimeRangeInputs({
   closesLabel: string
   disabled?: boolean
   register: UseFormRegister<HoursFormValues>
+  onTimeFieldChange?: () => void
   invalidOpens?: boolean
   invalidCloses?: boolean
 }) {
+  const opensAt = register(
+    `days.${dayIndex}.intervals.${intervalIndex}.opensAt`,
+  )
+  const closesAt = register(
+    `days.${dayIndex}.intervals.${intervalIndex}.closesAt`,
+  )
+
   return (
     <div className="flex flex-wrap items-center gap-2">
       <Input
@@ -59,7 +70,12 @@ function TimeRangeInputs({
         disabled={disabled}
         aria-label={`${dayLabel}, ${opensLabel}`}
         aria-invalid={invalidOpens || undefined}
-        {...register(`days.${dayIndex}.intervals.${intervalIndex}.opensAt`)}
+        {...opensAt}
+        onChange={(event) => {
+          void opensAt.onChange(event).then(() => {
+            onTimeFieldChange?.()
+          })
+        }}
       />
       <span className="text-muted-foreground" aria-hidden>
         –
@@ -70,7 +86,12 @@ function TimeRangeInputs({
         disabled={disabled}
         aria-label={`${dayLabel}, ${closesLabel}`}
         aria-invalid={invalidCloses || undefined}
-        {...register(`days.${dayIndex}.intervals.${intervalIndex}.closesAt`)}
+        {...closesAt}
+        onChange={(event) => {
+          void closesAt.onChange(event).then(() => {
+            onTimeFieldChange?.()
+          })
+        }}
       />
     </div>
   )
@@ -86,6 +107,7 @@ export function ClinicHoursDayRow({
   register,
   onToggleOpen,
   onIntervalsChange,
+  onTimeFieldChange,
   copyActions,
 }: ClinicHoursDayRowProps) {
   const dayErrors = errors?.[index]
@@ -142,6 +164,7 @@ export function ClinicHoursDayRow({
               }
               disabled={disabled}
               register={register}
+              onTimeFieldChange={onTimeFieldChange}
               invalidOpens={Boolean(dayErrors?.intervals?.[0]?.opensAt)}
               invalidCloses={Boolean(dayErrors?.intervals?.[0]?.closesAt)}
             />
@@ -172,6 +195,7 @@ export function ClinicHoursDayRow({
                 closesLabel="fechamento"
                 disabled={disabled}
                 register={register}
+                onTimeFieldChange={onTimeFieldChange}
                 invalidOpens={Boolean(dayErrors?.intervals?.[1]?.opensAt)}
                 invalidCloses={Boolean(dayErrors?.intervals?.[1]?.closesAt)}
               />
@@ -184,12 +208,19 @@ export function ClinicHoursDayRow({
               className="w-fit"
               disabled={disabled}
               onClick={() => {
-                const first = intervals[0]
+                const first = intervals[0] ?? {
+                  opensAt: "08:00",
+                  closesAt: "18:00",
+                }
                 onIntervalsChange([
-                  first ?? { opensAt: "08:00", closesAt: "12:00" },
                   {
-                    opensAt: first?.closesAt ?? "14:00",
-                    closesAt: "18:00",
+                    opensAt: first.opensAt < "12:00" ? first.opensAt : "08:00",
+                    closesAt: "12:00",
+                  },
+                  {
+                    opensAt: "14:00",
+                    closesAt:
+                      first.closesAt > "14:00" ? first.closesAt : "18:00",
                   },
                 ])
               }}
