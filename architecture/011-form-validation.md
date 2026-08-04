@@ -14,7 +14,7 @@ Todo formulário usa **React Hook Form** + `zodResolver` do `@hookform/resolvers
 | Form state + validação client | `react-hook-form` + `zodResolver(schema)` |
 | Parse na borda do server | `shared/validators` → `parseOrThrow` |
 | Feedback de campo | `Field` / `FieldError` (`errors` do RHF) |
-| Erro de formulário (domínio/servidor) | `FormErrorAlert` / toast + `setError` |
+| Erro de formulário (domínio/servidor) | `FormErrorAlert` (mensagem legível; sem código técnico) / toast + `setError` |
 
 ## Fluxo
 
@@ -39,7 +39,7 @@ Form (React Hook Form)
 ```tsx
 const signIn = useSignInMutation({
   onSuccess: () => router.replace(routes.dashboard),
-  onError: (error) => setFormError({ message: error.message, code: error.code }),
+  onError: (error) => setFormError({ message: error.message }),
 })
 
 const form = useForm<z.input<typeof signInSchema>, unknown, z.output<typeof signInSchema>>({

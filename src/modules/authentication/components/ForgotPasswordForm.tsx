@@ -102,7 +102,7 @@ export function ForgotPasswordForm() {
       </div>
 
       {formError ? (
-        <FormErrorAlert message={formError.message} code={formError.code} />
+        <FormErrorAlert message={formError.message} />
       ) : null}
 
       <FieldGroup className="gap-5">

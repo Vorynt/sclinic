@@ -14,7 +14,7 @@ import {
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field";
-import { FormErrorAlert } from "@/components/ui/form-error-alert";
+import { FormErrorAlert, scrollFormToTop } from "@/components/ui/form-error-alert";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -45,6 +45,8 @@ type CreateClinicOutput = z.output<typeof createClinicSchema>;
 type CreateClinicFormProps = {
   planId: string;
 };
+
+const CREATE_CLINIC_FORM_ID = "create-clinic-form";
 
 const PRACTICE_DEFAULTS: Record<
   ProfessionalRoleKey,
@@ -117,27 +119,36 @@ export function CreateClinicForm({ planId }: CreateClinicFormProps) {
     },
   });
 
-  const onSubmit = handleSubmit((data) => {
-    setFormError(null);
-    if (!data.alsoPractices) {
-      createClinic.mutate({
-        ...data,
-        alsoPractices: false,
-        clinicalPracticeType: undefined,
-        fullName: undefined,
-        treatmentPronoun: undefined,
-        councilType: undefined,
-        councilNumber: undefined,
-        councilState: undefined,
-        specialty: undefined,
-      });
-      return;
-    }
-    createClinic.mutate(data);
-  });
+  const onSubmit = handleSubmit(
+    (data) => {
+      setFormError(null);
+      if (!data.alsoPractices) {
+        createClinic.mutate({
+          ...data,
+          alsoPractices: false,
+          clinicalPracticeType: undefined,
+          fullName: undefined,
+          treatmentPronoun: undefined,
+          councilType: undefined,
+          councilNumber: undefined,
+          councilState: undefined,
+          specialty: undefined,
+        });
+        return;
+      }
+      createClinic.mutate(data);
+    },
+    () => {
+      scrollFormToTop(document.getElementById(CREATE_CLINIC_FORM_ID));
+    },
+  );
 
   return (
-    <form onSubmit={onSubmit} className="flex w-full flex-col gap-8" noValidate>
+    <form
+      id={CREATE_CLINIC_FORM_ID}
+      onSubmit={onSubmit}
+      className="flex w-full flex-col gap-8"
+      noValidate>
       <div className="flex flex-col gap-2 text-center">
         <h1 className="font-heading text-2xl font-semibold tracking-tight text-foreground">
           Cadastre sua clínica
@@ -148,7 +159,7 @@ export function CreateClinicForm({ planId }: CreateClinicFormProps) {
       </div>
 
       {formError ? (
-        <FormErrorAlert message={formError.message} code={formError.code} />
+        <FormErrorAlert message={formError.message} />
       ) : null}
 
       <input type="hidden" {...register("planId")} />

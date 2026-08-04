@@ -15,7 +15,7 @@ import {
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field";
-import { FormErrorAlert } from "@/components/ui/form-error-alert";
+import { FormErrorAlert, scrollFormToTop } from "@/components/ui/form-error-alert";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { routes } from "@/config/routes";
@@ -26,6 +26,8 @@ import { ErrorCode, getClientMessage, isAppError } from "@/shared/errors";
 
 type SignInValues = z.input<typeof signInSchema>;
 type SignInOutput = z.output<typeof signInSchema>;
+
+const SIGN_IN_FORM_ID = "sign-in-form";
 
 export function SignInForm() {
   const router = useRouter();
@@ -45,7 +47,7 @@ export function SignInForm() {
       console.error(error);
       if (isAppError(error)) {
         setFormError({
-          message: error.message,
+          message: getClientMessage(error.code),
           code: error.code,
         });
         return;
@@ -69,13 +71,19 @@ export function SignInForm() {
     },
   });
 
-  const onSubmit = handleSubmit((data) => {
-    setFormError(null);
-    signIn.mutate(data);
-  });
+  const onSubmit = handleSubmit(
+    (data) => {
+      setFormError(null);
+      signIn.mutate(data);
+    },
+    () => {
+      scrollFormToTop(document.getElementById(SIGN_IN_FORM_ID));
+    },
+  );
 
   return (
     <form
+      id={SIGN_IN_FORM_ID}
       onSubmit={onSubmit}
       className="flex w-full flex-col gap-8"
       noValidate>
@@ -89,7 +97,7 @@ export function SignInForm() {
       </div>
 
       {formError ? (
-        <FormErrorAlert message={formError.message} code={formError.code} />
+        <FormErrorAlert message={formError.message} />
       ) : null}
 
       <FieldGroup className="gap-5">

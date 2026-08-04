@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { addMinutes, startOfDay } from "date-fns";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { Controller, FormProvider, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { useHookFormMask } from "use-mask-input";
@@ -18,7 +18,7 @@ import {
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field";
-import { FormErrorAlert } from "@/components/ui/form-error-alert";
+import { FormErrorAlert, scrollFormToTop } from "@/components/ui/form-error-alert";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -181,6 +181,7 @@ export function AppointmentForm({
   onSuccess,
   onCancel,
 }: AppointmentFormProps) {
+  const formId = useId();
   const [formError, setFormError] = useState<{
     message: string;
     code: string;
@@ -307,7 +308,10 @@ export function AppointmentForm({
 
   function handleError(error: unknown) {
     if (isAppError(error)) {
-      setFormError({ message: error.message, code: error.code });
+      setFormError({
+        message: getClientMessage(error.code),
+        code: error.code,
+      });
       setSuggestedSlots(readSuggestedSlotsFromMeta(error.meta));
       return;
     }
@@ -327,44 +331,49 @@ export function AppointmentForm({
     onError: handleError,
   });
 
-  const onSubmit = handleSubmit((data) => {
-    clearAvailabilityFeedback();
+  const onSubmit = handleSubmit(
+    (data) => {
+      clearAvailabilityFeedback();
 
-    const startDate = parseISODate(data.date);
-    if (!startDate) {
-      setFormError({
-        message: "Data inválida",
-        code: ErrorCode.VALIDATION_FAILED,
-      });
-      return;
-    }
+      const startDate = parseISODate(data.date);
+      if (!startDate) {
+        setFormError({
+          message: "Data inválida",
+          code: ErrorCode.VALIDATION_FAILED,
+        });
+        return;
+      }
 
-    const [hours, minutes] = data.startTime.split(":").map(Number);
-    const startsAt = new Date(startDate);
-    startsAt.setHours(hours, minutes, 0, 0);
-    const endsAt = addMinutes(startsAt, Number(data.durationMinutes));
+      const [hours, minutes] = data.startTime.split(":").map(Number);
+      const startsAt = new Date(startDate);
+      startsAt.setHours(hours, minutes, 0, 0);
+      const endsAt = addMinutes(startsAt, Number(data.durationMinutes));
 
-    const amountRaw = data.amountBrl?.trim() ?? "";
-    const amountCentsOverride =
-      canManageFinancial && !isEmptyMoneyInput(amountRaw)
-        ? parseBrlToCents(amountRaw)
-        : undefined;
+      const amountRaw = data.amountBrl?.trim() ?? "";
+      const amountCentsOverride =
+        canManageFinancial && !isEmptyMoneyInput(amountRaw)
+          ? parseBrlToCents(amountRaw)
+          : undefined;
 
-    const payload: CreateAppointmentInput = {
-      patientId: data.patientId,
-      professionalId: data.professionalId,
-      startsAt,
-      endsAt,
-      type: data.type,
-      reason: data.reason,
-      serviceId: data.serviceId,
-      discountPercent: canCollect ? (data.discountPercent ?? 0) : 0,
-      billingKind: canCollect ? (data.billingKind ?? "standard") : "standard",
-      ...(amountCentsOverride != null ? { amountCentsOverride } : {}),
-    };
+      const payload: CreateAppointmentInput = {
+        patientId: data.patientId,
+        professionalId: data.professionalId,
+        startsAt,
+        endsAt,
+        type: data.type,
+        reason: data.reason,
+        serviceId: data.serviceId,
+        discountPercent: canCollect ? (data.discountPercent ?? 0) : 0,
+        billingKind: canCollect ? (data.billingKind ?? "standard") : "standard",
+        ...(amountCentsOverride != null ? { amountCentsOverride } : {}),
+      };
 
-    createAppointment.mutate(payload);
-  });
+      createAppointment.mutate(payload);
+    },
+    () => {
+      scrollFormToTop(document.getElementById(formId));
+    },
+  );
 
   const hasProfessionals = professionals.length > 0;
   const hasActiveServices = activeServices.length > 0;
@@ -377,6 +386,7 @@ export function AppointmentForm({
     <>
       <FormProvider {...form}>
         <form
+          id={formId}
           onSubmit={onSubmit}
           className="flex min-h-0 flex-1 flex-col"
           noValidate>
@@ -384,7 +394,6 @@ export function AppointmentForm({
             {formError && (
               <FormErrorAlert
                 message={formError.message}
-                code={formError.code}
               />
             )}
             <FieldGroup className="flex flex-col gap-4">

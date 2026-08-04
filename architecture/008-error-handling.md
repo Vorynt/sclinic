@@ -10,19 +10,26 @@
 
 ## Camadas
 
-| Camada | Tipo | Comportamento |
-|--------|------|----------------|
-| Repository | `TechnicalError` via `withDbError` | Falhas de DB/infra com código estável (`DB_*`) |
-| Service | `AppError` | Mapeia técnico → domínio (`PATIENT_NOT_FOUND`, `CONFLICT`, …); mensagem client-safe opcional |
-| Action | `ApiResponse<T>` | `toActionResult(() => service…)` |
-| ApiClient | throw `AppError` | `mapHttpError` a partir do status/body |
+| Camada     | Tipo                               | Comportamento                                                                                |
+| ---------- | ---------------------------------- | -------------------------------------------------------------------------------------------- |
+| Repository | `TechnicalError` via `withDbError` | Falhas de DB/infra com código estável (`DB_*`)                                               |
+| Service    | `AppError`                         | Mapeia técnico → domínio (`PATIENT_NOT_FOUND`, `CONFLICT`, …); mensagem client-safe opcional |
+| Action     | `ApiResponse<T>`                   | `toActionResult(() => service…)`                                                             |
+| ApiClient  | throw `AppError`                   | `mapHttpError` a partir do status/body                                                       |
 
 ## Contrato na borda
 
 ```ts
 type ApiResponse<T> =
   | { success: true; data: T }
-  | { success: false; error: { code: string; message: string; fields?: Record<string, string[]> } }
+  | {
+      success: false;
+      error: {
+        code: string;
+        message: string;
+        fields?: Record<string, string[]>;
+      };
+    };
 ```
 
 - `code` estável → observabilidade, i18n, ramificações na UI
@@ -35,7 +42,7 @@ type ApiResponse<T> =
 Repository throws TechnicalError
   → Service maps / throws AppError (mensagem específica quando o usuário pode corrigir)
     → Action: toActionResult → { success, data | error }
-      → UI (Toast / form) usa error.message (e error.code quando precisar)
+      → UI (Toast / form) usa `error.message` legível (`FormErrorAlert`); `error.code` fica para observabilidade/i18n, sem exibir o código ao usuário
 ```
 
 ## Mensagens para o usuário
