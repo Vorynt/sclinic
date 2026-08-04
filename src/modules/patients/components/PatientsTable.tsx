@@ -120,13 +120,14 @@ export function PatientsTable({
         <TableBody>
           {patients.map((patient) => (
             <TableRow key={patient.id}>
-              <TableCell className="font-medium">
+              <TableCell className="max-w-60 font-medium">
                 <Link
                   href={buildPatientDetailHref(patient.id, {
                     q: filters.q,
                     page: filters.page,
                   })}
-                  className="text-foreground underline-offset-4 hover:underline">
+                  title={patient.name}
+                  className="block truncate text-foreground underline-offset-4 hover:underline">
                   {patient.name}
                 </Link>
               </TableCell>
@@ -192,8 +193,10 @@ export function PatientsTable({
             <AlertDialogTitle>Remover paciente</AlertDialogTitle>
             <AlertDialogDescription>
               Tem certeza que deseja remover{" "}
-              <strong>{patientToDelete?.name}</strong>? Essa ação não pode ser
-              desfeita.
+              <strong className="wrap-anywhere">
+                {patientToDelete?.name}
+              </strong>
+              ? Essa ação não pode ser desfeita.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
