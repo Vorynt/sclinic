@@ -10,12 +10,14 @@ import {
   canRoleStartAttendance,
   canStartAttendance,
   getProfessionalCalendarColor,
+  isAppointmentConfirmableInBatch,
   isAppointmentScheduleEditable,
   isSelfScheduleOnlyRole,
 } from "@/modules/appointments/constants/appointments"
 import { toAppointment } from "@/modules/appointments/mappers/appointment.mapper"
 import {
   cancelAppointmentSchema,
+  confirmAppointmentsBatchSchema,
   createAppointmentSchema,
   listAppointmentsSchema,
   listPatientAppointmentsSchema,
@@ -38,6 +40,11 @@ import {
   buildAgendaHref,
   buildAttendanceHref,
 } from "@/modules/appointments/utils/agenda-href"
+import {
+  getEffectiveMinuteIntervals,
+  intersectMinuteIntervals,
+  isWithinEffectiveHours,
+} from "@/modules/appointments/utils/effective-working-hours"
 import {
   findNextAvailableStarts,
   formatSuggestedSlotLabel,
@@ -182,6 +189,71 @@ describe("createAppointmentSchema", () => {
     assert.equal(parsed.discountPercent, 10)
     assert.equal(parsed.billingKind, "courtesy")
   })
+
+  it("defaults modality to in_person", () => {
+    const { startsAt, endsAt } = futureRange()
+    const parsed = createAppointmentSchema.parse({
+      patientId: VALID_UUID,
+      professionalId: OTHER_UUID,
+      serviceId: VALID_UUID,
+      startsAt: startsAt.toISOString(),
+      endsAt: endsAt.toISOString(),
+    })
+    assert.equal(parsed.modality, "in_person")
+  })
+
+  it("accepts the online modality and rejects unsupported values", () => {
+    const { startsAt, endsAt } = futureRange()
+    const parsed = createAppointmentSchema.parse({
+      patientId: VALID_UUID,
+      professionalId: OTHER_UUID,
+      serviceId: VALID_UUID,
+      startsAt: startsAt.toISOString(),
+      endsAt: endsAt.toISOString(),
+      modality: "online",
+    })
+    assert.equal(parsed.modality, "online")
+
+    const invalid = createAppointmentSchema.safeParse({
+      patientId: VALID_UUID,
+      professionalId: OTHER_UUID,
+      serviceId: VALID_UUID,
+      startsAt: startsAt.toISOString(),
+      endsAt: endsAt.toISOString(),
+      modality: "phone",
+    })
+    assert.equal(invalid.success, false)
+  })
+})
+
+describe("confirmAppointmentsBatchSchema", () => {
+  it("accepts between 1 and 100 appointment ids", () => {
+    const parsed = confirmAppointmentsBatchSchema.parse({
+      appointmentIds: [VALID_UUID, OTHER_UUID],
+    })
+    assert.deepEqual(parsed.appointmentIds, [VALID_UUID, OTHER_UUID])
+  })
+
+  it("rejects an empty list", () => {
+    const result = confirmAppointmentsBatchSchema.safeParse({
+      appointmentIds: [],
+    })
+    assert.equal(result.success, false)
+  })
+
+  it("rejects more than 100 ids", () => {
+    const result = confirmAppointmentsBatchSchema.safeParse({
+      appointmentIds: Array.from({ length: 101 }, () => VALID_UUID),
+    })
+    assert.equal(result.success, false)
+  })
+
+  it("rejects invalid uuids", () => {
+    const result = confirmAppointmentsBatchSchema.safeParse({
+      appointmentIds: ["not-a-uuid"],
+    })
+    assert.equal(result.success, false)
+  })
 })
 
 describe("listAppointmentsSchema", () => {
@@ -218,6 +290,15 @@ describe("listAppointmentsSchema", () => {
       to: "2026-01-01T00:00:00.000Z",
     })
     assert.equal(result.success, false)
+  })
+
+  it("accepts an optional modality filter", () => {
+    const parsed = listAppointmentsSchema.parse({
+      from: "2026-01-01T00:00:00.000Z",
+      to: "2026-01-31T23:59:59.000Z",
+      modality: "online",
+    })
+    assert.equal(parsed.modality, "online")
   })
 })
 
@@ -455,6 +536,7 @@ describe("toAppointment mapper", () => {
       startsAt: now,
       endsAt: now,
       type: "consultation",
+      modality: "in_person",
       status: "scheduled",
       reason: "Rotina",
       notes: null,
@@ -484,6 +566,7 @@ describe("toAppointment mapper", () => {
       startsAt: now,
       endsAt: now,
       type: "unknown-type",
+      modality: "unknown-modality",
       status: "unknown-status",
       reason: null,
       notes: null,
@@ -495,8 +578,41 @@ describe("toAppointment mapper", () => {
 
     assert.equal(appointment.status, "scheduled")
     assert.equal(appointment.type, "consultation")
+    assert.equal(appointment.modality, "in_person")
     assert.equal(appointment.professionalId, null)
     assert.equal(appointment.professionalName, null)
+  })
+
+  it("maps the online modality and defaults unknown values to in_person", () => {
+    const now = new Date()
+    const baseRow = {
+      id: VALID_UUID,
+      clinicId: OTHER_UUID,
+      patientId: VALID_UUID,
+      patientName: "Maria Silva",
+      professionalId: OTHER_UUID,
+      professionalName: "Dr. João",
+      serviceId: VALID_UUID,
+      startsAt: now,
+      endsAt: now,
+      type: "consultation",
+      status: "scheduled",
+      reason: null,
+      notes: null,
+      canceledAt: null,
+      canceledReason: null,
+      createdAt: now,
+      updatedAt: now,
+    }
+
+    assert.equal(
+      toAppointment({ ...baseRow, modality: "online" }).modality,
+      "online",
+    )
+    assert.equal(
+      toAppointment({ ...baseRow, modality: "something-else" }).modality,
+      "in_person",
+    )
   })
 })
 
@@ -539,6 +655,7 @@ describe("checkProfessionalAvailability", () => {
   it("returns available when there is no overlapping active appointment", async () => {
     const result = await checkProfessionalAvailability(baseInput, {
       hasOverlappingActiveAppointment: async () => false,
+      hasOverlappingScheduleBlock: async () => false,
       isWithinWorkingHours: withinHours,
     })
 
@@ -548,6 +665,7 @@ describe("checkProfessionalAvailability", () => {
   it("returns slot_conflict when an active appointment overlaps", async () => {
     const result = await checkProfessionalAvailability(baseInput, {
       hasOverlappingActiveAppointment: async () => true,
+      hasOverlappingScheduleBlock: async () => false,
       isWithinWorkingHours: withinHours,
     })
 
@@ -560,6 +678,7 @@ describe("checkProfessionalAvailability", () => {
   it("returns outside_working_hours when outside clinic hours", async () => {
     const result = await checkProfessionalAvailability(baseInput, {
       hasOverlappingActiveAppointment: async () => false,
+      hasOverlappingScheduleBlock: async () => false,
       isWithinWorkingHours: async () => false,
     })
 
@@ -567,6 +686,16 @@ describe("checkProfessionalAvailability", () => {
       available: false,
       reason: "outside_working_hours",
     })
+  })
+
+  it("returns slot_conflict when a schedule block overlaps", async () => {
+    const result = await checkProfessionalAvailability(baseInput, {
+      hasOverlappingActiveAppointment: async () => false,
+      hasOverlappingScheduleBlock: async () => true,
+      isWithinWorkingHours: withinHours,
+    })
+
+    assert.deepEqual(result, { available: false, reason: "slot_conflict" })
   })
 
   it("forwards excludeAppointmentId to the overlap dependency", async () => {
@@ -579,6 +708,7 @@ describe("checkProfessionalAvailability", () => {
           received = input
           return false
         },
+        hasOverlappingScheduleBlock: async () => false,
         isWithinWorkingHours: withinHours,
       },
     )
@@ -601,6 +731,7 @@ describe("professionalAvailabilityService.ensureAvailable", () => {
   it("resolves when the professional is available", async () => {
     await professionalAvailabilityService.ensureAvailable(baseInput, {
       hasOverlappingActiveAppointment: async () => false,
+      hasOverlappingScheduleBlock: async () => false,
       listBusyIntervals: async () => [],
       ...availabilityMocks,
     })
@@ -611,6 +742,7 @@ describe("professionalAvailabilityService.ensureAvailable", () => {
       () =>
         professionalAvailabilityService.ensureAvailable(baseInput, {
           hasOverlappingActiveAppointment: async () => true,
+          hasOverlappingScheduleBlock: async () => false,
           listBusyIntervals: async () => [
             {
               startsAt: baseInput.startsAt,
@@ -638,6 +770,7 @@ describe("professionalAvailabilityService.ensureAvailable", () => {
       () =>
         professionalAvailabilityService.ensureAvailable(baseInput, {
           hasOverlappingActiveAppointment: async () => false,
+          hasOverlappingScheduleBlock: async () => false,
           listBusyIntervals: async () => [],
           isWithinWorkingHours: async () => false,
           getSuggestionDayContext: async () => ({
@@ -856,3 +989,179 @@ describe("agenda href round-trip", () => {
     })
   })
 })
+
+describe("intersectMinuteIntervals", () => {
+  it("returns the overlap between two interval lists", () => {
+    const result = intersectMinuteIntervals(
+      [{ startMinutes: 480, endMinutes: 720 }],
+      [{ startMinutes: 540, endMinutes: 780 }],
+    )
+    assert.deepEqual(result, [{ startMinutes: 540, endMinutes: 720 }])
+  })
+
+  it("skips non-overlapping intervals", () => {
+    const result = intersectMinuteIntervals(
+      [{ startMinutes: 480, endMinutes: 600 }],
+      [{ startMinutes: 600, endMinutes: 720 }],
+    )
+    assert.deepEqual(result, [])
+  })
+
+  it("handles multiple intervals on each side", () => {
+    const result = intersectMinuteIntervals(
+      [
+        { startMinutes: 480, endMinutes: 600 },
+        { startMinutes: 780, endMinutes: 1020 },
+      ],
+      [{ startMinutes: 540, endMinutes: 900 }],
+    )
+    assert.deepEqual(result, [
+      { startMinutes: 540, endMinutes: 600 },
+      { startMinutes: 780, endMinutes: 900 },
+    ])
+  })
+
+  it("returns an empty list when either side is empty", () => {
+    assert.deepEqual(
+      intersectMinuteIntervals([], [{ startMinutes: 0, endMinutes: 60 }]),
+      [],
+    )
+    assert.deepEqual(
+      intersectMinuteIntervals([{ startMinutes: 0, endMinutes: 60 }], []),
+      [],
+    )
+  })
+})
+
+describe("getEffectiveMinuteIntervals (professional hours intersection)", () => {
+  const clinicHours = Array.from({ length: 7 }, (_, dayOfWeek) => ({
+    dayOfWeek,
+    isClosed: dayOfWeek === 0,
+    intervals:
+      dayOfWeek === 0 ? [] : [{ opensAt: "07:00", closesAt: "19:00" }],
+  }))
+
+  it("inherits clinic hours 100% when the professional has no configured rows", () => {
+    const result = getEffectiveMinuteIntervals({
+      clinicHours,
+      professionalHours: null,
+      dayOfWeek: 1,
+    })
+    assert.deepEqual(result, [{ startMinutes: 7 * 60, endMinutes: 19 * 60 }])
+  })
+
+  it("narrows to the intersection when the professional has a tighter window", () => {
+    const professionalHours = Array.from({ length: 7 }, (_, dayOfWeek) => ({
+      dayOfWeek,
+      isClosed: dayOfWeek !== 1,
+      intervals: dayOfWeek === 1 ? [{ opensAt: "09:00", closesAt: "12:00" }] : [],
+    }))
+
+    const result = getEffectiveMinuteIntervals({
+      clinicHours,
+      professionalHours,
+      dayOfWeek: 1,
+    })
+    assert.deepEqual(result, [{ startMinutes: 9 * 60, endMinutes: 12 * 60 }])
+  })
+
+  it("is empty when the professional is closed even though the clinic is open", () => {
+    const professionalHours = Array.from({ length: 7 }, (_, dayOfWeek) => ({
+      dayOfWeek,
+      isClosed: true,
+      intervals: [],
+    }))
+
+    const result = getEffectiveMinuteIntervals({
+      clinicHours,
+      professionalHours,
+      dayOfWeek: 1,
+    })
+    assert.deepEqual(result, [])
+  })
+
+  it("isWithinEffectiveHours respects the intersected window", () => {
+    const professionalHours = Array.from({ length: 7 }, (_, dayOfWeek) => ({
+      dayOfWeek,
+      isClosed: dayOfWeek !== 1,
+      intervals: dayOfWeek === 1 ? [{ opensAt: "09:00", closesAt: "12:00" }] : [],
+    }))
+    const getZonedDayParts = (date: Date) => ({
+      dayOfWeek: 1,
+      minutes: date.getUTCHours() * 60 + date.getUTCMinutes(),
+    })
+
+    assert.equal(
+      isWithinEffectiveHours({
+        startsAt: new Date("2026-01-05T10:00:00.000Z"),
+        endsAt: new Date("2026-01-05T11:00:00.000Z"),
+        clinicHours,
+        professionalHours,
+        timeZone: "UTC",
+        getZonedDayParts,
+      }),
+      true,
+    )
+
+    assert.equal(
+      isWithinEffectiveHours({
+        startsAt: new Date("2026-01-05T13:00:00.000Z"),
+        endsAt: new Date("2026-01-05T14:00:00.000Z"),
+        clinicHours,
+        professionalHours,
+        timeZone: "UTC",
+        getZonedDayParts,
+      }),
+      false,
+    )
+  })
+})
+
+describe("isAppointmentConfirmableInBatch", () => {
+  it("allows a scheduled appointment with no professional scoping", () => {
+    assert.equal(
+      isAppointmentConfirmableInBatch({
+        status: "scheduled",
+        professionalId: OTHER_UUID,
+        ownProfessionalId: null,
+      }),
+      true,
+    )
+  })
+
+  it("skips a non-scheduled appointment", () => {
+    assert.equal(
+      isAppointmentConfirmableInBatch({
+        status: "confirmed",
+        professionalId: OTHER_UUID,
+        ownProfessionalId: null,
+      }),
+      false,
+    )
+  })
+
+  it("skips appointments outside the caller's own agenda when scoped", () => {
+    assert.equal(
+      isAppointmentConfirmableInBatch({
+        status: "scheduled",
+        professionalId: OTHER_UUID,
+        ownProfessionalId: VALID_UUID,
+      }),
+      false,
+    )
+  })
+
+  it("allows scoped confirm for the caller's own appointment", () => {
+    assert.equal(
+      isAppointmentConfirmableInBatch({
+        status: "scheduled",
+        professionalId: VALID_UUID,
+        ownProfessionalId: VALID_UUID,
+      }),
+      true,
+    )
+  })
+})
+
+// Waitlist promote guard (assertWaitlistPromotable) is covered in
+// src/modules/appointments/tests/waitlist.unit.test.ts

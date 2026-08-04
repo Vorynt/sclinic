@@ -107,6 +107,19 @@ export const appointmentTypeEnum = pgEnum("appointment_type", [
   "other",
 ])
 
+/** How the appointment is delivered (ADR-011). */
+export const appointmentModalityEnum = pgEnum("appointment_modality", [
+  "in_person",
+  "online",
+])
+
+/** Waitlist entry lifecycle (ADR-011). */
+export const waitlistStatusEnum = pgEnum("waitlist_status", [
+  "waiting",
+  "promoted",
+  "canceled",
+])
+
 export const auditStatusEnum = pgEnum("audit_status", ["success", "error"])
 
 /** Clinical alert categories on the patient chart. */

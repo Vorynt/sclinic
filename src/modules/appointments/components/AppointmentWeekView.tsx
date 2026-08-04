@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { AppointmentEventCard } from "@/modules/appointments/components/AppointmentEventCard";
 import { AppointmentTimeGridColumn } from "@/modules/appointments/components/AppointmentTimeGridColumn";
 import type { Appointment } from "@/modules/appointments/types/appointment";
+import type { ScheduleBlock } from "@/modules/appointments/types/schedule-block";
 import { resolveVisibleHourRange } from "@/modules/appointments/utils/calendar-clinic-hours";
 import { CALENDAR_HOUR_HEIGHT_PX } from "@/modules/appointments/utils/calendar-constants";
 import { getVisibleRange } from "@/modules/appointments/utils/calendar-range";
@@ -16,6 +17,7 @@ import type { ClinicWeeklyHours } from "@/modules/clinics/types/clinic-hours";
 type AppointmentWeekViewProps = {
   anchor: Date;
   appointments: Appointment[];
+  scheduleBlocks?: ScheduleBlock[];
   weeklyHours: ClinicWeeklyHours;
   isMobile: boolean;
   onSelectAppointment: (appointment: Appointment) => void;
@@ -25,6 +27,7 @@ type AppointmentWeekViewProps = {
 export function AppointmentWeekView({
   anchor,
   appointments,
+  scheduleBlocks = [],
   weeklyHours,
   isMobile,
   onSelectAppointment,
@@ -124,6 +127,7 @@ export function AppointmentWeekView({
             key={day.toISOString()}
             day={day}
             appointments={appointments}
+            scheduleBlocks={scheduleBlocks}
             hourHeightPx={CALENDAR_HOUR_HEIGHT_PX}
             hourRange={hourRange}
             weeklyHours={weeklyHours}

@@ -14,14 +14,15 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Permission } from "@/config/permissions"
 import { routes } from "@/config/routes"
 import { AppointmentFormDialog } from "@/modules/appointments/components/AppointmentFormDialog"
+import { WaitlistPanel } from "@/modules/appointments/components/WaitlistPanel"
 import { useAppointmentsQuery } from "@/modules/appointments/hooks/use-appointments"
 import { useActiveChargesByAppointmentsQuery } from "@/modules/billing/hooks/use-charges"
 import type { Charge } from "@/modules/billing/types/charge"
+import { ReceptionOpsBoard } from "@/modules/dashboard/components/home/ReceptionOpsBoard"
 import { HomeGreeting } from "@/modules/dashboard/components/home/shared/HomeGreeting"
 import { HomeQuickActions } from "@/modules/dashboard/components/home/shared/HomeQuickActions"
 import { HomeSection } from "@/modules/dashboard/components/home/shared/HomeSection"
 import { HomeStatCards } from "@/modules/dashboard/components/home/shared/HomeStatCards"
-import { ReceptionOpsBoard } from "@/modules/dashboard/components/home/ReceptionOpsBoard"
 import { countReceptionBoardColumns } from "@/modules/dashboard/utils/reception-board"
 import { PatientFormDialog } from "@/modules/patients/components/PatientFormDialog"
 import { useAuth } from "@/providers/AuthProvider"
@@ -145,6 +146,7 @@ export function ReceptionistHome() {
 
       <ReceptionDayKpis />
       <ReceptionOpsBoard />
+      <WaitlistPanel />
 
       <AppointmentFormDialog
         open={appointmentDialogOpen}
@@ -153,6 +155,7 @@ export function ReceptionistHome() {
       <PatientFormDialog
         open={patientDialogOpen}
         onOpenChange={setPatientDialogOpen}
+        variant="quick"
       />
     </div>
   )

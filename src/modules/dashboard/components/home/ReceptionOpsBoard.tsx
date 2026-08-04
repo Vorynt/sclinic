@@ -3,14 +3,17 @@
 import { CheckCircleIcon } from "@phosphor-icons/react"
 import { endOfDay, format, startOfDay } from "date-fns"
 import { ptBR } from "date-fns/locale"
+import type { ReactNode } from "react"
 import { useMemo, useState } from "react"
 import { toast } from "sonner"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Permission } from "@/config/permissions"
 import { useClinicOpsRealtime } from "@/hooks/use-clinic-ops-realtime"
+import { useConfirmAppointmentsBatchMutation } from "@/modules/appointments/hooks/use-appointment-mutations"
 import { useAppointmentsQuery } from "@/modules/appointments/hooks/use-appointments"
 import type { Appointment } from "@/modules/appointments/types/appointment"
 import { MarkChargePaidDialog } from "@/modules/billing/components/MarkChargePaidDialog"
@@ -39,28 +42,45 @@ type ReceptionBoardCardProps = {
   item: BoardItem
   canCollect: boolean
   onPay: (payload: ChargeToPay) => void
+  selectable?: boolean
+  selected?: boolean
+  onToggleSelect?: (id: string, checked: boolean) => void
 }
 
 function ReceptionBoardCard({
   item,
   canCollect,
   onPay,
+  selectable,
+  selected,
+  onToggleSelect,
 }: ReceptionBoardCardProps) {
   const { appointment, charge } = item
 
   return (
     <li className="flex items-center justify-between gap-3 bg-card px-4 py-3">
-      <div className="min-w-0">
-        <p className="truncate text-sm font-medium text-foreground">
-          {appointment.patientName}
-        </p>
-        <p className="truncate text-xs text-muted-foreground">
-          {appointment.professionalName
-            ? `${appointment.professionalName} · `
-            : null}
-          {format(appointment.startsAt, "HH:mm")}–
-          {format(appointment.endsAt, "HH:mm")}
-        </p>
+      <div className="flex min-w-0 items-center gap-3">
+        {selectable ? (
+          <Checkbox
+            checked={selected}
+            onCheckedChange={(checked) =>
+              onToggleSelect?.(appointment.id, checked === true)
+            }
+            aria-label={`Selecionar ${appointment.patientName}`}
+          />
+        ) : null}
+        <div className="min-w-0">
+          <p className="truncate text-sm font-medium text-foreground">
+            {appointment.patientName}
+          </p>
+          <p className="truncate text-xs text-muted-foreground">
+            {appointment.professionalName
+              ? `${appointment.professionalName} · `
+              : null}
+            {format(appointment.startsAt, "HH:mm")}–
+            {format(appointment.endsAt, "HH:mm")}
+          </p>
+        </div>
       </div>
       <div className="flex shrink-0 flex-col items-end gap-2 sm:flex-row sm:items-center">
         {charge ? (
@@ -95,6 +115,10 @@ type BoardColumnProps = {
   emptyMessage: string
   canCollect: boolean
   onPay: (payload: ChargeToPay) => void
+  selectedIds?: Set<string>
+  onToggleSelect?: (id: string, checked: boolean) => void
+  canSelect?: (appointment: Appointment) => boolean
+  headerAction?: ReactNode
 }
 
 function BoardColumn({
@@ -103,12 +127,19 @@ function BoardColumn({
   emptyMessage,
   canCollect,
   onPay,
+  selectedIds,
+  onToggleSelect,
+  canSelect,
+  headerAction,
 }: BoardColumnProps) {
   return (
     <div className="flex min-w-0 flex-col gap-2">
       <div className="flex items-center justify-between gap-2">
-        <h3 className="text-sm font-medium text-foreground">{title}</h3>
-        <Badge variant="secondary">{items.length}</Badge>
+        <div className="flex items-center gap-2">
+          <h3 className="text-sm font-medium text-foreground">{title}</h3>
+          <Badge variant="secondary">{items.length}</Badge>
+        </div>
+        {headerAction}
       </div>
       {items.length === 0 ? (
         <div className="rounded-xl bg-muted/40 px-4 py-6 text-sm text-muted-foreground ring-1 ring-foreground/10">
@@ -122,6 +153,9 @@ function BoardColumn({
               item={item}
               canCollect={canCollect}
               onPay={onPay}
+              selectable={canSelect?.(item.appointment) ?? false}
+              selected={selectedIds?.has(item.appointment.id) ?? false}
+              onToggleSelect={onToggleSelect}
             />
           ))}
         </ul>
@@ -145,6 +179,7 @@ export function ReceptionOpsBoard() {
     Permission.FINANCIAL_COLLECT,
     Permission.FINANCIAL_MANAGE,
   )
+  const canConfirm = can(Permission.APPOINTMENTS_UPDATE)
 
   const range = useMemo(() => {
     const now = new Date()
@@ -193,6 +228,7 @@ export function ReceptionOpsBoard() {
   }, [appointments, chargeByAppointmentId])
 
   const [chargeToPay, setChargeToPay] = useState<ChargeToPay | null>(null)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
 
   const markPaid = useMarkChargePaidMutation({
     onSuccess: () => {
@@ -201,6 +237,54 @@ export function ReceptionOpsBoard() {
     },
     onError: (error) => toast.error(error.message),
   })
+
+  const confirmBatch = useConfirmAppointmentsBatchMutation({
+    onSuccess: (result) => {
+      setSelectedIds(new Set())
+      if (result.confirmedCount === 0) {
+        toast.info("Nenhum agendamento pôde ser confirmado.")
+        return
+      }
+      toast.success(
+        result.skippedCount > 0
+          ? `${result.confirmedCount} agendamento(s) confirmado(s), ${result.skippedCount} ignorado(s).`
+          : `${result.confirmedCount} agendamento(s) confirmado(s).`,
+      )
+    },
+    onError: (error) => toast.error(error.message),
+  })
+
+  const confirmableUpcoming = useMemo(
+    () =>
+      columns.upcoming.filter((item) => item.appointment.status === "scheduled"),
+    [columns.upcoming],
+  )
+
+  const canSelectAppointment = (appointment: Appointment) =>
+    canConfirm && appointment.status === "scheduled"
+
+  const toggleSelect = (id: string, checked: boolean) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (checked) {
+        next.add(id)
+      } else {
+        next.delete(id)
+      }
+      return next
+    })
+  }
+
+  const handleConfirmSelected = () => {
+    if (selectedIds.size === 0) return
+    confirmBatch.mutate({ appointmentIds: Array.from(selectedIds) })
+  }
+
+  const handleConfirmAllToday = () => {
+    const ids = confirmableUpcoming.map((item) => item.appointment.id)
+    if (ids.length === 0) return
+    confirmBatch.mutate({ appointmentIds: ids })
+  }
 
   const isLoading =
     appointmentsQuery.isLoading ||
@@ -228,6 +312,35 @@ export function ReceptionOpsBoard() {
               emptyMessage="Nenhum paciente aguardando."
               canCollect={false}
               onPay={setChargeToPay}
+              canSelect={canSelectAppointment}
+              selectedIds={selectedIds}
+              onToggleSelect={toggleSelect}
+              headerAction={
+                canConfirm && confirmableUpcoming.length > 0 ? (
+                  <div className="flex items-center gap-2">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      disabled={
+                        selectedIds.size === 0 || confirmBatch.isPending
+                      }
+                      onClick={handleConfirmSelected}
+                    >
+                      Confirmar selecionados
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="secondary"
+                      disabled={confirmBatch.isPending}
+                      onClick={handleConfirmAllToday}
+                    >
+                      Confirmar todos do dia
+                    </Button>
+                  </div>
+                ) : null
+              }
             />
             <BoardColumn
               title="Em atendimento"

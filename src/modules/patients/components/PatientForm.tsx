@@ -33,15 +33,19 @@ type PatientFormOutput = z.output<typeof createPatientSchema>;
 
 type PatientFormProps = {
   patient?: Patient | null;
+  /** `quick` shows only name, CPF and phone (fast reception intake). */
+  variant?: "full" | "quick";
   onSuccess?: (patient?: Patient) => void;
   onCancel?: () => void;
 };
 
 export function PatientForm({
   patient,
+  variant = "full",
   onSuccess,
   onCancel,
 }: PatientFormProps) {
+  const isQuick = variant === "quick";
   const isEditing = Boolean(patient);
   const [formError, setFormError] = useState<{
     message: string;
@@ -141,7 +145,7 @@ export function PatientForm({
           <FieldError errors={[errors.cpf]} />
         </Field>
 
-        <div className="grid gap-4 sm:grid-cols-2">
+        {isQuick ? (
           <Field data-invalid={Boolean(errors.phone) || undefined}>
             <FieldLabel htmlFor="patient-phone">Telefone</FieldLabel>
             <Input
@@ -156,91 +160,118 @@ export function PatientForm({
             />
             <FieldError errors={[errors.phone]} />
           </Field>
+        ) : (
+          <>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field data-invalid={Boolean(errors.phone) || undefined}>
+                <FieldLabel htmlFor="patient-phone">Telefone</FieldLabel>
+                <Input
+                  id="patient-phone"
+                  type="tel"
+                  autoComplete="tel"
+                  placeholder="(00) 00000-0000"
+                  inputMode="numeric"
+                  aria-invalid={Boolean(errors.phone) || undefined}
+                  disabled={isPending}
+                  {...registerWithMask(
+                    "phone",
+                    MASKS.phone,
+                    MASK_INPUT_OPTIONS,
+                  )}
+                />
+                <FieldError errors={[errors.phone]} />
+              </Field>
 
-          <Field data-invalid={Boolean(errors.email) || undefined}>
-            <FieldLabel htmlFor="patient-email">E-mail</FieldLabel>
-            <Input
-              id="patient-email"
-              type="email"
-              autoComplete="email"
-              placeholder="Opcional"
-              aria-invalid={Boolean(errors.email) || undefined}
-              disabled={isPending}
-              {...register("email")}
-            />
-            <FieldError errors={[errors.email]} />
-          </Field>
-        </div>
+              <Field data-invalid={Boolean(errors.email) || undefined}>
+                <FieldLabel htmlFor="patient-email">E-mail</FieldLabel>
+                <Input
+                  id="patient-email"
+                  type="email"
+                  autoComplete="email"
+                  placeholder="Opcional"
+                  aria-invalid={Boolean(errors.email) || undefined}
+                  disabled={isPending}
+                  {...register("email")}
+                />
+                <FieldError errors={[errors.email]} />
+              </Field>
+            </div>
 
-        <Field data-invalid={Boolean(errors.birthDate) || undefined}>
-          <FieldLabel htmlFor="patient-birth-date">
-            Data de nascimento
-          </FieldLabel>
-          <Controller
-            name="birthDate"
-            control={control}
-            render={({ field }) => (
-              <DatePicker
-                id="patient-birth-date"
-                value={field.value ?? ""}
-                onChange={field.onChange}
-                onBlur={field.onBlur}
-                placeholder="Selecione a data"
-                aria-invalid={Boolean(errors.birthDate) || undefined}
-                disabled={isPending}
-                captionLayout="dropdown"
-                startMonth={new Date(1900, 0)}
-                endMonth={new Date()}
-                disabledDates={{ after: new Date() }}
+            <Field data-invalid={Boolean(errors.birthDate) || undefined}>
+              <FieldLabel htmlFor="patient-birth-date">
+                Data de nascimento
+              </FieldLabel>
+              <Controller
+                name="birthDate"
+                control={control}
+                render={({ field }) => (
+                  <DatePicker
+                    id="patient-birth-date"
+                    value={field.value ?? ""}
+                    onChange={field.onChange}
+                    onBlur={field.onBlur}
+                    placeholder="Selecione a data"
+                    aria-invalid={Boolean(errors.birthDate) || undefined}
+                    disabled={isPending}
+                    captionLayout="dropdown"
+                    startMonth={new Date(1900, 0)}
+                    endMonth={new Date()}
+                    disabledDates={{ after: new Date() }}
+                  />
+                )}
               />
-            )}
-          />
-          <FieldError errors={[errors.birthDate]} />
-        </Field>
+              <FieldError errors={[errors.birthDate]} />
+            </Field>
 
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Field
-            data-invalid={Boolean(errors.emergencyContactName) || undefined}>
-            <FieldLabel htmlFor="patient-emergency-name">
-              Contato de emergência
-            </FieldLabel>
-            <Input
-              id="patient-emergency-name"
-              autoComplete="name"
-              placeholder="Nome (opcional)"
-              aria-invalid={
-                Boolean(errors.emergencyContactName) || undefined
-              }
-              disabled={isPending}
-              {...register("emergencyContactName")}
-            />
-            <FieldError errors={[errors.emergencyContactName]} />
-          </Field>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field
+                data-invalid={
+                  Boolean(errors.emergencyContactName) || undefined
+                }>
+                <FieldLabel htmlFor="patient-emergency-name">
+                  Contato de emergência
+                </FieldLabel>
+                <Input
+                  id="patient-emergency-name"
+                  autoComplete="name"
+                  placeholder="Nome (opcional)"
+                  aria-invalid={
+                    Boolean(errors.emergencyContactName) || undefined
+                  }
+                  disabled={isPending}
+                  {...register("emergencyContactName")}
+                />
+                <FieldError errors={[errors.emergencyContactName]} />
+              </Field>
 
-          <Field
-            data-invalid={Boolean(errors.emergencyContactPhone) || undefined}>
-            <FieldLabel htmlFor="patient-emergency-phone">
-              Telefone de emergência
-            </FieldLabel>
-            <Input
-              id="patient-emergency-phone"
-              type="tel"
-              autoComplete="tel"
-              placeholder="(00) 00000-0000"
-              inputMode="numeric"
-              aria-invalid={
-                Boolean(errors.emergencyContactPhone) || undefined
-              }
-              disabled={isPending}
-              {...registerWithMask(
-                "emergencyContactPhone",
-                MASKS.phone,
-                MASK_INPUT_OPTIONS,
-              )}
-            />
-            <FieldError errors={[errors.emergencyContactPhone]} />
-          </Field>
-        </div>
+              <Field
+                data-invalid={
+                  Boolean(errors.emergencyContactPhone) || undefined
+                }>
+                <FieldLabel htmlFor="patient-emergency-phone">
+                  Telefone de emergência
+                </FieldLabel>
+                <Input
+                  id="patient-emergency-phone"
+                  type="tel"
+                  autoComplete="tel"
+                  placeholder="(00) 00000-0000"
+                  inputMode="numeric"
+                  aria-invalid={
+                    Boolean(errors.emergencyContactPhone) || undefined
+                  }
+                  disabled={isPending}
+                  {...registerWithMask(
+                    "emergencyContactPhone",
+                    MASKS.phone,
+                    MASK_INPUT_OPTIONS,
+                  )}
+                />
+                <FieldError errors={[errors.emergencyContactPhone]} />
+              </Field>
+            </div>
+          </>
+        )}
       </FieldGroup>
 
       <DialogFooter className="flex justify-end gap-2">

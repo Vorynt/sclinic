@@ -147,6 +147,13 @@
       "when": 1785830400000,
       "tag": "0020_clinical_document_kinds",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1785916800000,
+      "tag": "0021_advanced_scheduling",
+      "breakpoints": true
     }
   ],
   "version": "7"

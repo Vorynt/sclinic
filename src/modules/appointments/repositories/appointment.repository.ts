@@ -26,6 +26,7 @@ import type { CreateAppointmentDto } from "@/modules/appointments/dto/create-app
 import { toAppointment } from "@/modules/appointments/mappers/appointment.mapper"
 import type {
   Appointment,
+  AppointmentModality,
   AppointmentStatus,
   AppointmentType,
 } from "@/modules/appointments/types/appointment"
@@ -41,6 +42,7 @@ const appointmentSelect = {
   startsAt: appointments.startsAt,
   endsAt: appointments.endsAt,
   type: appointments.type,
+  modality: appointments.modality,
   status: appointments.status,
   reason: appointments.reason,
   notes: appointments.notes,
@@ -64,6 +66,7 @@ export const appointmentRepository = {
     from: Date
     to: Date
     professionalIds?: string[]
+    modality?: AppointmentModality
   }): Promise<Appointment[]> {
     return withDbError(async () => {
       const rows = await appointmentJoin()
@@ -75,6 +78,9 @@ export const appointmentRepository = {
             gt(appointments.endsAt, params.from),
             params.professionalIds?.length
               ? inArray(appointments.professionalId, params.professionalIds)
+              : undefined,
+            params.modality
+              ? eq(appointments.modality, params.modality)
               : undefined,
           ),
         )
@@ -324,6 +330,7 @@ export const appointmentRepository = {
           startsAt: params.data.startsAt,
           endsAt: params.data.endsAt,
           type: params.data.type,
+          modality: params.data.modality,
           reason: params.data.reason ?? null,
           notes: params.data.notes ?? null,
           createdBy: params.createdBy,

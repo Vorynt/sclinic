@@ -24,13 +24,16 @@ import type {
   BillingSummary,
   Charge,
   ChargeListItem,
+  DelinquentPatient,
 } from "@/modules/billing/types/charge"
+import { endOfClinicLocalDay } from "@/modules/billing/utils/charge-due-date"
 import {
   assertAppointmentChargeable,
   assertChargePendingForCancel,
   assertChargePendingForPayment,
 } from "@/modules/billing/utils/charge-rules"
 import { computeChargeAmountCents } from "@/modules/billing/utils/charge-pricing"
+import { clinicHoursService } from "@/modules/clinics/services/clinic-hours.service"
 import type { AuthRequestContext } from "@/shared/auth"
 import { AppError, ErrorCode, isTechnicalError } from "@/shared/errors"
 import type { PaginatedResult } from "@/types/pagination"
@@ -124,6 +127,11 @@ async function createChargeFromCatalog(
   const isComplimentary =
     billingKind === "courtesy" || billingKind === "return"
 
+  const { timeZone } = await clinicHoursService.getAvailabilityContext(
+    params.clinicId,
+  )
+  const dueAt = endOfClinicLocalDay(appointment.startsAt, timeZone)
+
   try {
     const charge = await chargeRepository.create({
       clinicId: params.clinicId,
@@ -137,6 +145,7 @@ async function createChargeFromCatalog(
       billingKind,
       status: isComplimentary ? "paid" : "pending",
       description: data.description,
+      dueAt,
       createdBy: params.userId,
     })
 
@@ -206,9 +215,17 @@ export const chargeService = {
       clinicId: auth.clinicId,
       q: filters.q,
       status: filters.status,
+      overdue: filters.overdue,
       page: filters.page,
       pageSize: filters.pageSize,
     })
+  },
+
+  async listDelinquentPatients(
+    ctx: AuthRequestContext,
+  ): Promise<DelinquentPatient[]> {
+    const auth = await requirePermission(ctx, Permission.FINANCIAL_VIEW)
+    return chargeRepository.listDelinquentPatients(auth.clinicId)
   },
 
   async getById(id: string, ctx: AuthRequestContext): Promise<Charge> {

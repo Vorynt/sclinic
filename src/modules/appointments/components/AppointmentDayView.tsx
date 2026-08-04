@@ -7,6 +7,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { AppointmentTimeGridColumn } from "@/modules/appointments/components/AppointmentTimeGridColumn";
 import type { Appointment } from "@/modules/appointments/types/appointment";
+import type { ScheduleBlock } from "@/modules/appointments/types/schedule-block";
 import { resolveVisibleHourRange } from "@/modules/appointments/utils/calendar-clinic-hours";
 import { CALENDAR_HOUR_HEIGHT_PX } from "@/modules/appointments/utils/calendar-constants";
 import type { ClinicWeeklyHours } from "@/modules/clinics/types/clinic-hours";
@@ -14,6 +15,7 @@ import type { ClinicWeeklyHours } from "@/modules/clinics/types/clinic-hours";
 type AppointmentDayViewProps = {
   anchor: Date;
   appointments: Appointment[];
+  scheduleBlocks?: ScheduleBlock[];
   weeklyHours: ClinicWeeklyHours;
   onSelectAppointment: (appointment: Appointment) => void;
   onSelectSlot: (date: Date) => void;
@@ -22,6 +24,7 @@ type AppointmentDayViewProps = {
 export function AppointmentDayView({
   anchor,
   appointments,
+  scheduleBlocks = [],
   weeklyHours,
   onSelectAppointment,
   onSelectSlot,
@@ -62,6 +65,7 @@ export function AppointmentDayView({
           <AppointmentTimeGridColumn
             day={anchor}
             appointments={appointments}
+            scheduleBlocks={scheduleBlocks}
             hourHeightPx={CALENDAR_HOUR_HEIGHT_PX}
             hourRange={hourRange}
             weeklyHours={weeklyHours}

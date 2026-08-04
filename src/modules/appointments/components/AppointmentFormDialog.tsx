@@ -24,6 +24,8 @@ type AppointmentFormDialogProps = {
   defaultType?: AppointmentType;
   allowedTypes?: readonly AppointmentType[];
   defaultProfessionalId?: string | null;
+  /** When set, submitting promotes this waitlist entry instead of creating a plain appointment. */
+  waitlistId?: string;
   title?: string;
   description?: string;
 };
@@ -36,23 +38,28 @@ export function AppointmentFormDialog({
   defaultType,
   allowedTypes,
   defaultProfessionalId,
-  title = "Novo agendamento",
+  waitlistId,
+  title,
   description,
 }: AppointmentFormDialogProps) {
+  const resolvedTitle = title ?? (waitlistId ? "Promover da lista de espera" : "Novo agendamento");
   const formKey = open
     ? [
         lockedPatient?.id ?? "free",
         defaultType ?? "consultation",
         defaultProfessionalId ?? "none",
         defaultStartsAt?.toISOString() ?? "create",
+        waitlistId ?? "none",
       ].join(":")
     : "closed";
 
   const resolvedDescription =
     description ??
-    (lockedPatient
-      ? `Informe horário e cobrança para ${lockedPatient.name}.`
-      : "Informe paciente, horário e cobrança.");
+    (waitlistId
+      ? `Promova ${lockedPatient?.name ?? "o paciente"} da lista de espera para um agendamento.`
+      : lockedPatient
+        ? `Informe horário e cobrança para ${lockedPatient.name}.`
+        : "Informe paciente, horário e cobrança.");
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -60,7 +67,7 @@ export function AppointmentFormDialog({
         className="flex max-h-[min(90vh,720px)] w-full flex-col gap-0 overflow-hidden p-0 sm:max-w-lg"
         showCloseButton>
         <DialogHeader className="shrink-0 space-y-1.5 border-b border-border px-4 py-4 pr-12 text-left">
-          <DialogTitle>{title}</DialogTitle>
+          <DialogTitle>{resolvedTitle}</DialogTitle>
           <DialogDescription>{resolvedDescription}</DialogDescription>
         </DialogHeader>
         <AppointmentForm
@@ -70,6 +77,7 @@ export function AppointmentFormDialog({
           defaultType={defaultType}
           allowedTypes={allowedTypes}
           defaultProfessionalId={defaultProfessionalId}
+          waitlistId={waitlistId}
           onSuccess={() => onOpenChange(false)}
           onCancel={() => onOpenChange(false)}
         />

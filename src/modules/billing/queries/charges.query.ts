@@ -4,6 +4,7 @@ import { getBillingSummaryAction } from "@/modules/billing/actions/get-billing-s
 import { getChargeByAppointmentAction } from "@/modules/billing/actions/get-charge-by-appointment"
 import { listActiveChargesByAppointmentsAction } from "@/modules/billing/actions/list-active-charges-by-appointments"
 import { listChargesAction } from "@/modules/billing/actions/list-charges"
+import { listDelinquentPatientsAction } from "@/modules/billing/actions/list-delinquent-patients"
 import type { ListChargesInput } from "@/modules/billing/schemas/charge.schema"
 import { unwrapActionResult } from "@/shared/errors"
 
@@ -21,6 +22,7 @@ export const chargesQueryKeys = {
       [...appointmentIds].sort(),
     ] as const,
   summary: () => [...chargesQueryKeys.all, "summary"] as const,
+  delinquents: () => [...chargesQueryKeys.all, "delinquents"] as const,
 }
 
 export const chargesQueries = {
@@ -54,5 +56,12 @@ export const chargesQueries = {
       queryKey: chargesQueryKeys.summary(),
       queryFn: async () =>
         unwrapActionResult(await getBillingSummaryAction()),
+    }),
+
+  delinquents: () =>
+    queryOptions({
+      queryKey: chargesQueryKeys.delinquents(),
+      queryFn: async () =>
+        unwrapActionResult(await listDelinquentPatientsAction()),
     }),
 }

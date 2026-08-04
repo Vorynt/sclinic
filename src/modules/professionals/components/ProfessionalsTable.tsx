@@ -51,6 +51,7 @@ import type {
 import { DEFAULT_LIST_PAGE_SIZE } from "@/shared/validators";
 import {
   CheckCircleIcon,
+  ClockIcon,
   PencilSimpleIcon,
   ProhibitIcon,
   TrashIcon,
@@ -60,6 +61,7 @@ type ProfessionalsTableProps = {
   filters: ListQueryParams;
   onPageChange: (page: number) => void;
   onEdit: (professional: ProfessionalListItem) => void;
+  onEditHours?: (professional: ProfessionalListItem) => void;
 };
 
 function accountStatusBadgeVariant(
@@ -76,6 +78,7 @@ export function ProfessionalsTable({
   filters,
   onPageChange,
   onEdit,
+  onEditHours,
 }: ProfessionalsTableProps) {
   const [professionalToDelete, setProfessionalToDelete] =
     useState<ProfessionalListItem | null>(null);
@@ -183,6 +186,17 @@ export function ProfessionalsTable({
                       <PencilSimpleIcon />
                       <span className="sr-only">Editar</span>
                     </Button>
+                    {onEditHours ? (
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="icon"
+                        tooltip="Horários"
+                        onClick={() => onEditHours(professional)}>
+                        <ClockIcon />
+                        <span className="sr-only">Horários</span>
+                      </Button>
+                    ) : null}
                     <Button
                       type="button"
                       variant="secondary"

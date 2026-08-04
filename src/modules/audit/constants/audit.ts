@@ -41,6 +41,11 @@ export const AUDIT_ACTIONS = {
   PROFESSIONAL_UPDATE: "professional.update",
   PROFESSIONAL_DELETE: "professional.delete",
   PROFESSIONAL_INVITE_PROFILE_UPDATE: "professional.invite_profile_update",
+  PROFESSIONAL_HOURS_UPSERT: "professional_hours.upsert",
+  WAITLIST_ENQUEUE: "waitlist.enqueue",
+  WAITLIST_CANCEL: "waitlist.cancel",
+  WAITLIST_PROMOTE: "waitlist.promote",
+  APPOINTMENT_BATCH_CONFIRM: "appointment.batch_confirm",
 } as const
 
 export type AuditAction = (typeof AUDIT_ACTIONS)[keyof typeof AUDIT_ACTIONS]
@@ -60,6 +65,8 @@ export const AUDIT_ENTITY_TYPES = {
   PRESCRIPTION: "prescription",
   PRESCRIPTION_LAYOUT: "prescription_layout",
   PROFESSIONAL: "professional",
+  PROFESSIONAL_HOURS: "professional_hours",
+  WAITLIST: "waitlist",
 } as const
 
 export type AuditEntityType =
@@ -110,6 +117,13 @@ export const AUDIT_ACTION_LABELS: Record<string, string> = {
   [AUDIT_ACTIONS.PROFESSIONAL_DELETE]: "Profissional excluído",
   [AUDIT_ACTIONS.PROFESSIONAL_INVITE_PROFILE_UPDATE]:
     "Perfil do profissional (convite) atualizado",
+  [AUDIT_ACTIONS.PROFESSIONAL_HOURS_UPSERT]:
+    "Horários do profissional atualizados",
+  [AUDIT_ACTIONS.WAITLIST_ENQUEUE]: "Paciente adicionado à lista de espera",
+  [AUDIT_ACTIONS.WAITLIST_CANCEL]: "Item da lista de espera cancelado",
+  [AUDIT_ACTIONS.WAITLIST_PROMOTE]: "Lista de espera promovida a agendamento",
+  [AUDIT_ACTIONS.APPOINTMENT_BATCH_CONFIRM]:
+    "Agendamentos confirmados em lote",
 }
 
 export const AUDIT_ENTITY_LABELS: Record<string, string> = {
@@ -127,4 +141,6 @@ export const AUDIT_ENTITY_LABELS: Record<string, string> = {
   [AUDIT_ENTITY_TYPES.PRESCRIPTION]: "Receita",
   [AUDIT_ENTITY_TYPES.PRESCRIPTION_LAYOUT]: "Modelo de receita",
   [AUDIT_ENTITY_TYPES.PROFESSIONAL]: "Profissional",
+  [AUDIT_ENTITY_TYPES.PROFESSIONAL_HOURS]: "Horários do profissional",
+  [AUDIT_ENTITY_TYPES.WAITLIST]: "Lista de espera",
 }

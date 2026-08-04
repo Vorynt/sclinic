@@ -16,6 +16,7 @@ Decisões canônicas: **ADRs** em `docs/adr/`. Notas curtas de implementação: 
 | [008](https://github.com/ViniciusSantos31/sclinic/blob/main/docs/adr/008-prescription-template-designer.md) | Designer de templates de receita | Accepted | DocumentModel + até 3 templates |
 | [009](https://github.com/ViniciusSantos31/sclinic/blob/main/docs/adr/009-clinic-services-catalog.md) | Catálogo de serviços da clínica | Accepted | preço fixo; desconto %; cortesia/retorno |
 | [010](https://github.com/ViniciusSantos31/sclinic/blob/main/docs/adr/010-clinical-document-kinds.md) | Documentos clínicos tipados (`kind`) | Accepted | declaração; atestado/exames no enum |
+| [011](https://github.com/ViniciusSantos31/sclinic/blob/main/docs/adr/011-advanced-scheduling.md) | Agenda avançada (E15) | Accepted | blocks; horário profissional; waitlist; modalidade |
 
 Paths locais: `docs/adr/00N-*.md`.
 
@@ -34,6 +35,7 @@ Paths locais: `docs/adr/00N-*.md`.
 | Realtime MVP | SSE in-process, extensível a broker | ADR-006 |
 | Owner atende | Perfil clínico opcional; sem dual membership | ADR-007, [Profissionais](Dominio-Profissionais) |
 | Precificação clínica | Catálogo por clínica; snapshot na charge; cortesia = R$ 0 paid | ADR-009, [Faturamento clínico](Dominio-Faturamento-Clinico) |
+| Agenda avançada | Blocks próprios; horário profissional ⊂ clínica; waitlist sem hold; modalidade tipada | ADR-011, [Agendamentos](Dominio-Agendamentos) |
 | Módulo referência | `patients` como template | architecture/001 |
 
 ## Notebooks (implementação)

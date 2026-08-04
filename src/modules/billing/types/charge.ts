@@ -59,3 +59,11 @@ export type BillingSummary = {
   paidThisMonthCents: number
   paidThisMonthCount: number
 }
+
+export type DelinquentPatient = {
+  patientId: string
+  patientName: string
+  totalCents: number
+  count: number
+  oldestDueAt: Date
+}

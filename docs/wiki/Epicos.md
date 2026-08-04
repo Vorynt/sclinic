@@ -18,8 +18,8 @@
 | **E12** | Escala realtime & multi-owner | Later | 003, 006 | core, billing |
 | **E13** | Documentos clínicos além da receita | Partial (kind + declaração Done) | 005, 010 | medical-records |
 | **E14** | CRM do paciente e retenção | Backlog H1→H3 | — | patients, dashboard |
-| **E15** | Agenda avançada | Backlog H2→H3 | — | appointments, professionals |
-| **E16** | Recepção operacional (lote / balcão) | Backlog H2 | 006 | appointments, dashboard |
+| **E15** | Agenda avançada | Partial (H2 Done; recorrência/sala H3) | 011 | appointments, professionals |
+| **E16** | Recepção operacional (lote / balcão) | Partial (H2 Done; extensões H3) | 006, 011 | appointments, dashboard |
 | **E17** | Pré-consulta e portal do paciente | Backlog H3 | — | medical-records, auth, portal |
 | **E18** | Indicadores, automações e IA clínica | Later / H3+ | — | dashboard, medical-records |
 | **E19** | Módulos / templates por especialidade | Later / H3+ | — | medical-records |
@@ -42,7 +42,7 @@ Calendário, status machine, attendance workspace, self-schedule, disponibilidad
 Notas (templates genéricos), vitais, alertas do paciente, receitas draft→issued + print + designer de templates (blocos, até 3). Especialidades e mais tipos de documento → E13 / E19.
 
 ### E6 — Recebíveis
-Charge 1:1, markPaid/cancel, listagem `/billing`, collect vs view. Catálogo de serviços, desconto %, cortesia/retorno (ADR-009). Gateway → E10. Inadimplentes / comissão → extensões no [Roadmap](Roadmap).
+Charge 1:1, markPaid/cancel, listagem `/billing`, collect vs view. Catálogo de serviços, desconto %, cortesia/retorno (ADR-009). **Done (ADR-011):** `dueAt` por cobrança + aba Inadimplentes agrupada por paciente. Gateway → E10. Comissão → extensão no [Roadmap](Roadmap).
 
 ### E7 — Recepção
 Board derivado de status+charge, SSE `clinic.ops`, desacoplar pagamento do “concluir” médico.
@@ -68,11 +68,11 @@ Broker realtime multi-instância; N clínicas owned por assinatura.
 ### E14 — CRM e retenção (H1→H3)
 Overview consolidado do paciente (H1); pacientes inativos + campanhas leves (H3). Sem WhatsApp no primeiro corte.
 
-### E15 — Agenda avançada (H2→H3)
-Bloqueios, horário do profissional, lista de espera, modalidade, recorrência; sala/equipamento só se ICP exigir.
+### E15 — Agenda avançada (H2 Done; H3 pendente)
+**Done (ADR-011):** bloqueios (`schedule_blocks`), horário do profissional (`professional_business_hours`, interseção com a clínica), lista de espera com promoção sem hold, modalidade presencial/online. **H3:** recorrência, sala/equipamento (só se ICP exigir).
 
-### E16 — Recepção operacional (H2)
-Confirmação em lote; cadastro rápido no balcão; depois: tarefas internas, histórico de contatos, reagendamento em massa.
+### E16 — Recepção operacional (H2 Done; H3 pendente)
+**Done (ADR-011):** confirmação em lote no board do dia (`confirmAppointmentsBatchSchema`), cadastro rápido de paciente (`PatientFormDialog` variant `quick`). **H3:** tarefas internas, histórico de contatos, reagendamento em massa.
 
 ### E17 — Pré-consulta e portal (H3)
 Formulários antes da consulta; portal do paciente (agendar, documentos, cadastro).

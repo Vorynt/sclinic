@@ -1,11 +1,13 @@
 import { mutationOptions } from "@tanstack/react-query"
 
 import { cancelAppointmentAction } from "@/modules/appointments/actions/cancel-appointment"
+import { confirmAppointmentsBatchAction } from "@/modules/appointments/actions/confirm-appointments-batch"
 import { createAppointmentAction } from "@/modules/appointments/actions/create-appointment"
 import { rescheduleAppointmentAction } from "@/modules/appointments/actions/reschedule-appointment"
 import { updateAppointmentDetailsAction } from "@/modules/appointments/actions/update-appointment-details"
 import { updateAppointmentStatusAction } from "@/modules/appointments/actions/update-appointment-status"
 import type { CancelAppointmentDto } from "@/modules/appointments/dto/cancel-appointment.dto"
+import type { ConfirmAppointmentsBatchDto } from "@/modules/appointments/dto/confirm-appointments-batch.dto"
 import type { CreateAppointmentDto } from "@/modules/appointments/dto/create-appointment.dto"
 import type { RescheduleAppointmentDto } from "@/modules/appointments/dto/reschedule-appointment.dto"
 import type { UpdateAppointmentDetailsDto } from "@/modules/appointments/dto/update-appointment-details.dto"
@@ -18,6 +20,7 @@ export const appointmentsMutationKeys = {
   reschedule: ["appointments", "reschedule"] as const,
   updateDetails: ["appointments", "update-details"] as const,
   updateStatus: ["appointments", "update-status"] as const,
+  confirmBatch: ["appointments", "confirm-batch"] as const,
 }
 
 export const appointmentsMutations = {
@@ -54,5 +57,12 @@ export const appointmentsMutations = {
       mutationKey: appointmentsMutationKeys.updateStatus,
       mutationFn: async (data: UpdateAppointmentStatusDto) =>
         unwrapActionResult(await updateAppointmentStatusAction(data)),
+    }),
+
+  confirmBatch: () =>
+    mutationOptions({
+      mutationKey: appointmentsMutationKeys.confirmBatch,
+      mutationFn: async (data: ConfirmAppointmentsBatchDto) =>
+        unwrapActionResult(await confirmAppointmentsBatchAction(data)),
     }),
 }

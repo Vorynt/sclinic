@@ -49,6 +49,7 @@ Inventário do que o sistema faz hoje. Status: **Done** | **Partial** | **Planne
 | Perfil profissional (conselho, etc.) | Done | invite onboarding |
 | Owner cria próprio perfil clínico (sem invite) | Done | ADR-007 |
 | Active/inactive profissional | Done | professionals |
+| Cadastro rápido de paciente (nome/CPF/telefone) | Done | ADR-011; `PatientFormDialog` variant `quick` |
 
 ## E4 — Agenda
 
@@ -62,10 +63,10 @@ Inventário do que o sistema faz hoje. Status: **Done** | **Partial** | **Planne
 | Self-schedule doctor/nurse | Done | constants |
 | Disponibilidade vs clinic hours | Done | availability service |
 | Valor no agendamento → charge | Done | amountCents + collect |
-| Bloqueio de horários | Planned | Roadmap H2 · E15 |
-| Horário do profissional | Planned | Roadmap H2 · E15 |
-| Lista de espera + encaixe | Planned | Roadmap H2 · E15 |
-| Modalidade presencial / online | Planned | Roadmap H2 · E15 |
+| Bloqueio de horários | Done | ADR-011; `schedule_blocks` |
+| Horário do profissional | Done | ADR-011; `professional_business_hours` |
+| Lista de espera + encaixe | Done | ADR-011; `WaitlistPanel`, promote → appointment |
+| Modalidade presencial / online | Done | ADR-011; campo `modality` + filtro/badge |
 | Horários recorrentes | Planned | Roadmap H3 · E15 |
 | Agenda por sala / equipamento | Later | Roadmap H3 · E15 (se ICP) |
 
@@ -100,7 +101,7 @@ Inventário do que o sistema faz hoje. Status: **Done** | **Partial** | **Planne
 | Catálogo de serviços (preço fixo) | Done | ADR-009; `/settings/services` |
 | Desconto % na agenda / pagamento | Done | ADR-009 |
 | Cortesia / retorno (charge R$ 0 paid) | Done | ADR-009 |
-| Visão / filtro inadimplentes | Planned | Roadmap H2 · E6 |
+| Visão / filtro inadimplentes | Done | ADR-011; `dueAt` + aba Inadimplentes agrupada por paciente |
 | Gateway clínico | Planned | provider fields · E10 |
 | Comissão / caixa diário | Later | Roadmap Later |
 
@@ -112,7 +113,7 @@ Inventário do que o sistema faz hoje. Status: **Done** | **Partial** | **Planne
 | SSE clinic.ops | Done | `/api/realtime/clinic` |
 | Médico conclui sem cobrar | Done | ADR-006 |
 | Broker multi-instância | Next | ADR-006 |
-| Confirmação em lote | Planned | Roadmap H2 · E16 |
+| Confirmação em lote | Done | ADR-011; `ReceptionOpsBoard` seleção + confirmar dia |
 
 ## E8 — Governança
 
@@ -152,7 +153,8 @@ Inventário do que o sistema faz hoje. Status: **Done** | **Partial** | **Planne
 
 | Feature | Status | Onde |
 |---------|--------|------|
-| Confirmação em lote | Planned | Roadmap H2 |
+| Confirmação em lote | Done | ADR-011; `ReceptionOpsBoard` |
+| Cadastro rápido de paciente | Done | ADR-011; `PatientFormDialog` variant `quick` |
 | Tarefas internas / histórico de contatos | Later | Roadmap Later |
 
 ## E17 — Pré-consulta e portal

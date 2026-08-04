@@ -61,15 +61,15 @@ Fecha o gap mais citado após agenda: **documentos emitíveis** e **ficha do pac
 
 | # | Item | Épico | Módulo | Notas |
 |---|------|-------|--------|-------|
-| 1 | Bloqueio de horários | E15 | appointments | Indisponibilidade pontual (férias, reunião) sem “falso” appointment |
-| 2 | Horário do profissional | E15 | professionals / appointments | Subconjunto do horário da clínica (já previsto no domínio) |
-| 3 | Lista de espera + encaixe | E15 | appointments | Fila por profissional/serviço; promover a slot livre |
-| 4 | Modalidade presencial / online | E15 | appointments | Campo no appointment; filtro na agenda |
-| 5 | Confirmação em lote (dia) | E16 | appointments / dashboard | Recepção marca `confirmed` em massa no board/lista do dia |
-| 6 | Filtro / visão inadimplentes | E6 | billing | Charges `pending` vencidas ou por paciente; sem gateway |
-| 7 | Cadastro rápido de paciente (fluxo recepção) | E3 / E16 | patients | Atalho já parcial; fechar UX “balcão” se ainda faltar |
+| 1 | Bloqueio de horários | E15 | appointments | **Done** (ADR-011) — `schedule_blocks`; indisponibilidade pontual sem “falso” appointment |
+| 2 | Horário do profissional | E15 | professionals / appointments | **Done** (ADR-011) — `professional_business_hours`; interseção com horário da clínica |
+| 3 | Lista de espera + encaixe | E15 | appointments | **Done** (ADR-011) — fila por profissional/serviço; promover a slot livre via `appointmentService.create` |
+| 4 | Modalidade presencial / online | E15 | appointments | **Done** (ADR-011) — campo `modality`; filtro e badge na agenda |
+| 5 | Confirmação em lote (dia) | E16 | appointments / dashboard | **Done** (ADR-011) — recepção marca `confirmed` em massa no board do dia |
+| 6 | Filtro / visão inadimplentes | E6 | billing | **Done** (ADR-011) — `dueAt` por cobrança + aba Inadimplentes agrupada por paciente |
+| 7 | Cadastro rápido de paciente (fluxo recepção) | E3 / E16 | patients | **Done** — `PatientFormDialog` variant `quick` (nome, CPF, telefone) na recepção |
 
-**Critério de pronto H2:** recepção opera o dia (bloqueios, espera, confirmação) sem planilha paralela; gestor vê pendências financeiras por paciente.
+**Critério de pronto H2:** recepção opera o dia (bloqueios, espera, confirmação) sem planilha paralela; gestor vê pendências financeiras por paciente. ✅ Atingido.
 
 ### H3 — Retenção, portal e plataforma operacional
 
