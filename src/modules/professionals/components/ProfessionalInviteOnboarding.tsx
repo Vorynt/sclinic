@@ -306,7 +306,7 @@ export function ProfessionalInviteOnboarding({
 
       <form className="flex flex-col gap-4" noValidate>
         {formError ? (
-          <FormErrorAlert message={formError.message} code={formError.code} />
+          <FormErrorAlert message={formError.message} />
         ) : null}
 
         <FieldGroup className="flex flex-col gap-4">
