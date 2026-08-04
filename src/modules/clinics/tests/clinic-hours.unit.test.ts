@@ -42,6 +42,20 @@ describe("clinicWeeklyHoursSchema", () => {
     const result = clinicWeeklyHoursSchema.safeParse({ days })
     assert.equal(result.success, false)
   })
+
+  it("rejects contiguous intervals with no break between turns", () => {
+    const days = Array.from({ length: 7 }, (_, dayOfWeek) => ({
+      dayOfWeek,
+      isClosed: false,
+      intervals: [
+        { opensAt: "08:00", closesAt: "12:00" },
+        { opensAt: "12:00", closesAt: "18:00" },
+      ],
+    }))
+
+    const result = clinicWeeklyHoursSchema.safeParse({ days })
+    assert.equal(result.success, false)
+  })
 })
 
 describe("toClinicWeeklyHours", () => {

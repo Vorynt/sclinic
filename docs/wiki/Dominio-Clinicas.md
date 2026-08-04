@@ -23,6 +23,7 @@ CRUD da clínica, horários semanais, criação para owner (com attach de plano)
 - Timezone default `America/Sao_Paulo`
 - Membership `suspended` aparece disabled no switcher
 - Delete: `requireOwnedClinicTeardown` (owner, **sem** exigir entitlement) + `cancelSubscriptionForUser`
+- Horários com 2 intervalos: o segundo deve começar **depois** do fechamento do primeiro (ex.: `08:00–12:00` / `12:00–18:00` é inválido — precisa de pausa entre turnos)
 
 ## Schema (conceitual)
 
