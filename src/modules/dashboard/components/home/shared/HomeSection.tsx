@@ -15,8 +15,8 @@ export function HomeSection({
 }: HomeSectionProps) {
   return (
     <section className="flex flex-col gap-3">
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex flex-col gap-0.5">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex min-w-0 flex-1 flex-col gap-0.5">
           <h2 className="font-heading text-sm font-medium text-foreground">
             {title}
           </h2>
@@ -24,7 +24,7 @@ export function HomeSection({
             <p className="text-sm text-muted-foreground">{description}</p>
           ) : null}
         </div>
-        {action}
+        {action ? <div className="shrink-0">{action}</div> : null}
       </div>
       {children}
     </section>

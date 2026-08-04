@@ -40,7 +40,7 @@ type WaitlistRowProps = {
 
 function WaitlistRow({ entry, canManage, onPromote, onCancel }: WaitlistRowProps) {
   return (
-    <li className="flex items-center justify-between gap-3 bg-card px-4 py-3">
+    <li className="flex flex-col gap-3 bg-card px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
       <div className="min-w-0">
         <p className="truncate text-sm font-medium text-foreground">
           {entry.patientName}
@@ -55,7 +55,7 @@ function WaitlistRow({ entry, canManage, onPromote, onCancel }: WaitlistRowProps
           </p>
         ) : null}
       </div>
-      <div className="flex shrink-0 items-center gap-2">
+      <div className="flex shrink-0 flex-wrap items-center gap-2 sm:justify-end">
         <Badge variant="outline" className="gap-1 text-xs">
           <ClockIcon />
           {formatDistanceToNow(entry.createdAt, {

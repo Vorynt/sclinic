@@ -223,7 +223,7 @@ export function WaitlistEnqueueDialog({
                 </Field>
               </FieldGroup>
 
-              <DialogFooter className="mx-0 mb-0">
+              <DialogFooter>
                 <Button
                   type="button"
                   variant="outline"
