@@ -202,7 +202,11 @@ export function MembersTable({ filters, onPageChange }: MembersTableProps) {
 
             return (
               <TableRow key={member.id}>
-                <TableCell className="font-medium">{member.userName}</TableCell>
+                <TableCell
+                  className="max-w-60 truncate font-medium"
+                  title={member.userName}>
+                  {member.userName}
+                </TableCell>
                 <TableCell>{member.userEmail}</TableCell>
                 <TableCell>
                   {canChangeRole ? (
@@ -308,9 +312,11 @@ export function MembersTable({ filters, onPageChange }: MembersTableProps) {
             <AlertDialogTitle>Remover membro da equipe</AlertDialogTitle>
             <AlertDialogDescription>
               Tem certeza que deseja remover{" "}
-              <strong>{memberToRemove?.userName ?? "este membro"}</strong> da
-              equipe? O vínculo deixa de aparecer na listagem e libera a vaga do
-              plano; o histórico permanece no sistema.
+              <strong className="wrap-anywhere">
+                {memberToRemove?.userName ?? "este membro"}
+              </strong>{" "}
+              da equipe? O vínculo deixa de aparecer na listagem e libera a vaga
+              do plano; o histórico permanece no sistema.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

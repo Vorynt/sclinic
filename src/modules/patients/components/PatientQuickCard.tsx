@@ -63,7 +63,9 @@ function PatientQuickCardContent({ patient }: { patient: Patient }) {
       <dl className="grid gap-3 sm:grid-cols-2">
         <div className="flex flex-col gap-0.5 sm:col-span-2">
           <dt className="text-xs text-muted-foreground">Nome</dt>
-          <dd className="text-sm font-medium text-foreground">{patient.name}</dd>
+          <dd className="wrap-anywhere text-sm font-medium text-foreground">
+            {patient.name}
+          </dd>
         </div>
 
         <div className="flex flex-col gap-0.5">

@@ -32,7 +32,6 @@ import {
 import { useClinic } from "@/modules/clinics/hooks/use-clinic"
 import { canAccessPath } from "@/modules/dashboard/constants/nav"
 import { useAuth } from "@/providers/AuthProvider"
-import { getClientMessage } from "@/shared/errors"
 import { useAuthUiStore } from "@/stores/auth.store"
 
 export function ClinicIndicator() {
@@ -70,7 +69,7 @@ export function ClinicIndicator() {
     onError: (error) => {
       awaitingNavRef.current = false
       endClinicSwitch()
-      toast.error(getClientMessage(error.code))
+      toast.error(error.message)
     },
   })
 

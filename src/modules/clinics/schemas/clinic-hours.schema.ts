@@ -57,7 +57,8 @@ const dayHoursSchema = z
       const [first, second] = day.intervals
       if (!first || !second) return
 
-      if (timeToMinutes(second.opensAt) < timeToMinutes(first.closesAt)) {
+      // Contiguous turns (e.g. 08–12 / 12–18) leave no break — require a gap.
+      if (timeToMinutes(second.opensAt) <= timeToMinutes(first.closesAt)) {
         ctx.addIssue({
           code: "custom",
           message: "O segundo intervalo deve começar após o fim do primeiro",

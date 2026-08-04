@@ -6,13 +6,17 @@ import {
   isTechnicalError,
   isValidationError,
 } from "@/shared/errors/guards";
-import { getClientMessage } from "@/shared/errors/messages";
+import {
+  getClientMessage,
+  resolveClientMessage,
+} from "@/shared/errors/messages";
 import type { ApiErrorPayload, ApiResponse } from "@/types/api";
 
 function toErrorPayload(error: unknown): ApiErrorPayload {
   if (isValidationError(error)) {
     return {
       code: error.code,
+      // Field-level Zod messages live in `fields`; keep a stable form-level copy.
       message: getClientMessage(error.code),
       fields: error.fields,
     };
@@ -21,8 +25,19 @@ function toErrorPayload(error: unknown): ApiErrorPayload {
   if (isAppError(error)) {
     return {
       code: error.code,
-      message: getClientMessage(error.code),
+      message: resolveClientMessage(error),
       ...(error.meta ? { meta: error.meta } : {}),
+    };
+  }
+
+  // Unique violations unmapped by the service → conflict (still no DB details).
+  if (
+    isTechnicalError(error) &&
+    error.code === ErrorCode.DB_UNIQUE_VIOLATION
+  ) {
+    return {
+      code: ErrorCode.CONFLICT,
+      message: getClientMessage(ErrorCode.CONFLICT),
     };
   }
 

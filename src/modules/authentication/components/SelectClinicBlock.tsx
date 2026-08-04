@@ -117,7 +117,7 @@ export function SelectClinicBlock({
     },
     onError: (error) => {
       setPendingClinicId(null)
-      toast.error(getClientMessage(error.code))
+      toast.error(error.message)
     },
   })
 
