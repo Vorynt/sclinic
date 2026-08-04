@@ -1,3 +1,4 @@
+import type { AppError } from "@/shared/errors/app-error"
 import { ErrorCode } from "@/shared/errors/codes"
 
 const clientMessages: Record<string, string> = {
@@ -49,4 +50,15 @@ const clientMessages: Record<string, string> = {
  */
 export function getClientMessage(code: string): string {
   return clientMessages[code] ?? clientMessages[ErrorCode.INTERNAL_ERROR]
+}
+
+/**
+ * Prefers a client-safe message set by the service on AppError;
+ * falls back to the code map when none was provided.
+ */
+export function resolveClientMessage(error: AppError): string {
+  if (error.message && error.message !== error.code) {
+    return error.message
+  }
+  return getClientMessage(error.code)
 }

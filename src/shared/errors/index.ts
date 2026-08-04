@@ -6,7 +6,10 @@ export {
   isTechnicalError,
   isValidationError,
 } from "@/shared/errors/guards"
-export { getClientMessage } from "@/shared/errors/messages"
+export {
+  getClientMessage,
+  resolveClientMessage,
+} from "@/shared/errors/messages"
 export { TechnicalError } from "@/shared/errors/technical-error"
 export {
   toActionResult,
