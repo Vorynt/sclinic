@@ -94,7 +94,7 @@ export function SetInvitePasswordForm({
       </div>
 
       {formError ? (
-        <FormErrorAlert message={formError.message} code={formError.code} />
+        <FormErrorAlert message={formError.message} />
       ) : null}
 
       <FieldGroup className="flex flex-col gap-4">

@@ -108,7 +108,7 @@ export function ResetPasswordForm() {
       </div>
 
       {formError ? (
-        <FormErrorAlert message={formError.message} code={formError.code} />
+        <FormErrorAlert message={formError.message} />
       ) : null}
 
       <input type="hidden" {...register("token")} />

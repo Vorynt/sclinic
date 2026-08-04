@@ -14,7 +14,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { FormErrorAlert } from "@/components/ui/form-error-alert";
+import { FormErrorAlert, scrollFormToTop } from "@/components/ui/form-error-alert";
 import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
 import { ClinicHoursDayRow } from "@/modules/clinics/components/ClinicHoursDayRow";
@@ -44,6 +44,8 @@ type ClinicHoursFormProps = {
   onSaved?: () => void;
   onSkipped?: () => void;
 };
+
+const CLINIC_HOURS_FORM_ID = "clinic-hours-form";
 
 function sortDaysForForm(days: ClinicWeeklyHours): ClinicWeeklyHours {
   const byDow = new Map(days.map((day) => [day.dayOfWeek, day]));
@@ -161,6 +163,7 @@ export function ClinicHoursForm({
       if (firstErrorIndex >= 0) {
         setSelectedIndex(firstErrorIndex);
       }
+      scrollFormToTop(document.getElementById(CLINIC_HOURS_FORM_ID));
     },
   );
 
@@ -272,9 +275,13 @@ export function ClinicHoursForm({
   const selectedIntervals = selectedDay?.intervals ?? [];
 
   return (
-    <form onSubmit={onSubmit} className="flex flex-col gap-6" noValidate>
+    <form
+      id={CLINIC_HOURS_FORM_ID}
+      onSubmit={onSubmit}
+      className="flex flex-col gap-6"
+      noValidate>
       {formError ? (
-        <FormErrorAlert message={formError.message} code={formError.code} />
+        <FormErrorAlert message={formError.message} />
       ) : null}
 
       <p className="text-sm text-muted-foreground">

@@ -34,7 +34,7 @@ type ApiResponse<T> =
 Repository throws TechnicalError
   → Service maps / throws AppError
     → Action: toActionResult → { success, data | error }
-      → UI (Toast / form) usa error.code
+      → UI (Toast / form) usa `error.message` legível (`FormErrorAlert`); `error.code` fica para observabilidade/i18n, sem exibir o código ao usuário
 ```
 
 ## Arquivos

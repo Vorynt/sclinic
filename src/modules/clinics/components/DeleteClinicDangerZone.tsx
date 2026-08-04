@@ -134,7 +134,7 @@ export function DeleteClinicDangerZone({
           </div>
 
           {formError ? (
-            <FormErrorAlert message={formError.message} code={formError.code} />
+            <FormErrorAlert message={formError.message} />
           ) : null}
 
           <AlertDialogFooter>

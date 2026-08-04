@@ -318,7 +318,6 @@ export function SelectClinicBlock({
             {formError ? (
               <FormErrorAlert
                 message={formError.message}
-                code={formError.code}
               />
             ) : null}
 
