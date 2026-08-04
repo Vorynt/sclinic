@@ -152,7 +152,9 @@ export function MarkChargePaidDialog({
           {(patientName || serviceName || billingKind !== "standard") && (
             <div className="flex flex-col gap-1 text-sm">
               {patientName ? (
-                <p className="font-medium text-foreground">{patientName}</p>
+                <p className="wrap-anywhere font-medium text-foreground">
+                  {patientName}
+                </p>
               ) : null}
               {serviceName ? (
                 <p className="text-muted-foreground">{serviceName}</p>

@@ -118,7 +118,7 @@ export function AppointmentPeekSheet({
               <dl className="mt-3 flex flex-col gap-2 text-sm">
                 <div className="flex flex-col gap-0.5">
                   <dt className="text-xs text-muted-foreground">Profissional</dt>
-                  <dd className="font-medium text-foreground">
+                  <dd className="wrap-anywhere font-medium text-foreground">
                     {appointment.professionalName ?? "Não atribuído"}
                   </dd>
                 </div>
