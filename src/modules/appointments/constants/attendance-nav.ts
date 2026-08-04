@@ -41,10 +41,10 @@ export function getAttendanceNavItems(
       match: "prefix",
     },
     {
-      id: "prescriptions",
-      title: "Receitas",
-      description: "Prescrição e impressão",
-      href: routes.appointmentAttendancePrescriptions(appointmentId),
+      id: "documents",
+      title: "Documentos",
+      description: "Receitas, declarações e impressão",
+      href: routes.appointmentAttendanceDocuments(appointmentId),
       match: "prefix",
     },
   ]

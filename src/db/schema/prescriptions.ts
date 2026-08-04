@@ -14,7 +14,10 @@ import {
 
 import { appointments } from "./appointments"
 import { clinics } from "./clinics"
-import { prescriptionStatusEnum } from "./enums"
+import {
+  clinicalDocumentKindEnum,
+  prescriptionStatusEnum,
+} from "./enums"
 import {
   auditBy,
   clinicIsolation,
@@ -104,11 +107,13 @@ export const prescriptionLayouts = pgTable(
 )
 
 /**
- * Simple prescription document. 0..N per appointment.
+ * Clinical printable document (prescription, attendance declaration, …).
+ * 0..N per appointment. Typed by `kind` (ADR-010).
  * Draft: body editable; layout/snapshots null (preview uses live data).
  * Issued: body + layoutHtml + party snapshots frozen; immutable in service.
  *
  * @see docs/adr/005-prescriptions.md
+ * @see docs/adr/010-clinical-document-kinds.md
  */
 export const prescriptions = pgTable(
   "prescriptions",
@@ -127,7 +132,17 @@ export const prescriptions = pgTable(
       onDelete: "set null",
     }),
     /**
+     * Document type (ADR-010). Existing rows backfilled as `prescription`.
+     */
+    kind: clinicalDocumentKindEnum("kind").default("prescription").notNull(),
+    /**
+     * Kind-specific fields (Zod-validated in medical-records).
+     * e.g. attendance_declaration: `{ notes?: string }`.
+     */
+    metadata: jsonb("metadata").$type<Record<string, unknown> | null>(),
+    /**
      * Template chosen for this draft (null = clinic default / system).
+     * Used for `kind = prescription`; other kinds use system default layout.
      * Kept after issue for audit; render uses frozen layoutHtml.
      */
     layoutId: uuid("layout_id").references(() => prescriptionLayouts.id, {
@@ -165,6 +180,11 @@ export const prescriptions = pgTable(
     index("prescriptions_clinic_appointment_idx").on(
       t.clinicId,
       t.appointmentId,
+    ),
+    index("prescriptions_clinic_appointment_kind_idx").on(
+      t.clinicId,
+      t.appointmentId,
+      t.kind,
     ),
     index("prescriptions_clinic_status_idx").on(t.clinicId, t.status),
     index("prescriptions_clinic_issued_at_idx").on(t.clinicId, t.issuedAt),

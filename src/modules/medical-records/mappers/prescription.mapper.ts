@@ -1,4 +1,5 @@
 import type { PrescriptionPartySnapshot } from "@/db/schema"
+import type { ClinicalDocumentKind } from "@/modules/medical-records/constants/clinical-documents"
 import type { PrescriptionDocumentModel } from "@/modules/medical-records/prescription-template-designer"
 import { prescriptionDocumentModelSchema } from "@/modules/medical-records/prescription-template-designer"
 import type {
@@ -14,6 +15,8 @@ type PrescriptionRow = {
   appointmentId: string
   professionalId: string | null
   professionalName: string | null
+  kind: ClinicalDocumentKind
+  metadata: Record<string, unknown> | null
   layoutId: string | null
   status: PrescriptionStatus
   body: string
@@ -54,6 +57,8 @@ export function toPrescription(row: PrescriptionRow): Prescription {
     appointmentId: row.appointmentId,
     professionalId: row.professionalId,
     professionalName: row.professionalName,
+    kind: row.kind,
+    metadata: row.metadata,
     layoutId: row.layoutId,
     status: row.status,
     body: row.body,

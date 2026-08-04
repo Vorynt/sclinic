@@ -25,6 +25,8 @@ export const routes = {
   patientDetailVitals: (patientId: string) => `/patients/${patientId}/vitals`,
   patientDetailPrescriptions: (patientId: string) =>
     `/patients/${patientId}/prescriptions`,
+  patientDetailDocuments: (patientId: string) =>
+    `/patients/${patientId}/documents`,
   professionals: "/professionals",
   billing: "/billing",
   appointments: "/appointments",
@@ -36,6 +38,8 @@ export const routes = {
     `/appointments/${appointmentId}/attendance/vitals`,
   appointmentAttendancePrescriptions: (appointmentId: string) =>
     `/appointments/${appointmentId}/attendance/prescriptions`,
+  appointmentAttendanceDocuments: (appointmentId: string) =>
+    `/appointments/${appointmentId}/attendance/documents`,
   prescriptionPrint: (prescriptionId: string, options?: { autoPrint?: boolean }) => {
     const base = `/prescriptions/${prescriptionId}/print`
     if (options?.autoPrint === false) return `${base}?preview=1`

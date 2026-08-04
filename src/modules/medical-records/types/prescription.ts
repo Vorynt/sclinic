@@ -1,4 +1,5 @@
 import type { PrescriptionPartySnapshot } from "@/db/schema"
+import type { ClinicalDocumentKind } from "@/modules/medical-records/constants/clinical-documents"
 import type { PrescriptionDocumentModel } from "@/modules/medical-records/prescription-template-designer"
 
 export type PrescriptionStatus = "draft" | "issued"
@@ -10,6 +11,8 @@ export type Prescription = {
   appointmentId: string
   professionalId: string | null
   professionalName: string | null
+  kind: ClinicalDocumentKind
+  metadata: Record<string, unknown> | null
   layoutId: string | null
   status: PrescriptionStatus
   body: string

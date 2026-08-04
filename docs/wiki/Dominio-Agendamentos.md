@@ -41,7 +41,7 @@ Só `owner`, `admin`, `doctor`, `nurse`. Recepcionista **não** inicia.
 - `amountCents` exige `financial.collect|manage` (legado até ADR-009)
 - **ADR-009:** `serviceId` obrigatório em creates novos; desconto % e cortesia/retorno no form; override de valor só `financial.manage`
 
-> Horário do profissional ainda não existe; disponibilidade = horário da clínica + sem conflito na agenda do profissional. Quando o profissional definir agenda, ela será subconjunto do funcionamento da clínica.
+> Horário do profissional ainda não existe; disponibilidade = horário da clínica + sem conflito na agenda do profissional. Quando o profissional definir agenda, ela será subconjunto do funcionamento da clínica. **Backlog H2 · E15** — ver [Roadmap](Roadmap) (bloqueios, lista de espera, modalidade, recorrência).
 
 ## Cancelamento
 

@@ -107,6 +107,60 @@ export function useSaveAndIssuePrescriptionMutation({
   })
 }
 
+export function useCreateAttendanceDeclarationMutation({
+  onSuccess,
+  onError,
+}: MutationCallbacks<Prescription> = {}) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    ...prescriptionsMutations.createAttendanceDeclaration(),
+    onSuccess: async (data) => {
+      await invalidatePrescriptionQueries(queryClient)
+      onSuccess?.(data)
+    },
+    onError: (error) => {
+      onError?.(toAppError(error))
+    },
+  })
+}
+
+export function useUpdateAttendanceDeclarationDraftMutation({
+  onSuccess,
+  onError,
+}: MutationCallbacks<Prescription> = {}) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    ...prescriptionsMutations.updateAttendanceDeclarationDraft(),
+    onSuccess: async (data) => {
+      await invalidatePrescriptionQueries(queryClient)
+      onSuccess?.(data)
+    },
+    onError: (error) => {
+      onError?.(toAppError(error))
+    },
+  })
+}
+
+export function useSaveAndIssueAttendanceDeclarationMutation({
+  onSuccess,
+  onError,
+}: MutationCallbacks<Prescription> = {}) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    ...prescriptionsMutations.saveAndIssueAttendanceDeclaration(),
+    onSuccess: async (data) => {
+      await invalidatePrescriptionQueries(queryClient)
+      onSuccess?.(data)
+    },
+    onError: (error) => {
+      onError?.(toAppError(error))
+    },
+  })
+}
+
 export function useDeletePrescriptionDraftMutation({
   onSuccess,
   onError,

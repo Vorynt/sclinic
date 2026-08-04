@@ -26,7 +26,7 @@ Handbook oficial do produto e da engenharia. Público-alvo: **qualquer novo cola
 ## Princípios desta wiki
 
 - Descreve o **sistema como está** (código + ADRs), não desejos não rastreados.
-- Roadmap/épicos/features foram **derivados** do implementado; itens futuros estão marcados como *planned* / *deferred*.
+- Roadmap/épicos/features foram **derivados** do implementado; backlog futuro está priorizado em H1–H3 + *Next* técnico (*planned* / *deferred*).
 - Decisões canônicas vivem em `docs/adr/`; aqui há resumo + link.
 - Regras de código em `architecture/`; aqui há visão para humanos.
 

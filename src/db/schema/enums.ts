@@ -166,3 +166,14 @@ export const prescriptionStatusEnum = pgEnum("prescription_status", [
   "draft",
   "issued",
 ])
+
+/**
+ * Typed clinical documents stored in `prescriptions` (ADR-010).
+ * Table name stays `prescriptions`; product UI says "Documentos".
+ */
+export const clinicalDocumentKindEnum = pgEnum("clinical_document_kind", [
+  "prescription",
+  "attendance_declaration",
+  "medical_certificate",
+  "exam_request",
+])

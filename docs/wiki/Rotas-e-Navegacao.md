@@ -10,7 +10,7 @@ Fonte canônica: `src/config/routes.ts`. Route groups `(auth)`, `(dashboard)` et
 | Auth | `/login`, `/sign-up`, `/forgot-password`, `/reset-password`, `/verify-email`, `/change-password`, `/invite`, `/invite/professional`, `/select-clinic`, `/membership-inactive` |
 | Onboarding | `/onboarding/plan`, `/onboarding/clinic`, `/onboarding/hours` |
 | App | `/home`, `/patients`, `/patients/[id]/*`, `/professionals`, `/appointments`, `/billing`, `/users`, `/settings/*`, `/help` |
-| Attendance | `/appointments/[id]/attendance/*` |
+| Attendance | `/appointments/[id]/attendance/*` (`documents`; `/prescriptions` → redirect) |
 | Account | `/account/overview`, `profile`, `security`, `subscription` |
 | Print | `/prescriptions/[id]/print` |
 | API | `/api/auth/[...all]`, `/api/stripe/webhook`, `/api/realtime/clinic` |

@@ -56,6 +56,10 @@ Auth, multi-clínica, planos Stripe, pacientes, profissionais, agenda, attendanc
 
 Detalhe: [Visão do produto](Visao-do-Produto) · [Roadmap](Roadmap).
 
+### 1.6 Backlog priorizado (produto)
+
+Horizontes H1–H3 em [Roadmap](Roadmap) — documentos clínicos (E13), CRM/retenção (E14), agenda avançada (E15), recepção lote (E16), portal/pré-consulta (E17). Escopo de produto H1–H3 **exclui** WhatsApp, upload de arquivos e gateway de pagamento (este último permanece Next técnico · E10).
+
 ---
 
 ## 2. Personas

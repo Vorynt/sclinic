@@ -15,6 +15,7 @@ Decisões canônicas: **ADRs** em `docs/adr/`. Notas curtas de implementação: 
 | [007](https://github.com/ViniciusSantos31/sclinic/blob/main/docs/adr/007-owner-clinical-profile.md) | Perfil clínico do owner | Accepted | solo; membership owner + professionals |
 | [008](https://github.com/ViniciusSantos31/sclinic/blob/main/docs/adr/008-prescription-template-designer.md) | Designer de templates de receita | Accepted | DocumentModel + até 3 templates |
 | [009](https://github.com/ViniciusSantos31/sclinic/blob/main/docs/adr/009-clinic-services-catalog.md) | Catálogo de serviços da clínica | Accepted | preço fixo; desconto %; cortesia/retorno |
+| [010](https://github.com/ViniciusSantos31/sclinic/blob/main/docs/adr/010-clinical-document-kinds.md) | Documentos clínicos tipados (`kind`) | Accepted | declaração; atestado/exames no enum |
 
 Paths locais: `docs/adr/00N-*.md`.
 
@@ -27,6 +28,7 @@ Paths locais: `docs/adr/00N-*.md`.
 | Pagador = user | Não clinicId na subscription; lifecycle pós-falha (Portal / teardown) | ADR-003 |
 | Downgrade | Nunca apagar dados; bloquear creates | ADR-004 |
 | Receita | Entidade própria; snapshot na emissão | ADR-005 |
+| Documentos tipados | `kind` + `metadata` em `prescriptions`; system layout por kind (exceto receita) | ADR-010 |
 | Templates de receita | DocumentModel (blocos); ≤3 por clínica | ADR-008 |
 | Caixa | Separado do “concluir” clínico | ADR-006 |
 | Realtime MVP | SSE in-process, extensível a broker | ADR-006 |

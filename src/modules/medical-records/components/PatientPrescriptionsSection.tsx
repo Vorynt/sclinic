@@ -17,10 +17,10 @@ export function PatientPrescriptionsSection({
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-1">
         <h2 className="font-heading text-lg font-semibold tracking-tight text-foreground">
-          Receitas
+          Documentos
         </h2>
         <p className="text-sm text-muted-foreground">
-          Histórico de receitas vinculadas aos atendimentos deste paciente.
+          Histórico de receitas, declarações e outros documentos deste paciente.
         </p>
       </div>
 
@@ -30,11 +30,11 @@ export function PatientPrescriptionsSection({
         </div>
       ) : query.isError ? (
         <p className="text-sm text-destructive">
-          Não foi possível carregar as receitas.
+          Não foi possível carregar os documentos.
         </p>
       ) : !query.data?.length ? (
         <p className="text-sm text-muted-foreground">
-          Nenhuma receita registrada.
+          Nenhum documento registrado.
         </p>
       ) : (
         <ul className="flex flex-col gap-2">

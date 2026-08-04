@@ -1,7 +1,7 @@
 # ADR-005: Receitas médicas (prescrição simples)
 
 - **Date**: 2026-07-28
-- **Status**: Accepted (layout source/cardinality partially superseded by [ADR-008](008-prescription-template-designer.md))
+- **Status**: Accepted (layout source/cardinality partially superseded by [ADR-008](008-prescription-template-designer.md); typed documents / atestado opening partially superseded by [ADR-010](010-clinical-document-kinds.md))
 - **Deciders**: Time sclinic
 - **Tags**: architecture, medical-records, prescriptions, print
 
@@ -52,7 +52,9 @@ Chosen option: **"Entidade `prescriptions` + `prescription_layouts` em `medical-
 
 ### Fora do MVP
 
-Itens estruturados de medicamento, controle especial, atestado, PDF/storage, assinatura digital, catálogo ANVISA, envio por WhatsApp/e-mail.
+Itens estruturados de medicamento, controle especial, PDF/storage, assinatura digital, catálogo ANVISA, envio por WhatsApp/e-mail.
+
+> **Atualização:** atestado e demais documentos tipados passam a ser cobertos por [ADR-010](010-clinical-document-kinds.md) (`kind` em `prescriptions`). Receita simples deste ADR permanece.
 
 ### Positive Consequences
 
