@@ -18,6 +18,11 @@ import {
 } from "@/modules/clinics/utils/clinic-hours-window"
 import { AppError, ErrorCode } from "@/shared/errors"
 
+type DayIntervalsResolver = {
+  timeZone: string
+  getDayIntervals: (day: Date) => { startMinutes: number; endMinutes: number }[]
+}
+
 type AvailabilityDeps = {
   hasOverlappingActiveAppointment: (
     input: ProfessionalAvailabilityInput,
@@ -32,9 +37,9 @@ type AvailabilityDeps = {
   isWithinWorkingHours: (
     input: ProfessionalAvailabilityInput,
   ) => Promise<boolean>
-  getDayIntervalsForSuggestions: (
+  getSuggestionDayContext: (
     input: ProfessionalAvailabilityInput,
-  ) => Promise<(day: Date) => { startMinutes: number; endMinutes: number }[]>
+  ) => Promise<DayIntervalsResolver>
 }
 
 async function defaultIsWithinWorkingHours(
@@ -51,15 +56,18 @@ async function defaultIsWithinWorkingHours(
   })
 }
 
-async function defaultGetDayIntervalsForSuggestions(
+async function defaultGetSuggestionDayContext(
   input: ProfessionalAvailabilityInput,
-): Promise<(day: Date) => { startMinutes: number; endMinutes: number }[]> {
+): Promise<DayIntervalsResolver> {
   const { weeklyHours, timeZone } =
     await clinicHoursService.getAvailabilityContext(input.clinicId)
 
-  return (day: Date) => {
-    const { dayOfWeek } = getZonedDayParts(day, timeZone)
-    return getMinuteIntervalsForDay(weeklyHours, dayOfWeek)
+  return {
+    timeZone,
+    getDayIntervals: (day: Date) => {
+      const { dayOfWeek } = getZonedDayParts(day, timeZone)
+      return getMinuteIntervalsForDay(weeklyHours, dayOfWeek)
+    },
   }
 }
 
@@ -68,11 +76,12 @@ const defaultDeps: AvailabilityDeps = {
     appointmentRepository.hasOverlappingActiveAppointment,
   listBusyIntervals: appointmentRepository.listBusyIntervals,
   isWithinWorkingHours: defaultIsWithinWorkingHours,
-  getDayIntervalsForSuggestions: defaultGetDayIntervalsForSuggestions,
+  getSuggestionDayContext: defaultGetSuggestionDayContext,
 }
 
 /**
  * Pure check used by the service and unit tests.
+ * Working hours today = clinic business hours (professional schedules TBD).
  */
 export async function checkProfessionalAvailability(
   input: ProfessionalAvailabilityInput,
@@ -98,7 +107,7 @@ async function loadSuggestedSlotIsos(
   input: ProfessionalAvailabilityInput,
   deps: Pick<
     AvailabilityDeps,
-    "listBusyIntervals" | "getDayIntervalsForSuggestions"
+    "listBusyIntervals" | "getSuggestionDayContext"
   >,
 ): Promise<string[]> {
   const durationMs = input.endsAt.getTime() - input.startsAt.getTime()
@@ -110,24 +119,27 @@ async function loadSuggestedSlotIsos(
   const after =
     input.startsAt.getTime() > now.getTime() ? input.startsAt : now
 
-  const searchTo = new Date(after)
-  searchTo.setDate(searchTo.getDate() + SUGGESTED_SLOTS_SEARCH_DAYS)
+  const { timeZone, getDayIntervals } = await deps.getSuggestionDayContext(
+    input,
+  )
 
-  const [busy, getDayIntervals] = await Promise.all([
-    deps.listBusyIntervals({
-      clinicId: input.clinicId,
-      professionalId: input.professionalId,
-      from: after,
-      to: searchTo,
-      excludeAppointmentId: input.excludeAppointmentId,
-    }),
-    deps.getDayIntervalsForSuggestions(input),
-  ])
+  const searchTo = new Date(
+    after.getTime() + SUGGESTED_SLOTS_SEARCH_DAYS * 24 * 60 * 60 * 1000,
+  )
+
+  const busy = await deps.listBusyIntervals({
+    clinicId: input.clinicId,
+    professionalId: input.professionalId,
+    from: after,
+    to: searchTo,
+    excludeAppointmentId: input.excludeAppointmentId,
+  })
 
   return findNextAvailableStarts({
     after,
     durationMs,
     busy,
+    timeZone,
     limit: SUGGESTED_SLOTS_LIMIT,
     getDayIntervals,
   }).map((slot) => slot.toISOString())
@@ -155,8 +167,8 @@ function throwForUnavailable(
 
 export const professionalAvailabilityService = {
   /**
-   * Ensures the professional can take the slot; throws AppError when not.
-   * On conflict / outside hours, attaches the next free slots in `meta.suggestedSlots`.
+   * Ensures the slot is bookable; throws AppError when not.
+   * Outside clinic hours or professional conflict → next free slots in `meta.suggestedSlots`.
    */
   async ensureAvailable(
     input: ProfessionalAvailabilityInput,
