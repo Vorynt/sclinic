@@ -44,7 +44,7 @@ export function PatientDetailHeader({
         </Button>
 
         <div className="flex flex-wrap items-center gap-2">
-          <h1 className="font-heading text-xl font-semibold tracking-tight text-foreground">
+          <h1 className="wrap-anywhere font-heading text-xl font-semibold tracking-tight text-foreground">
             {patient.name}
           </h1>
           <Badge variant={patient.status === "active" ? "secondary" : "outline"}>

@@ -51,8 +51,20 @@ import {
   hashInviteToken,
 } from "@/modules/users/utils/invite-token"
 import type { AuthRequestContext } from "@/shared/auth"
-import { AppError, ErrorCode } from "@/shared/errors"
+import { AppError, ErrorCode, isTechnicalError } from "@/shared/errors"
 import type { PaginatedResult } from "@/types/pagination"
+
+/** Maps a council (CRM/CRO/…) unique-constraint violation to a domain conflict. */
+function rethrowAsConflict(error: unknown): never {
+  if (isTechnicalError(error) && error.code === ErrorCode.DB_UNIQUE_VIOLATION) {
+    throw new AppError(ErrorCode.CONFLICT, {
+      message:
+        "Já existe um profissional com este registro de conselho (tipo, número e UF).",
+      cause: error,
+    })
+  }
+  throw error
+}
 
 function assertProfessionalRoleKey(key: string): ProfessionalRoleKey {
   if (!(PROFESSIONAL_ROLE_KEYS as readonly string[]).includes(key)) {
@@ -426,7 +438,7 @@ export const professionalService = {
         },
         ...auditErrorFields(error),
       })
-      throw error
+      return rethrowAsConflict(error)
     }
   },
 
@@ -629,7 +641,7 @@ export const professionalService = {
         },
         ...auditErrorFields(error),
       })
-      throw error
+      return rethrowAsConflict(error)
     }
   },
 
@@ -859,6 +871,6 @@ async function createOwnerClinicalProfileCore(
       },
       ...auditErrorFields(error),
     })
-    throw error
+    return rethrowAsConflict(error)
   }
 }

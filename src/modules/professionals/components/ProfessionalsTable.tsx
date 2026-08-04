@@ -141,15 +141,18 @@ export function ProfessionalsTable({
             const nextStatus =
               professional.status === "active" ? "inactive" : "active";
             const isTogglePending = setStatus.isPending;
+            const displayName = formatProfessionalDisplayName({
+              fullName: professional.fullName,
+              treatmentPronoun: professional.treatmentPronoun,
+              fallback: professional.email ?? "—",
+            });
 
             return (
               <TableRow key={professional.id}>
-                <TableCell className="font-medium">
-                  {formatProfessionalDisplayName({
-                    fullName: professional.fullName,
-                    treatmentPronoun: professional.treatmentPronoun,
-                    fallback: professional.email ?? "—",
-                  })}
+                <TableCell
+                  className="max-w-60 truncate font-medium"
+                  title={displayName}>
+                  {displayName}
                 </TableCell>
                 <TableCell>{professional.email || "—"}</TableCell>
                 <TableCell>
@@ -243,7 +246,7 @@ export function ProfessionalsTable({
             <AlertDialogTitle>Remover profissional</AlertDialogTitle>
             <AlertDialogDescription>
               Tem certeza que deseja remover{" "}
-              <strong>
+              <strong className="wrap-anywhere">
                 {formatProfessionalDisplayName({
                   fullName: professionalToDelete?.fullName,
                   treatmentPronoun: professionalToDelete?.treatmentPronoun,

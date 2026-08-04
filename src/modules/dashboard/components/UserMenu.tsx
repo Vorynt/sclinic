@@ -18,7 +18,6 @@ import {
 import { routes } from "@/config/routes";
 import { useSignOutMutation } from "@/modules/authentication/hooks/use-auth";
 import { useAuth } from "@/providers/AuthProvider";
-import { getClientMessage } from "@/shared/errors";
 
 function initialsFromName(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean);
@@ -38,7 +37,7 @@ export function UserMenu() {
       router.refresh();
     },
     onError: (error) => {
-      toast.error(getClientMessage(error.code));
+      toast.error(error.message);
     },
   });
 

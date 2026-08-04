@@ -84,13 +84,17 @@ export function ClinicHoursForm({
     watch,
     setValue,
     getValues,
-    formState: { errors },
+    trigger,
+    formState: { errors, isSubmitted },
   } = useForm<HoursFormValues, unknown, HoursFormOutput>({
     resolver: zodResolver(clinicWeeklyHoursSchema),
     defaultValues: {
       days: sortDaysForForm(initialDays),
     },
     shouldUnregister: false,
+    // After the first failed submit, revalidate on change so refine/superRefine
+    // errors (which live on sibling paths) clear as soon as the user fixes them.
+    reValidateMode: "onChange",
   });
 
   const { fields } = useFieldArray({
@@ -396,6 +400,10 @@ export function ClinicHoursForm({
               register={register}
               onToggleOpen={(open) => setDayOpen(selectedIndex, open)}
               onIntervalsChange={(next) => setDayIntervals(selectedIndex, next)}
+              onTimeFieldChange={() => {
+                if (!isSubmitted) return;
+                void trigger(`days.${selectedIndex}`);
+              }}
               copyActions={
                 <div className="flex flex-wrap gap-2">
                   <Button
