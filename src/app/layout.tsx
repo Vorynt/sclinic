@@ -57,7 +57,7 @@ export default async function RootLayout({
       suppressHydrationWarning
       className={cn(
         "h-full",
-        "antialiased",
+        "antialiased scroll-smooth",
         geistSans.variable,
         geistMono.variable,
         "font-sans",

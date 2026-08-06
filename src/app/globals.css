@@ -196,6 +196,16 @@
   }
 }
 
+@keyframes landing-cta-glow {
+  0%,
+  100% {
+    box-shadow: 0 12px 40px -12px color-mix(in oklch, var(--primary) 45%, transparent);
+  }
+  50% {
+    box-shadow: 0 16px 48px -10px color-mix(in oklch, var(--primary) 70%, transparent);
+  }
+}
+
 @utility animate-text-shimmer {
   animation: text-shimmer 2.4s ease-in-out infinite;
 }
@@ -220,8 +230,20 @@
   animation: landing-fade-up 0.85s cubic-bezier(0.16, 1, 0.3, 1) 0.12s both;
 }
 
+@utility animate-landing-fade-up-late {
+  animation: landing-fade-up 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.22s both;
+}
+
+@utility animate-landing-fade-up-showcase {
+  animation: landing-fade-up 1s cubic-bezier(0.16, 1, 0.3, 1) 0.28s both;
+}
+
 @utility animate-landing-float {
   animation: landing-float 7s ease-in-out infinite;
+}
+
+@utility animate-landing-cta-glow {
+  animation: landing-cta-glow 3.2s ease-in-out infinite;
 }
 
 /** Static primary wash for authenticated app chrome (no animation). */
@@ -240,7 +262,10 @@
   .animate-auth-fade-up,
   .animate-landing-fade-up,
   .animate-landing-fade-up-delayed,
-  .animate-landing-float {
+  .animate-landing-fade-up-late,
+  .animate-landing-fade-up-showcase,
+  .animate-landing-float,
+  .animate-landing-cta-glow {
     animation: none !important;
   }
 }
