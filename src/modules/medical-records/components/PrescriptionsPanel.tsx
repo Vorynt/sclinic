@@ -4,6 +4,7 @@ import { LockIcon, PlusIcon } from "@phosphor-icons/react"
 import { useState } from "react"
 import { toast } from "sonner"
 
+import { QueryErrorState } from "@/components/status/QueryErrorState"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -48,9 +49,13 @@ export function PrescriptionsPanel({ appointmentId }: PrescriptionsPanelProps) {
 
   if (query.isError || !query.data) {
     return (
-      <p className="text-sm text-destructive">
-        Não foi possível carregar os documentos.
-      </p>
+      <QueryErrorState
+        description="Não foi possível carregar os documentos."
+        onRetry={() => {
+          void query.refetch()
+        }}
+        isRetrying={query.isFetching}
+      />
     )
   }
 

@@ -1,5 +1,11 @@
 "use client"
 
+import {
+  CalendarBlankIcon,
+  CheckCircleIcon,
+  ClockIcon,
+  StethoscopeIcon,
+} from "@phosphor-icons/react"
 import { endOfDay, startOfDay } from "date-fns"
 import { useMemo } from "react"
 
@@ -37,6 +43,7 @@ export function HomeDayOpsStats({
       label: "Agendamentos",
       value: loading ? "…" : String(stats.total),
       hint: "Exceto cancelados",
+      icon: CalendarBlankIcon,
     },
     {
       label: emphasizeArrived ? "Já chegaram" : "Aguardando",
@@ -46,6 +53,8 @@ export function HomeDayOpsStats({
       hint: emphasizeArrived
         ? "Check-in feito"
         : "Agendados ou confirmados",
+      icon: emphasizeArrived ? StethoscopeIcon : ClockIcon,
+      accent: emphasizeArrived ? "success" : "info",
     },
     {
       label: emphasizeArrived ? "Aguardando" : "Em atendimento",
@@ -53,10 +62,14 @@ export function HomeDayOpsStats({
         ? "…"
         : String(emphasizeArrived ? stats.waiting : stats.inProgress),
       hint: emphasizeArrived ? "Ainda não chegaram" : "Check-in feito",
+      icon: emphasizeArrived ? ClockIcon : StethoscopeIcon,
+      accent: emphasizeArrived ? "info" : "success",
     },
     {
       label: "Concluídos",
       value: loading ? "…" : String(stats.completed),
+      icon: CheckCircleIcon,
+      accent: "success",
     },
   ]
 

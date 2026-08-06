@@ -3,8 +3,12 @@
 import {
   CalendarBlankIcon,
   ChartBarIcon,
+  CheckCircleIcon,
   CreditCardIcon,
+  CurrencyCircleDollarIcon,
   QuestionIcon,
+  StethoscopeIcon,
+  UsersIcon,
   UsersThreeIcon,
 } from "@phosphor-icons/react"
 import { addMonths, format, startOfMonth } from "date-fns"
@@ -91,6 +95,7 @@ export function OwnerHome() {
                 quota?.planName ??
                 clinicQuery.data?.name ??
                 (statsLoading ? undefined : "Sem plano vinculado"),
+              icon: CreditCardIcon,
             },
             {
               label: "Usuários",
@@ -100,6 +105,7 @@ export function OwnerHome() {
                   ? formatQuota(quota.usage.users, quota.limits.maxUsers)
                   : "—",
               hint: quota?.over.users ? "Acima da cota" : "Cota do plano",
+              icon: UsersThreeIcon,
             },
             {
               label: "Profissionais",
@@ -114,6 +120,7 @@ export function OwnerHome() {
               hint: quota?.over.professionals
                 ? "Acima da cota"
                 : "Cota do plano",
+              icon: StethoscopeIcon,
             },
             {
               label: "Pacientes",
@@ -121,6 +128,7 @@ export function OwnerHome() {
                 ? "…"
                 : String(patientsQuery.data?.total ?? 0),
               hint: "Cadastros ativos",
+              icon: UsersIcon,
             },
             {
               label: "Agendamentos do mês",
@@ -128,6 +136,7 @@ export function OwnerHome() {
                 ? "…"
                 : String(monthCountQuery.data ?? 0),
               hint: monthLabel,
+              icon: CalendarBlankIcon,
             },
             {
               label: "A receber",
@@ -139,6 +148,8 @@ export function OwnerHome() {
               hint: billingQuery.data
                 ? `${billingQuery.data.pendingCount} cobrança${billingQuery.data.pendingCount === 1 ? "" : "s"}`
                 : undefined,
+              icon: CurrencyCircleDollarIcon,
+              accent: "warning",
             },
             {
               label: "Recebido no mês",
@@ -150,6 +161,8 @@ export function OwnerHome() {
               hint: billingQuery.data
                 ? `${billingQuery.data.paidThisMonthCount} pagamento${billingQuery.data.paidThisMonthCount === 1 ? "" : "s"}`
                 : undefined,
+              icon: CheckCircleIcon,
+              accent: "success",
             },
           ]}
         />

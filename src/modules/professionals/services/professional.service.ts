@@ -24,6 +24,8 @@ import { clinicService } from "@/modules/clinics/services/clinic.service"
 import {
   PROFESSIONAL_ROLE_KEYS,
   PROFESSIONALS_CONSTANTS,
+  roleKeyFromProfessionType,
+  type ProfessionTypeKey,
   type ProfessionalRoleKey,
 } from "@/modules/professionals/constants/professionals"
 import type { CreateOwnerClinicalProfileDto } from "@/modules/professionals/dto/create-owner-clinical-profile.dto"
@@ -228,7 +230,8 @@ export const professionalService = {
   ): Promise<ProfessionalListItem> {
     const auth = await requirePermission(ctx, Permission.PROFESSIONALS_MANAGE)
     const actor = auditActorFromAuth(auth)
-    assertProfessionalRoleKey(data.roleKey)
+    const roleKey = roleKeyFromProfessionType(data.professionType)
+    assertProfessionalRoleKey(roleKey)
     await billingService.assertPlanCapacity(auth.clinicId, "professionals")
 
     const existingMember = await memberRepository.findActiveByEmailAndClinic(
@@ -254,7 +257,7 @@ export const professionalService = {
       await invitationRepository.markExpired(pending.id)
     }
 
-    const role = await roleRepository.findSystemByKey(data.roleKey)
+    const role = await roleRepository.findSystemByKey(roleKey)
     if (!role) {
       throw new AppError(ErrorCode.NOT_FOUND, {
         message: "Papel não encontrado.",
@@ -274,6 +277,7 @@ export const professionalService = {
 
       const created = await professionalRepository.create({
         fullName: null,
+        professionType: data.professionType,
         treatmentPronoun: null,
         status: "inactive",
       })
@@ -342,7 +346,8 @@ export const professionalService = {
           after: {
             id: listItem.id,
             email: data.email,
-            roleKey: data.roleKey,
+            professionType: data.professionType,
+            roleKey,
             affiliationType: data.affiliationType,
           },
         },
@@ -358,7 +363,8 @@ export const professionalService = {
         changes: {
           after: {
             email: data.email,
-            roleKey: data.roleKey,
+            professionType: data.professionType,
+            roleKey,
             affiliationType: data.affiliationType,
           },
         },
@@ -737,11 +743,21 @@ export const professionalService = {
       return { hasProfile: true }
     }
 
-    const mine = await professionalRepository.findActiveForSchedulingByUserId(
+    // Any affiliation counts (active or inactive). Inactive owners should
+    // reactivate in the list — not see the "create profile" callout again.
+    const existingByUser = await professionalRepository.findByUserId(
       auth.user.id,
-      auth.clinicId,
     )
-    return { hasProfile: Boolean(mine) }
+    if (!existingByUser) {
+      return { hasProfile: false }
+    }
+
+    const affiliation =
+      await professionalRepository.findByProfessionalAndClinic(
+        existingByUser.id,
+        auth.clinicId,
+      )
+    return { hasProfile: Boolean(affiliation) }
   },
 }
 
@@ -769,6 +785,7 @@ async function createOwnerClinicalProfileCore(
 
   const profileFields = {
     fullName: data.fullName,
+    professionType: data.professionType as ProfessionTypeKey,
     treatmentPronoun: data.treatmentPronoun,
     councilType: data.councilType ?? null,
     councilNumber: data.councilNumber ?? null,
@@ -849,7 +866,7 @@ async function createOwnerClinicalProfileCore(
         after: {
           id: listItem.id,
           fullName: listItem.fullName,
-          clinicalPracticeType: data.clinicalPracticeType,
+          professionType: data.professionType,
           source: "owner_clinical_profile",
         },
       },
@@ -865,7 +882,7 @@ async function createOwnerClinicalProfileCore(
       changes: {
         after: {
           fullName: data.fullName,
-          clinicalPracticeType: data.clinicalPracticeType,
+          professionType: data.professionType,
           source: "owner_clinical_profile",
         },
       },

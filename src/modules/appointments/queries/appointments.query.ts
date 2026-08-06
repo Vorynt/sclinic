@@ -11,6 +11,7 @@ export type AppointmentsRangeFilters = {
   from: Date
   to: Date
   professionalIds?: string[]
+  patientIds?: string[]
   modality?: "in_person" | "online"
 }
 
@@ -37,6 +38,9 @@ export const appointmentsQueryKeys = {
         to: filters.to.toISOString(),
         professionalIds: filters.professionalIds?.length
           ? [...filters.professionalIds].sort()
+          : undefined,
+        patientIds: filters.patientIds?.length
+          ? [...filters.patientIds].sort()
           : undefined,
         modality: filters.modality,
       },

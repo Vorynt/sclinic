@@ -35,7 +35,7 @@ Fora do board: canceled, no_show, completed sem charge ou paid.
 ## Fluxo canônico
 
 1. Agenda (+ valor) → charge pending  
-2. Médico inicia e conclui **sem** UI de pagamento  
+2. Profissional de saúde inicia e conclui **sem** UI de pagamento  
 3. Board → Receber (`financial.collect|manage`)  
 4. SSE invalida queries (agendamentos, bloqueios, lista de espera, cobranças)
 

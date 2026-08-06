@@ -103,7 +103,7 @@ export function canCompleteAttendance(status: AppointmentStatus): boolean {
  * Professional roles that may only view/schedule appointments for their own
  * profile. Other roles with appointment permissions see the full clinic agenda.
  */
-export const SELF_SCHEDULE_ONLY_ROLE_KEYS = ["doctor", "nurse"] as const;
+export const SELF_SCHEDULE_ONLY_ROLE_KEYS = ["clinician", "nurse"] as const;
 
 export function isSelfScheduleOnlyRole(
   roleKey: string | null | undefined,
@@ -121,7 +121,7 @@ export function isSelfScheduleOnlyRole(
 export const CAN_START_ATTENDANCE_ROLE_KEYS = [
   "owner",
   "admin",
-  "doctor",
+  "clinician",
   "nurse",
 ] as const;
 

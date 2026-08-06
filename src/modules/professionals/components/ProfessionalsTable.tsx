@@ -5,6 +5,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { DataTablePagination } from "@/components/data-table/DataTablePagination";
+import { QueryErrorState } from "@/components/status/QueryErrorState";
 import { TableSkeleton } from "@/components/status/TableSkeleton";
 import {
   AlertDialog,
@@ -39,6 +40,7 @@ import {
   ACCOUNT_STATUS_LABELS,
   formatProfessionalDisplayName,
   getAffiliationTypeLabel,
+  getProfessionTypeLabel,
   getProfessionalRoleLabel,
 } from "@/modules/professionals/constants/professionals";
 import {
@@ -106,9 +108,13 @@ export function ProfessionalsTable({
 
   if (professionalsQuery.isError) {
     return (
-      <p className="text-sm text-destructive">
-        Não foi possível carregar os profissionais.
-      </p>
+      <QueryErrorState
+        description="Não foi possível carregar os profissionais."
+        onRetry={() => {
+          void professionalsQuery.refetch();
+        }}
+        isRetrying={professionalsQuery.isFetching}
+      />
     );
   }
 
@@ -138,7 +144,7 @@ export function ProfessionalsTable({
           <TableRow>
             <TableHead>Nome</TableHead>
             <TableHead>E-mail</TableHead>
-            <TableHead>Papel</TableHead>
+            <TableHead>Profissão</TableHead>
             <TableHead>Afiliação</TableHead>
             <TableHead>Status</TableHead>
             <TableHead className="text-right">Ações</TableHead>
@@ -164,10 +170,12 @@ export function ProfessionalsTable({
                 </TableCell>
                 <TableCell>{professional.email || "—"}</TableCell>
                 <TableCell>
-                  {getProfessionalRoleLabel(
+                  <span title={getProfessionalRoleLabel(
                     professional.roleKey,
                     professional.roleName,
-                  )}
+                  )}>
+                    {getProfessionTypeLabel(professional.professionType)}
+                  </span>
                 </TableCell>
                 <TableCell>
                   {getAffiliationTypeLabel(professional.affiliationType)}

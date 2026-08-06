@@ -2,19 +2,24 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import type { z } from "zod";
 
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Field,
+  FieldContent,
   FieldError,
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field";
-import { FormErrorAlert, scrollFormToTop } from "@/components/ui/form-error-alert";
+import {
+  FormErrorAlert,
+  scrollFormToTop,
+} from "@/components/ui/form-error-alert";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -32,11 +37,14 @@ import { createClinicSchema } from "@/modules/clinics/schemas/clinic.schema";
 import {
   BRAZILIAN_STATES,
   COUNCIL_TYPE_LABELS,
-  PROFESSIONAL_ROLE_LABELS,
+  PROFESSION_TYPE_DEFAULTS,
+  PROFESSION_TYPE_KEYS,
+  PROFESSION_TYPE_LABELS,
   TREATMENT_PRONOUN_KEYS,
   TREATMENT_PRONOUN_LABELS,
-  type ProfessionalRoleKey,
+  type ProfessionTypeKey,
 } from "@/modules/professionals/constants/professionals";
+import { useAuth } from "@/providers/AuthProvider";
 import { ErrorCode, getClientMessage, isAppError } from "@/shared/errors";
 
 type CreateClinicValues = z.input<typeof createClinicSchema>;
@@ -48,20 +56,14 @@ type CreateClinicFormProps = {
 
 const CREATE_CLINIC_FORM_ID = "create-clinic-form";
 
-const PRACTICE_DEFAULTS: Record<
-  ProfessionalRoleKey,
-  { councilType: "CRM" | "COREN"; treatmentPronoun: "dr" | "enf" }
-> = {
-  doctor: { councilType: "CRM", treatmentPronoun: "dr" },
-  nurse: { councilType: "COREN", treatmentPronoun: "enf" },
-};
-
 export function CreateClinicForm({ planId }: CreateClinicFormProps) {
   const router = useRouter();
+  const { auth } = useAuth();
   const [formError, setFormError] = useState<{
     message: string;
     code: string;
   } | null>(null);
+  const [useAccountName, setUseAccountName] = useState(false);
 
   const {
     register,
@@ -87,7 +89,7 @@ export function CreateClinicForm({ planId }: CreateClinicFormProps) {
       addressZip: "",
       planId,
       alsoPractices: false,
-      clinicalPracticeType: undefined,
+      professionType: undefined,
       fullName: "",
       treatmentPronoun: undefined,
       councilType: undefined,
@@ -98,6 +100,26 @@ export function CreateClinicForm({ planId }: CreateClinicFormProps) {
   });
 
   const alsoPractices = watch("alsoPractices");
+  const trimmedAccountName = auth?.user.name?.trim() ?? "";
+  const canReuseAccountName = trimmedAccountName.length > 0;
+
+  useEffect(() => {
+    if (!alsoPractices) {
+      setUseAccountName(false);
+      return;
+    }
+    if (!useAccountName || !canReuseAccountName) return;
+    setValue("fullName", trimmedAccountName, {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
+  }, [
+    alsoPractices,
+    useAccountName,
+    canReuseAccountName,
+    trimmedAccountName,
+    setValue,
+  ]);
 
   const createClinic = useCreateClinicMutation({
     onSuccess: () => {
@@ -126,7 +148,7 @@ export function CreateClinicForm({ planId }: CreateClinicFormProps) {
         createClinic.mutate({
           ...data,
           alsoPractices: false,
-          clinicalPracticeType: undefined,
+          professionType: undefined,
           fullName: undefined,
           treatmentPronoun: undefined,
           councilType: undefined,
@@ -158,9 +180,7 @@ export function CreateClinicForm({ planId }: CreateClinicFormProps) {
         </p>
       </div>
 
-      {formError ? (
-        <FormErrorAlert message={formError.message} />
-      ) : null}
+      {formError ? <FormErrorAlert message={formError.message} /> : null}
 
       <input type="hidden" {...register("planId")} />
 
@@ -352,8 +372,9 @@ export function CreateClinicForm({ planId }: CreateClinicFormProps) {
                 const next = value === "yes";
                 field.onChange(next);
                 if (!next) {
+                  setUseAccountName(false);
                   setValue("fullName", "");
-                  setValue("clinicalPracticeType", undefined);
+                  setValue("professionType", undefined);
                   setValue("treatmentPronoun", undefined);
                   setValue("councilType", undefined);
                   setValue("councilNumber", "");
@@ -405,27 +426,46 @@ export function CreateClinicForm({ planId }: CreateClinicFormProps) {
                 placeholder="Como você aparece nos agendamentos"
                 aria-invalid={Boolean(errors.fullName) || undefined}
                 disabled={createClinic.isPending}
+                readOnly={useAccountName}
+                className={useAccountName ? "bg-muted" : undefined}
                 {...register("fullName")}
               />
               <FieldError errors={[errors.fullName]} />
             </Field>
 
-            <Field
-              data-invalid={Boolean(errors.clinicalPracticeType) || undefined}>
-              <FieldLabel>Tipo de atuação clínica</FieldLabel>
+            {canReuseAccountName ? (
+              <Field orientation="horizontal">
+                <Checkbox
+                  id="owner-use-account-name"
+                  checked={useAccountName}
+                  disabled={createClinic.isPending}
+                  onCheckedChange={(checked) => {
+                    setUseAccountName(checked === true);
+                  }}
+                />
+                <FieldContent>
+                  <FieldLabel htmlFor="owner-use-account-name">
+                    Usar o mesmo nome da minha conta
+                  </FieldLabel>
+                </FieldContent>
+              </Field>
+            ) : null}
+
+            <Field data-invalid={Boolean(errors.professionType) || undefined}>
+              <FieldLabel>Tipo de profissão</FieldLabel>
               <p className="text-sm text-muted-foreground">
                 Define o perfil usado na agenda. Não altera seu papel de dono.
               </p>
               <Controller
-                name="clinicalPracticeType"
+                name="professionType"
                 control={control}
                 render={({ field }) => (
-                  <RadioGroup
+                  <Select
                     value={field.value ?? ""}
                     onValueChange={(value) => {
-                      const next = value as ProfessionalRoleKey;
+                      const next = value as ProfessionTypeKey;
                       field.onChange(next);
-                      const defaults = PRACTICE_DEFAULTS[next];
+                      const defaults = PROFESSION_TYPE_DEFAULTS[next];
                       if (defaults) {
                         setValue("councilType", defaults.councilType, {
                           shouldDirty: true,
@@ -439,27 +479,25 @@ export function CreateClinicForm({ planId }: CreateClinicFormProps) {
                         }
                       }
                     }}
-                    disabled={createClinic.isPending}
-                    className="mt-2 gap-3">
-                    {(
-                      Object.keys(
-                        PROFESSIONAL_ROLE_LABELS,
-                      ) as ProfessionalRoleKey[]
-                    ).map((key) => (
-                      <Label
-                        key={key}
-                        htmlFor={`practice-${key}`}
-                        className="flex cursor-pointer items-center gap-3 rounded-lg border border-border px-3 py-2.5 has-data-[state=checked]:border-primary">
-                        <RadioGroupItem id={`practice-${key}`} value={key} />
-                        <span className="text-sm font-medium">
-                          {PROFESSIONAL_ROLE_LABELS[key]}
-                        </span>
-                      </Label>
-                    ))}
-                  </RadioGroup>
+                    disabled={createClinic.isPending}>
+                    <SelectTrigger
+                      className="mt-2"
+                      aria-invalid={
+                        Boolean(errors.professionType) || undefined
+                      }>
+                      <SelectValue placeholder="Selecione" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {PROFESSION_TYPE_KEYS.map((key) => (
+                        <SelectItem key={key} value={key}>
+                          {PROFESSION_TYPE_LABELS[key]}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 )}
               />
-              <FieldError errors={[errors.clinicalPracticeType]} />
+              <FieldError errors={[errors.professionType]} />
             </Field>
 
             <Field data-invalid={Boolean(errors.treatmentPronoun) || undefined}>

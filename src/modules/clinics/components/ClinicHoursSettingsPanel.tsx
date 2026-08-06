@@ -1,5 +1,6 @@
 "use client"
 
+import { QueryErrorState } from "@/components/status/QueryErrorState"
 import { Spinner } from "@/components/ui/spinner"
 import { ClinicHoursForm } from "@/modules/clinics/components/ClinicHoursForm"
 import { buildOnboardingHoursDraft } from "@/modules/clinics/constants/default-hours"
@@ -12,7 +13,13 @@ function isUnconfiguredWeek(
 }
 
 export function ClinicHoursSettingsPanel() {
-  const { data: hours, isPending, isError } = useClinicHours()
+  const {
+    data: hours,
+    isPending,
+    isError,
+    refetch,
+    isFetching,
+  } = useClinicHours()
 
   if (isPending) {
     return (
@@ -25,9 +32,13 @@ export function ClinicHoursSettingsPanel() {
 
   if (isError || !hours) {
     return (
-      <p className="text-sm text-destructive">
-        Não foi possível carregar os horários da clínica.
-      </p>
+      <QueryErrorState
+        description="Não foi possível carregar os horários da clínica."
+        onRetry={() => {
+          void refetch()
+        }}
+        isRetrying={isFetching}
+      />
     )
   }
 

@@ -1,12 +1,12 @@
 import { z } from "zod"
 
 import {
-  PROFESSIONAL_ROLE_KEYS,
+  PROFESSION_TYPE_KEYS,
   TREATMENT_PRONOUN_KEYS,
 } from "@/modules/professionals/constants/professionals"
 import { listQuerySchema } from "@/shared/validators"
 
-const professionalRoleKeySchema = z.enum(PROFESSIONAL_ROLE_KEYS)
+const professionTypeSchema = z.enum(PROFESSION_TYPE_KEYS)
 
 const treatmentPronounSchema = z.enum(TREATMENT_PRONOUN_KEYS)
 
@@ -19,7 +19,15 @@ const affiliationTypeSchema = z.enum([
 
 const professionalStatusSchema = z.enum(["active", "inactive"])
 
-const councilTypeSchema = z.enum(["CRM", "CRO", "COREN", "CRF", "OTHER"])
+const councilTypeSchema = z.enum([
+  "CRM",
+  "CRO",
+  "COREN",
+  "CRF",
+  "CREFITO",
+  "CRP",
+  "OTHER",
+])
 
 const optionalTrimmed = z
   .string()
@@ -44,7 +52,7 @@ export const createProfessionalSchema = z.object({
     .min(1, "E-mail é obrigatório")
     .email("E-mail inválido")
     .transform((value) => value.toLowerCase()),
-  roleKey: professionalRoleKeySchema,
+  professionType: professionTypeSchema,
   affiliationType: affiliationTypeSchema,
 })
 
@@ -63,6 +71,7 @@ export const updateProfessionalSchema = z
       .min(1, "Nome é obrigatório")
       .max(200, "Nome deve ter no máximo 200 caracteres")
       .optional(),
+    professionType: professionTypeSchema.optional(),
     treatmentPronoun: optionalTreatmentPronoun,
     specialty: optionalTrimmed,
     affiliationType: affiliationTypeSchema.optional(),
@@ -86,6 +95,7 @@ export const updateProfessionalSchema = z
     (data) =>
       data.name !== undefined ||
       data.fullName !== undefined ||
+      data.professionType !== undefined ||
       data.treatmentPronoun !== undefined ||
       data.specialty !== undefined ||
       data.affiliationType !== undefined ||

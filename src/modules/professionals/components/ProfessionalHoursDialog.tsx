@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
+import { QueryErrorState } from "@/components/status/QueryErrorState";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -125,9 +126,14 @@ export function ProfessionalHoursDialog({
             Carregando horários…
           </div>
         ) : hoursQuery.isError ? (
-          <p className="px-4 py-6 text-sm text-destructive sm:px-6">
-            Não foi possível carregar os horários. Tente novamente.
-          </p>
+          <QueryErrorState
+            className="mx-4 my-6 sm:mx-6"
+            description="Não foi possível carregar os horários. Tente novamente."
+            onRetry={() => {
+              void hoursQuery.refetch();
+            }}
+            isRetrying={hoursQuery.isFetching}
+          />
         ) : (
           <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4 sm:px-6">
             <WeeklyHoursForm

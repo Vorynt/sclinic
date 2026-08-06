@@ -1,6 +1,7 @@
 import type { InvitationStatus } from "@/modules/users/types/invitation"
 import type {
   AffiliationType,
+  ProfessionType,
   ProfessionalAccountStatus,
   ProfessionalListItem,
   ProfessionalStatus,
@@ -20,6 +21,16 @@ const PROFESSIONAL_STATUSES = new Set<ProfessionalStatus>([
   "inactive",
 ])
 
+const PROFESSION_TYPES = new Set<ProfessionType>([
+  "physician",
+  "dentist",
+  "physiotherapist",
+  "nurse",
+  "pharmacist",
+  "psychologist",
+  "other",
+])
+
 const TREATMENT_PRONOUNS = new Set<TreatmentPronoun>([
   "dr",
   "dra",
@@ -27,6 +38,8 @@ const TREATMENT_PRONOUNS = new Set<TreatmentPronoun>([
   "sra",
   "enf",
   "enfa",
+  "ft",
+  "fta",
 ])
 
 const INVITE_OPEN_STATUSES = new Set<InvitationStatus>([
@@ -54,6 +67,16 @@ function toProfessionalStatus(value: unknown): ProfessionalStatus {
     return value as ProfessionalStatus
   }
   return "inactive"
+}
+
+function toProfessionType(value: unknown): ProfessionType {
+  if (
+    typeof value === "string" &&
+    PROFESSION_TYPES.has(value as ProfessionType)
+  ) {
+    return value as ProfessionType
+  }
+  return "physician"
 }
 
 function toTreatmentPronoun(value: unknown): TreatmentPronoun | null {
@@ -119,6 +142,7 @@ export function computeAccountStatus(params: {
 export type ProfessionalListRow = {
   id: string
   fullName: string | null
+  professionType: unknown
   treatmentPronoun: unknown
   email: string | null
   roleKey: string | null
@@ -149,6 +173,7 @@ export function toProfessionalListItem(
   return {
     id: row.id,
     fullName: row.fullName,
+    professionType: toProfessionType(row.professionType),
     treatmentPronoun: toTreatmentPronoun(row.treatmentPronoun),
     email: row.email,
     roleKey,

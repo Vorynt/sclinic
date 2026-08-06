@@ -1,11 +1,18 @@
 "use client"
 
+import { QueryErrorState } from "@/components/status/QueryErrorState"
 import { Spinner } from "@/components/ui/spinner"
 import { DeleteClinicDangerZone } from "@/modules/clinics/components/DeleteClinicDangerZone"
 import { useActiveClinicForSettings } from "@/modules/clinics/hooks/use-clinic-hours"
 
 export function ClinicDangerSettingsPanel() {
-  const { data: clinic, isPending, isError } = useActiveClinicForSettings()
+  const {
+    data: clinic,
+    isPending,
+    isError,
+    refetch,
+    isFetching,
+  } = useActiveClinicForSettings()
 
   if (isPending) {
     return (
@@ -18,9 +25,13 @@ export function ClinicDangerSettingsPanel() {
 
   if (isError || !clinic) {
     return (
-      <p className="text-sm text-destructive">
-        Não foi possível carregar os dados da clínica.
-      </p>
+      <QueryErrorState
+        description="Não foi possível carregar os dados da clínica."
+        onRetry={() => {
+          void refetch()
+        }}
+        isRetrying={isFetching}
+      />
     )
   }
 

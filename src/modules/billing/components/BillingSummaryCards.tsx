@@ -3,6 +3,7 @@
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
+import { QueryErrorState } from "@/components/status/QueryErrorState";
 import {
   Card,
   CardDescription,
@@ -41,9 +42,13 @@ export function BillingSummaryCards({
 
   if (summaryQuery.isError || !summaryQuery.data) {
     return (
-      <p className="text-sm text-destructive">
-        Não foi possível carregar o resumo financeiro.
-      </p>
+      <QueryErrorState
+        description="Não foi possível carregar o resumo financeiro."
+        onRetry={() => {
+          void summaryQuery.refetch();
+        }}
+        isRetrying={summaryQuery.isFetching}
+      />
     );
   }
 

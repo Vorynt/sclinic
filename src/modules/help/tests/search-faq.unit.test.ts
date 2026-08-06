@@ -69,7 +69,7 @@ describe("help FAQ by role", () => {
   it("exposes all clinic roles", () => {
     assert.deepEqual([...HELP_ROLE_KEYS].sort(), [
       "admin",
-      "doctor",
+      "clinician",
       "financial",
       "manager",
       "nurse",
@@ -80,9 +80,9 @@ describe("help FAQ by role", () => {
 
   it("returns role-specific content", () => {
     const reception = getHelpFaqForRole("receptionist")
-    const doctor = getHelpFaqForRole("doctor")
+    const clinician = getHelpFaqForRole("clinician")
     assert.ok(reception.some((item) => item.id === "board-columns"))
-    assert.ok(doctor.some((item) => item.id === "start-attendance"))
+    assert.ok(clinician.some((item) => item.id === "start-attendance"))
     assert.ok(!reception.some((item) => item.id === "start-attendance"))
   })
 

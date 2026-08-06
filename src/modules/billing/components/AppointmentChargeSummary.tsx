@@ -4,6 +4,7 @@ import { CheckCircleIcon } from "@phosphor-icons/react";
 import { useState } from "react";
 import { toast } from "sonner";
 
+import { QueryErrorState } from "@/components/status/QueryErrorState";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
@@ -70,9 +71,13 @@ export function AppointmentChargeSummary({
             Carregando…
           </div>
         ) : chargeQuery.isError ? (
-          <p className="text-sm text-destructive">
-            Não foi possível carregar a cobrança.
-          </p>
+          <QueryErrorState
+            description="Não foi possível carregar a cobrança."
+            onRetry={() => {
+              void chargeQuery.refetch();
+            }}
+            isRetrying={chargeQuery.isFetching}
+          />
         ) : !chargeQuery.data ? (
           <p className="text-sm text-muted-foreground">
             Nenhuma cobrança registrada. Informe o valor ao agendar para gerar

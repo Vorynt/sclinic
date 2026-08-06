@@ -85,19 +85,19 @@ Personas de produto alinhadas aos papéis RBAC (`roleKey`). Cada persona descrev
 |-------|----------|
 | **Papel** | `receptionist` |
 | **Contexto** | Frente de balcão; agenda o dia e cobra o paciente. |
-| **Objetivos** | Marcar/remarcar, ver o board do dia, receber pagamento sem depender do médico. |
-| **Dores** | Médico “preso” no caixa; board desatualizado entre estações; não poder iniciar atendimento (proposital). |
+| **Objetivos** | Marcar/remarcar, ver o board do dia, receber pagamento sem depender do profissional de saúde. |
+| **Dores** | Profissional “preso” no caixa; board desatualizado entre estações; não poder iniciar atendimento (proposital). |
 | **Capabilities** | Pacientes (read/write), agenda (create/update/delete), `financial.collect` (sem `financial.view` → não precisa de `/billing`). |
 | **Home** | Contagens + **ReceptionOpsBoard** (SSE). |
 
-#### P3 — Dr. Rafael (Médico)
+#### P3 — Profissional de saúde (ex.: Dr. Rafael)
 
 | Campo | Conteúdo |
 |-------|----------|
-| **Papel** | `doctor` |
-| **Contexto** | Atende pacientes; agenda tipicamente **self-schedule** (só a si). |
-| **Objetivos** | Iniciar/concluir atendimento, registrar nota/vitais/alertas, emitir receitas imprimíveis — **sem** UI de cobrança no fluxo clínico. |
-| **Dores** | Ter que cobrar no final da consulta; prontuário espalhado; receita sem timbrado da clínica. |
+| **Papel** | `clinician` |
+| **Contexto** | Atende pacientes (médico, dentista, fisio, etc.); agenda tipicamente **self-schedule** (só a si). |
+| **Objetivos** | Iniciar/concluir atendimento, registrar nota/vitais/alertas, emitir documentos clínicos imprimíveis — **sem** UI de cobrança no fluxo clínico. |
+| **Dores** | Ter que cobrar no final da consulta; prontuário espalhado; documento sem timbrado da clínica. |
 | **Capabilities** | `records.*`, `appointments.create/update`, `financial.collect` (escape hatch), sem `appointments.delete` / `professionals.manage`. |
 | **Home** | Contagens da própria agenda. |
 
@@ -174,7 +174,7 @@ Diagrama: [Diagramas §2](Diagramas).
 ### J2 — Dia operacional (balcão → clínico → caixa)
 
 1. Recepção cria appointment com serviço (+ desconto/cortesia opcional) → charge `pending` (ou R$ 0 `paid` se cortesia/retorno).  
-2. Médico/enfermeiro inicia (`checked_in`) e conclui (`completed`) **sem** UI de pagamento.  
+2. Profissional de saúde / enfermeiro inicia (`checked_in`) e conclui (`completed`) **sem** UI de pagamento.  
 3. Board: coluna “Aguardando pagamento” → `markPaid` (pode ajustar desconto % antes).  
 4. SSE `clinic.ops` atualiza o board.  
 
@@ -251,7 +251,7 @@ Convenção de ID: `RF-<DOMÍNIO>-NNN`.
 | RF-USR-007 | Conta pessoal | `/account` overview, profile, security | Todas | Done |
 | RF-USR-008 | Conta subscription | `/account/subscription` (Portal) | P1 | Done |
 
-**Regras:** não alterar owner nem a si; roles de invite ≠ `owner`/`doctor`/`nurse`.
+**Regras:** não alterar owner nem a si; roles de invite ≠ `owner`/`clinician`/`nurse`.
 
 ### 4.4 Pacientes — `RF-PAC`
 
@@ -269,13 +269,13 @@ Convenção de ID: `RF-<DOMÍNIO>-NNN`.
 | ID | Título | Descrição | Personas | Status |
 |----|--------|-----------|----------|--------|
 | RF-PRO-001 | Lista | Perfis clínicos | `professionals.manage` | Done |
-| RF-PRO-002 | Convite doctor/nurse | TTL 7d; quota professionals | Gestores | Done |
+| RF-PRO-002 | Convite por tipo de profissão → clinician/nurse | TTL 7d; quota professionals; ADR-012 | Gestores | Done |
 | RF-PRO-003 | Aceite profissional | Conselho, pronome; e-mail deve coincidir | P9 | Done |
 | RF-PRO-004 | Editar perfil | — | Gestores | Done |
 | RF-PRO-005 | Active / inactive | Inactive **não agenda** | Gestores | Done |
 | RF-PRO-006 | Soft delete | + revoga convites pendentes | Gestores | Done |
 | RF-PRO-007 | Perfil clínico do owner | Sem invite; conta na cota | P10 | Done |
-| RF-PRO-008 | Integração agenda | Ativos; self-schedule doctor/nurse; owner clínico vê agenda completa | P3, P4, P10 | Done |
+| RF-PRO-008 | Integração agenda | Ativos; self-schedule clinician/nurse; owner clínico vê agenda completa | P3, P4, P10 | Done |
 | RF-PRO-009 | Horário semanal | Self-edit; override `professionals.manage`; demais só disponibilidade na agenda | P3, P4, P2 | Done |
 
 ### 4.6 Agendamentos — `RF-AGE`
@@ -288,7 +288,7 @@ Convenção de ID: `RF-<DOMÍNIO>-NNN`.
 | RF-AGE-004 | Transições de status | Ver §5 | Clínico / recepção | Done |
 | RF-AGE-005 | Cancelamento | Cascata: cancela charge `pending` | Quem cancela | Done |
 | RF-AGE-006 | Workspace attendance | Notas/vitais/receitas; leitura em `completed` | P3, P4, P10 | Done |
-| RF-AGE-007 | Iniciar atendimento | Só owner, admin, doctor, nurse | Clínicos | Done |
+| RF-AGE-007 | Iniciar atendimento | Só owner, admin, clinician, nurse | Clínicos | Done |
 | RF-AGE-008 | Valor → charge | `amountCents` + collect (legado) | Caixa | Done |
 | RF-AGE-009 | Self-schedule | Doctor/nurse só a si | P3, P4 | Done |
 | RF-AGE-010 | Serviço no agendamento | `serviceId` obrigatório; desconto %; cortesia/retorno | Caixa | Done |
@@ -581,7 +581,8 @@ Diagramas Mermaid: [Diagramas](Diagramas).
 3. Receita: print HTML; sem PDF/storage; ≤ 3 templates; blocos empilhados (sem canvas livre).  
 4. SSE hub in-process (multi-instância limitada).  
 5. Pagamento clínico manual (sem gateway).  
-6. Sem dual-role RBAC (owner + perfil clínico ≠ membership doctor).  
+6. Sem dual-role RBAC (owner + perfil clínico ≠ membership clinician).
+7. Multi-profissão via `profession_type` + role `clinician` (ADR-012) — sem role por dentista/fisio.  
 
 ### 7.3 Explicitamente não planejado neste ciclo
 
@@ -596,7 +597,7 @@ Diagramas Mermaid: [Diagramas](Diagramas).
 
 Visão resumida (✓ = usa ativamente; · = parcial / leitura; — = fora):
 
-| Área | P1 Owner | P2 Recepção | P3 Médico | P4 Enfermeira | P5 Financeiro | P6 Admin | P7 Manager |
+| Área | P1 Owner | P2 Recepção | P3 Prof. saúde | P4 Enfermeira | P5 Financeiro | P6 Admin | P7 Manager |
 |------|:--------:|:-----------:|:---------:|:-------------:|:-------------:|:--------:|:----------:|
 | Auth / conta | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | Assinatura SaaS | ✓ | — | — | — | — | · | — |

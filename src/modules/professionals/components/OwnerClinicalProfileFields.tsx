@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import type {
   Control,
   FieldErrors,
@@ -10,10 +11,14 @@ import type {
 import { Controller } from "react-hook-form";
 import type { z } from "zod";
 
-import { Field, FieldError, FieldLabel } from "@/components/ui/field";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Field,
+  FieldContent,
+  FieldError,
+  FieldLabel,
+} from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Select,
   SelectContent,
@@ -24,10 +29,12 @@ import {
 import {
   BRAZILIAN_STATES,
   COUNCIL_TYPE_LABELS,
-  PROFESSIONAL_ROLE_LABELS,
+  PROFESSION_TYPE_DEFAULTS,
+  PROFESSION_TYPE_KEYS,
+  PROFESSION_TYPE_LABELS,
   TREATMENT_PRONOUN_KEYS,
   TREATMENT_PRONOUN_LABELS,
-  type ProfessionalRoleKey,
+  type ProfessionTypeKey,
 } from "@/modules/professionals/constants/professionals";
 import { createOwnerClinicalProfileSchema } from "@/modules/professionals/schemas/owner-clinical-profile.schema";
 
@@ -43,14 +50,8 @@ type OwnerClinicalProfileFieldsProps = {
   setValue: UseFormSetValue<OwnerClinicalProfileFormValues>;
   disabled?: boolean;
   idPrefix?: string;
-};
-
-const PRACTICE_DEFAULTS: Record<
-  ProfessionalRoleKey,
-  { councilType: "CRM" | "COREN"; treatmentPronoun: "dr" | "enf" }
-> = {
-  doctor: { councilType: "CRM", treatmentPronoun: "dr" },
-  nurse: { councilType: "COREN", treatmentPronoun: "enf" },
+  /** When set, shows option to reuse the account display name. */
+  accountName?: string;
 };
 
 export function OwnerClinicalProfileFields({
@@ -61,8 +62,20 @@ export function OwnerClinicalProfileFields({
   setValue,
   disabled,
   idPrefix = "owner-clinical",
+  accountName,
 }: OwnerClinicalProfileFieldsProps) {
-  const practiceType = watch("clinicalPracticeType");
+  const professionType = watch("professionType");
+  const [useAccountName, setUseAccountName] = useState(false);
+  const trimmedAccountName = accountName?.trim() ?? "";
+  const canReuseAccountName = trimmedAccountName.length > 0;
+
+  useEffect(() => {
+    if (!useAccountName || !canReuseAccountName) return;
+    setValue("fullName", trimmedAccountName, {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
+  }, [useAccountName, canReuseAccountName, trimmedAccountName, setValue]);
 
   return (
     <div className="flex flex-col gap-4">
@@ -76,25 +89,46 @@ export function OwnerClinicalProfileFields({
           placeholder="Como você aparece nos agendamentos"
           aria-invalid={Boolean(errors.fullName) || undefined}
           disabled={disabled}
+          readOnly={useAccountName}
+          className={useAccountName ? "bg-muted" : undefined}
           {...register("fullName")}
         />
         <FieldError errors={[errors.fullName]} />
       </Field>
-      <Field data-invalid={Boolean(errors.clinicalPracticeType) || undefined}>
-        <FieldLabel>Tipo de atuação clínica</FieldLabel>
+
+      {canReuseAccountName ? (
+        <Field orientation="horizontal">
+          <Checkbox
+            id={`${idPrefix}-use-account-name`}
+            checked={useAccountName}
+            disabled={disabled}
+            onCheckedChange={(checked) => {
+              setUseAccountName(checked === true);
+            }}
+          />
+          <FieldContent>
+            <FieldLabel htmlFor={`${idPrefix}-use-account-name`}>
+              Usar o mesmo nome da minha conta
+            </FieldLabel>
+          </FieldContent>
+        </Field>
+      ) : null}
+
+      <Field data-invalid={Boolean(errors.professionType) || undefined}>
+        <FieldLabel>Tipo de profissão</FieldLabel>
         <p className="text-sm text-muted-foreground">
           Define o perfil usado na agenda. Não altera seu papel de dono.
         </p>
         <Controller
-          name="clinicalPracticeType"
+          name="professionType"
           control={control}
           render={({ field }) => (
-            <RadioGroup
+            <Select
               value={field.value}
               onValueChange={(value) => {
-                const next = value as ProfessionalRoleKey;
+                const next = value as ProfessionTypeKey;
                 field.onChange(next);
-                const defaults = PRACTICE_DEFAULTS[next];
+                const defaults = PROFESSION_TYPE_DEFAULTS[next];
                 if (defaults) {
                   setValue("councilType", defaults.councilType, {
                     shouldDirty: true,
@@ -107,28 +141,23 @@ export function OwnerClinicalProfileFields({
                   }
                 }
               }}
-              disabled={disabled}
-              className="mt-2 gap-3">
-              {(
-                Object.keys(PROFESSIONAL_ROLE_LABELS) as ProfessionalRoleKey[]
-              ).map((key) => (
-                <Label
-                  key={key}
-                  htmlFor={`${idPrefix}-practice-${key}`}
-                  className="flex cursor-pointer items-center gap-3 rounded-lg border border-border px-3 py-2.5 has-data-[state=checked]:border-primary">
-                  <RadioGroupItem
-                    id={`${idPrefix}-practice-${key}`}
-                    value={key}
-                  />
-                  <span className="text-sm font-medium">
-                    {PROFESSIONAL_ROLE_LABELS[key]}
-                  </span>
-                </Label>
-              ))}
-            </RadioGroup>
+              disabled={disabled}>
+              <SelectTrigger
+                className="mt-2"
+                aria-invalid={Boolean(errors.professionType) || undefined}>
+                <SelectValue placeholder="Selecione" />
+              </SelectTrigger>
+              <SelectContent>
+                {PROFESSION_TYPE_KEYS.map((key) => (
+                  <SelectItem key={key} value={key}>
+                    {PROFESSION_TYPE_LABELS[key]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           )}
         />
-        <FieldError errors={[errors.clinicalPracticeType]} />
+        <FieldError errors={[errors.professionType]} />
       </Field>
 
       <Field data-invalid={Boolean(errors.treatmentPronoun) || undefined}>
@@ -233,7 +262,7 @@ export function OwnerClinicalProfileFields({
       <Field data-invalid={Boolean(errors.specialty) || undefined}>
         <FieldLabel htmlFor={`${idPrefix}-specialty`}>
           Especialidade
-          {practiceType === "nurse" ? " (área)" : ""}
+          {professionType === "nurse" ? " (área)" : ""}
         </FieldLabel>
         <Input
           id={`${idPrefix}-specialty`}

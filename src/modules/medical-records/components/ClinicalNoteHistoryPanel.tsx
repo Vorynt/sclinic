@@ -5,6 +5,7 @@ import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { useState } from "react"
 
+import { QueryErrorState } from "@/components/status/QueryErrorState"
 import {
   Collapsible,
   CollapsibleContent,
@@ -19,6 +20,8 @@ type ClinicalNoteHistoryPanelProps = {
   notes: ClinicalNote[] | undefined
   isLoading: boolean
   isError: boolean
+  onRetry: () => void
+  isRetrying?: boolean
   title?: string
   description?: string
   emptyMessage?: string
@@ -28,6 +31,8 @@ export function ClinicalNoteHistoryPanel({
   notes,
   isLoading,
   isError,
+  onRetry,
+  isRetrying = false,
   title = "Anotações anteriores",
   description = "Histórico clínico do paciente em outros atendimentos.",
   emptyMessage = "Nenhuma anotação anterior.",
@@ -48,9 +53,11 @@ export function ClinicalNoteHistoryPanel({
       ) : null}
 
       {isError ? (
-        <p className="text-sm text-destructive">
-          Não foi possível carregar o histórico.
-        </p>
+        <QueryErrorState
+          description="Não foi possível carregar o histórico."
+          onRetry={onRetry}
+          isRetrying={isRetrying}
+        />
       ) : null}
 
       {!isLoading && !isError && notes && notes.length === 0 ? (

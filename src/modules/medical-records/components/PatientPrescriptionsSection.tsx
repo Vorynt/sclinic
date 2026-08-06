@@ -1,5 +1,6 @@
 "use client"
 
+import { QueryErrorState } from "@/components/status/QueryErrorState"
 import { Spinner } from "@/components/ui/spinner"
 import { PrescriptionListItem } from "@/modules/medical-records/components/PrescriptionListItem"
 import { usePatientPrescriptionsQuery } from "@/modules/medical-records/hooks/use-prescriptions"
@@ -29,9 +30,13 @@ export function PatientPrescriptionsSection({
           <Spinner />
         </div>
       ) : query.isError ? (
-        <p className="text-sm text-destructive">
-          Não foi possível carregar os documentos.
-        </p>
+        <QueryErrorState
+          description="Não foi possível carregar os documentos."
+          onRetry={() => {
+            void query.refetch()
+          }}
+          isRetrying={query.isFetching}
+        />
       ) : !query.data?.length ? (
         <p className="text-sm text-muted-foreground">
           Nenhum documento registrado.

@@ -36,8 +36,8 @@ const SYSTEM_ROLES = [
     description: "Recepcionista — pacientes e agendamentos",
   },
   {
-    key: "doctor",
-    name: "Médico(a)",
+    key: "clinician",
+    name: "Profissional de saúde",
     description: "Profissional de saúde com acesso de escrita clínica",
   },
   {
@@ -143,7 +143,7 @@ const ROLE_PERMISSION_MATRIX: Record<string, readonly string[]> = {
     "appointments.delete",
     "financial.collect",
   ],
-  doctor: [
+  clinician: [
     "patients.read",
     "patients.write",
     "appointments.create",
@@ -168,6 +168,32 @@ const ROLE_PERMISSION_MATRIX: Record<string, readonly string[]> = {
 };
 
 async function ensureSystemRoles() {
+  // ADR-012: rename legacy system role `doctor` → `clinician` if still present.
+  const [legacyDoctor] = await db
+    .select({ id: roles.id })
+    .from(roles)
+    .where(and(eq(roles.key, "doctor"), isNull(roles.clinicId)))
+    .limit(1)
+
+  if (legacyDoctor) {
+    const [existingClinician] = await db
+      .select({ id: roles.id })
+      .from(roles)
+      .where(and(eq(roles.key, "clinician"), isNull(roles.clinicId)))
+      .limit(1)
+
+    if (!existingClinician) {
+      await db
+        .update(roles)
+        .set({
+          key: "clinician",
+          name: "Profissional de saúde",
+          description: "Profissional de saúde com acesso de escrita clínica",
+        })
+        .where(eq(roles.id, legacyDoctor.id))
+    }
+  }
+
   for (const role of SYSTEM_ROLES) {
     const [existing] = await db
       .select({ id: roles.id })

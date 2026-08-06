@@ -20,6 +20,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { OwnerClinicalProfileFields } from "@/modules/professionals/components/OwnerClinicalProfileFields";
 import { useCreateOwnerClinicalProfileMutation } from "@/modules/professionals/hooks/use-professional-mutations";
 import { createOwnerClinicalProfileSchema } from "@/modules/professionals/schemas/owner-clinical-profile.schema";
+import { useAuth } from "@/providers/AuthProvider";
 import { ErrorCode, getClientMessage, isAppError } from "@/shared/errors";
 
 type FormValues = z.input<typeof createOwnerClinicalProfileSchema>;
@@ -34,6 +35,7 @@ export function OwnerClinicalProfileDialog({
   open,
   onOpenChange,
 }: OwnerClinicalProfileDialogProps) {
+  const { auth } = useAuth();
   const [formError, setFormError] = useState<{
     message: string;
     code: string;
@@ -50,7 +52,7 @@ export function OwnerClinicalProfileDialog({
   } = useForm<FormValues, unknown, FormOutput>({
     resolver: zodResolver(createOwnerClinicalProfileSchema),
     defaultValues: {
-      clinicalPracticeType: "doctor",
+      professionType: "physician",
       fullName: "",
       treatmentPronoun: "dr",
       councilType: "CRM",
@@ -111,12 +113,14 @@ export function OwnerClinicalProfileDialog({
           ) : null}
 
           <OwnerClinicalProfileFields
+            key={open ? "open" : "closed"}
             register={register}
             control={control}
             errors={errors}
             watch={watch}
             setValue={setValue}
             disabled={createProfile.isPending}
+            accountName={auth?.user.name}
           />
 
           <DialogFooter>

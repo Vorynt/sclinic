@@ -63,7 +63,7 @@ describe("createClinicSchema", () => {
       name: "Clínica Solo",
       planId: PLAN_ID,
       alsoPractices: true,
-      clinicalPracticeType: "doctor",
+      professionType: "physician",
       fullName: " Ana Silva ",
       treatmentPronoun: "dra",
       councilType: "CRM",
@@ -82,7 +82,7 @@ describe("createClinicSchema", () => {
 
     const profile = toOwnerClinicalProfileFields(parsed)
     assert.ok(profile)
-    assert.equal(profile.clinicalPracticeType, "doctor")
+    assert.equal(profile.professionType, "physician")
     assert.equal(profile.fullName, "Ana Silva")
   })
 

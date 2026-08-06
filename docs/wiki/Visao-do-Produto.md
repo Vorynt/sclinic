@@ -24,7 +24,7 @@ Misturar os dois é erro de modelagem — ver ADR-002 e ADR-003.
 | Owner | Plano, clínica, equipe, settings, auditoria |
 | Admin / Manager | Operação e gestão |
 | Recepcionista | Agenda, board do dia, cobrança no balcão |
-| Médico / Enfermeiro | Atendimento, prontuário, receitas |
+| Profissional de saúde / Enfermeiro | Atendimento, prontuário, documentos clínicos |
 | Financeiro | Listagem de cobranças clínicas |
 
 Personas detalhadas, RF/RNF e jornadas: [Requisitos](Requisitos).  

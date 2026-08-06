@@ -12,6 +12,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { DataTablePagination } from "@/components/data-table/DataTablePagination";
+import { QueryErrorState } from "@/components/status/QueryErrorState";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -226,9 +227,13 @@ export function ChargesTable({ filters, onPageChange }: ChargesTableProps) {
 
   if (chargesQuery.isError) {
     return (
-      <p className="text-sm text-destructive">
-        Não foi possível carregar as cobranças.
-      </p>
+      <QueryErrorState
+        description="Não foi possível carregar as cobranças."
+        onRetry={() => {
+          void chargesQuery.refetch();
+        }}
+        isRetrying={chargesQuery.isFetching}
+      />
     );
   }
 

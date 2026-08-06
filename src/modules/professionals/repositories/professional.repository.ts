@@ -18,6 +18,7 @@ import {
 import type {
   AffiliationType,
   CouncilType,
+  ProfessionType,
   ProfessionalListItem,
   ProfessionalSchedulingItem,
   ProfessionalStatus,
@@ -58,6 +59,7 @@ const INVITE_LIST_STATUSES = [
 const listSelect = {
   id: professionals.id,
   fullName: professionals.fullName,
+  professionType: professionals.professionType,
   treatmentPronoun: professionals.treatmentPronoun,
   email: sql<string | null>`coalesce(${invitations.email}, ${user.email})`,
   roleKey: sql<
@@ -90,6 +92,7 @@ function mapRows(rows: ProfessionalListRow[]): ProfessionalListItem[] {
 export const professionalRepository = {
   async create(params: {
     fullName?: string | null;
+    professionType?: ProfessionType;
     treatmentPronoun?: TreatmentPronoun | null;
     status?: ProfessionalStatus;
     userId?: string | null;
@@ -101,6 +104,7 @@ export const professionalRepository = {
   }): Promise<{
     id: string;
     fullName: string | null;
+    professionType: ProfessionType;
     treatmentPronoun: TreatmentPronoun | null;
     status: ProfessionalStatus;
   }> {
@@ -109,6 +113,7 @@ export const professionalRepository = {
         .insert(professionals)
         .values({
           fullName: params.fullName ?? null,
+          professionType: params.professionType ?? "physician",
           treatmentPronoun: params.treatmentPronoun ?? null,
           status: params.status ?? "inactive",
           userId: params.userId ?? null,
@@ -121,6 +126,7 @@ export const professionalRepository = {
         .returning({
           id: professionals.id,
           fullName: professionals.fullName,
+          professionType: professionals.professionType,
           treatmentPronoun: professionals.treatmentPronoun,
           status: professionals.status,
         });
@@ -132,6 +138,7 @@ export const professionalRepository = {
       return {
         id: row.id,
         fullName: row.fullName,
+        professionType: (row.professionType as ProfessionType) ?? "physician",
         treatmentPronoun: (row.treatmentPronoun as TreatmentPronoun | null) ?? null,
         status: (row.status as ProfessionalStatus) ?? "inactive",
       };
@@ -502,6 +509,7 @@ export const professionalRepository = {
     clinicId: string;
     data: {
       fullName?: string | null;
+      professionType?: ProfessionType;
       treatmentPronoun?: TreatmentPronoun | null;
       specialty?: string | null;
       affiliationType?: AffiliationType;
@@ -524,6 +532,7 @@ export const professionalRepository = {
 
       const {
         fullName,
+        professionType,
         treatmentPronoun,
         specialty,
         affiliationType,
@@ -536,6 +545,7 @@ export const professionalRepository = {
 
       const hasProfessionalFields =
         fullName !== undefined ||
+        professionType !== undefined ||
         treatmentPronoun !== undefined ||
         specialty !== undefined ||
         status !== undefined ||
@@ -549,6 +559,7 @@ export const professionalRepository = {
           .update(professionals)
           .set({
             ...(fullName !== undefined ? { fullName } : {}),
+            ...(professionType !== undefined ? { professionType } : {}),
             ...(treatmentPronoun !== undefined ? { treatmentPronoun } : {}),
             ...(specialty !== undefined ? { specialty } : {}),
             ...(status !== undefined ? { status } : {}),

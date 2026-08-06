@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
 import type { z } from "zod";
 
 import { Button } from "@/components/ui/button";
@@ -15,7 +14,10 @@ import {
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field";
-import { FormErrorAlert, scrollFormToTop } from "@/components/ui/form-error-alert";
+import {
+  FormErrorAlert,
+  scrollFormToTop,
+} from "@/components/ui/form-error-alert";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { routes } from "@/config/routes";
@@ -40,7 +42,6 @@ export function SignInForm() {
 
   const signIn = useSignInMutation({
     onSuccess: (data) => {
-      toast.success("Login realizado com sucesso");
       router.replace(getPostAuthRedirect(data, next));
     },
     onError: (error) => {
@@ -96,9 +97,7 @@ export function SignInForm() {
         </p>
       </div>
 
-      {formError ? (
-        <FormErrorAlert message={formError.message} />
-      ) : null}
+      {formError ? <FormErrorAlert message={formError.message} /> : null}
 
       <FieldGroup className="gap-5">
         <Field data-invalid={Boolean(errors.email) || undefined}>

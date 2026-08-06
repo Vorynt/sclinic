@@ -19,7 +19,7 @@ export const ROLE_LABELS: Record<string, string> = {
   admin: "Administrador",
   manager: "Gestor",
   receptionist: "Recepcionista",
-  doctor: "Médico(a)",
+  clinician: "Profissional de saúde",
   nurse: "Enfermeiro(a)",
   financial: "Financeiro",
 }

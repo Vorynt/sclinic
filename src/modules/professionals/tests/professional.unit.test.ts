@@ -6,6 +6,7 @@ import {
   AFFILIATION_TYPE_LABELS,
   formatProfessionalDisplayName,
   PROFESSIONAL_ROLE_KEYS,
+  roleKeyFromProfessionType,
   TREATMENT_PRONOUN_KEYS,
   TREATMENT_PRONOUN_LABELS,
 } from "@/modules/professionals/constants/professionals"
@@ -22,31 +23,41 @@ import { DEFAULT_LIST_PAGE_SIZE } from "@/shared/validators"
 const VALID_UUID = "11111111-1111-4111-8111-111111111111"
 
 describe("createProfessionalSchema", () => {
-  it("accepts doctor role and lowercases email without name", () => {
+  it("accepts profession type and lowercases email without name", () => {
     const parsed = createProfessionalSchema.parse({
       email: "Ana@Clinic.COM",
-      roleKey: "doctor",
+      professionType: "physician",
       affiliationType: "attending",
     })
     assert.equal(parsed.email, "ana@clinic.com")
-    assert.equal(parsed.roleKey, "doctor")
+    assert.equal(parsed.professionType, "physician")
     assert.equal(parsed.affiliationType, "attending")
     assert.equal("name" in parsed, false)
+    assert.equal("roleKey" in parsed, false)
   })
 
-  it("accepts nurse role", () => {
+  it("accepts nurse profession type", () => {
     const parsed = createProfessionalSchema.parse({
       email: "carlos@clinic.com",
-      roleKey: "nurse",
+      professionType: "nurse",
       affiliationType: "locum",
     })
-    assert.equal(parsed.roleKey, "nurse")
+    assert.equal(parsed.professionType, "nurse")
   })
 
-  it("rejects admin as professional role", () => {
+  it("accepts dentist profession type", () => {
+    const parsed = createProfessionalSchema.parse({
+      email: "dentista@clinic.com",
+      professionType: "dentist",
+      affiliationType: "attending",
+    })
+    assert.equal(parsed.professionType, "dentist")
+  })
+
+  it("rejects admin as profession type", () => {
     const result = createProfessionalSchema.safeParse({
       email: "ana@clinic.com",
-      roleKey: "admin",
+      professionType: "admin",
       affiliationType: "attending",
     })
     assert.equal(result.success, false)
@@ -55,10 +66,19 @@ describe("createProfessionalSchema", () => {
   it("rejects missing email", () => {
     const result = createProfessionalSchema.safeParse({
       email: "",
-      roleKey: "doctor",
+      professionType: "physician",
       affiliationType: "attending",
     })
     assert.equal(result.success, false)
+  })
+})
+
+describe("roleKeyFromProfessionType", () => {
+  it("maps nurse to nurse role and others to clinician", () => {
+    assert.equal(roleKeyFromProfessionType("nurse"), "nurse")
+    assert.equal(roleKeyFromProfessionType("physician"), "clinician")
+    assert.equal(roleKeyFromProfessionType("dentist"), "clinician")
+    assert.equal(roleKeyFromProfessionType("physiotherapist"), "clinician")
   })
 })
 
@@ -110,8 +130,8 @@ describe("updateProfessionalSchema", () => {
 })
 
 describe("professionals constants", () => {
-  it("exposes doctor and nurse role keys", () => {
-    assert.deepEqual([...PROFESSIONAL_ROLE_KEYS], ["doctor", "nurse"])
+  it("exposes clinician and nurse role keys", () => {
+    assert.deepEqual([...PROFESSIONAL_ROLE_KEYS], ["clinician", "nurse"])
   })
 
   it("exposes treatment pronoun labels", () => {
@@ -122,9 +142,12 @@ describe("professionals constants", () => {
       "sra",
       "enf",
       "enfa",
+      "ft",
+      "fta",
     ])
     assert.equal(TREATMENT_PRONOUN_LABELS.dra, "Dra.")
     assert.equal(TREATMENT_PRONOUN_LABELS.enf, "Enf.")
+    assert.equal(TREATMENT_PRONOUN_LABELS.ft, "Ft.")
   })
 
   it("formats display name with treatment pronoun", () => {
@@ -231,9 +254,9 @@ describe("listProfessionalsSchema", () => {
 })
 
 describe("createOwnerClinicalProfileSchema", () => {
-  it("accepts doctor profile with required agenda fields", () => {
+  it("accepts physician profile with required agenda fields", () => {
     const parsed = createOwnerClinicalProfileSchema.parse({
-      clinicalPracticeType: "doctor",
+      professionType: "physician",
       fullName: " Ana Silva ",
       treatmentPronoun: "dra",
       councilType: "CRM",
@@ -241,32 +264,32 @@ describe("createOwnerClinicalProfileSchema", () => {
       councilState: "rj",
       specialty: "Dermatologia",
     })
-    assert.equal(parsed.clinicalPracticeType, "doctor")
+    assert.equal(parsed.professionType, "physician")
     assert.equal(parsed.fullName, "Ana Silva")
     assert.equal(parsed.councilState, "RJ")
   })
 
-  it("accepts nurse as clinicalPracticeType", () => {
+  it("accepts nurse as professionType", () => {
     const parsed = createOwnerClinicalProfileSchema.parse({
-      clinicalPracticeType: "nurse",
+      professionType: "nurse",
       fullName: "Carlos Enfermagem",
       treatmentPronoun: "enf",
       councilType: "COREN",
     })
-    assert.equal(parsed.clinicalPracticeType, "nurse")
+    assert.equal(parsed.professionType, "nurse")
   })
 
   it("rejects missing fullName or treatmentPronoun", () => {
     assert.equal(
       createOwnerClinicalProfileSchema.safeParse({
-        clinicalPracticeType: "doctor",
+        professionType: "physician",
         treatmentPronoun: "dr",
       }).success,
       false,
     )
     assert.equal(
       createOwnerClinicalProfileSchema.safeParse({
-        clinicalPracticeType: "doctor",
+        professionType: "physician",
         fullName: "Ana",
       }).success,
       false,

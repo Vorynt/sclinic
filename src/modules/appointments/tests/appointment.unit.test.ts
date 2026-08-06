@@ -300,6 +300,24 @@ describe("listAppointmentsSchema", () => {
     })
     assert.equal(parsed.modality, "online")
   })
+
+  it("accepts optional patientIds", () => {
+    const parsed = listAppointmentsSchema.parse({
+      from: "2026-01-01T00:00:00.000Z",
+      to: "2026-01-31T23:59:59.000Z",
+      patientIds: [VALID_UUID, OTHER_UUID],
+    })
+    assert.deepEqual(parsed.patientIds, [VALID_UUID, OTHER_UUID])
+  })
+
+  it("rejects invalid patientIds", () => {
+    const result = listAppointmentsSchema.safeParse({
+      from: "2026-01-01T00:00:00.000Z",
+      to: "2026-01-31T23:59:59.000Z",
+      patientIds: ["not-a-uuid"],
+    })
+    assert.equal(result.success, false)
+  })
 })
 
 describe("listPatientAppointmentsSchema", () => {
@@ -467,7 +485,7 @@ describe("appointment status transition helpers", () => {
   it("allows start attendance only for owner, admin and health roles", () => {
     assert.equal(canRoleStartAttendance("owner"), true)
     assert.equal(canRoleStartAttendance("admin"), true)
-    assert.equal(canRoleStartAttendance("doctor"), true)
+    assert.equal(canRoleStartAttendance("clinician"), true)
     assert.equal(canRoleStartAttendance("nurse"), true)
     assert.equal(canRoleStartAttendance("manager"), false)
     assert.equal(canRoleStartAttendance("receptionist"), false)
@@ -640,7 +658,7 @@ describe("getProfessionalCalendarColor", () => {
 
 describe("isSelfScheduleOnlyRole", () => {
   it("is true for professional roles (doctor and nurse)", () => {
-    assert.equal(isSelfScheduleOnlyRole("doctor"), true)
+    assert.equal(isSelfScheduleOnlyRole("clinician"), true)
     assert.equal(isSelfScheduleOnlyRole("nurse"), true)
     assert.equal(isSelfScheduleOnlyRole("receptionist"), false)
     assert.equal(isSelfScheduleOnlyRole("owner"), false)
