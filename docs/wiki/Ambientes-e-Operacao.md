@@ -104,6 +104,8 @@ Preview deploys **não** rodam migrate (evita SQL de feature branch no banco com
 
 Se o build falhar em `[vercel-build] ERROR: DATABASE_URL is not set`, a env de Production não está configurada.
 
+Se falhar em `db:migrate` / `applying migrations`, leia o erro Postgres no log. Armadilha comum: `ALTER TYPE ... ADD VALUE 'x'` e uso de `'x'` no **mesmo** arquivo de migration (Postgres exige commit antes de usar o label novo). Separe em duas migrations ou não referencie o label novo no backfill da mesma migration (como em `0023_multi_profession_clinician.sql`).
+
 ## Seeds e armadilhas
 
 - Sem `db:seed:rbac`, permissões como `financial.collect` / `audit.read` podem faltar.
