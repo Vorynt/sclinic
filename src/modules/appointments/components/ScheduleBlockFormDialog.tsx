@@ -2,6 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod"
 import { addMinutes } from "date-fns"
+import { useEffect } from "react"
 import { Controller, useForm } from "react-hook-form"
 import { toast } from "sonner"
 import { z } from "zod"
@@ -23,16 +24,24 @@ import {
   FieldLabel,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Textarea } from "@/components/ui/textarea"
+import { isSelfScheduleOnlyRole } from "@/modules/appointments/constants/appointments"
 import { useCreateScheduleBlockMutation } from "@/modules/appointments/hooks/use-schedule-blocks"
 import { APPOINTMENT_DURATION_OPTIONS } from "@/modules/appointments/utils/calendar-constants"
+import { useAuthSession } from "@/modules/authentication/hooks/use-auth"
 import { ProfessionalCombobox } from "@/modules/professionals/components/ProfessionalCombobox"
+import {
+  formatProfessionalDisplayName,
+} from "@/modules/professionals/constants/professionals"
+import { useProfessionalsForSchedulingQuery } from "@/modules/professionals/hooks/use-professionals"
 import { isAppError } from "@/shared/errors"
 import { parseISODate, toISODate } from "@/utils/date"
 
 const blockFormSchema = z
   .object({
-    professionalId: z.string().uuid("Selecione um profissional"),
+    scope: z.enum(["professional", "clinic"]),
+    professionalId: z.string().optional(),
     date: z.string().trim().min(1, "Selecione a data"),
     startTime: z
       .string()
@@ -46,12 +55,21 @@ const blockFormSchema = z
       .optional(),
   })
   .superRefine((data, ctx) => {
+    if (data.scope === "professional") {
+      const id = data.professionalId?.trim() ?? ""
+      if (!z.string().uuid().safeParse(id).success) {
+        ctx.addIssue({
+          code: "custom",
+          message: "Selecione um profissional",
+          path: ["professionalId"],
+        })
+      }
+    }
+
     const day = parseISODate(data.date)
     if (!day) return
     const [hours, minutes] = data.startTime.split(":").map(Number)
     if (Number.isNaN(hours) || Number.isNaN(minutes)) return
-    const startsAt = new Date(day)
-    startsAt.setHours(hours, minutes, 0, 0)
     const duration = Number(data.durationMinutes)
     if (!Number.isFinite(duration) || duration <= 0) {
       ctx.addIssue({
@@ -77,13 +95,22 @@ export function ScheduleBlockFormDialog({
   defaultStartsAt,
   defaultProfessionalId,
 }: ScheduleBlockFormDialogProps) {
+  const sessionQuery = useAuthSession()
+  const isProfessionalLocked = isSelfScheduleOnlyRole(
+    sessionQuery.data?.membership?.roleKey,
+  )
+  const professionalsQuery = useProfessionalsForSchedulingQuery()
+  const professionals = professionalsQuery.data ?? []
+
   const createMutation = useCreateScheduleBlockMutation({
     onSuccess: () => {
       toast.success("Bloqueio criado.")
       onOpenChange(false)
     },
     onError: (error) => {
-      toast.error(isAppError(error) ? error.message : "Não foi possível criar o bloqueio.")
+      toast.error(
+        isAppError(error) ? error.message : "Não foi possível criar o bloqueio.",
+      )
     },
   })
 
@@ -91,6 +118,7 @@ export function ScheduleBlockFormDialog({
   const form = useForm<BlockFormValues>({
     resolver: zodResolver(blockFormSchema),
     defaultValues: {
+      scope: "professional",
       professionalId: defaultProfessionalId ?? "",
       date: toISODate(defaultDate),
       startTime: defaultStartsAt
@@ -105,8 +133,34 @@ export function ScheduleBlockFormDialog({
     control,
     register,
     handleSubmit,
+    setValue,
+    watch,
     formState: { errors },
   } = form
+
+  const scope = watch("scope")
+
+  useEffect(() => {
+    if (!isProfessionalLocked) return
+    const selfProfessional = professionalsQuery.data?.[0]
+    if (!selfProfessional) return
+    setValue("scope", "professional")
+    setValue("professionalId", selfProfessional.id, { shouldValidate: true })
+  }, [isProfessionalLocked, professionalsQuery.data, setValue])
+
+  useEffect(() => {
+    if (isProfessionalLocked || !defaultProfessionalId) return
+    setValue("professionalId", defaultProfessionalId, { shouldValidate: true })
+  }, [defaultProfessionalId, isProfessionalLocked, setValue])
+
+  const lockedProfessionalLabel = isProfessionalLocked
+    ? professionals[0]
+      ? formatProfessionalDisplayName({
+          fullName: professionals[0].fullName,
+          treatmentPronoun: professionals[0].treatmentPronoun,
+        })
+      : null
+    : null
 
   function onSubmit(data: BlockFormValues) {
     const day = parseISODate(data.date)
@@ -117,7 +171,8 @@ export function ScheduleBlockFormDialog({
     const endsAt = addMinutes(startsAt, Number(data.durationMinutes))
 
     createMutation.mutate({
-      professionalId: data.professionalId,
+      professionalId:
+        data.scope === "clinic" ? null : (data.professionalId ?? null),
       startsAt,
       endsAt,
       reason: data.reason?.trim() || undefined,
@@ -134,8 +189,9 @@ export function ScheduleBlockFormDialog({
         <DialogHeader>
           <DialogTitle>Bloquear horário</DialogTitle>
           <DialogDescription>
-            Marca o profissional como indisponível neste intervalo (férias,
-            reunião, etc.).
+            {isProfessionalLocked
+              ? "Marca você como indisponível neste intervalo (reunião, folga, etc.)."
+              : "Indisponibilidade pontual de um profissional ou da clínica inteira."}
           </DialogDescription>
         </DialogHeader>
         <form
@@ -144,21 +200,56 @@ export function ScheduleBlockFormDialog({
           onSubmit={handleSubmit(onSubmit)}
         >
           <FieldGroup>
-            <Field data-invalid={Boolean(errors.professionalId) || undefined}>
-              <FieldLabel>Profissional</FieldLabel>
-              <Controller
-                control={control}
-                name="professionalId"
-                render={({ field }) => (
-                  <ProfessionalCombobox
-                    value={field.value || ""}
-                    onValueChange={(id) => field.onChange(id)}
-                    aria-invalid={Boolean(errors.professionalId) || undefined}
-                  />
-                )}
-              />
-              <FieldError errors={[errors.professionalId]} />
-            </Field>
+            {!isProfessionalLocked ? (
+              <Field>
+                <FieldLabel>Escopo</FieldLabel>
+                <Controller
+                  control={control}
+                  name="scope"
+                  render={({ field }) => (
+                    <RadioGroup
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      className="gap-3"
+                    >
+                      <label className="flex items-center gap-2 text-sm">
+                        <RadioGroupItem value="professional" id="block-scope-pro" />
+                        Um profissional
+                      </label>
+                      <label className="flex items-center gap-2 text-sm">
+                        <RadioGroupItem value="clinic" id="block-scope-clinic" />
+                        Toda a clínica
+                      </label>
+                    </RadioGroup>
+                  )}
+                />
+              </Field>
+            ) : null}
+
+            {scope === "professional" || isProfessionalLocked ? (
+              <Field data-invalid={Boolean(errors.professionalId) || undefined}>
+                <FieldLabel>Profissional</FieldLabel>
+                <Controller
+                  control={control}
+                  name="professionalId"
+                  render={({ field }) => (
+                    <ProfessionalCombobox
+                      value={field.value || ""}
+                      onValueChange={(id) => field.onChange(id)}
+                      displayLabel={lockedProfessionalLabel}
+                      disabled={isProfessionalLocked}
+                      aria-invalid={Boolean(errors.professionalId) || undefined}
+                    />
+                  )}
+                />
+                {isProfessionalLocked ? (
+                  <p className="text-xs text-muted-foreground">
+                    Você só pode bloquear a própria agenda.
+                  </p>
+                ) : null}
+                <FieldError errors={[errors.professionalId]} />
+              </Field>
+            ) : null}
 
             <Field data-invalid={Boolean(errors.date) || undefined}>
               <FieldLabel>Data</FieldLabel>

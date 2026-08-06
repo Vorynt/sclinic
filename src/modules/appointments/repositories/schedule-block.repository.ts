@@ -7,6 +7,7 @@ import {
   isNull,
   lt,
   ne,
+  or,
 } from "drizzle-orm"
 
 import { db } from "@/db"
@@ -39,6 +40,22 @@ function blockJoin() {
     .leftJoin(professionals, eq(professionals.id, scheduleBlocks.professionalId))
 }
 
+/** Professional filter also keeps clinic-wide blocks (null professionalId). */
+function professionalScopeFilter(professionalIds: string[]) {
+  return or(
+    inArray(scheduleBlocks.professionalId, professionalIds),
+    isNull(scheduleBlocks.professionalId),
+  )
+}
+
+/** Busy for a professional = their blocks ∪ clinic-wide. */
+function busyForProfessionalFilter(professionalId: string) {
+  return or(
+    eq(scheduleBlocks.professionalId, professionalId),
+    isNull(scheduleBlocks.professionalId),
+  )
+}
+
 export const scheduleBlockRepository = {
   async listByRange(params: {
     clinicId: string
@@ -55,7 +72,7 @@ export const scheduleBlockRepository = {
             lt(scheduleBlocks.startsAt, params.to),
             gt(scheduleBlocks.endsAt, params.from),
             params.professionalIds?.length
-              ? inArray(scheduleBlocks.professionalId, params.professionalIds)
+              ? professionalScopeFilter(params.professionalIds)
               : undefined,
           ),
         )
@@ -98,7 +115,7 @@ export const scheduleBlockRepository = {
         .where(
           and(
             eq(scheduleBlocks.clinicId, params.clinicId),
-            eq(scheduleBlocks.professionalId, params.professionalId),
+            busyForProfessionalFilter(params.professionalId),
             isNull(scheduleBlocks.deletedAt),
             lt(scheduleBlocks.startsAt, params.endsAt),
             gt(scheduleBlocks.endsAt, params.startsAt),
@@ -129,7 +146,7 @@ export const scheduleBlockRepository = {
         .where(
           and(
             eq(scheduleBlocks.clinicId, params.clinicId),
-            eq(scheduleBlocks.professionalId, params.professionalId),
+            busyForProfessionalFilter(params.professionalId),
             isNull(scheduleBlocks.deletedAt),
             lt(scheduleBlocks.startsAt, params.to),
             gt(scheduleBlocks.endsAt, params.from),

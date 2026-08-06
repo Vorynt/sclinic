@@ -88,6 +88,7 @@ export function ProfessionalsPanel() {
           setHoursDialogOpen(open)
           if (!open) setHoursProfessional(null)
         }}
+        accessMode="manage"
       />
     </div>
   )

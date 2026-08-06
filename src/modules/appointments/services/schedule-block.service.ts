@@ -1,11 +1,17 @@
 import { Permission } from "@/config/permissions"
 import { publishClinicOps } from "@/core/realtime"
+import { isSelfScheduleOnlyRole } from "@/modules/appointments/constants/appointments"
 import type { CreateScheduleBlockDto } from "@/modules/appointments/dto/create-schedule-block.dto"
 import type { ListScheduleBlocksDto } from "@/modules/appointments/dto/list-schedule-blocks.dto"
 import { appointmentRepository } from "@/modules/appointments/repositories/appointment.repository"
 import { scheduleBlockRepository } from "@/modules/appointments/repositories/schedule-block.repository"
 import type { ScheduleBlock } from "@/modules/appointments/types/schedule-block"
 import {
+  canCreateScheduleBlock,
+  canDeleteScheduleBlock,
+} from "@/modules/appointments/utils/schedule-block-access"
+import {
+  type AuthContextWithClinic,
   requireAnyPermission,
   requirePermission,
 } from "@/modules/authentication/permissions/guards"
@@ -17,6 +23,15 @@ const APPOINTMENTS_ANY_PERMISSION = [
   Permission.APPOINTMENTS_UPDATE,
   Permission.APPOINTMENTS_DELETE,
 ] as const
+
+async function resolveOwnProfessionalId(
+  auth: AuthContextWithClinic,
+): Promise<string | null> {
+  return appointmentRepository.findActiveProfessionalIdByUserId(
+    auth.user.id,
+    auth.clinicId,
+  )
+}
 
 async function assertActiveProfessionalInClinic(
   professionalId: string,
@@ -47,11 +62,23 @@ export const scheduleBlockService = {
     auth: AuthRequestContext,
   ): Promise<ScheduleBlock[]> {
     const ctx = await requireAnyPermission(auth, ...APPOINTMENTS_ANY_PERMISSION)
+
+    let professionalIds = filters.professionalIds
+    if (isSelfScheduleOnlyRole(ctx.membership.roleKey)) {
+      const ownId = await resolveOwnProfessionalId(ctx)
+      if (!ownId) {
+        throw new AppError(ErrorCode.FORBIDDEN, {
+          message: "Seu perfil profissional não está vinculado a esta clínica.",
+        })
+      }
+      professionalIds = [ownId]
+    }
+
     return scheduleBlockRepository.listByRange({
       clinicId: ctx.clinicId,
       from: filters.from,
       to: filters.to,
-      professionalIds: filters.professionalIds,
+      professionalIds,
     })
   },
 
@@ -60,8 +87,20 @@ export const scheduleBlockService = {
     auth: AuthRequestContext,
   ): Promise<ScheduleBlock> {
     const ctx = await requirePermission(auth, Permission.APPOINTMENTS_CREATE)
+    const ownProfessionalId = await resolveOwnProfessionalId(ctx)
 
-    await assertActiveProfessionalInClinic(data.professionalId, ctx.clinicId)
+    const access = canCreateScheduleBlock({
+      roleKey: ctx.membership.roleKey,
+      ownProfessionalId,
+      targetProfessionalId: data.professionalId,
+    })
+    if (!access.ok) {
+      throw new AppError(ErrorCode.FORBIDDEN, { message: access.message })
+    }
+
+    if (data.professionalId) {
+      await assertActiveProfessionalInClinic(data.professionalId, ctx.clinicId)
+    }
 
     const block = await scheduleBlockRepository.create({
       clinicId: ctx.clinicId,
@@ -80,7 +119,28 @@ export const scheduleBlockService = {
   },
 
   async remove(id: string, auth: AuthRequestContext): Promise<ScheduleBlock> {
-    const ctx = await requirePermission(auth, Permission.APPOINTMENTS_DELETE)
+    const ctx = await requireAnyPermission(
+      auth,
+      Permission.APPOINTMENTS_CREATE,
+      Permission.APPOINTMENTS_DELETE,
+    )
+
+    const existing = await scheduleBlockRepository.findById(id, ctx.clinicId)
+    if (!existing) {
+      throw new AppError(ErrorCode.NOT_FOUND, {
+        message: "Bloqueio não encontrado.",
+      })
+    }
+
+    const ownProfessionalId = await resolveOwnProfessionalId(ctx)
+    const access = canDeleteScheduleBlock({
+      roleKey: ctx.membership.roleKey,
+      ownProfessionalId,
+      blockProfessionalId: existing.professionalId,
+    })
+    if (!access.ok) {
+      throw new AppError(ErrorCode.FORBIDDEN, { message: access.message })
+    }
 
     const deleted = await scheduleBlockRepository.softDelete({
       id,

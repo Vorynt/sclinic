@@ -24,6 +24,7 @@ type AppointmentTimeGridColumnProps = {
   hourRange: CalendarHourRange;
   weeklyHours: ClinicWeeklyHours;
   onSelectAppointment: (appointment: Appointment) => void;
+  onSelectScheduleBlock?: (block: ScheduleBlock) => void;
   onSelectSlot: (date: Date) => void;
   className?: string;
 };
@@ -36,6 +37,7 @@ export function AppointmentTimeGridColumn({
   hourRange,
   weeklyHours,
   onSelectAppointment,
+  onSelectScheduleBlock,
   onSelectSlot,
   className,
 }: AppointmentTimeGridColumnProps) {
@@ -139,6 +141,7 @@ export function AppointmentTimeGridColumn({
             }}
             onClick={(event) => {
               event.stopPropagation();
+              onSelectScheduleBlock?.(block);
             }}
           />
         );

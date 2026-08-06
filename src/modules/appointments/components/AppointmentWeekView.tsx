@@ -21,6 +21,7 @@ type AppointmentWeekViewProps = {
   weeklyHours: ClinicWeeklyHours;
   isMobile: boolean;
   onSelectAppointment: (appointment: Appointment) => void;
+  onSelectScheduleBlock?: (block: ScheduleBlock) => void;
   onSelectSlot: (date: Date) => void;
 };
 
@@ -31,6 +32,7 @@ export function AppointmentWeekView({
   weeklyHours,
   isMobile,
   onSelectAppointment,
+  onSelectScheduleBlock,
   onSelectSlot,
 }: AppointmentWeekViewProps) {
   const { from, to } = getVisibleRange("week", anchor);
@@ -132,6 +134,7 @@ export function AppointmentWeekView({
             hourRange={hourRange}
             weeklyHours={weeklyHours}
             onSelectAppointment={onSelectAppointment}
+            onSelectScheduleBlock={onSelectScheduleBlock}
             onSelectSlot={onSelectSlot}
             className={cn("border-r", isToday(day) && "bg-primary/5")}
           />

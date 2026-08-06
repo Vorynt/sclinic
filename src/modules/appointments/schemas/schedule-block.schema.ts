@@ -24,9 +24,13 @@ export const listScheduleBlocksSchema = z
     path: ["to"],
   })
 
+/**
+ * `professionalId: null` = clinic-wide block.
+ * `professionalId: uuid` = professional block.
+ */
 export const createScheduleBlockSchema = z
   .object({
-    professionalId: z.string().uuid("Profissional inválido"),
+    professionalId: z.string().uuid("Profissional inválido").nullable(),
     startsAt: z.coerce.date(),
     endsAt: z.coerce.date(),
     reason: optionalTrimmed,

@@ -19,8 +19,9 @@ import { professionals } from "./professionals"
 import { sclinicAppRole } from "./rls"
 
 /**
- * Punctual unavailability for a professional (vacation, meeting, etc.).
- * Not an appointment — counts as busy in availability (ADR-011).
+ * Punctual unavailability (vacation, meeting, clinic closure, etc.).
+ * `professionalId` null = clinic-wide block (ADR-011 amend).
+ * Counts as busy in availability.
  */
 export const scheduleBlocks = pgTable(
   "schedule_blocks",
@@ -29,9 +30,10 @@ export const scheduleBlocks = pgTable(
     clinicId: uuid("clinic_id")
       .notNull()
       .references(() => clinics.id, { onDelete: "cascade" }),
-    professionalId: uuid("professional_id")
-      .notNull()
-      .references(() => professionals.id, { onDelete: "cascade" }),
+    /** Null = applies to the whole clinic. */
+    professionalId: uuid("professional_id").references(() => professionals.id, {
+      onDelete: "cascade",
+    }),
     startsAt: timestamp("starts_at", { withTimezone: true, mode: "date" }).notNull(),
     endsAt: timestamp("ends_at", { withTimezone: true, mode: "date" }).notNull(),
     reason: text("reason"),

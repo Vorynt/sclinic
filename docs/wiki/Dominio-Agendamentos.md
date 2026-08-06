@@ -52,13 +52,17 @@ Só `owner`, `admin`, `doctor`, `nurse`. Recepcionista **não** inicia.
 
 - `professional_business_hours` guarda o horário semanal por profissional (subconjunto do horário da clínica).
 - Disponibilidade efetiva = interseção (`intersectMinuteIntervals`) entre horário da clínica e do profissional; sem configuração própria, usa só o horário da clínica.
-- Editável em `ProfessionalHoursDialog` (`/professionals`).
+- **Quem edita:** o próprio profissional (atalho “Meus horários” na home) ou quem tem `professionals.manage` (override em `/professionals`). Demais papéis só veem slots disponíveis na agenda.
+- UI: `ProfessionalHoursDialog` (mesmo formulário semanal da clínica).
 
 ## Bloqueio de horários (ADR-011)
 
 - `schedule_blocks`: indisponibilidade pontual (férias, reunião) sem criar um appointment "falso".
-- Aparece na agenda como `ScheduleBlockEventCard`; impede novo agendamento no intervalo (`hasOverlappingScheduleBlock` na checagem de disponibilidade).
-- CRUD via `ScheduleBlockFormDialog` (create/list/delete).
+- `professionalId` **nullable** — `null` = bloqueio da clínica inteira (afeta disponibilidade de todos).
+- Aparece na agenda como `ScheduleBlockEventCard`; clique abre remoção (`ScheduleBlockDetailDialog`).
+- Impede novo agendamento no intervalo (`hasOverlappingScheduleBlock` considera blocks do profissional **∪** clinic-wide).
+- **Self-schedule:** doctor/nurse só criam/removem bloqueios da própria agenda; clinic-wide fica com recepção/gestores.
+- CRUD: `ScheduleBlockFormDialog` (create) + detalhe/remoção no card.
 
 ## Lista de espera (ADR-011)
 

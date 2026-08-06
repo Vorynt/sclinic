@@ -196,10 +196,10 @@ export function ProfessionalsTable({
                         type="button"
                         variant="secondary"
                         size="icon"
-                        tooltip="Horários"
+                        tooltip="Ajustar horários"
                         onClick={() => onEditHours(professional)}>
                         <ClockIcon />
-                        <span className="sr-only">Horários</span>
+                        <span className="sr-only">Ajustar horários</span>
                       </Button>
                     ) : null}
                     <Button

@@ -34,7 +34,7 @@ Chosen option: **entidades/colunas dedicadas + interseção de horas + promote e
 
 | Tema | Decisão |
 |------|--------|
-| Bloqueios | Tabela `schedule_blocks`: `clinicId`, `professionalId` (obrigatório), `startsAt`/`endsAt`, `reason` opcional, soft-delete. Contam como busy na availability (junto com appointments ≠ `canceled`) |
+| Bloqueios | Tabela `schedule_blocks`: `clinicId`, `professionalId` (**nullable** = clínica inteira), `startsAt`/`endsAt`, `reason` opcional, soft-delete. Contam como busy na availability (junto com appointments ≠ `canceled`). Self-schedule (doctor/nurse): só cria/remove o próprio; clinic-wide só operação/gestão |
 | Horário do profissional | Tabela `professional_business_hours` (mesmo shape de `clinic_business_hours`). Janela efetiva = **interseção** clinic ∩ professional. Sem rows = herda 100% o expediente da clínica |
 | Ownership do horário | CRUD no módulo `professionals`; `appointments` consome via service público (sem cross-import de internals) |
 | Lista de espera | Tabela `appointment_waitlist`: patient, professional opcional, service opcional, notes, status `waiting` \| `promoted` \| `canceled`. **Não** reserva slot até o promote |

@@ -63,8 +63,8 @@ Inventário do que o sistema faz hoje. Status: **Done** | **Partial** | **Planne
 | Self-schedule doctor/nurse | Done | constants |
 | Disponibilidade vs clinic hours | Done | availability service |
 | Valor no agendamento → charge | Done | amountCents + collect |
-| Bloqueio de horários | Done | ADR-011; `schedule_blocks` |
-| Horário do profissional | Done | ADR-011; `professional_business_hours` |
+| Bloqueio de horários | Done | ADR-011; profissional ou clinic-wide; self-schedule; remoção na agenda |
+| Horário do profissional | Done | ADR-011; self-edit + override `professionals.manage` |
 | Lista de espera + encaixe | Done | ADR-011; `WaitlistPanel`, promote → appointment |
 | Modalidade presencial / online | Done | ADR-011; campo `modality` + filtro/badge |
 | Horários recorrentes | Planned | Roadmap H3 · E15 |

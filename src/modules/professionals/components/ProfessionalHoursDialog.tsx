@@ -26,6 +26,11 @@ type ProfessionalHoursDialogProps = {
   professionalName?: string | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /**
+   * `self` — o profissional edita a própria grade.
+   * `manage` — gestor ajusta em nome de alguém (override).
+   */
+  accessMode?: "self" | "manage";
 };
 
 function isUnconfiguredWeek(
@@ -34,11 +39,36 @@ function isUnconfiguredWeek(
   return days.every((day) => day.isClosed && day.intervals.length === 0);
 }
 
+function dialogCopy(params: {
+  accessMode: "self" | "manage";
+  professionalName?: string | null;
+}): { title: string; description: string } {
+  const { accessMode, professionalName } = params;
+
+  if (accessMode === "manage") {
+    return {
+      title: professionalName
+        ? `Horários de ${professionalName}`
+        : "Horários de atendimento",
+      description: professionalName
+        ? `Ajuste quando ${professionalName} pode receber pacientes. A recepção vê só os horários livres na agenda.`
+        : "Ajuste quando este profissional pode receber pacientes. A recepção vê só os horários livres na agenda.",
+    };
+  }
+
+  return {
+    title: "Meus horários",
+    description:
+      "Defina quando você pode receber pacientes. Se não configurar, valem os mesmos horários da clínica.",
+  };
+}
+
 export function ProfessionalHoursDialog({
   professionalId,
   professionalName,
   open,
   onOpenChange,
+  accessMode = "self",
 }: ProfessionalHoursDialogProps) {
   const [formError, setFormError] = useState<{
     message: string;
@@ -52,7 +82,7 @@ export function ProfessionalHoursDialog({
 
   const upsertMutation = useUpsertProfessionalHoursMutation({
     onSuccess: () => {
-      toast.success("Horários do profissional salvos");
+      toast.success("Horários salvos");
       onOpenChange(false);
     },
     onError: (error) => {
@@ -74,6 +104,8 @@ export function ProfessionalHoursDialog({
       : hoursQuery.data;
   }, [hoursQuery.data]);
 
+  const copy = dialogCopy({ accessMode, professionalName });
+
   return (
     <Dialog
       open={open}
@@ -83,31 +115,27 @@ export function ProfessionalHoursDialog({
       }}>
       <DialogContent className="flex max-h-[min(90vh,800px)] flex-col gap-0 overflow-hidden p-0 sm:max-w-2xl">
         <DialogHeader className="shrink-0 border-b px-4 py-4 pr-12 text-left sm:px-6">
-          <DialogTitle>Horário do profissional</DialogTitle>
-          <DialogDescription>
-            {professionalName
-              ? `Subconjunto do expediente da clínica para ${professionalName}. Sem configuração própria, herda o horário da clínica.`
-              : "Subconjunto do expediente da clínica. Sem configuração própria, herda o horário da clínica."}
-          </DialogDescription>
+          <DialogTitle>{copy.title}</DialogTitle>
+          <DialogDescription>{copy.description}</DialogDescription>
         </DialogHeader>
 
         {hoursQuery.isLoading ? (
           <div className="flex items-center gap-2 px-4 py-6 text-sm text-muted-foreground sm:px-6">
             <Spinner />
-            Carregando…
+            Carregando horários…
           </div>
         ) : hoursQuery.isError ? (
           <p className="px-4 py-6 text-sm text-destructive sm:px-6">
-            Não foi possível carregar os horários.
+            Não foi possível carregar os horários. Tente novamente.
           </p>
         ) : (
           <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4 sm:px-6">
             <WeeklyHoursForm
               key={`${professionalId}-${hoursQuery.dataUpdatedAt}`}
               initialDays={initialDays}
-              submitLabel="Salvar horários"
-              closedDayMessage="O profissional não atende neste dia."
-              description="Selecione um dia para editar. Use “Copiar este horário” para repetir o mesmo padrão em outros dias."
+              submitLabel="Salvar"
+              closedDayMessage="Não atende neste dia."
+              description="Escolha um dia para editar. Se houver pausa no almoço, adicione-a aqui — e, se quiser, copie o horário para outros dias."
               isPending={upsertMutation.isPending}
               formError={formError}
               secondaryActions={

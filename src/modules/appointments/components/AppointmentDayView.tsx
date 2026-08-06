@@ -18,6 +18,7 @@ type AppointmentDayViewProps = {
   scheduleBlocks?: ScheduleBlock[];
   weeklyHours: ClinicWeeklyHours;
   onSelectAppointment: (appointment: Appointment) => void;
+  onSelectScheduleBlock?: (block: ScheduleBlock) => void;
   onSelectSlot: (date: Date) => void;
 };
 
@@ -27,6 +28,7 @@ export function AppointmentDayView({
   scheduleBlocks = [],
   weeklyHours,
   onSelectAppointment,
+  onSelectScheduleBlock,
   onSelectSlot,
 }: AppointmentDayViewProps) {
   const hourRange = resolveVisibleHourRange(weeklyHours, [anchor]);
@@ -70,6 +72,7 @@ export function AppointmentDayView({
             hourRange={hourRange}
             weeklyHours={weeklyHours}
             onSelectAppointment={onSelectAppointment}
+            onSelectScheduleBlock={onSelectScheduleBlock}
             onSelectSlot={onSelectSlot}
           />
         </div>

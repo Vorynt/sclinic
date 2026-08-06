@@ -27,10 +27,11 @@ export const HELP_FAQ_DOCTOR: HelpFaqItem[] = [
     question: "Acabei de aceitar o convite. O que faço?",
     answer: [
       "Se pedirem, troque a senha temporária. Depois abra o Início ou Agendamentos para ver sua agenda do dia.",
-      "Seus horários na clínica são os que a recepção (ou você) marcar em seu nome.",
+      "Seus horários de atendimento você define em Início → Meus horários. Se não configurar, valem os da clínica. A recepção agenda só nos horários livres.",
     ],
     steps: [
       "Confira Minha conta → Segurança se a senha for temporária.",
+      "Abra Início → Meus horários e ajuste sua grade, se precisar.",
       "Abra Início ou Agendamentos.",
       "Inicie o atendimento quando o paciente estiver pronto.",
       "Registre notas, vitais e receita antes de concluir.",

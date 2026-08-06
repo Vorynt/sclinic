@@ -5,12 +5,16 @@ import {
 } from "@/modules/audit/constants/audit"
 import { auditErrorFields, recordAudit } from "@/modules/audit/emit"
 import { auditActorFromAuth } from "@/modules/audit/utils/audit-actor"
-import { requirePermission } from "@/modules/authentication/permissions/guards"
+import {
+  type AuthContextWithClinic,
+  requireClinic,
+} from "@/modules/authentication/permissions/guards"
 import type { ClinicWeeklyHours } from "@/modules/clinics/types/clinic-hours"
 import type { UpsertProfessionalHoursDto } from "@/modules/professionals/dto/upsert-professional-hours.dto"
 import { professionalHoursRepository } from "@/modules/professionals/repositories/professional-hours.repository"
 import { professionalRepository } from "@/modules/professionals/repositories/professional.repository"
 import type { ProfessionalWeeklyHours } from "@/modules/professionals/types/professional-hours"
+import { canAccessProfessionalHours } from "@/modules/professionals/utils/professional-hours-access"
 import type { AuthRequestContext } from "@/shared/auth"
 import { AppError, ErrorCode } from "@/shared/errors"
 
@@ -29,13 +33,44 @@ async function assertProfessionalInClinic(
   }
 }
 
+async function assertHoursAccess(
+  auth: AuthContextWithClinic,
+  professionalId: string,
+  intent: "read" | "write",
+): Promise<void> {
+  await assertProfessionalInClinic(professionalId, auth.clinicId)
+
+  const own = await professionalRepository.findActiveForSchedulingByUserId(
+    auth.user.id,
+    auth.clinicId,
+  )
+
+  if (
+    canAccessProfessionalHours({
+      permissions: auth.permissions,
+      ownProfessionalId: own?.id ?? null,
+      targetProfessionalId: professionalId,
+    })
+  ) {
+    return
+  }
+
+  throw new AppError(ErrorCode.FORBIDDEN, {
+    message:
+      intent === "write"
+        ? "Somente o próprio profissional ou um gestor pode alterar estes horários."
+        : "Você não tem permissão para ver estes horários.",
+    meta: { required: [Permission.PROFESSIONALS_MANAGE] },
+  })
+}
+
 export const professionalHoursService = {
   async getWeeklyHours(
     professionalId: string,
     ctx: AuthRequestContext,
   ): Promise<ProfessionalWeeklyHours> {
-    const auth = await requirePermission(ctx, Permission.PROFESSIONALS_MANAGE)
-    await assertProfessionalInClinic(professionalId, auth.clinicId)
+    const auth = await requireClinic(ctx)
+    await assertHoursAccess(auth, professionalId, "read")
 
     return professionalHoursRepository.findByProfessionalId({
       clinicId: auth.clinicId,
@@ -47,10 +82,9 @@ export const professionalHoursService = {
     data: UpsertProfessionalHoursDto,
     ctx: AuthRequestContext,
   ): Promise<ProfessionalWeeklyHours> {
-    const auth = await requirePermission(ctx, Permission.PROFESSIONALS_MANAGE)
+    const auth = await requireClinic(ctx)
+    await assertHoursAccess(auth, data.professionalId, "write")
     const actor = auditActorFromAuth(auth)
-
-    await assertProfessionalInClinic(data.professionalId, auth.clinicId)
 
     const before = await professionalHoursRepository.findByProfessionalId({
       clinicId: auth.clinicId,

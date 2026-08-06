@@ -3,7 +3,7 @@ import type { ScheduleBlock } from "@/modules/appointments/types/schedule-block"
 export type ScheduleBlockRow = {
   id: string
   clinicId: string
-  professionalId: string
+  professionalId: string | null
   professionalName: string | null
   startsAt: Date
   endsAt: Date

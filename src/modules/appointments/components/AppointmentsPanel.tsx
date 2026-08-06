@@ -14,6 +14,7 @@ import { AppointmentProfessionalFilter } from "@/modules/appointments/components
 import { AppointmentsCalendarSkeleton } from "@/modules/appointments/components/AppointmentsPageSkeleton"
 import { AppointmentsToolbar } from "@/modules/appointments/components/AppointmentsToolbar"
 import { AppointmentWeekView } from "@/modules/appointments/components/AppointmentWeekView"
+import { ScheduleBlockDetailDialog } from "@/modules/appointments/components/ScheduleBlockDetailDialog"
 import { ScheduleBlockFormDialog } from "@/modules/appointments/components/ScheduleBlockFormDialog"
 import { isSelfScheduleOnlyRole } from "@/modules/appointments/constants/appointments"
 import {
@@ -26,6 +27,7 @@ import type {
   Appointment,
   AppointmentModality,
 } from "@/modules/appointments/types/appointment"
+import type { ScheduleBlock } from "@/modules/appointments/types/schedule-block"
 import {
   getNextAnchor,
   getPeriodLabel,
@@ -49,6 +51,7 @@ export function AppointmentsPanel() {
 
   const [detailAppointment, setDetailAppointment] =
     useState<Appointment | null>(null)
+  const [detailBlock, setDetailBlock] = useState<ScheduleBlock | null>(null)
   const [formDialogOpen, setFormDialogOpen] = useState(false)
   const [blockDialogOpen, setBlockDialogOpen] = useState(false)
   const [formDefaultStartsAt, setFormDefaultStartsAt] = useState<
@@ -122,6 +125,10 @@ export function AppointmentsPanel() {
 
   function handleSelectAppointment(appointment: Appointment) {
     setDetailAppointment(appointment)
+  }
+
+  function handleSelectScheduleBlock(block: ScheduleBlock) {
+    setDetailBlock(block)
   }
 
   function handleSelectSlot(date: Date) {
@@ -200,6 +207,7 @@ export function AppointmentsPanel() {
               weeklyHours={weeklyHours}
               isMobile={isMobile}
               onSelectAppointment={handleSelectAppointment}
+              onSelectScheduleBlock={handleSelectScheduleBlock}
               onSelectSlot={handleSelectSlot}
             />
           ) : null}
@@ -211,6 +219,7 @@ export function AppointmentsPanel() {
               scheduleBlocks={scheduleBlocks}
               weeklyHours={weeklyHours}
               onSelectAppointment={handleSelectAppointment}
+              onSelectScheduleBlock={handleSelectScheduleBlock}
               onSelectSlot={handleSelectSlot}
             />
           ) : null}
@@ -224,6 +233,14 @@ export function AppointmentsPanel() {
           if (!open) setDetailAppointment(null)
         }}
         onAppointmentChange={setDetailAppointment}
+      />
+
+      <ScheduleBlockDetailDialog
+        block={detailBlock}
+        open={Boolean(detailBlock)}
+        onOpenChange={(open) => {
+          if (!open) setDetailBlock(null)
+        }}
       />
 
       <AppointmentFormDialog
