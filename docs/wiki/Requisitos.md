@@ -546,7 +546,7 @@ Diagramas Mermaid: [Diagramas](Diagramas).
 
 | ID | Título | Descrição | Fonte |
 |----|--------|-----------|-------|
-| RNF-110 | Tailwind v4 + shadcn + tokens | `config/theme.ts` | architecture/010 |
+| RNF-110 | Tailwind v4 + shadcn + tokens tintados | Neutros na hue do primary; `bg-app-wash` no chrome; clínico quieto | architecture/010 |
 | RNF-111 | Storybook-first (UI genérica) | `.storybook/` → `src/components/` | architecture/010 |
 | RNF-112 | Domínio vs genérico | Sem hex soltos nos módulos | architecture/010 |
 | RNF-123 | Forms RHF + Zod | Sem field state em `useState` | architecture/011 |

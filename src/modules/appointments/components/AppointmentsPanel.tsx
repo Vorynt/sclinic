@@ -3,6 +3,7 @@
 import { PlusIcon } from "@phosphor-icons/react"
 import { useEffect, useMemo, useRef, useState } from "react"
 
+import { PageHeader } from "@/components/layout/PageHeader"
 import { Button } from "@/components/ui/button"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { AppointmentDayView } from "@/modules/appointments/components/AppointmentDayView"
@@ -140,25 +141,21 @@ export function AppointmentsPanel() {
 
   return (
     <div className="flex min-w-0 flex-col gap-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="flex flex-col gap-1">
-          <h1 className="font-heading text-xl font-semibold tracking-tight text-foreground">
-            Agendamentos
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Consulte e organize a agenda de consultas da clínica.
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Button type="button" variant="outline" onClick={handleNewBlock}>
-            Bloquear horário
-          </Button>
-          <Button type="button" onClick={handleNewAppointment}>
-            <PlusIcon />
-            Novo agendamento
-          </Button>
-        </div>
-      </div>
+      <PageHeader
+        title="Agendamentos"
+        description="Consulte e organize a agenda de consultas da clínica."
+        actions={
+          <>
+            <Button type="button" variant="outline" onClick={handleNewBlock}>
+              Bloquear horário
+            </Button>
+            <Button type="button" onClick={handleNewAppointment}>
+              <PlusIcon />
+              Novo agendamento
+            </Button>
+          </>
+        }
+      />
 
       <AppointmentsToolbar
         mode={mode}

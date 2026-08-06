@@ -91,16 +91,19 @@ function ReceptionDayKpis() {
               label: "Próximos",
               value: String(counts.upcoming),
               hint: "Aguardando chegada",
+              accent: "info",
             },
             {
               label: "Em atendimento",
               value: String(counts.in_progress),
               hint: "Check-in feito",
+              accent: "success",
             },
             {
               label: "Aguardando pagamento",
               value: String(counts.awaiting_payment),
               hint: "Cobrança pendente",
+              accent: "warning",
             },
           ]}
         />
@@ -124,21 +127,25 @@ export function ReceptionistHome() {
               label: "Novo agendamento",
               icon: CalendarPlusIcon,
               onClick: () => setAppointmentDialogOpen(true),
+              primary: true,
             },
             {
               label: "Novo paciente",
               icon: UserPlusIcon,
               onClick: () => setPatientDialogOpen(true),
+              primary: false,
             },
             {
               label: "Abrir agenda",
               href: routes.appointments,
               icon: CalendarBlankIcon,
+              primary: false,
             },
             {
               label: "Ajuda",
               href: routes.help,
               icon: QuestionIcon,
+              primary: false,
             },
           ]}
         />

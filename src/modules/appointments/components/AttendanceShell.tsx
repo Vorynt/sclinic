@@ -9,6 +9,7 @@ type AttendanceShellProps = {
 
 /**
  * Dedicated clinical chrome for attendance — no AppShell sidebar/header.
+ * Intentionally quiet: inherits tinted tokens only; no wash, orbs, or grid.
  */
 export function AttendanceShell({ children }: AttendanceShellProps) {
   return (

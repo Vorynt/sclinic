@@ -3,6 +3,7 @@
 import { parseAsStringLiteral, useQueryState } from "nuqs"
 
 import { DataTableSearch } from "@/components/data-table/DataTableSearch"
+import { PageHeader } from "@/components/layout/PageHeader"
 import {
   Select,
   SelectContent,
@@ -46,14 +47,10 @@ export function BillingPanel() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-1">
-        <h1 className="font-heading text-xl font-semibold tracking-tight text-foreground">
-          Faturamento
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          Cobranças da clínica por consulta — registre pagamentos recebidos.
-        </p>
-      </div>
+      <PageHeader
+        title="Faturamento"
+        description="Cobranças da clínica por consulta — registre pagamentos recebidos."
+      />
 
       <BillingSummaryCards
         selectedStatus={status}

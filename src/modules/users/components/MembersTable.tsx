@@ -1,5 +1,6 @@
 "use client";
 
+import { UsersThreeIcon } from "@phosphor-icons/react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -22,6 +23,7 @@ import {
   Empty,
   EmptyDescription,
   EmptyHeader,
+  EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
 import {
@@ -131,8 +133,11 @@ export function MembersTable({ filters, onPageChange }: MembersTableProps) {
 
   if (members.length === 0 && (!showInvitations || invitations.length === 0)) {
     return (
-      <Empty className="border">
+      <Empty className="border border-dashed py-10">
         <EmptyHeader>
+          <EmptyMedia variant="icon">
+            <UsersThreeIcon weight="duotone" />
+          </EmptyMedia>
           <EmptyTitle>Nenhum membro</EmptyTitle>
           <EmptyDescription>
             Convide colaboradores para começar a montar a equipe.

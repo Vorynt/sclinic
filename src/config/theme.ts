@@ -1,9 +1,17 @@
 /**
  * Design tokens — espelham CSS variables em `src/app/globals.css`.
  * Fonte de verdade visual: globals.css; este arquivo documenta e tipa o contrato.
+ *
+ * Neutros são tintados na hue do primary (~242) — evita P&B seco sem perder
+ * legibilidade clínica. Utilitário `bg-app-wash`: radial estático no chrome do app.
  */
 export const theme = {
   name: "sclinic",
+  brandHue: 242,
+  surfaces: {
+    /** Radial primary wash no inset autenticado — sem animação. */
+    appWash: "bg-app-wash",
+  },
   fonts: {
     sans: {
       family: "Inter",

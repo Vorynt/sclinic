@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCircleIcon } from "@phosphor-icons/react";
+import { CheckCircleIcon, ClockIcon, StethoscopeIcon, WalletIcon } from "@phosphor-icons/react";
 import { endOfDay, format, startOfDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useMemo, useState } from "react";
@@ -9,9 +9,17 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Permission } from "@/config/permissions";
 import { useClinicOpsRealtime } from "@/hooks/use-clinic-ops-realtime";
+import { cn } from "@/lib/utils";
 import { useConfirmAppointmentsBatchMutation } from "@/modules/appointments/hooks/use-appointment-mutations";
 import { useAppointmentsQuery } from "@/modules/appointments/hooks/use-appointments";
 import type { Appointment } from "@/modules/appointments/types/appointment";
@@ -105,43 +113,70 @@ function ReceptionBoardCard({
   );
 }
 
+type BoardColumnAccent = "info" | "success" | "warning";
+
 type BoardColumnProps = {
-  title: string;
-  items: BoardItem[];
-  emptyMessage: string;
-  canCollect: boolean;
-  onPay: (payload: ChargeToPay) => void;
-  selectedIds?: Set<string>;
-  onToggleSelect?: (id: string, checked: boolean) => void;
-  canSelect?: (appointment: Appointment) => boolean;
-};
+  title: string
+  items: BoardItem[]
+  emptyMessage: string
+  emptyIcon: typeof ClockIcon
+  accent: BoardColumnAccent
+  canCollect: boolean
+  onPay: (payload: ChargeToPay) => void
+  selectedIds?: Set<string>
+  onToggleSelect?: (id: string, checked: boolean) => void
+  canSelect?: (appointment: Appointment) => boolean
+}
+
+const COLUMN_ACCENT: Record<
+  BoardColumnAccent,
+  { bar: string; badge: "info" | "success" | "warning" }
+> = {
+  info: { bar: "bg-primary", badge: "info" },
+  success: { bar: "bg-chart-2", badge: "success" },
+  warning: { bar: "bg-chart-1", badge: "warning" },
+}
 
 function BoardColumn({
   title,
   items,
   emptyMessage,
+  emptyIcon: EmptyIcon,
+  accent,
   canCollect,
   onPay,
   selectedIds,
   onToggleSelect,
   canSelect,
 }: BoardColumnProps) {
+  const tone = COLUMN_ACCENT[accent]
+
   return (
     <div className="flex min-w-0 flex-col gap-2">
       <div className="flex min-w-0 items-center gap-2">
+        <span
+          aria-hidden
+          className={cn("size-1.5 shrink-0 rounded-full", tone.bar)}
+        />
         <h3 className="truncate text-sm font-medium text-foreground">
           {title}
         </h3>
-        <Badge variant="secondary" className="shrink-0">
+        <Badge variant={tone.badge} className="shrink-0">
           {items.length}
         </Badge>
       </div>
       {items.length === 0 ? (
-        <div className="rounded-xl bg-muted/40 px-4 py-6 text-sm text-muted-foreground ring-1 ring-foreground/10">
-          {emptyMessage}
-        </div>
+        <Empty className="rounded-xl border border-dashed border-border/80 bg-muted/30 py-8">
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <EmptyIcon weight="duotone" />
+            </EmptyMedia>
+            <EmptyTitle>Nada por aqui</EmptyTitle>
+            <EmptyDescription>{emptyMessage}</EmptyDescription>
+          </EmptyHeader>
+        </Empty>
       ) : (
-        <ul className="divide-y divide-border overflow-hidden rounded-xl ring-1 ring-foreground/10">
+        <ul className="divide-y divide-border overflow-hidden rounded-xl bg-card shadow-[0_1px_2px_color-mix(in_oklch,var(--foreground)_4%,transparent)] ring-1 ring-foreground/8">
           {items.map((item) => (
             <ReceptionBoardCard
               key={item.appointment.id}
@@ -156,7 +191,7 @@ function BoardColumn({
         </ul>
       )}
     </div>
-  );
+  )
 }
 
 /** Operational day board for reception (ADR-006). */
@@ -331,6 +366,8 @@ export function ReceptionOpsBoard() {
               title="Próximos"
               items={columns.upcoming}
               emptyMessage="Nenhum paciente aguardando."
+              emptyIcon={ClockIcon}
+              accent="info"
               canCollect={false}
               onPay={setChargeToPay}
               canSelect={canSelectAppointment}
@@ -341,6 +378,8 @@ export function ReceptionOpsBoard() {
               title="Em atendimento"
               items={columns.inProgress}
               emptyMessage="Nenhum atendimento em andamento."
+              emptyIcon={StethoscopeIcon}
+              accent="success"
               canCollect={false}
               onPay={setChargeToPay}
             />
@@ -348,6 +387,8 @@ export function ReceptionOpsBoard() {
               title="Aguardando pagamento"
               items={columns.awaitingPayment}
               emptyMessage="Nenhuma cobrança pendente."
+              emptyIcon={WalletIcon}
+              accent="warning"
               canCollect={canCollect}
               onPay={setChargeToPay}
             />

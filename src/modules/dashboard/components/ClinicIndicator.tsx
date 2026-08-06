@@ -96,8 +96,8 @@ export function ClinicIndicator() {
 
   const content = (
     <>
-      <span className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-accent text-sidebar-accent-foreground">
-        <BuildingsIcon className="size-4" aria-hidden />
+      <span className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground shadow-[0_0_0_1px_color-mix(in_oklch,var(--sidebar-primary)_45%,transparent),0_8px_20px_-10px_var(--sidebar-primary)]">
+        <BuildingsIcon className="size-4" weight="bold" aria-hidden />
       </span>
       <span className="grid flex-1 text-left text-sm leading-tight">
         <span className="truncate font-medium">{label}</span>

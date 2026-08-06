@@ -12,7 +12,7 @@ Documentação humana. Regras normativas: pasta `architecture/` + `AGENTS.md`.
 | Server state | TanStack Query |
 | Client state | Zustand (nunca domínio) |
 | Pagamentos SaaS | Stripe (Checkout + Portal + webhooks) |
-| UI | Tailwind v4, shadcn, tokens em `config/theme.ts` |
+| UI | Tailwind v4, shadcn, tokens tintados (`config/theme.ts` + `globals.css`), `PageHeader` compartilhado |
 | Realtime | SSE (`/api/realtime/clinic`) |
 
 ## Fluxo de camadas (obrigatório)

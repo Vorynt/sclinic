@@ -70,20 +70,26 @@ function statusLabel(subscription: SubscriptionWithPlan): string {
 
 function statusBadgeVariant(
   subscription: SubscriptionWithPlan,
-): "default" | "secondary" | "destructive" | "outline" {
+):
+  | "default"
+  | "secondary"
+  | "destructive"
+  | "outline"
+  | "success"
+  | "warning" {
   if (
     subscription.cancelAtPeriodEnd &&
     isLivingSubscriptionStatus(subscription.status)
   ) {
-    return "outline";
+    return "warning"
   }
   if (subscription.status === "active" || subscription.status === "trialing") {
-    return "default";
+    return "success"
   }
   if (subscription.status === "past_due" || subscription.status === "unpaid") {
-    return "destructive";
+    return "destructive"
   }
-  return "secondary";
+  return "secondary"
 }
 
 function readPortalReturnFlag(): boolean {

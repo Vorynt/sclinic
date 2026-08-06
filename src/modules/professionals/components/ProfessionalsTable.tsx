@@ -1,5 +1,6 @@
 "use client";
 
+import { StethoscopeIcon } from "@phosphor-icons/react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -22,6 +23,7 @@ import {
   Empty,
   EmptyDescription,
   EmptyHeader,
+  EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
 import {
@@ -115,8 +117,11 @@ export function ProfessionalsTable({
 
   if (professionals.length === 0) {
     return (
-      <Empty className="border">
+      <Empty className="border border-dashed py-10">
         <EmptyHeader>
+          <EmptyMedia variant="icon">
+            <StethoscopeIcon weight="duotone" />
+          </EmptyMedia>
           <EmptyTitle>Nenhum profissional</EmptyTitle>
           <EmptyDescription>
             Cadastre um profissional para começar a montar o corpo clínico.
