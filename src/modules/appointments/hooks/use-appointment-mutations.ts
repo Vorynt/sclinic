@@ -4,7 +4,10 @@ import { useMutation, useQueryClient } from "@tanstack/react-query"
 
 import { appointmentsMutations } from "@/modules/appointments/mutations/appointments.mutation"
 import { appointmentsQueryKeys } from "@/modules/appointments/queries/appointments.query"
-import type { Appointment } from "@/modules/appointments/types/appointment"
+import type {
+  Appointment,
+  ConfirmAppointmentsBatchResult,
+} from "@/modules/appointments/types/appointment"
 import { chargesQueryKeys } from "@/modules/billing/queries/charges.query"
 import {
   AppError,
@@ -123,6 +126,26 @@ export function useUpdateAppointmentStatusMutation({
 
   return useMutation({
     ...appointmentsMutations.updateStatus(),
+    onSuccess: async (data) => {
+      await queryClient.invalidateQueries({
+        queryKey: appointmentsQueryKeys.all,
+      })
+      onSuccess?.(data)
+    },
+    onError: (error) => {
+      onError?.(toAppError(error))
+    },
+  })
+}
+
+export function useConfirmAppointmentsBatchMutation({
+  onSuccess,
+  onError,
+}: MutationCallbacks<ConfirmAppointmentsBatchResult> = {}) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    ...appointmentsMutations.confirmBatch(),
     onSuccess: async (data) => {
       await queryClient.invalidateQueries({
         queryKey: appointmentsQueryKeys.all,

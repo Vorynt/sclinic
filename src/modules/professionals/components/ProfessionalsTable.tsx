@@ -1,5 +1,6 @@
 "use client";
 
+import { StethoscopeIcon } from "@phosphor-icons/react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -22,6 +23,7 @@ import {
   Empty,
   EmptyDescription,
   EmptyHeader,
+  EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
 import {
@@ -51,6 +53,7 @@ import type {
 import { DEFAULT_LIST_PAGE_SIZE } from "@/shared/validators";
 import {
   CheckCircleIcon,
+  ClockIcon,
   PencilSimpleIcon,
   ProhibitIcon,
   TrashIcon,
@@ -60,6 +63,7 @@ type ProfessionalsTableProps = {
   filters: ListQueryParams;
   onPageChange: (page: number) => void;
   onEdit: (professional: ProfessionalListItem) => void;
+  onEditHours?: (professional: ProfessionalListItem) => void;
 };
 
 function accountStatusBadgeVariant(
@@ -76,6 +80,7 @@ export function ProfessionalsTable({
   filters,
   onPageChange,
   onEdit,
+  onEditHours,
 }: ProfessionalsTableProps) {
   const [professionalToDelete, setProfessionalToDelete] =
     useState<ProfessionalListItem | null>(null);
@@ -112,8 +117,11 @@ export function ProfessionalsTable({
 
   if (professionals.length === 0) {
     return (
-      <Empty className="border">
+      <Empty className="border border-dashed py-10">
         <EmptyHeader>
+          <EmptyMedia variant="icon">
+            <StethoscopeIcon weight="duotone" />
+          </EmptyMedia>
           <EmptyTitle>Nenhum profissional</EmptyTitle>
           <EmptyDescription>
             Cadastre um profissional para começar a montar o corpo clínico.
@@ -183,6 +191,17 @@ export function ProfessionalsTable({
                       <PencilSimpleIcon />
                       <span className="sr-only">Editar</span>
                     </Button>
+                    {onEditHours ? (
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="icon"
+                        tooltip="Ajustar horários"
+                        onClick={() => onEditHours(professional)}>
+                        <ClockIcon />
+                        <span className="sr-only">Ajustar horários</span>
+                      </Button>
+                    ) : null}
                     <Button
                       type="button"
                       variant="secondary"

@@ -43,10 +43,13 @@ Inventário do que o sistema faz hoje. Status: **Done** | **Partial** | **Planne
 | Lista/busca/CRUD pacientes | Done | `/patients` |
 | Soft delete paciente (archived) | Done | patients |
 | Detalhe paciente + abas | Done | patient detail nav |
+| Overview consolidado (CRM mínimo) | Planned | Roadmap H1 · E14 |
+| Pacientes inativos (última consulta + CTA) | Planned | Roadmap H3 · E14 |
 | Convite/gestão profissionais | Done | `/professionals` |
 | Perfil profissional (conselho, etc.) | Done | invite onboarding |
 | Owner cria próprio perfil clínico (sem invite) | Done | ADR-007 |
 | Active/inactive profissional | Done | professionals |
+| Cadastro rápido de paciente (nome/CPF/telefone) | Done | ADR-011; `PatientFormDialog` variant `quick` |
 
 ## E4 — Agenda
 
@@ -60,6 +63,12 @@ Inventário do que o sistema faz hoje. Status: **Done** | **Partial** | **Planne
 | Self-schedule doctor/nurse | Done | constants |
 | Disponibilidade vs clinic hours | Done | availability service |
 | Valor no agendamento → charge | Done | amountCents + collect |
+| Bloqueio de horários | Done | ADR-011; profissional ou clinic-wide; self-schedule; remoção na agenda |
+| Horário do profissional | Done | ADR-011; self-edit + override `professionals.manage` |
+| Lista de espera + encaixe | Done | ADR-011; `WaitlistPanel`, promote → appointment |
+| Modalidade presencial / online | Done | ADR-011; campo `modality` + filtro/badge |
+| Horários recorrentes | Planned | Roadmap H3 · E15 |
+| Agenda por sala / equipamento | Later | Roadmap H3 · E15 (se ICP) |
 
 ## E5 — Prontuário
 
@@ -75,6 +84,11 @@ Inventário do que o sistema faz hoje. Status: **Done** | **Partial** | **Planne
 | Designer de templates (blocos) | Done | ADR-008 |
 | Até 3 templates nomeados | Done | ADR-008 |
 | Tipos avançados de receita / PDF | Planned/Later | ADR-005 |
+| `kind` unificado de documentos clínicos | Done | ADR-010 |
+| Declaração de comparecimento | Done | ADR-010; attendance Documentos |
+| Atestado médico | Planned | Roadmap H1 · E13 |
+| Solicitação de exames (documento) | Planned | Roadmap H1 · E13 |
+| Templates / packs por especialidade | Later | Roadmap H3 · E19 |
 
 ## E6 — Recebíveis
 
@@ -87,7 +101,9 @@ Inventário do que o sistema faz hoje. Status: **Done** | **Partial** | **Planne
 | Catálogo de serviços (preço fixo) | Done | ADR-009; `/settings/services` |
 | Desconto % na agenda / pagamento | Done | ADR-009 |
 | Cortesia / retorno (charge R$ 0 paid) | Done | ADR-009 |
-| Gateway clínico | Planned | provider fields |
+| Visão / filtro inadimplentes | Done | ADR-011; `dueAt` + aba Inadimplentes agrupada por paciente |
+| Gateway clínico | Planned | provider fields · E10 |
+| Comissão / caixa diário | Later | Roadmap Later |
 
 ## E7 — Recepção
 
@@ -97,6 +113,7 @@ Inventário do que o sistema faz hoje. Status: **Done** | **Partial** | **Planne
 | SSE clinic.ops | Done | `/api/realtime/clinic` |
 | Médico conclui sem cobrar | Done | ADR-006 |
 | Broker multi-instância | Next | ADR-006 |
+| Confirmação em lote | Done | ADR-011; `ReceptionOpsBoard` seleção + confirmar dia |
 
 ## E8 — Governança
 
@@ -113,6 +130,46 @@ Inventário do que o sistema faz hoje. Status: **Done** | **Partial** | **Planne
 | Feature | Status | Onde |
 |---------|--------|------|
 | Landing pública (captação) | Done | `/` — hero teste grátis, benefícios, features, showcase (agenda/pacientes/atendimento/faturamento) |
+| Campanhas (aniversário / retorno) | Planned | Roadmap H3 · E14 (sem WhatsApp no 1º corte) |
+
+## E13 — Documentos clínicos (além da receita)
+
+| Feature | Status | Onde |
+|---------|--------|------|
+| `kind` + `metadata` em prescriptions | Done | ADR-010 |
+| Declaração de comparecimento | Done | attendance Documentos |
+| Atestado / solicitação de exames | Planned | Roadmap H1 |
+| Assinatura eletrônica (consentimento/LGPD) | Planned | Roadmap H3 |
+
+## E14 — CRM e retenção
+
+| Feature | Status | Onde |
+|---------|--------|------|
+| Detalhe paciente + abas | Done | patient detail nav |
+| Overview consolidado (última/próxima + financeiro) | Planned | Roadmap H1 · E14 |
+| Pacientes inativos (última consulta + CTA) | Planned | Roadmap H3 · E14 |
+
+## E16 — Recepção operacional
+
+| Feature | Status | Onde |
+|---------|--------|------|
+| Confirmação em lote | Done | ADR-011; `ReceptionOpsBoard` |
+| Cadastro rápido de paciente | Done | ADR-011; `PatientFormDialog` variant `quick` |
+| Tarefas internas / histórico de contatos | Later | Roadmap Later |
+
+## E17 — Pré-consulta e portal
+
+| Feature | Status | Onde |
+|---------|--------|------|
+| Formulários pré-consulta | Planned | Roadmap H3 |
+| Portal do paciente | Planned | Roadmap H3 |
+
+## E18 — Indicadores e IA
+
+| Feature | Status | Onde |
+|---------|--------|------|
+| KPIs gerenciais (ocupação, no-show, retenção) | Planned | Roadmap H3 · E18 |
+| Automações avançadas / IA clínica | Later | Roadmap H3+ · E18 |
 
 ## E11 — Inventário
 
@@ -120,4 +177,4 @@ Inventário do que o sistema faz hoje. Status: **Done** | **Partial** | **Planne
 |---------|--------|------|
 | Estoque | Deferred | módulo/schema vazios |
 
-Para regras detalhadas, abra a página **Domínio-*** correspondente.
+Para regras detalhadas, abra a página **Domínio-*** correspondente. Prioridade e critérios: [Roadmap](Roadmap).

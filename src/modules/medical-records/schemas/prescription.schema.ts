@@ -1,5 +1,6 @@
 import { z } from "zod"
 
+import { CLINICAL_DOCUMENT_KINDS } from "@/modules/medical-records/constants/clinical-documents"
 import { prescriptionDocumentModelSchema } from "@/modules/medical-records/prescription-template-designer"
 
 export const prescriptionIdSchema = z.string().uuid("ID inválido")
@@ -7,12 +8,48 @@ export const appointmentIdSchema = z.string().uuid("ID inválido")
 export const patientIdSchema = z.string().uuid("ID inválido")
 export const layoutIdSchema = z.string().uuid("Modelo inválido")
 
+export const clinicalDocumentKindSchema = z.enum(CLINICAL_DOCUMENT_KINDS)
+
+export const attendanceDeclarationMetadataSchema = z.object({
+  notes: z
+    .string()
+    .trim()
+    .max(1000, "Observações devem ter no máximo 1000 caracteres.")
+    .optional()
+    .nullable(),
+})
+
 export const createPrescriptionSchema = z.object({
   appointmentId: appointmentIdSchema,
   body: z.string().trim().min(1, "Escreva o conteúdo da receita."),
   plainText: z.string().trim().min(1, "Escreva o conteúdo da receita."),
   layoutId: layoutIdSchema.nullable().optional(),
 })
+
+export const createAttendanceDeclarationSchema = z.object({
+  appointmentId: appointmentIdSchema,
+  notes: z
+    .string()
+    .trim()
+    .max(1000, "Observações devem ter no máximo 1000 caracteres.")
+    .optional()
+    .nullable(),
+})
+
+export const updateAttendanceDeclarationDraftSchema = z.object({
+  id: prescriptionIdSchema,
+  notes: z
+    .string()
+    .trim()
+    .max(1000, "Observações devem ter no máximo 1000 caracteres.")
+    .optional()
+    .nullable(),
+})
+
+export const saveAndIssueAttendanceDeclarationSchema =
+  createAttendanceDeclarationSchema.extend({
+    id: prescriptionIdSchema.optional(),
+  })
 
 export const updatePrescriptionDraftSchema = z.object({
   id: prescriptionIdSchema,
@@ -31,11 +68,13 @@ export const deletePrescriptionDraftSchema = z.object({
 
 export const listAppointmentPrescriptionsSchema = z.object({
   appointmentId: appointmentIdSchema,
+  kind: clinicalDocumentKindSchema.optional(),
 })
 
 export const listPatientPrescriptionsSchema = z.object({
   patientId: patientIdSchema,
   excludeAppointmentId: appointmentIdSchema.optional(),
+  kind: clinicalDocumentKindSchema.optional(),
 })
 
 export const getPrescriptionSchema = z.object({
@@ -84,6 +123,18 @@ export const upsertPrescriptionLayoutSchema = z.object({
 })
 
 export type CreatePrescriptionInput = z.infer<typeof createPrescriptionSchema>
+export type CreateAttendanceDeclarationInput = z.infer<
+  typeof createAttendanceDeclarationSchema
+>
+export type UpdateAttendanceDeclarationDraftInput = z.infer<
+  typeof updateAttendanceDeclarationDraftSchema
+>
+export type SaveAndIssueAttendanceDeclarationInput = z.infer<
+  typeof saveAndIssueAttendanceDeclarationSchema
+>
+export type AttendanceDeclarationMetadata = z.infer<
+  typeof attendanceDeclarationMetadataSchema
+>
 export type UpdatePrescriptionDraftInput = z.infer<
   typeof updatePrescriptionDraftSchema
 >

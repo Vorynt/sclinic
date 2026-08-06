@@ -11,6 +11,7 @@ export type AppointmentsRangeFilters = {
   from: Date
   to: Date
   professionalIds?: string[]
+  modality?: "in_person" | "online"
 }
 
 export type AppointmentsCountFilters = {
@@ -37,6 +38,7 @@ export const appointmentsQueryKeys = {
         professionalIds: filters.professionalIds?.length
           ? [...filters.professionalIds].sort()
           : undefined,
+        modality: filters.modality,
       },
     ] as const,
   counts: () => [...appointmentsQueryKeys.all, "count"] as const,

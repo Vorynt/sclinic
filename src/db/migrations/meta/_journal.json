@@ -140,6 +140,27 @@
       "when": 1785657600000,
       "tag": "0019_clinic_services_catalog",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1785830400000,
+      "tag": "0020_clinical_document_kinds",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1785916800000,
+      "tag": "0021_advanced_scheduling",
+      "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1786003200000,
+      "tag": "0022_schedule_blocks_clinic_wide",
+      "breakpoints": true
     }
   ],
   "version": "7"

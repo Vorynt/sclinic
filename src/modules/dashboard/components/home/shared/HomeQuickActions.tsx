@@ -10,6 +10,8 @@ export type HomeQuickAction = {
   icon: Icon
   href?: string
   onClick?: () => void
+  /** First primary CTA when true; otherwise secondary surface. */
+  primary?: boolean
 }
 
 type HomeQuickActionsProps = {
@@ -21,32 +23,44 @@ export function HomeQuickActions({ actions }: HomeQuickActionsProps) {
 
   return (
     <div className="flex flex-wrap gap-2">
-      {actions.map((action) =>
-        action.onClick ? (
-          <Button
-            key={action.label}
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={action.onClick}
-          >
-            <action.icon data-icon="inline-start" />
-            {action.label}
-          </Button>
-        ) : action.href ? (
-          <Button
-            key={action.href + action.label}
-            variant="outline"
-            size="sm"
-            asChild
-          >
-            <Link href={action.href}>
-              <action.icon data-icon="inline-start" />
+      {actions.map((action, index) => {
+        const variant =
+          action.primary || (action.primary === undefined && index === 0)
+            ? "default"
+            : "secondary"
+        const icon = <action.icon data-icon="inline-start" />
+
+        if (action.onClick) {
+          return (
+            <Button
+              key={action.label}
+              type="button"
+              variant={variant}
+              size="sm"
+              onClick={action.onClick}>
+              {icon}
               {action.label}
-            </Link>
-          </Button>
-        ) : null,
-      )}
+            </Button>
+          )
+        }
+
+        if (action.href) {
+          return (
+            <Button
+              key={action.href + action.label}
+              variant={variant}
+              size="sm"
+              asChild>
+              <Link href={action.href}>
+                {icon}
+                {action.label}
+              </Link>
+            </Button>
+          )
+        }
+
+        return null
+      })}
     </div>
   )
 }

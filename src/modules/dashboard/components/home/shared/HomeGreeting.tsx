@@ -20,8 +20,11 @@ export function HomeGreeting({ subtitle }: HomeGreetingProps) {
   const clinicName = auth?.membership?.clinicName
 
   return (
-    <header className="flex flex-col gap-1">
-      <h1 className="font-heading text-xl font-semibold tracking-tight text-foreground">
+    <header className="flex flex-col gap-1.5">
+      <p className="text-[0.7rem] font-medium tracking-[0.16em] text-primary/70 uppercase">
+        {clinicName ?? "sclinic"}
+      </p>
+      <h1 className="animate-auth-fade-up font-heading text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
         Olá, {firstName}
       </h1>
       <p className="text-sm text-muted-foreground">

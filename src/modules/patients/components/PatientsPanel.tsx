@@ -3,6 +3,7 @@
 import { useState } from "react"
 
 import { DataTableSearch } from "@/components/data-table/DataTableSearch"
+import { PageHeader } from "@/components/layout/PageHeader"
 import { Button } from "@/components/ui/button"
 import { useListQueryParams } from "@/hooks/use-list-query-params"
 import { PatientFormDialog } from "@/modules/patients/components/PatientFormDialog"
@@ -30,19 +31,15 @@ export function PatientsPanel({ onSchedulePatient }: PatientsPanelProps) {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="flex flex-col gap-1">
-          <h1 className="font-heading text-xl font-semibold tracking-tight text-foreground">
-            Pacientes
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Cadastro e busca de pacientes da clínica.
-          </p>
-        </div>
-        <Button type="button" onClick={handleNewPatient}>
-          Novo paciente
-        </Button>
-      </div>
+      <PageHeader
+        title="Pacientes"
+        description="Cadastro e busca de pacientes da clínica."
+        actions={
+          <Button type="button" onClick={handleNewPatient}>
+            Novo paciente
+          </Button>
+        }
+      />
 
       <DataTableSearch
         value={q ?? ""}

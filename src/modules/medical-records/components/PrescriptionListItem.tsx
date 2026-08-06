@@ -12,6 +12,7 @@ import { ptBR } from "date-fns/locale"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { routes } from "@/config/routes"
+import { clinicalDocumentKindLabel } from "@/modules/medical-records/constants/clinical-documents"
 import type { Prescription } from "@/modules/medical-records/types/prescription"
 
 type PrescriptionListItemProps = {
@@ -72,16 +73,19 @@ export function PrescriptionListItem({
                 : "bg-amber-50 text-amber-800",
             )}
           >
-            {isIssued ? "Emitida" : "Rascunho"}
+            {isIssued ? "Emitido" : "Rascunho"}
+          </span>
+          <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+            {clinicalDocumentKindLabel(prescription.kind)}
           </span>
         </div>
         <p className="text-sm text-foreground">
-          <span className="text-muted-foreground">Prescrito por </span>
+          <span className="text-muted-foreground">Por </span>
           <span className="font-medium">{who ?? "Profissional não informado"}</span>
         </p>
         {whenLabel ? (
           <p className="text-xs text-muted-foreground">
-            {isIssued ? "Emitida em " : "Atualizado em "}
+            {isIssued ? "Emitido em " : "Atualizado em "}
             {whenLabel}
           </p>
         ) : null}

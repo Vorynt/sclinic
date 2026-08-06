@@ -89,10 +89,13 @@ export const HELP_FAQ_NURSE: HelpFaqItem[] = [
     categoryId: "appointments",
     question: "Como funciona a minha agenda?",
     answer: [
-      "Você vê e atualiza os atendimentos em que você é o profissional. A recepção marca horários para a clínica inteira.",
+      "Você vê e atualiza os atendimentos em que você é o profissional. A grade semanal (quando você atende) fica em Início → Meus horários; a recepção agenda só nos horários livres.",
     ],
     keywords: ["agenda", "meus horários", "self"],
-    relatedRoutes: [{ label: "Agenda", href: routes.appointments }],
+    relatedRoutes: [
+      { label: "Início", href: routes.home },
+      { label: "Agenda", href: routes.appointments },
+    ],
   },
   {
     id: "create-appointment",

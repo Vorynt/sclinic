@@ -2,7 +2,7 @@ export const CLINIC_OPS_EVENTS = {
   CHANGED: "clinic.ops.changed",
 } as const
 
-export type ClinicOpsEntityType = "appointment" | "charge"
+export type ClinicOpsEntityType = "appointment" | "charge" | "waitlist"
 
 export type ClinicOpsEventType =
   | "appointment.created"
@@ -11,6 +11,10 @@ export type ClinicOpsEventType =
   | "charge.created"
   | "charge.updated"
   | "charge.canceled"
+  | "waitlist.created"
+  | "waitlist.updated"
+  | "waitlist.canceled"
+  | "waitlist.promoted"
 
 /**
  * Lightweight ops signal for reception board / agenda realtime (ADR-006).

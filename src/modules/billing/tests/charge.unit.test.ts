@@ -3,8 +3,10 @@ import { describe, it } from "node:test"
 
 import {
   createChargeFromAppointmentSchema,
+  listChargesSchema,
   markChargePaidSchema,
 } from "@/modules/billing/schemas/charge.schema"
+import { endOfClinicLocalDay } from "@/modules/billing/utils/charge-due-date"
 import {
   assertAppointmentChargeable,
   assertChargePendingForCancel,
@@ -79,6 +81,34 @@ describe("markChargePaidSchema", () => {
       method: "courtesy",
     })
     assert.equal(result.success, false)
+  })
+})
+
+describe("listChargesSchema", () => {
+  it("keeps overdue unset by default", () => {
+    const parsed = listChargesSchema.parse({})
+    assert.equal(parsed.overdue, undefined)
+  })
+
+  it("accepts an overdue boolean filter", () => {
+    const parsed = listChargesSchema.parse({ overdue: true })
+    assert.equal(parsed.overdue, true)
+  })
+})
+
+describe("endOfClinicLocalDay", () => {
+  it("returns 23:59:59.999 of the same day in the clinic timezone", () => {
+    const startsAt = new Date("2026-03-10T13:00:00.000Z")
+    const dueAt = endOfClinicLocalDay(startsAt, "America/Sao_Paulo")
+
+    assert.equal(dueAt.toISOString(), "2026-03-11T02:59:59.999Z")
+  })
+
+  it("rolls over correctly near a UTC day boundary", () => {
+    const startsAt = new Date("2026-06-01T23:30:00.000Z")
+    const dueAt = endOfClinicLocalDay(startsAt, "America/Sao_Paulo")
+
+    assert.equal(dueAt.getTime() > startsAt.getTime(), true)
   })
 })
 

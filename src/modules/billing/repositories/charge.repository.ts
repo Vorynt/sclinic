@@ -13,6 +13,7 @@ import type {
   Charge,
   ChargeListItem,
   ChargeStatus,
+  DelinquentPatient,
   ManualPaymentMethod,
   Payment,
 } from "@/modules/billing/types/charge"
@@ -26,6 +27,7 @@ export type AppointmentChargeContext = {
   clinicId: string
   patientId: string
   status: string
+  startsAt: Date
 }
 
 export const chargeRepository = {
@@ -40,6 +42,7 @@ export const chargeRepository = {
           clinicId: appointments.clinicId,
           patientId: appointments.patientId,
           status: appointments.status,
+          startsAt: appointments.startsAt,
         })
         .from(appointments)
         .where(
@@ -152,6 +155,7 @@ export const chargeRepository = {
     billingKind: "standard" | "courtesy" | "return"
     status: "pending" | "paid"
     description?: string
+    dueAt?: Date | null
     createdBy: string
   }): Promise<Charge> {
     return withDbError(async () => {
@@ -170,6 +174,7 @@ export const chargeRepository = {
           currency: "BRL",
           status: params.status,
           description: params.description ?? null,
+          dueAt: params.dueAt ?? null,
           provider: "none",
           createdBy: params.createdBy,
           updatedBy: params.createdBy,
@@ -221,6 +226,7 @@ export const chargeRepository = {
     clinicId: string
     q?: string
     status?: ChargeStatus
+    overdue?: boolean
     page: number
     pageSize: number
   }): Promise<PaginatedResult<ChargeListItem>> {
@@ -230,6 +236,12 @@ export const chargeRepository = {
         isNull(charges.deletedAt),
         params.status ? eq(charges.status, params.status) : undefined,
         params.q ? ilike(patients.fullName, `%${params.q}%`) : undefined,
+        params.overdue
+          ? and(
+              eq(charges.status, "pending"),
+              sql`${charges.dueAt} IS NOT NULL AND ${charges.dueAt} < now()`,
+            )
+          : undefined,
       )
 
       const offset = (params.page - 1) * params.pageSize
@@ -397,6 +409,41 @@ export const chargeRepository = {
         paidThisMonthCents: Number(paidRow[0]?.totalCents ?? 0),
         paidThisMonthCount: paidRow[0]?.count ?? 0,
       }
+    })
+  },
+
+  async listDelinquentPatients(
+    clinicId: string,
+  ): Promise<DelinquentPatient[]> {
+    return withDbError(async () => {
+      const rows = await db
+        .select({
+          patientId: charges.patientId,
+          patientName: patients.fullName,
+          totalCents: sum(charges.amountCents),
+          count: count(),
+          oldestDueAt: sql<Date>`min(${charges.dueAt})`,
+        })
+        .from(charges)
+        .innerJoin(patients, eq(charges.patientId, patients.id))
+        .where(
+          and(
+            eq(charges.clinicId, clinicId),
+            isNull(charges.deletedAt),
+            eq(charges.status, "pending"),
+            sql`${charges.dueAt} IS NOT NULL AND ${charges.dueAt} < now()`,
+          ),
+        )
+        .groupBy(charges.patientId, patients.fullName)
+        .orderBy(sql`min(${charges.dueAt}) asc`)
+
+      return rows.map((row) => ({
+        patientId: row.patientId,
+        patientName: row.patientName,
+        totalCents: Number(row.totalCents ?? 0),
+        count: row.count,
+        oldestDueAt: row.oldestDueAt,
+      }))
     })
   },
 }

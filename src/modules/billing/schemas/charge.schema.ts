@@ -87,6 +87,7 @@ export const cancelChargeSchema = z.object({
 
 export const listChargesSchema = listQuerySchema.extend({
   status: z.enum(CHARGE_STATUSES).optional(),
+  overdue: z.coerce.boolean().optional(),
 })
 
 export const getChargeByAppointmentSchema = z.object({

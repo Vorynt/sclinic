@@ -18,6 +18,9 @@ export type AppointmentType =
   | "evaluation"
   | "other"
 
+/** How the appointment is delivered (ADR-011). */
+export type AppointmentModality = "in_person" | "online"
+
 export type Appointment = {
   id: string
   clinicId: string
@@ -29,6 +32,7 @@ export type Appointment = {
   startsAt: Date
   endsAt: Date
   type: AppointmentType
+  modality: AppointmentModality
   status: AppointmentStatus
   reason: string | null
   notes: string | null
@@ -36,4 +40,10 @@ export type Appointment = {
   canceledReason: string | null
   createdAt: Date
   updatedAt: Date
+}
+
+/** Result of a bulk confirm operation on the reception day board. */
+export type ConfirmAppointmentsBatchResult = {
+  confirmedCount: number
+  skippedCount: number
 }

@@ -4,6 +4,8 @@ import { useQueryClient } from "@tanstack/react-query"
 import { useEffect, useRef } from "react"
 
 import { appointmentsQueryKeys } from "@/modules/appointments/queries/appointments.query"
+import { scheduleBlocksQueryKeys } from "@/modules/appointments/queries/schedule-blocks.query"
+import { waitlistQueryKeys } from "@/modules/appointments/queries/waitlist.query"
 import { chargesQueryKeys } from "@/modules/billing/queries/charges.query"
 
 const SSE_PATH = "/api/realtime/clinic"
@@ -29,6 +31,8 @@ export function useClinicOpsRealtime(enabled = true) {
       const client = queryClientRef.current
       void Promise.all([
         client.invalidateQueries({ queryKey: appointmentsQueryKeys.all }),
+        client.invalidateQueries({ queryKey: scheduleBlocksQueryKeys.all }),
+        client.invalidateQueries({ queryKey: waitlistQueryKeys.all }),
         client.invalidateQueries({ queryKey: chargesQueryKeys.all }),
       ])
     }

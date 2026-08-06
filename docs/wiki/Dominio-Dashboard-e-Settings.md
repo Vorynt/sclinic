@@ -4,9 +4,10 @@
 
 ## Dashboard
 
-- `AppShell`, sidebar (`nav.ts`), homes por role (`HomeByRole`)
-- Homes: Owner, Admin, Manager, Receptionist (+ board), Doctor, Nurse, Financial, Default
-- AttendanceShell separado (sem sidebar completa)
+- `AppShell` (wash estático `bg-app-wash`), sidebar (`nav.ts`), homes por role (`HomeByRole`)
+- Headers de listagem: `PageHeader` em `src/components/layout/`
+- Homes: Owner, Admin, Manager, Receptionist (+ board com accent semântico), Doctor, Nurse, Financial, Default
+- AttendanceShell separado (sem sidebar; **quieto** — só herda tokens, sem wash/orbs)
 - Landing única em `/home`; diferenciação por `roleKey` (sem redirect pós-login por papel)
 
 ### Conteúdo por papel

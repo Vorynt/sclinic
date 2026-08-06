@@ -31,6 +31,7 @@ import {
   Empty,
   EmptyDescription,
   EmptyHeader,
+  EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -522,8 +523,11 @@ export function AuditLogsTable({ filters, onPageChange }: AuditLogsTableProps) {
 
   if (items.length === 0) {
     return (
-      <Empty className="border">
+      <Empty className="border border-dashed py-10">
         <EmptyHeader>
+          <EmptyMedia variant="icon">
+            <NotePencilIcon weight="duotone" />
+          </EmptyMedia>
           <EmptyTitle>Nenhum registro</EmptyTitle>
           <EmptyDescription>
             As ações da clínica aparecerão aqui quando forem realizadas.

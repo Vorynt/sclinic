@@ -16,10 +16,12 @@ import {
   canMarkAppointmentNoShow,
   canRoleStartAttendance,
   canStartAttendance,
+  isAppointmentConfirmableInBatch,
   isAppointmentScheduleEditable,
   isSelfScheduleOnlyRole,
 } from "@/modules/appointments/constants/appointments"
 import type { CancelAppointmentDto } from "@/modules/appointments/dto/cancel-appointment.dto"
+import type { ConfirmAppointmentsBatchDto } from "@/modules/appointments/dto/confirm-appointments-batch.dto"
 import type { CountAppointmentsDto } from "@/modules/appointments/dto/count-appointments.dto"
 import type { CreateAppointmentDto } from "@/modules/appointments/dto/create-appointment.dto"
 import type { ListAppointmentsDto } from "@/modules/appointments/dto/list-appointments.dto"
@@ -29,7 +31,10 @@ import type { UpdateAppointmentDetailsDto } from "@/modules/appointments/dto/upd
 import type { UpdateAppointmentStatusDto } from "@/modules/appointments/dto/update-appointment-status.dto"
 import { appointmentRepository } from "@/modules/appointments/repositories/appointment.repository"
 import { professionalAvailabilityService } from "@/modules/appointments/services/professional-availability.service"
-import type { Appointment } from "@/modules/appointments/types/appointment"
+import type {
+  Appointment,
+  ConfirmAppointmentsBatchResult,
+} from "@/modules/appointments/types/appointment"
 import {
   type AuthContextWithClinic,
   requireAnyPermission,
@@ -144,6 +149,7 @@ export const appointmentService = {
       from: filters.from,
       to: filters.to,
       professionalIds,
+      modality: filters.modality,
     })
   },
 
@@ -659,5 +665,76 @@ export const appointmentService = {
       })
       throw error
     }
+  },
+
+  /**
+   * Bulk confirm for the reception day board. Only `scheduled` appointments
+   * transition to `confirmed`; everything else is silently skipped so the
+   * caller can select a broad set (e.g. "confirm all today") safely.
+   */
+  async confirmBatch(
+    data: ConfirmAppointmentsBatchDto,
+    ctx: AuthRequestContext,
+  ): Promise<ConfirmAppointmentsBatchResult> {
+    const auth = await requirePermission(ctx, Permission.APPOINTMENTS_UPDATE)
+    const actor = auditActorFromAuth(auth)
+
+    const ownProfessionalId = isSelfScheduleOnlyRole(auth.membership.roleKey)
+      ? await resolveOwnProfessionalId(auth)
+      : null
+
+    let confirmedCount = 0
+    let skippedCount = 0
+    const confirmedIds: string[] = []
+
+    for (const id of data.appointmentIds) {
+      const existing = await appointmentRepository.findById(id, auth.clinicId)
+      if (
+        !existing ||
+        !isAppointmentConfirmableInBatch({
+          status: existing.status,
+          professionalId: existing.professionalId,
+          ownProfessionalId,
+        })
+      ) {
+        skippedCount += 1
+        continue
+      }
+
+      await appointmentRepository.updateStatus({
+        id: existing.id,
+        clinicId: auth.clinicId,
+        updatedBy: auth.user.id,
+        status: "confirmed",
+      })
+      confirmedIds.push(existing.id)
+      confirmedCount += 1
+    }
+
+    recordAudit({
+      ...actor,
+      action: AUDIT_ACTIONS.APPOINTMENT_BATCH_CONFIRM,
+      status: "success",
+      entityType: AUDIT_ENTITY_TYPES.APPOINTMENT,
+      changes: {
+        after: {
+          requested: data.appointmentIds.length,
+          confirmedCount,
+          skippedCount,
+          confirmedIds,
+        },
+      },
+    })
+
+    for (const id of confirmedIds) {
+      publishClinicOps({
+        clinicId: auth.clinicId,
+        type: "appointment.updated",
+        entityType: "appointment",
+        entityId: id,
+      })
+    }
+
+    return { confirmedCount, skippedCount }
   },
 }

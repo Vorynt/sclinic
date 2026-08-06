@@ -23,6 +23,7 @@ type ClinicHoursDayRowProps = {
   isClosed: boolean
   intervals: ClinicTimeInterval[]
   disabled?: boolean
+  closedDayMessage?: string
   errors?: FieldErrors<HoursFormValues>["days"]
   register: UseFormRegister<HoursFormValues>
   onToggleOpen: (open: boolean) => void
@@ -103,6 +104,7 @@ export function ClinicHoursDayRow({
   isClosed,
   intervals,
   disabled,
+  closedDayMessage = "A clínica não atende neste dia.",
   errors,
   register,
   onToggleOpen,
@@ -145,9 +147,7 @@ export function ClinicHoursDayRow({
       />
 
       {isClosed ? (
-        <p className="text-sm text-muted-foreground">
-          A clínica não atende neste dia.
-        </p>
+        <p className="text-sm text-muted-foreground">{closedDayMessage}</p>
       ) : (
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">

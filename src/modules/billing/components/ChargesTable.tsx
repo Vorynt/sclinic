@@ -29,6 +29,7 @@ import {
   Empty,
   EmptyDescription,
   EmptyHeader,
+  EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -62,10 +63,11 @@ type ChargesTableProps = {
 
 function statusVariant(
   status: ChargeStatus,
-): "default" | "secondary" | "outline" | "destructive" {
-  if (status === "paid") return "secondary";
-  if (status === "canceled" || status === "failed") return "outline";
-  return "default";
+): "default" | "secondary" | "outline" | "destructive" | "success" | "warning" | "info" {
+  if (status === "paid") return "success"
+  if (status === "pending") return "warning"
+  if (status === "canceled" || status === "failed") return "outline"
+  return "info"
 }
 
 function ChargesSkeleton({ rows }: { rows: number }) {
@@ -235,8 +237,11 @@ export function ChargesTable({ filters, onPageChange }: ChargesTableProps) {
 
   if (items.length === 0) {
     return (
-      <Empty className="border">
+      <Empty className="border border-dashed py-10">
         <EmptyHeader>
+          <EmptyMedia variant="icon">
+            <CurrencyCircleDollarIcon weight="duotone" />
+          </EmptyMedia>
           <EmptyTitle>Nenhuma cobrança encontrada</EmptyTitle>
           <EmptyDescription>
             Crie uma cobrança ao agendar a consulta.
