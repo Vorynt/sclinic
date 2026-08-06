@@ -467,7 +467,7 @@ describe("appointment status transition helpers", () => {
   it("allows start attendance only for owner, admin and health roles", () => {
     assert.equal(canRoleStartAttendance("owner"), true)
     assert.equal(canRoleStartAttendance("admin"), true)
-    assert.equal(canRoleStartAttendance("doctor"), true)
+    assert.equal(canRoleStartAttendance("clinician"), true)
     assert.equal(canRoleStartAttendance("nurse"), true)
     assert.equal(canRoleStartAttendance("manager"), false)
     assert.equal(canRoleStartAttendance("receptionist"), false)
@@ -640,7 +640,7 @@ describe("getProfessionalCalendarColor", () => {
 
 describe("isSelfScheduleOnlyRole", () => {
   it("is true for professional roles (doctor and nurse)", () => {
-    assert.equal(isSelfScheduleOnlyRole("doctor"), true)
+    assert.equal(isSelfScheduleOnlyRole("clinician"), true)
     assert.equal(isSelfScheduleOnlyRole("nurse"), true)
     assert.equal(isSelfScheduleOnlyRole("receptionist"), false)
     assert.equal(isSelfScheduleOnlyRole("owner"), false)

@@ -3,6 +3,7 @@
 import { format } from "date-fns"
 import Link from "next/link"
 
+import { QueryErrorState } from "@/components/status/QueryErrorState"
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 import { routes } from "@/config/routes"
@@ -35,9 +36,13 @@ export function AttendanceOverviewPanel({
 
   if (appointmentQuery.isError || !appointmentQuery.data) {
     return (
-      <p className="text-sm text-destructive">
-        Não foi possível carregar o resumo do atendimento.
-      </p>
+      <QueryErrorState
+        description="Não foi possível carregar o resumo do atendimento."
+        onRetry={() => {
+          void appointmentQuery.refetch()
+        }}
+        isRetrying={appointmentQuery.isFetching}
+      />
     )
   }
 

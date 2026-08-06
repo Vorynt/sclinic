@@ -32,6 +32,10 @@ export function PatientClinicalNotesSection({
         notes={notesQuery.data}
         isLoading={notesQuery.isLoading}
         isError={notesQuery.isError}
+        onRetry={() => {
+          void notesQuery.refetch()
+        }}
+        isRetrying={notesQuery.isFetching}
         title="Histórico clínico"
         description="Todas as anotações vinculadas aos atendimentos do paciente."
         emptyMessage="Nenhuma anotação registrada."

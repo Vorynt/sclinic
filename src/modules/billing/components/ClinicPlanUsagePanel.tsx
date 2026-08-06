@@ -3,6 +3,7 @@
 import { WarningCircleIcon } from "@phosphor-icons/react";
 import Link from "next/link";
 
+import { QueryErrorState } from "@/components/status/QueryErrorState";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -94,11 +95,13 @@ export function ClinicPlanUsagePanel() {
 
   if (query.isError || !query.data) {
     return (
-      <Alert variant="destructive">
-        <WarningCircleIcon />
-        <AlertTitle>Não foi possível carregar</AlertTitle>
-        <AlertDescription>Tente novamente em instantes.</AlertDescription>
-      </Alert>
+      <QueryErrorState
+        description="Não foi possível carregar o uso do plano."
+        onRetry={() => {
+          void query.refetch();
+        }}
+        isRetrying={query.isFetching}
+      />
     );
   }
 

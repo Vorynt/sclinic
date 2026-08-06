@@ -1,15 +1,23 @@
 import { z } from "zod"
 
 import {
-  PROFESSIONAL_ROLE_KEYS,
+  PROFESSION_TYPE_KEYS,
   TREATMENT_PRONOUN_KEYS,
 } from "@/modules/professionals/constants/professionals"
 
-const clinicalPracticeTypeSchema = z.enum(PROFESSIONAL_ROLE_KEYS)
+const professionTypeSchema = z.enum(PROFESSION_TYPE_KEYS)
 
 const treatmentPronounSchema = z.enum(TREATMENT_PRONOUN_KEYS)
 
-const councilTypeSchema = z.enum(["CRM", "CRO", "COREN", "CRF", "OTHER"])
+const councilTypeSchema = z.enum([
+  "CRM",
+  "CRO",
+  "COREN",
+  "CRF",
+  "CREFITO",
+  "CRP",
+  "OTHER",
+])
 
 const optionalTrimmed = z
   .string()
@@ -22,11 +30,12 @@ const optionalCouncilType = z
   .optional()
 
 /**
- * Owner clinical profile (ADR-007).
- * `clinicalPracticeType` drives UI defaults only — never changes membership role.
+ * Owner clinical profile (ADR-007 / ADR-012).
+ * `professionType` drives UI defaults and is stored on the profile —
+ * never changes membership role (stays `owner`).
  */
 export const createOwnerClinicalProfileSchema = z.object({
-  clinicalPracticeType: clinicalPracticeTypeSchema,
+  professionType: professionTypeSchema,
   fullName: z
     .string()
     .trim()

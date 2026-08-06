@@ -124,12 +124,12 @@ export const HELP_FAQ_ADMIN: HelpFaqItem[] = [
   {
     id: "invite-professional",
     categoryId: "team",
-    question: "Como cadastro um médico ou enfermeiro?",
+    question: "Como cadastro um profissional de saúde?",
     answer: [
       "Em Profissionais. A pessoa completa o cadastro (incluindo o número do conselho) e fica pronta para atender.",
       "O plano da clínica tem limite de profissionais — se o convite for bloqueado, o proprietário precisa ver Uso do plano.",
     ],
-    keywords: ["médico", "enfermeiro", "profissional", "CRM"],
+    keywords: ["profissional", "profissional de saúde", "enfermeiro", "CRM"],
     relatedRoutes: [
       { label: "Profissionais", href: routes.professionals },
     ],
@@ -140,7 +140,7 @@ export const HELP_FAQ_ADMIN: HelpFaqItem[] = [
     question: "Qual a diferença entre as funções?",
     answer: [
       "Cada função vê menus diferentes.",
-      "Em resumo: você (admin) opera quase tudo; o gestor acompanha a operação; a recepção agenda e cobra no balcão; o financeiro cuida das cobranças; médicos e enfermeiros atendem e usam o prontuário. O proprietário cuida do plano e pode apagar a clínica.",
+      "Em resumo: você (admin) opera quase tudo; o gestor acompanha a operação; a recepção agenda e cobra no balcão; o financeiro cuida das cobranças; profissionais de saúde atendem e usam o prontuário. O proprietário cuida do plano e pode apagar a clínica.",
     ],
     keywords: ["função", "papel", "permissão", "diferença"],
     relatedRoutes: [{ label: "Equipe", href: routes.users }],

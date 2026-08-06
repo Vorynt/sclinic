@@ -79,7 +79,7 @@ describe("users member rules", () => {
       assertCanManageMember({
         actorUserId: "a",
         targetUserId: "b",
-        targetRoleKey: "doctor",
+        targetRoleKey: "clinician",
       }),
     )
   })
@@ -132,7 +132,7 @@ describe("users schemas", () => {
 
 describe("role labels", () => {
   it("returns portuguese labels for known roles", () => {
-    assert.equal(getRoleLabel("doctor"), "Médico(a)")
+    assert.equal(getRoleLabel("clinician"), "Profissional de saúde")
     assert.equal(getRoleLabel("custom", "Custom"), "Custom")
   })
 })

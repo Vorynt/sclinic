@@ -4,6 +4,7 @@ import type { JSONContent } from "@tiptap/react"
 import { useState } from "react"
 import { toast } from "sonner"
 
+import { QueryErrorState } from "@/components/status/QueryErrorState"
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 import {
@@ -52,9 +53,13 @@ export function ClinicalNotesPanel({ appointmentId }: ClinicalNotesPanelProps) {
 
   if (noteQuery.isError || !noteQuery.data) {
     return (
-      <p className="text-sm text-destructive">
-        Não foi possível carregar as anotações.
-      </p>
+      <QueryErrorState
+        description="Não foi possível carregar as anotações."
+        onRetry={() => {
+          void noteQuery.refetch()
+        }}
+        isRetrying={noteQuery.isFetching}
+      />
     )
   }
 
@@ -66,6 +71,10 @@ export function ClinicalNotesPanel({ appointmentId }: ClinicalNotesPanelProps) {
       historyNotes={historyQuery.data}
       historyLoading={historyQuery.isLoading}
       historyError={historyQuery.isError}
+      onHistoryRetry={() => {
+        void historyQuery.refetch()
+      }}
+      historyRetrying={historyQuery.isFetching}
     />
   )
 }
@@ -76,6 +85,8 @@ type ClinicalNotesPanelContentProps = {
   historyNotes: ClinicalNote[] | undefined
   historyLoading: boolean
   historyError: boolean
+  onHistoryRetry: () => void
+  historyRetrying: boolean
 }
 
 function ClinicalNotesPanelContent({
@@ -84,6 +95,8 @@ function ClinicalNotesPanelContent({
   historyNotes,
   historyLoading,
   historyError,
+  onHistoryRetry,
+  historyRetrying,
 }: ClinicalNotesPanelContentProps) {
   const note = data.note
   const isFormNote = Boolean(note?.templateId && note.formValues)
@@ -247,6 +260,8 @@ function ClinicalNotesPanelContent({
           notes={historyNotes}
           isLoading={historyLoading}
           isError={historyError}
+          onRetry={onHistoryRetry}
+          isRetrying={historyRetrying}
         />
       </div>
     </div>

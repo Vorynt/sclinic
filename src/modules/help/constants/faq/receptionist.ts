@@ -16,7 +16,7 @@ export const HELP_FAQ_RECEPTIONIST: HelpFaqItem[] = [
     question: "Para que serve o sclinic na recepção?",
     answer: [
       "É a ferramenta do balcão: cadastrar pacientes, marcar e confirmar consultas, acompanhar o quadro do dia e registrar pagamentos.",
-      "Você não inicia o atendimento clínico nem vê o prontuário — isso fica com médicos e enfermeiros.",
+      "Você não inicia o atendimento clínico nem vê o prontuário — isso fica com os profissionais de saúde.",
     ],
     keywords: ["recepção", "balcão", "para que serve"],
     relatedRoutes: [{ label: "Início", href: routes.home }],
@@ -93,7 +93,7 @@ export const HELP_FAQ_RECEPTIONIST: HelpFaqItem[] = [
     categoryId: "patients",
     question: "Por que não vejo notas ou receitas do paciente?",
     answer: [
-      "O prontuário clínico é restrito a quem atende (médico/enfermeiro) e a papéis de gestão com essa permissão.",
+      "O prontuário clínico é restrito a quem atende (profissional de saúde) e a papéis de gestão com essa permissão.",
       "Na recepção o foco é cadastro, agenda e pagamento — isso protege os dados clínicos.",
     ],
     keywords: ["prontuário", "nota", "receita", "não vejo"],
@@ -144,7 +144,7 @@ export const HELP_FAQ_RECEPTIONIST: HelpFaqItem[] = [
     question: "Por que não consigo iniciar o atendimento?",
     answer: [
       "Iniciar atendimento é do profissional clínico. Seu papel é organizar a fila e o pagamento.",
-      "Quando o médico ou enfermeiro inicia e conclui, a consulta pode aparecer em Aguardando pagamento no quadro.",
+      "Quando o profissional de saúde inicia e conclui, a consulta pode aparecer em Aguardando pagamento no quadro.",
     ],
     keywords: ["iniciar", "atendimento", "bloqueado", "em atendimento"],
     relatedRoutes: [

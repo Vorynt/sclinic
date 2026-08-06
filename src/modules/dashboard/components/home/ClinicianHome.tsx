@@ -18,7 +18,7 @@ import { ProfessionalHoursDialog } from "@/modules/professionals/components/Prof
 import { formatProfessionalDisplayName } from "@/modules/professionals/constants/professionals"
 import { useProfessionalsForSchedulingQuery } from "@/modules/professionals/hooks/use-professionals"
 
-export function DoctorHome() {
+export function ClinicianHome() {
   const [hoursOpen, setHoursOpen] = useState(false)
   const schedulingQuery = useProfessionalsForSchedulingQuery()
   const mine = schedulingQuery.data?.[0] ?? null

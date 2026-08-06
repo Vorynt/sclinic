@@ -5,6 +5,7 @@ import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { useState } from "react"
 
+import { QueryErrorState } from "@/components/status/QueryErrorState"
 import {
   Collapsible,
   CollapsibleContent,
@@ -20,6 +21,8 @@ type VitalSignsHistoryPanelProps = {
   items: VitalSigns[] | undefined
   isLoading: boolean
   isError: boolean
+  onRetry: () => void
+  isRetrying?: boolean
   title?: string
   description?: string
   emptyMessage?: string
@@ -29,6 +32,8 @@ export function VitalSignsHistoryPanel({
   items,
   isLoading,
   isError,
+  onRetry,
+  isRetrying = false,
   title = "Histórico de sinais vitais",
   description = "Medições de outros atendimentos do paciente.",
   emptyMessage = "Nenhum registro anterior.",
@@ -49,9 +54,11 @@ export function VitalSignsHistoryPanel({
       ) : null}
 
       {isError ? (
-        <p className="text-sm text-destructive">
-          Não foi possível carregar o histórico.
-        </p>
+        <QueryErrorState
+          description="Não foi possível carregar o histórico."
+          onRetry={onRetry}
+          isRetrying={isRetrying}
+        />
       ) : null}
 
       {!isLoading && !isError && items && items.length === 0 ? (

@@ -6,6 +6,7 @@ import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 import type { z } from "zod";
 
+import { QueryErrorState } from "@/components/status/QueryErrorState";
 import { Button } from "@/components/ui/button";
 import {
   Field,
@@ -88,9 +89,13 @@ export function VitalSignsPanel({ appointmentId }: VitalSignsPanelProps) {
 
   if (vitalsQuery.isError || !vitalsQuery.data) {
     return (
-      <p className="text-sm text-destructive">
-        Não foi possível carregar os sinais vitais.
-      </p>
+      <QueryErrorState
+        description="Não foi possível carregar os sinais vitais."
+        onRetry={() => {
+          void vitalsQuery.refetch();
+        }}
+        isRetrying={vitalsQuery.isFetching}
+      />
     );
   }
 
@@ -102,6 +107,10 @@ export function VitalSignsPanel({ appointmentId }: VitalSignsPanelProps) {
       historyItems={historyQuery.data}
       historyLoading={historyQuery.isLoading}
       historyError={historyQuery.isError}
+      onHistoryRetry={() => {
+        void historyQuery.refetch();
+      }}
+      historyRetrying={historyQuery.isFetching}
     />
   );
 }
@@ -112,6 +121,8 @@ type VitalSignsPanelContentProps = {
   historyItems: VitalSigns[] | undefined;
   historyLoading: boolean;
   historyError: boolean;
+  onHistoryRetry: () => void;
+  historyRetrying: boolean;
 };
 
 function VitalSignsPanelContent({
@@ -120,6 +131,8 @@ function VitalSignsPanelContent({
   historyItems,
   historyLoading,
   historyError,
+  onHistoryRetry,
+  historyRetrying,
 }: VitalSignsPanelContentProps) {
   const editable = data.editable;
   const hasVitals = data.vitals != null;
@@ -385,6 +398,8 @@ function VitalSignsPanelContent({
           items={historyItems}
           isLoading={historyLoading}
           isError={historyError}
+          onRetry={onHistoryRetry}
+          isRetrying={historyRetrying}
         />
       </div>
     </div>

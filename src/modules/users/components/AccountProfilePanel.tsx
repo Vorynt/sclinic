@@ -1,11 +1,18 @@
 "use client"
 
+import { QueryErrorState } from "@/components/status/QueryErrorState"
 import { Spinner } from "@/components/ui/spinner"
 import { AccountProfileForm } from "@/modules/users/components/AccountProfileForm"
 import { useAccountProfile } from "@/modules/users/hooks/use-account"
 
 export function AccountProfilePanel() {
-  const { data: profile, isPending, isError } = useAccountProfile()
+  const {
+    data: profile,
+    isPending,
+    isError,
+    refetch,
+    isFetching,
+  } = useAccountProfile()
 
   if (isPending) {
     return (
@@ -18,9 +25,13 @@ export function AccountProfilePanel() {
 
   if (isError || !profile) {
     return (
-      <p className="text-sm text-destructive">
-        Não foi possível carregar o perfil.
-      </p>
+      <QueryErrorState
+        description="Não foi possível carregar o perfil."
+        onRetry={() => {
+          void refetch()
+        }}
+        isRetrying={isFetching}
+      />
     )
   }
 

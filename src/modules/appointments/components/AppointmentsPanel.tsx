@@ -4,6 +4,7 @@ import { PlusIcon } from "@phosphor-icons/react"
 import { useEffect, useMemo, useRef, useState } from "react"
 
 import { PageHeader } from "@/components/layout/PageHeader"
+import { QueryErrorState } from "@/components/status/QueryErrorState"
 import { Button } from "@/components/ui/button"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { AppointmentDayView } from "@/modules/appointments/components/AppointmentDayView"
@@ -185,9 +186,21 @@ export function AppointmentsPanel() {
       {isCalendarLoading ? (
         <AppointmentsCalendarSkeleton />
       ) : isCalendarError ? (
-        <p className="text-sm text-destructive">
-          Não foi possível carregar os agendamentos.
-        </p>
+        <QueryErrorState
+          description="Não foi possível carregar os agendamentos."
+          onRetry={() => {
+            void appointmentsQuery.refetch()
+            void scheduleBlocksQuery.refetch()
+            if (mode !== "month") {
+              void calendarHoursQuery.refetch()
+            }
+          }}
+          isRetrying={
+            appointmentsQuery.isFetching ||
+            scheduleBlocksQuery.isFetching ||
+            (mode !== "month" && calendarHoursQuery.isFetching)
+          }
+        />
       ) : (
         <>
           {mode === "month" ? (

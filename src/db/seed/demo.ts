@@ -10,8 +10,8 @@
  *   roberto.ferreira@sclinic.local / senha123 (manager)
  *   camila.dias@sclinic.local / senha123    (receptionist)
  *   lucas.martins@sclinic.local / senha123  (receptionist)
- *   ana.nogueira@sclinic.local / senha123   (doctor)
- *   carlos.mendes@sclinic.local / senha123  (doctor)
+ *   ana.nogueira@sclinic.local / senha123   (clinician)
+ *   carlos.mendes@sclinic.local / senha123  (clinician)
  *   patricia.almeida@sclinic.local / senha123 (nurse)
  *   helena.barbosa@sclinic.local / senha123 (financial)
  *   tiago.ramos@sclinic.local / senha123    (manager, suspended)
@@ -81,7 +81,7 @@ type DemoTeamRoleKey =
   | "admin"
   | "manager"
   | "receptionist"
-  | "doctor"
+  | "clinician"
   | "nurse"
   | "financial"
 
@@ -126,14 +126,14 @@ const DEMO_TEAM_MEMBERS: readonly DemoTeamMemberSeed[] = [
     name: "Dra. Ana Beatriz Nogueira",
     email: "ana.nogueira@sclinic.local",
     phone: "11990010005",
-    roleKey: "doctor",
+    roleKey: "clinician",
     professionalFullName: "Ana Beatriz Nogueira",
   },
   {
     name: "Dr. Carlos Eduardo Mendes",
     email: "carlos.mendes@sclinic.local",
     phone: "11990010006",
-    roleKey: "doctor",
+    roleKey: "clinician",
     professionalFullName: "Carlos Eduardo Mendes",
   },
   {
@@ -200,8 +200,8 @@ const SYSTEM_ROLES = [
     description: "Recepcionista — pacientes e agendamentos",
   },
   {
-    key: "doctor",
-    name: "Médico(a)",
+    key: "clinician",
+    name: "Profissional de saúde",
     description: "Profissional de saúde com acesso de escrita clínica",
   },
   {
@@ -307,7 +307,7 @@ const ROLE_PERMISSION_MATRIX: Record<string, readonly string[]> = {
     "appointments.delete",
     "financial.collect",
   ],
-  doctor: [
+  clinician: [
     "patients.read",
     "patients.write",
     "appointments.create",
@@ -347,6 +347,7 @@ const STUB_PLANS = PLAN_CATALOG.map((plan) => ({
 const PROFESSIONAL_SEEDS = [
   {
     fullName: "Ana Beatriz Nogueira",
+    professionType: "physician" as const,
     treatmentPronoun: "dra" as const,
     specialty: "Clínica Geral",
     councilType: "CRM" as const,
@@ -355,6 +356,7 @@ const PROFESSIONAL_SEEDS = [
   },
   {
     fullName: "Carlos Eduardo Mendes",
+    professionType: "physician" as const,
     treatmentPronoun: "dr" as const,
     specialty: "Cardiologia",
     councilType: "CRM" as const,
@@ -363,22 +365,25 @@ const PROFESSIONAL_SEEDS = [
   },
   {
     fullName: "Fernanda Lima Rocha",
+    professionType: "dentist" as const,
     treatmentPronoun: "dra" as const,
-    specialty: "Dermatologia",
-    councilType: "CRM" as const,
+    specialty: "Odontologia geral",
+    councilType: "CRO" as const,
     councilNumber: "345678",
     councilState: "SP",
   },
   {
     fullName: "Gustavo Henrique Alves",
-    treatmentPronoun: "dr" as const,
-    specialty: "Ortopedia",
-    councilType: "CRM" as const,
+    professionType: "physiotherapist" as const,
+    treatmentPronoun: "ft" as const,
+    specialty: "Fisioterapia ortopédica",
+    councilType: "CREFITO" as const,
     councilNumber: "456789",
     councilState: "SP",
   },
   {
     fullName: "Juliana Costa Ribeiro",
+    professionType: "physician" as const,
     treatmentPronoun: "dra" as const,
     specialty: "Pediatria",
     councilType: "CRM" as const,
@@ -387,14 +392,16 @@ const PROFESSIONAL_SEEDS = [
   },
   {
     fullName: "Marcos Vinícius Prado",
+    professionType: "psychologist" as const,
     treatmentPronoun: "dr" as const,
-    specialty: "Psiquiatria",
-    councilType: "CRM" as const,
+    specialty: "Psicologia clínica",
+    councilType: "CRP" as const,
     councilNumber: "678901",
     councilState: "SP",
   },
   {
     fullName: "Patricia Souza Almeida",
+    professionType: "nurse" as const,
     treatmentPronoun: "enf" as const,
     specialty: "Enfermagem",
     councilType: "COREN" as const,
@@ -403,6 +410,7 @@ const PROFESSIONAL_SEEDS = [
   },
   {
     fullName: "Renata Oliveira Campos",
+    professionType: "physician" as const,
     treatmentPronoun: "dra" as const,
     specialty: "Ginecologia",
     councilType: "CRM" as const,
@@ -1096,6 +1104,7 @@ async function seedProfessionals(params: {
     .values(
       PROFESSIONAL_SEEDS.map((p) => ({
         fullName: p.fullName,
+        professionType: p.professionType,
         treatmentPronoun: p.treatmentPronoun,
         specialty: p.specialty,
         councilType: p.councilType,
@@ -1612,9 +1621,9 @@ async function seedInvitations(params: {
     params
 
   const receptionistRoleId = rolesByKey.get("receptionist")
-  const doctorRoleId = rolesByKey.get("doctor")
+  const clinicianRoleId = rolesByKey.get("clinician")
   const nurseRoleId = rolesByKey.get("nurse")
-  if (!receptionistRoleId || !doctorRoleId || !nurseRoleId) {
+  if (!receptionistRoleId || !clinicianRoleId || !nurseRoleId) {
     throw new Error("Required roles missing for invitation seed")
   }
 
@@ -1640,7 +1649,7 @@ async function seedInvitations(params: {
     {
       clinicId,
       email: "fernanda.lima@sclinic.local",
-      roleId: doctorRoleId,
+      roleId: clinicianRoleId,
       invitedBy: ownerId,
       professionalId: unlinkedProfessional?.id ?? null,
       tokenHash: hashInviteToken(createInviteToken()),

@@ -3,6 +3,7 @@
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 
+import { QueryErrorState } from "@/components/status/QueryErrorState"
 import { Badge } from "@/components/ui/badge"
 import { Spinner } from "@/components/ui/spinner"
 import {
@@ -48,9 +49,13 @@ export function PatientAppointmentHistory({
       ) : null}
 
       {historyQuery.isError ? (
-        <p className="text-sm text-destructive">
-          Não foi possível carregar o histórico de consultas.
-        </p>
+        <QueryErrorState
+          description="Não foi possível carregar o histórico de consultas."
+          onRetry={() => {
+            void historyQuery.refetch()
+          }}
+          isRetrying={historyQuery.isFetching}
+        />
       ) : null}
 
       {!historyQuery.isLoading &&

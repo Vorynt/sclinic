@@ -29,7 +29,7 @@ export const HELP_FAQ_OWNER: HelpFaqItem[] = [
     steps: [
       "Escolha o plano, cadastre a clínica e informe os horários.",
       "Em Equipe, convide quem vai trabalhar com você (por exemplo, recepção).",
-      "Em Profissionais, cadastre os médicos ou enfermeiros — ou, se você também atende, crie seu próprio perfil por lá.",
+      "Em Profissionais, cadastre os profissionais de saúde — ou, se você também atende, crie seu próprio perfil por lá.",
       "Em Pacientes, cadastre a primeira pessoa.",
       "Em Agendamentos, marque a primeira consulta.",
     ],
@@ -148,7 +148,7 @@ export const HELP_FAQ_OWNER: HelpFaqItem[] = [
   {
     id: "invite-professional",
     categoryId: "team",
-    question: "Como cadastro um médico ou enfermeiro?",
+    question: "Como cadastro um profissional de saúde?",
     answer: [
       "Isso fica em Profissionais. Você envia um convite; a pessoa completa o cadastro (incluindo o número do conselho) e fica pronta para atender.",
       "Seu plano tem um limite de profissionais. Se o convite não for aceito por causa disso, veja Uso do plano.",
@@ -158,7 +158,7 @@ export const HELP_FAQ_OWNER: HelpFaqItem[] = [
       "Envie o convite.",
       "Peça para a pessoa abrir o e-mail e concluir o cadastro.",
     ],
-    keywords: ["médico", "doutor", "enfermeiro", "profissional", "CRM"],
+    keywords: ["profissional", "profissional de saúde", "dentista", "enfermeiro", "CRM"],
     relatedRoutes: [
       { label: "Profissionais", href: routes.professionals },
       { label: "Ver meu plano", href: routes.settingsUsage },
@@ -188,7 +188,7 @@ export const HELP_FAQ_OWNER: HelpFaqItem[] = [
     question: "Qual a diferença entre as funções da equipe?",
     answer: [
       "Cada função vê menus e botões diferentes, para a pessoa ver só o que precisa no dia a dia.",
-      "Em resumo: o dono vê tudo; a administração cuida da operação; a recepção agenda e cadastra pacientes; o financeiro acompanha cobranças; médicos e enfermeiros atendem e usam o prontuário.",
+      "Em resumo: o dono vê tudo; a administração cuida da operação; a recepção agenda e cadastra pacientes; o financeiro acompanha cobranças; profissionais de saúde atendem e usam o prontuário.",
     ],
     keywords: ["função", "papel", "permissão", "diferença", "quem vê o quê"],
     relatedRoutes: [{ label: "Equipe", href: routes.users }],
@@ -586,7 +586,7 @@ export const HELP_FAQ_OWNER: HelpFaqItem[] = [
     categoryId: "team",
     question: "A pessoa não aceitou o convite. O que faço?",
     answer: [
-      "Em Equipe (ou em Profissionais, se for médico/enfermeiro) você vê convites pendentes.",
+      "Em Equipe (ou em Profissionais, se for profissional de saúde) você vê convites pendentes.",
       "Peça para a pessoa verificar o e-mail (incluindo spam). Se o link expirou, envie um novo convite.",
     ],
     keywords: ["convite pendente", "não chegou e-mail", "expirado", "reenviar"],
@@ -600,10 +600,10 @@ export const HELP_FAQ_OWNER: HelpFaqItem[] = [
     categoryId: "appointments",
     question: "Quem pode iniciar o atendimento?",
     answer: [
-      "Quem atende clinicamente: médicos, enfermeiros e, se você também atende, o seu perfil de dono com perfil clínico.",
+      "Quem atende clinicamente: profissionais de saúde (médicos, dentistas, fisios, enfermeiros, etc.) e, se você também atende, o seu perfil de dono com perfil clínico.",
       "A recepção organiza a agenda e o pagamento, mas não inicia o atendimento clínico.",
     ],
-    keywords: ["iniciar", "quem pode", "recepção", "médico"],
+    keywords: ["iniciar", "quem pode", "recepção", "profissional"],
     relatedRoutes: [{ label: "Agenda", href: routes.appointments }],
   },
 ]

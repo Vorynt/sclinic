@@ -16,7 +16,7 @@ Membros da clínica, convites assignable, conta do usuário (`/account/*`).
 
 ## Regras
 
-- Não atribuir `owner` / `doctor` / `nurse` por este fluxo
+- Não atribuir `owner` / `clinician` / `nurse` por este fluxo
 - `assertPlanCapacity(users)` antes de convidar (ADR-004)
 - Quota de usuários conta só memberships **`active`** (suspensos e removidos não ocupam vaga)
 - Não alterar owner nem a si mesmo (`member-rules`)

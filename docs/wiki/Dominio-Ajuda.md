@@ -12,7 +12,7 @@ Sem LLM — o conteúdo vive em `constants/faq/<papel>.ts` e deve ser atualizado
 
 | Feature | Status | Onde |
 |---------|--------|------|
-| FAQ por papel (owner, admin, manager, receptionist, doctor, nurse, financial) | Done | `getHelpFaqForRole` + `HELP_FAQ_BY_ROLE` |
+| FAQ por papel (owner, admin, manager, receptionist, clinician, nurse, financial) | Done | `getHelpFaqForRole` + `HELP_FAQ_BY_ROLE` |
 | FAQ por categorias (linguagem simples) | Done | `HELP_CATEGORIES` + artigos do papel |
 | Busca client-side (sem acento) | Done | `utils/search-faq.ts` |
 | Accordion perguntas/respostas + passos | Done | `HelpFaqList` |
@@ -32,7 +32,7 @@ Sem LLM — o conteúdo vive em `constants/faq/<papel>.ts` e deve ser atualizado
 ## Arquivos-chave
 
 - `src/modules/help/constants/faq/index.ts`
-- `src/modules/help/constants/faq/{owner,admin,manager,receptionist,doctor,nurse,financial}.ts`
+- `src/modules/help/constants/faq/{owner,admin,manager,receptionist,clinician,nurse,financial}.ts`
 - `src/modules/help/components/HelpCenter.tsx`
 - `src/app/(dashboard)/help/page.tsx`
 - `src/modules/dashboard/constants/nav.ts`

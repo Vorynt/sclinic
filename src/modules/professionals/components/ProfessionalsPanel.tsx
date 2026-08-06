@@ -41,7 +41,7 @@ export function ProfessionalsPanel() {
     <div className="flex flex-col gap-6">
       <PageHeader
         title="Profissionais"
-        description="Cadastro e convites de médicos e enfermeiros da clínica."
+        description="Cadastro e convites de profissionais de saúde da clínica."
         actions={
           <Button type="button" onClick={handleNewProfessional}>
             Novo profissional

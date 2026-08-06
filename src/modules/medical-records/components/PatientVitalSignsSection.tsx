@@ -31,6 +31,10 @@ export function PatientVitalSignsSection({
         items={vitalsQuery.data}
         isLoading={vitalsQuery.isLoading}
         isError={vitalsQuery.isError}
+        onRetry={() => {
+          void vitalsQuery.refetch()
+        }}
+        isRetrying={vitalsQuery.isFetching}
         title="Histórico de medições"
         description="Pressão, peso, temperatura e demais sinais vitais."
         emptyMessage="Nenhuma medição registrada."

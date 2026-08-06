@@ -15,6 +15,7 @@ import {
   affiliationStatusEnum,
   affiliationTypeEnum,
   councilTypeEnum,
+  professionTypeEnum,
   professionalStatusEnum,
   treatmentPronounEnum,
 } from "./enums"
@@ -39,6 +40,10 @@ export const professionals = pgTable(
     userId: text("user_id").references(() => user.id, { onDelete: "set null" }),
     /** Filled by the professional when accepting the invite (nullable until then). */
     fullName: text("full_name"),
+    /** Healthcare profession (ADR-012); independent of RBAC role. */
+    professionType: professionTypeEnum("profession_type")
+      .default("physician")
+      .notNull(),
     treatmentPronoun: treatmentPronounEnum("treatment_pronoun"),
     councilType: councilTypeEnum("council_type"),
     councilNumber: text("council_number"),
@@ -80,6 +85,8 @@ export const professionalDisplayNameSql = sql<string | null>`
         WHEN 'sra' THEN 'Sra. '
         WHEN 'enf' THEN 'Enf. '
         WHEN 'enfa' THEN 'Enfa. '
+        WHEN 'ft' THEN 'Ft. '
+        WHEN 'fta' THEN 'Fta. '
         ELSE ''
       END,
       ${professionals.fullName}

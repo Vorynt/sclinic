@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react"
 
+import { QueryErrorState } from "@/components/status/QueryErrorState"
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 import { usePrescriptionRenderedQuery } from "@/modules/medical-records/hooks/use-prescriptions"
@@ -45,9 +46,15 @@ export function PrescriptionPrintView({
 
   if (query.isError || !query.data) {
     return (
-      <p className="p-8 text-sm text-destructive">
-        Não foi possível carregar a receita para impressão.
-      </p>
+      <div className="p-8">
+        <QueryErrorState
+          description="Não foi possível carregar a receita para impressão."
+          onRetry={() => {
+            void query.refetch()
+          }}
+          isRetrying={query.isFetching}
+        />
+      </div>
     )
   }
 

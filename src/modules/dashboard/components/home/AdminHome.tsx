@@ -2,6 +2,7 @@
 
 import {
   CalendarBlankIcon,
+  EnvelopeSimpleIcon,
   QuestionIcon,
   StethoscopeIcon,
   UsersIcon,
@@ -58,6 +59,7 @@ export function AdminHome() {
                 ? "…"
                 : String(dayStats.total),
               hint: "Exceto cancelados",
+              icon: CalendarBlankIcon,
             },
             {
               label: "Convites pendentes",
@@ -65,11 +67,14 @@ export function AdminHome() {
                 ? "…"
                 : String(pendingInvites),
               hint: "Aguardando aceite",
+              icon: EnvelopeSimpleIcon,
+              accent: "warning",
             },
             {
               label: "Equipe ativa",
               value: membersQuery.isLoading ? "…" : String(activeMembers),
               hint: "Membros ativos",
+              icon: UsersThreeIcon,
             },
             {
               label: "Pacientes",
@@ -77,6 +82,7 @@ export function AdminHome() {
                 ? "…"
                 : String(patientsQuery.data?.total ?? 0),
               hint: "Cadastros ativos",
+              icon: UsersIcon,
             },
           ]}
         />

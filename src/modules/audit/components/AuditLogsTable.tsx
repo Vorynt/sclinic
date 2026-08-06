@@ -21,6 +21,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 import { DataTablePagination } from "@/components/data-table/DataTablePagination";
+import { QueryErrorState } from "@/components/status/QueryErrorState";
 import { Badge } from "@/components/ui/badge";
 import {
   Collapsible,
@@ -512,9 +513,13 @@ export function AuditLogsTable({ filters, onPageChange }: AuditLogsTableProps) {
 
   if (query.isError) {
     return (
-      <p className="text-sm text-destructive">
-        Não foi possível carregar os registros de auditoria.
-      </p>
+      <QueryErrorState
+        description="Não foi possível carregar os registros de auditoria."
+        onRetry={() => {
+          void query.refetch();
+        }}
+        isRetrying={query.isFetching}
+      />
     );
   }
 

@@ -1,8 +1,8 @@
 "use client"
 
 import { AdminHome } from "@/modules/dashboard/components/home/AdminHome"
+import { ClinicianHome } from "@/modules/dashboard/components/home/ClinicianHome"
 import { DefaultHome } from "@/modules/dashboard/components/home/DefaultHome"
-import { DoctorHome } from "@/modules/dashboard/components/home/DoctorHome"
 import { FinancialHome } from "@/modules/dashboard/components/home/FinancialHome"
 import { ManagerHome } from "@/modules/dashboard/components/home/ManagerHome"
 import { NurseHome } from "@/modules/dashboard/components/home/NurseHome"
@@ -15,7 +15,7 @@ const HOME_BY_ROLE = {
   admin: AdminHome,
   manager: ManagerHome,
   receptionist: ReceptionistHome,
-  doctor: DoctorHome,
+  clinician: ClinicianHome,
   nurse: NurseHome,
   financial: FinancialHome,
 } as const

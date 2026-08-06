@@ -4,6 +4,7 @@ import { WarningCircleIcon } from "@phosphor-icons/react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
+import { QueryErrorState } from "@/components/status/QueryErrorState";
 import { Badge } from "@/components/ui/badge";
 import {
   Empty,
@@ -45,9 +46,13 @@ export function DelinquentPatientsList() {
 
   if (delinquentsQuery.isError) {
     return (
-      <p className="text-sm text-destructive">
-        Não foi possível carregar os inadimplentes.
-      </p>
+      <QueryErrorState
+        description="Não foi possível carregar os inadimplentes."
+        onRetry={() => {
+          void delinquentsQuery.refetch();
+        }}
+        isRetrying={delinquentsQuery.isFetching}
+      />
     );
   }
 

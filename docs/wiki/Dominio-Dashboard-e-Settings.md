@@ -18,7 +18,7 @@
 | **admin** | Hoje, convites pendentes, equipe ativa, pacientes + fluxo do dia | Preview agenda | Equipe, Profissionais, Pacientes, Agenda |
 | **manager** | Ocupação do dia (aguardando / em atendimento / concluídos) | Preview agenda | Pacientes, Profissionais, Agenda |
 | **receptionist** | Contagens das 3 colunas do balcão | `ReceptionOpsBoard` (SSE) | Novo agendamento/paciente, Agenda |
-| **doctor** | Contagens da **própria** agenda (self-filter no service) | Preview da própria agenda | Minha agenda, Pacientes |
+| **clinician** | Contagens da **própria** agenda (self-filter no service) | Preview da própria agenda | Minha agenda, Pacientes |
 | **nurse** | Fila clínica (ênfase em check-in) | Preview da própria agenda | Pacientes, Agenda |
 | **financial** | A receber / recebido no mês | Cobranças pendentes (top 5) | Faturamento, Pacientes |
 

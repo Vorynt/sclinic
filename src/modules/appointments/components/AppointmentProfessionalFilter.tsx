@@ -1,5 +1,6 @@
 "use client";
 
+import { QueryErrorState } from "@/components/status/QueryErrorState";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -38,10 +39,10 @@ export function AppointmentProfessionalFilter({
     return (
       <div className="w-full min-w-0 overflow-hidden">
         <ScrollArea
-          className="w-full whitespace-nowrap"
+          className="w-full whitespace-nowrap scroll-fade-x"
           aria-busy="true"
           aria-label="Carregando profissionais">
-          <div className="flex w-max gap-2 pb-2.5">
+          <div className="flex w-max gap-2 pb-1.5">
             {Array.from({ length: 4 }).map((_, index) => (
               <div
                 key={index}
@@ -56,9 +57,13 @@ export function AppointmentProfessionalFilter({
 
   if (professionalsQuery.isError) {
     return (
-      <p className="text-sm text-destructive">
-        Não foi possível carregar os profissionais.
-      </p>
+      <QueryErrorState
+        description="Não foi possível carregar os profissionais."
+        onRetry={() => {
+          void professionalsQuery.refetch();
+        }}
+        isRetrying={professionalsQuery.isFetching}
+      />
     );
   }
 
@@ -69,9 +74,9 @@ export function AppointmentProfessionalFilter({
   return (
     <div className="flex flex-col w-full min-w-0 items-end gap-2">
       <div className="w-full min-w-0 flex-1 overflow-hidden">
-        <ScrollArea className="w-full whitespace-nowrap">
+        <ScrollArea className="w-full whitespace-nowrap scroll-fade-x scrollbar-thin">
           <div
-            className="flex w-max gap-2 pb-2.5"
+            className="flex w-max gap-2 pb-1.5"
             role="group"
             aria-label="Filtrar por profissional">
             {professionals.map((professional) => (

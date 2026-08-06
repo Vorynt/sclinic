@@ -41,7 +41,23 @@ export const councilTypeEnum = pgEnum("council_type", [
   "CRO",
   "COREN",
   "CRF",
+  "CREFITO",
+  "CRP",
   "OTHER",
+])
+
+/**
+ * Healthcare profession on the clinical profile (ADR-012).
+ * Distinct from RBAC role keys (`clinician` | `nurse`).
+ */
+export const professionTypeEnum = pgEnum("profession_type", [
+  "physician",
+  "dentist",
+  "physiotherapist",
+  "nurse",
+  "pharmacist",
+  "psychologist",
+  "other",
 ])
 
 /** Honorific / treatment pronoun shown before the professional's name. */
@@ -52,6 +68,8 @@ export const treatmentPronounEnum = pgEnum("treatment_pronoun", [
   "sra",
   "enf",
   "enfa",
+  "ft",
+  "fta",
 ])
 
 export const affiliationTypeEnum = pgEnum("affiliation_type", [
