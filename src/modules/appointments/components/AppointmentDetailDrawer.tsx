@@ -38,7 +38,6 @@ import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import { AppointmentDetailsForm } from "@/modules/appointments/components/AppointmentDetailsForm";
 import { AppointmentRescheduleForm } from "@/modules/appointments/components/AppointmentRescheduleForm";
-import { useAuthSession } from "@/modules/authentication/hooks/use-auth";
 import {
   APPOINTMENT_MODALITY_LABELS,
   APPOINTMENT_STATUS_LABELS,
@@ -60,6 +59,7 @@ import type {
   AppointmentStatus,
 } from "@/modules/appointments/types/appointment";
 import { buildAttendanceHref } from "@/modules/appointments/utils/agenda-href";
+import { useAuthSession } from "@/modules/authentication/hooks/use-auth";
 import { AppointmentChargeSummary } from "@/modules/billing/components/AppointmentChargeSummary";
 import { PatientCompactSummary } from "@/modules/patients/components/PatientCompactSummary";
 import { useAttendanceUiStore } from "@/stores/attendance.store";
@@ -144,7 +144,6 @@ function AppointmentDetailContent({
   const updateStatus = useUpdateAppointmentStatusMutation({
     onSuccess: (updated) => {
       if (updated.status === "checked_in") {
-        toast.success("Atendimento iniciado");
         onAppointmentChange?.(updated);
         router.push(
           buildAttendanceHref(updated.id, {
@@ -428,7 +427,9 @@ function AppointmentDetailContent({
 
                 {appointment.notes ? (
                   <div className="flex flex-col gap-0.5">
-                    <dt className="text-xs text-muted-foreground">Observações</dt>
+                    <dt className="text-xs text-muted-foreground">
+                      Observações
+                    </dt>
                     <dd className="text-foreground">{appointment.notes}</dd>
                   </div>
                 ) : null}
