@@ -25,7 +25,12 @@ if [ "${VERCEL_ENV:-}" = "production" ]; then
     exit 1
   fi
   echo "[vercel-build] Applying pending Drizzle migrations..."
-  npm run db:migrate
+  # drizzle-kit may hide the real Postgres error behind a spinner; force plain logs.
+  if ! npm run db:migrate; then
+    echo "[vercel-build] ERROR: db:migrate failed. Check SQL in src/db/migrations/"
+    echo "  Common cause: ALTER TYPE ... ADD VALUE + use of the new label in the same migration/transaction."
+    exit 1
+  fi
   echo "[vercel-build] Migrations OK."
 else
   echo "[vercel-build] Skipping db:migrate (only runs when VERCEL_ENV=production)."

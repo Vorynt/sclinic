@@ -1,4 +1,9 @@
 -- ADR-012: multi-profession — profession_type, councils, pronouns, doctor → clinician
+--
+-- Nota: não referenciar labels adicionados via ALTER TYPE ... ADD VALUE no mesmo
+-- arquivo/transação (Postgres: "unsafe use of new value of enum type").
+-- CREFITO/CRP ainda não existem em linhas antigas, então o backfill mapeia só
+-- os councils já presentes; novos profissionais recebem profession_type na app.
 
 CREATE TYPE "public"."profession_type" AS ENUM(
   'physician',
@@ -10,11 +15,11 @@ CREATE TYPE "public"."profession_type" AS ENUM(
   'other'
 );--> statement-breakpoint
 
-ALTER TYPE "public"."council_type" ADD VALUE 'CREFITO';--> statement-breakpoint
-ALTER TYPE "public"."council_type" ADD VALUE 'CRP';--> statement-breakpoint
+ALTER TYPE "public"."council_type" ADD VALUE IF NOT EXISTS 'CREFITO';--> statement-breakpoint
+ALTER TYPE "public"."council_type" ADD VALUE IF NOT EXISTS 'CRP';--> statement-breakpoint
 
-ALTER TYPE "public"."treatment_pronoun" ADD VALUE 'ft';--> statement-breakpoint
-ALTER TYPE "public"."treatment_pronoun" ADD VALUE 'fta';--> statement-breakpoint
+ALTER TYPE "public"."treatment_pronoun" ADD VALUE IF NOT EXISTS 'ft';--> statement-breakpoint
+ALTER TYPE "public"."treatment_pronoun" ADD VALUE IF NOT EXISTS 'fta';--> statement-breakpoint
 
 ALTER TABLE "professionals" ADD COLUMN "profession_type" "profession_type";--> statement-breakpoint
 
@@ -23,8 +28,6 @@ SET "profession_type" = CASE
   WHEN "council_type" = 'CRO' THEN 'dentist'::"profession_type"
   WHEN "council_type" = 'COREN' THEN 'nurse'::"profession_type"
   WHEN "council_type" = 'CRF' THEN 'pharmacist'::"profession_type"
-  WHEN "council_type" = 'CREFITO' THEN 'physiotherapist'::"profession_type"
-  WHEN "council_type" = 'CRP' THEN 'psychologist'::"profession_type"
   WHEN "council_type" = 'CRM' THEN 'physician'::"profession_type"
   ELSE 'other'::"profession_type"
 END
