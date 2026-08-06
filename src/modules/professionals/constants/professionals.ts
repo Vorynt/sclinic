@@ -1,15 +1,47 @@
-export const PROFESSIONAL_ROLE_KEYS = ["doctor", "nurse"] as const
+export const PROFESSIONAL_ROLE_KEYS = ["clinician", "nurse"] as const
 
 export type ProfessionalRoleKey = (typeof PROFESSIONAL_ROLE_KEYS)[number]
+
+export const PROFESSION_TYPE_KEYS = [
+  "physician",
+  "dentist",
+  "physiotherapist",
+  "nurse",
+  "pharmacist",
+  "psychologist",
+  "other",
+] as const
+
+export type ProfessionTypeKey = (typeof PROFESSION_TYPE_KEYS)[number]
 
 export const PROFESSIONALS_CONSTANTS = {
   INVITE_TTL_MS: 7 * 24 * 60 * 60 * 1000,
 } as const
 
+/** RBAC labels for inviteable clinical roles (ADR-012). */
 export const PROFESSIONAL_ROLE_LABELS: Record<ProfessionalRoleKey, string> = {
-  doctor: "Médico(a)",
+  clinician: "Profissional de saúde",
   nurse: "Enfermeiro(a)",
 }
+
+export const PROFESSION_TYPE_LABELS: Record<ProfessionTypeKey, string> = {
+  physician: "Médico(a)",
+  dentist: "Dentista",
+  physiotherapist: "Fisioterapeuta",
+  nurse: "Enfermeiro(a)",
+  pharmacist: "Farmacêutico(a)",
+  psychologist: "Psicólogo(a)",
+  other: "Outro",
+}
+
+export type CouncilTypeKey =
+  | "CRM"
+  | "CRO"
+  | "COREN"
+  | "CRF"
+  | "CREFITO"
+  | "CRP"
+  | "OTHER"
 
 export const TREATMENT_PRONOUN_KEYS = [
   "dr",
@@ -18,6 +50,8 @@ export const TREATMENT_PRONOUN_KEYS = [
   "sra",
   "enf",
   "enfa",
+  "ft",
+  "fta",
 ] as const
 
 export type TreatmentPronounKey = (typeof TREATMENT_PRONOUN_KEYS)[number]
@@ -29,6 +63,32 @@ export const TREATMENT_PRONOUN_LABELS: Record<TreatmentPronounKey, string> = {
   sra: "Sra.",
   enf: "Enf.",
   enfa: "Enfa.",
+  ft: "Ft.",
+  fta: "Fta.",
+}
+
+/** Default council + pronoun for forms driven by profession type (ADR-012). */
+export const PROFESSION_TYPE_DEFAULTS: Record<
+  ProfessionTypeKey,
+  { councilType: CouncilTypeKey; treatmentPronoun: TreatmentPronounKey }
+> = {
+  physician: { councilType: "CRM", treatmentPronoun: "dr" },
+  dentist: { councilType: "CRO", treatmentPronoun: "dr" },
+  physiotherapist: { councilType: "CREFITO", treatmentPronoun: "ft" },
+  nurse: { councilType: "COREN", treatmentPronoun: "enf" },
+  pharmacist: { councilType: "CRF", treatmentPronoun: "dr" },
+  psychologist: { councilType: "CRP", treatmentPronoun: "dr" },
+  other: { councilType: "OTHER", treatmentPronoun: "sr" },
+}
+
+/**
+ * Derives RBAC role from profession type.
+ * Nurse keeps reduced capabilities; all other professions use `clinician`.
+ */
+export function roleKeyFromProfessionType(
+  professionType: ProfessionTypeKey,
+): ProfessionalRoleKey {
+  return professionType === "nurse" ? "nurse" : "clinician"
 }
 
 export const AFFILIATION_TYPE_LABELS = {
@@ -48,13 +108,15 @@ export const ACCOUNT_STATUS_LABELS = {
   inactive: "Inativo",
 } as const
 
-export const COUNCIL_TYPE_LABELS = {
+export const COUNCIL_TYPE_LABELS: Record<CouncilTypeKey, string> = {
   CRM: "CRM",
   CRO: "CRO",
   COREN: "COREN",
   CRF: "CRF",
+  CREFITO: "CREFITO",
+  CRP: "CRP",
   OTHER: "Outro",
-} as const
+}
 
 export const BRAZILIAN_STATES = [
   "AC",
@@ -94,6 +156,13 @@ export function getProfessionalRoleLabel(
     return PROFESSIONAL_ROLE_LABELS[roleKey as ProfessionalRoleKey]
   }
   return fallbackName ?? roleKey
+}
+
+export function getProfessionTypeLabel(type: string): string {
+  if (type in PROFESSION_TYPE_LABELS) {
+    return PROFESSION_TYPE_LABELS[type as ProfessionTypeKey]
+  }
+  return type
 }
 
 export function getAffiliationTypeLabel(type: string): string {

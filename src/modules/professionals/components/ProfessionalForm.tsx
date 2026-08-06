@@ -29,8 +29,8 @@ import {
   AFFILIATION_TYPE_LABELS,
   BRAZILIAN_STATES,
   COUNCIL_TYPE_LABELS,
-  PROFESSIONAL_ROLE_KEYS,
-  PROFESSIONAL_ROLE_LABELS,
+  PROFESSION_TYPE_KEYS,
+  PROFESSION_TYPE_LABELS,
   TREATMENT_PRONOUN_KEYS,
   TREATMENT_PRONOUN_LABELS,
 } from "@/modules/professionals/constants/professionals";
@@ -72,7 +72,7 @@ export function ProfessionalForm({
     resolver: zodResolver(createProfessionalSchema),
     defaultValues: {
       email: "",
-      roleKey: "doctor",
+      professionType: "physician",
       affiliationType: "attending",
     },
   });
@@ -82,6 +82,7 @@ export function ProfessionalForm({
     defaultValues: {
       id: professional?.id ?? "",
       fullName: professional?.fullName ?? "",
+      professionType: professional?.professionType ?? "physician",
       treatmentPronoun: professional?.treatmentPronoun ?? undefined,
       affiliationType: professional?.affiliationType ?? "attending",
       specialty: professional?.specialty ?? "",
@@ -190,6 +191,33 @@ export function ProfessionalForm({
               <FieldError errors={[errors.fullName]} />
             </Field>
           </div>
+
+          <Field data-invalid={Boolean(errors.professionType) || undefined}>
+            <FieldLabel>Tipo de profissão</FieldLabel>
+            <Controller
+              name="professionType"
+              control={control}
+              render={({ field }) => (
+                <Select
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  disabled={isPending}>
+                  <SelectTrigger
+                    aria-invalid={Boolean(errors.professionType) || undefined}>
+                    <SelectValue placeholder="Selecione" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PROFESSION_TYPE_KEYS.map((key) => (
+                      <SelectItem key={key} value={key}>
+                        {PROFESSION_TYPE_LABELS[key]}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
+            <FieldError errors={[errors.professionType]} />
+          </Field>
 
           <Field data-invalid={Boolean(errors.affiliationType) || undefined}>
             <FieldLabel>Afiliação</FieldLabel>
@@ -395,10 +423,10 @@ export function ProfessionalForm({
           <FieldError errors={[errors.email]} />
         </Field>
 
-        <Field data-invalid={Boolean(errors.roleKey) || undefined}>
-          <FieldLabel>Papel</FieldLabel>
+        <Field data-invalid={Boolean(errors.professionType) || undefined}>
+          <FieldLabel>Tipo de profissão</FieldLabel>
           <Controller
-            name="roleKey"
+            name="professionType"
             control={control}
             render={({ field }) => (
               <Select
@@ -406,20 +434,20 @@ export function ProfessionalForm({
                 onValueChange={field.onChange}
                 disabled={isPending}>
                 <SelectTrigger
-                  aria-invalid={Boolean(errors.roleKey) || undefined}>
+                  aria-invalid={Boolean(errors.professionType) || undefined}>
                   <SelectValue placeholder="Selecione" />
                 </SelectTrigger>
                 <SelectContent>
-                  {PROFESSIONAL_ROLE_KEYS.map((roleKey) => (
-                    <SelectItem key={roleKey} value={roleKey}>
-                      {PROFESSIONAL_ROLE_LABELS[roleKey]}
+                  {PROFESSION_TYPE_KEYS.map((key) => (
+                    <SelectItem key={key} value={key}>
+                      {PROFESSION_TYPE_LABELS[key]}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             )}
           />
-          <FieldError errors={[errors.roleKey]} />
+          <FieldError errors={[errors.professionType]} />
         </Field>
 
         <Field data-invalid={Boolean(errors.affiliationType) || undefined}>

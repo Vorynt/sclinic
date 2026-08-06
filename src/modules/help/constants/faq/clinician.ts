@@ -7,22 +7,30 @@ import {
 import type { HelpFaqItem } from "@/modules/help/types/help"
 
 /**
- * FAQ para médico(a) — agenda própria, prontuário, receita; self-schedule.
+ * FAQ para profissional de saúde (clinician) — agenda própria, prontuário, documentos; self-schedule.
  */
-export const HELP_FAQ_DOCTOR: HelpFaqItem[] = [
+export const HELP_FAQ_CLINICIAN: HelpFaqItem[] = [
   {
-    id: "what-is-sclinic-doctor",
+    id: "what-is-sclinic-clinician",
     categoryId: "getting-started",
     question: "Para que serve o sclinic no meu atendimento?",
     answer: [
-      "É onde você vê sua agenda, inicia consultas, registra evolução, sinais vitais e emite receitas para imprimir.",
+      "É onde você vê sua agenda, inicia consultas, registra evolução, sinais vitais e emite documentos clínicos para imprimir.",
       "Você também pode cadastrar pacientes e, se precisar, registrar um pagamento. Equipe, configurações e plano ficam com a gestão.",
     ],
-    keywords: ["médico", "doutor", "atendimento", "para que serve"],
+    keywords: [
+      "profissional",
+      "profissional de saúde",
+      "profissional de saúde",
+      "dentista",
+      "fisioterapeuta",
+      "atendimento",
+      "para que serve",
+    ],
     relatedRoutes: [{ label: "Início", href: routes.home }],
   },
   {
-    id: "doctor-first-steps",
+    id: "clinician-first-steps",
     categoryId: "getting-started",
     question: "Acabei de aceitar o convite. O que faço?",
     answer: [
@@ -34,7 +42,7 @@ export const HELP_FAQ_DOCTOR: HelpFaqItem[] = [
       "Abra Início → Meus horários e ajuste sua grade, se precisar.",
       "Abra Início ou Agendamentos.",
       "Inicie o atendimento quando o paciente estiver pronto.",
-      "Registre notas, vitais e receita antes de concluir.",
+      "Registre notas, vitais e documentos antes de concluir.",
     ],
     keywords: ["convite", "primeiro acesso", "começar"],
     relatedRoutes: [

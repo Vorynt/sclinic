@@ -22,7 +22,7 @@ qualquer ≠ canceled → canceled (action dedicada)
 
 ### Quem inicia atendimento
 
-Só `owner`, `admin`, `doctor`, `nurse`. Recepcionista **não** inicia.
+Só `owner`, `admin`, `clinician`, `nurse`. Recepcionista **não** inicia.
 
 ### Editabilidade
 
@@ -37,7 +37,7 @@ Só `owner`, `admin`, `doctor`, `nurse`. Recepcionista **não** inicia.
 - Dentro do horário da clínica (`clinic_business_hours` + timezone da clínica)
 - Sem overlap com appointments ≠ `canceled` (inclui completed/no_show)
 - Fora do expediente ou conflito → erro com até 3 `suggestedSlots` (próximos livres nos 14 dias, passo 30 min, no fuso da clínica)
-- Self-schedule: doctor/nurse só a si (owner com perfil clínico **não** entra em self-schedule — vê a agenda completa)
+- Self-schedule: clinician/nurse só a si (owner com perfil clínico **não** entra em self-schedule — vê a agenda completa)
 - Assignee pode ser o owner se existir professional ativo vinculado ao seu `userId` (ADR-007)
 - `amountCents` exige `financial.collect|manage` (legado até ADR-009)
 - **ADR-009:** `serviceId` obrigatório em creates novos; desconto % e cortesia/retorno no form; override de valor só `financial.manage`
@@ -46,7 +46,8 @@ Só `owner`, `admin`, `doctor`, `nurse`. Recepcionista **não** inicia.
 
 - Campo `modality` (`in_person` | `online`) em `appointments`, default `in_person`.
 - `createAppointmentSchema` valida o enum; `listAppointmentsSchema` aceita filtro opcional.
-- Agenda (`AppointmentsPanel`) tem filtro por modalidade; cada evento mostra badge Presencial/Online.
+- Agenda (`AppointmentsPanel`): filtros em drawer (lateral no desktop, inferior no mobile) com profissional, modalidade (tipo de agendamento) e paciente; busca nas listas; aplicar / restaurar padrões; indicador de filtro ativo e atalho Limpar fora do drawer.
+- Cada evento mostra badge Presencial/Online.
 
 ## Horário do profissional (ADR-011)
 
@@ -61,7 +62,7 @@ Só `owner`, `admin`, `doctor`, `nurse`. Recepcionista **não** inicia.
 - `professionalId` **nullable** — `null` = bloqueio da clínica inteira (afeta disponibilidade de todos).
 - Aparece na agenda como `ScheduleBlockEventCard`; clique abre remoção (`ScheduleBlockDetailDialog`).
 - Impede novo agendamento no intervalo (`hasOverlappingScheduleBlock` considera blocks do profissional **∪** clinic-wide).
-- **Self-schedule:** doctor/nurse só criam/removem bloqueios da própria agenda; clinic-wide fica com recepção/gestores.
+- **Self-schedule:** clinician/nurse só criam/removem bloqueios da própria agenda; clinic-wide fica com recepção/gestores.
 - CRUD: `ScheduleBlockFormDialog` (create) + detalhe/remoção no card.
 
 ## Lista de espera (ADR-011)

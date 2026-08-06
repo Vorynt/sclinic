@@ -149,6 +149,7 @@ export const appointmentService = {
       from: filters.from,
       to: filters.to,
       professionalIds,
+      patientIds: filters.patientIds?.length ? filters.patientIds : undefined,
       modality: filters.modality,
     })
   },

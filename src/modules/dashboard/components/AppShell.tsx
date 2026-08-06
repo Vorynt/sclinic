@@ -20,7 +20,7 @@ export function AppShell({ children }: AppShellProps) {
   return (
     <SidebarProvider>
       <AppSidebar />
-      <SidebarInset className="relative bg-app-wash">
+      <SidebarInset className="relative ">
         <PlanOverLimitBanner />
         <AppHeader />
         <div className="relative z-0 flex min-w-0 flex-1 flex-col gap-4 p-4 md:p-6">

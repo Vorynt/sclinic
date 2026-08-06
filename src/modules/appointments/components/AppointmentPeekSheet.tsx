@@ -3,6 +3,7 @@
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
+import { QueryErrorState } from "@/components/status/QueryErrorState";
 import { Badge } from "@/components/ui/badge";
 import {
   Sheet,
@@ -81,14 +82,22 @@ export function AppointmentPeekSheet({
           </>
         ) : null}
 
-        {appointmentQuery.isError || (!appointmentQuery.isLoading && !appointment) ? (
+        {appointmentQuery.isError ||
+        (!appointmentQuery.isLoading && !appointment) ? (
           <div className="px-4 py-6">
-            <SheetHeader className="p-0">
+            <SheetHeader className="sr-only">
               <SheetTitle>Consulta</SheetTitle>
               <SheetDescription>
                 Não foi possível carregar os detalhes do agendamento.
               </SheetDescription>
             </SheetHeader>
+            <QueryErrorState
+              description="Não foi possível carregar os detalhes do agendamento."
+              onRetry={() => {
+                void appointmentQuery.refetch();
+              }}
+              isRetrying={appointmentQuery.isFetching}
+            />
           </div>
         ) : null}
 

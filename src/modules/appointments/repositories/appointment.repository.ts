@@ -66,6 +66,7 @@ export const appointmentRepository = {
     from: Date
     to: Date
     professionalIds?: string[]
+    patientIds?: string[]
     modality?: AppointmentModality
   }): Promise<Appointment[]> {
     return withDbError(async () => {
@@ -78,6 +79,9 @@ export const appointmentRepository = {
             gt(appointments.endsAt, params.from),
             params.professionalIds?.length
               ? inArray(appointments.professionalId, params.professionalIds)
+              : undefined,
+            params.patientIds?.length
+              ? inArray(appointments.patientId, params.patientIds)
               : undefined,
             params.modality
               ? eq(appointments.modality, params.modality)

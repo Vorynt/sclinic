@@ -1,14 +1,12 @@
 "use client";
 
 import { CaretLeftIcon, CaretRightIcon } from "@phosphor-icons/react";
+import type { ReactNode } from "react";
 
 import { Button } from "@/components/ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import type { AppointmentModality } from "@/modules/appointments/types/appointment";
 import type { CalendarViewMode } from "@/modules/appointments/utils/calendar-range";
-
-type AppointmentModalityFilter = AppointmentModality | "all";
 
 type AppointmentsToolbarProps = {
   mode: CalendarViewMode;
@@ -17,20 +15,13 @@ type AppointmentsToolbarProps = {
   onPrevious: () => void;
   onNext: () => void;
   onToday: () => void;
-  modality?: AppointmentModalityFilter;
-  onModalityChange?: (modality: AppointmentModalityFilter) => void;
+  filters?: ReactNode;
 };
 
 const VIEW_MODE_OPTIONS: { value: CalendarViewMode; label: string }[] = [
   { value: "month", label: "Mês" },
   { value: "week", label: "Semana" },
   { value: "day", label: "Dia" },
-];
-
-const MODALITY_OPTIONS: { value: AppointmentModalityFilter; label: string }[] = [
-  { value: "all", label: "Todas" },
-  { value: "in_person", label: "Presencial" },
-  { value: "online", label: "Online" },
 ];
 
 export function AppointmentsToolbar({
@@ -40,8 +31,7 @@ export function AppointmentsToolbar({
   onPrevious,
   onNext,
   onToday,
-  modality,
-  onModalityChange,
+  filters,
 }: AppointmentsToolbarProps) {
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -74,24 +64,7 @@ export function AppointmentsToolbar({
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-        {onModalityChange ? (
-          <ToggleGroup
-            type="single"
-            variant="outline"
-            value={modality ?? "all"}
-            onValueChange={(value) => {
-              if (value) onModalityChange(value as AppointmentModalityFilter);
-            }}
-            aria-label="Filtrar por modalidade">
-            <ButtonGroup>
-              {MODALITY_OPTIONS.map((option) => (
-                <ToggleGroupItem key={option.value} value={option.value}>
-                  {option.label}
-                </ToggleGroupItem>
-              ))}
-            </ButtonGroup>
-          </ToggleGroup>
-        ) : null}
+        {filters}
 
         <ToggleGroup
           type="single"

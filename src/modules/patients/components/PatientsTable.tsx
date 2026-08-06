@@ -11,6 +11,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { DataTablePagination } from "@/components/data-table/DataTablePagination";
+import { QueryErrorState } from "@/components/status/QueryErrorState";
 import { TableSkeleton } from "@/components/status/TableSkeleton";
 import {
   AlertDialog,
@@ -85,9 +86,13 @@ export function PatientsTable({
 
   if (patientsQuery.isError) {
     return (
-      <p className="text-sm text-destructive">
-        Não foi possível carregar os pacientes.
-      </p>
+      <QueryErrorState
+        description="Não foi possível carregar os pacientes."
+        onRetry={() => {
+          void patientsQuery.refetch();
+        }}
+        isRetrying={patientsQuery.isFetching}
+      />
     );
   }
 

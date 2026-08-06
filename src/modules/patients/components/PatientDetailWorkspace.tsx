@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react"
 
+import { QueryErrorState } from "@/components/status/QueryErrorState"
 import { Spinner } from "@/components/ui/spinner"
 import { PatientDetailHeader } from "@/modules/patients/components/PatientDetailHeader"
 import { PatientDetailNav } from "@/modules/patients/components/PatientDetailNav"
@@ -39,9 +40,13 @@ export function PatientDetailWorkspace({
         <h1 className="font-heading text-xl font-semibold tracking-tight">
           Paciente
         </h1>
-        <p className="text-sm text-destructive">
-          Não foi possível carregar o paciente.
-        </p>
+        <QueryErrorState
+          description="Não foi possível carregar o paciente."
+          onRetry={() => {
+            void patientQuery.refetch()
+          }}
+          isRetrying={patientQuery.isFetching}
+        />
       </div>
     )
   }

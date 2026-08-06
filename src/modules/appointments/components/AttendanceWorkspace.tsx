@@ -2,6 +2,7 @@
 
 import { useEffect, type ReactNode } from "react"
 
+import { QueryErrorState } from "@/components/status/QueryErrorState"
 import { Spinner } from "@/components/ui/spinner"
 import { AttendanceHeader } from "@/modules/appointments/components/AttendanceHeader"
 import { AttendanceNav } from "@/modules/appointments/components/AttendanceNav"
@@ -46,9 +47,13 @@ export function AttendanceWorkspace({
         <h1 className="font-heading text-xl font-semibold tracking-tight">
           Atendimento
         </h1>
-        <p className="text-sm text-destructive">
-          Não foi possível carregar o agendamento.
-        </p>
+        <QueryErrorState
+          description="Não foi possível carregar o agendamento."
+          onRetry={() => {
+            void appointmentQuery.refetch()
+          }}
+          isRetrying={appointmentQuery.isFetching}
+        />
       </div>
     )
   }

@@ -14,6 +14,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { QueryErrorState } from "@/components/status/QueryErrorState"
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 import { PrescriptionTemplateCard } from "@/modules/medical-records/components/PrescriptionTemplateCard"
@@ -78,9 +79,13 @@ export function PrescriptionLayoutSettingsPanel() {
 
   if (layoutsQuery.isError || !layoutsQuery.data) {
     return (
-      <p className="text-sm text-destructive">
-        Não foi possível carregar os modelos de receita.
-      </p>
+      <QueryErrorState
+        description="Não foi possível carregar os modelos de receita."
+        onRetry={() => {
+          void layoutsQuery.refetch()
+        }}
+        isRetrying={layoutsQuery.isFetching}
+      />
     )
   }
 

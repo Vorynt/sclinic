@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 
+import { QueryErrorState } from "@/components/status/QueryErrorState"
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 import { Permission } from "@/config/permissions"
@@ -30,9 +31,13 @@ export function PatientProfilePanel({ patientId }: PatientProfilePanelProps) {
 
   if (patientQuery.isError || !patientQuery.data) {
     return (
-      <p className="text-sm text-destructive">
-        Não foi possível carregar o cadastro do paciente.
-      </p>
+      <QueryErrorState
+        description="Não foi possível carregar o cadastro do paciente."
+        onRetry={() => {
+          void patientQuery.refetch()
+        }}
+        isRetrying={patientQuery.isFetching}
+      />
     )
   }
 

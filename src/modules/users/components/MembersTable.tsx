@@ -5,6 +5,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { DataTablePagination } from "@/components/data-table/DataTablePagination";
+import { QueryErrorState } from "@/components/status/QueryErrorState";
 import { TableSkeleton } from "@/components/status/TableSkeleton";
 import {
   AlertDialog,
@@ -120,9 +121,14 @@ export function MembersTable({ filters, onPageChange }: MembersTableProps) {
 
   if (membersQuery.isError || invitationsQuery.isError) {
     return (
-      <p className="text-sm text-destructive">
-        Não foi possível carregar a equipe.
-      </p>
+      <QueryErrorState
+        description="Não foi possível carregar a equipe."
+        onRetry={() => {
+          void membersQuery.refetch();
+          void invitationsQuery.refetch();
+        }}
+        isRetrying={membersQuery.isFetching || invitationsQuery.isFetching}
+      />
     );
   }
 

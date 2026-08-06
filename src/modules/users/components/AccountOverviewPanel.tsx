@@ -1,5 +1,6 @@
 "use client"
 
+import { QueryErrorState } from "@/components/status/QueryErrorState"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
@@ -43,7 +44,7 @@ function hasActiveOwnedClinic(
 }
 
 export function AccountOverviewPanel() {
-  const { data, isPending, isError } = useAccountOverview()
+  const { data, isPending, isError, refetch, isFetching } = useAccountOverview()
 
   if (isPending) {
     return (
@@ -56,9 +57,13 @@ export function AccountOverviewPanel() {
 
   if (isError || !data) {
     return (
-      <p className="text-sm text-destructive">
-        Não foi possível carregar os dados da conta.
-      </p>
+      <QueryErrorState
+        description="Não foi possível carregar os dados da conta."
+        onRetry={() => {
+          void refetch()
+        }}
+        isRetrying={isFetching}
+      />
     )
   }
 

@@ -46,8 +46,8 @@ const clinicBaseSchema = z.object({
   addressZip: optionalString(16, "CEP inválido"),
   planId: z.string().uuid("Plano inválido"),
   alsoPractices: z.boolean().default(false),
-  clinicalPracticeType:
-    createOwnerClinicalProfileSchema.shape.clinicalPracticeType.optional(),
+  professionType:
+    createOwnerClinicalProfileSchema.shape.professionType.optional(),
   // Empty string from RHF must not fail when alsoPractices is false;
   // required check runs in superRefine via createOwnerClinicalProfileSchema.
   fullName: optionalString(200, "Nome deve ter no máximo 200 caracteres"),
@@ -64,7 +64,7 @@ export const createClinicSchema = clinicBaseSchema.superRefine((data, ctx) => {
   if (!data.alsoPractices) return
 
   const profile = createOwnerClinicalProfileSchema.safeParse({
-    clinicalPracticeType: data.clinicalPracticeType,
+    professionType: data.professionType,
     fullName: data.fullName,
     treatmentPronoun: data.treatmentPronoun,
     councilType: data.councilType,
@@ -89,7 +89,7 @@ export type CreateClinicInput = z.infer<typeof createClinicSchema>
 export type ClinicCreateFields = Omit<
   CreateClinicInput,
   | "alsoPractices"
-  | "clinicalPracticeType"
+  | "professionType"
   | "fullName"
   | "treatmentPronoun"
   | "councilType"
@@ -119,7 +119,7 @@ export function toClinicCreateFields(data: CreateClinicInput): ClinicCreateField
 export function toOwnerClinicalProfileFields(data: CreateClinicInput) {
   if (!data.alsoPractices) return null
   return createOwnerClinicalProfileSchema.parse({
-    clinicalPracticeType: data.clinicalPracticeType,
+    professionType: data.professionType,
     fullName: data.fullName,
     treatmentPronoun: data.treatmentPronoun,
     councilType: data.councilType,

@@ -9,6 +9,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
+import { QueryErrorState } from "@/components/status/QueryErrorState";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -70,26 +71,20 @@ function statusLabel(subscription: SubscriptionWithPlan): string {
 
 function statusBadgeVariant(
   subscription: SubscriptionWithPlan,
-):
-  | "default"
-  | "secondary"
-  | "destructive"
-  | "outline"
-  | "success"
-  | "warning" {
+): "default" | "secondary" | "destructive" | "outline" | "success" | "warning" {
   if (
     subscription.cancelAtPeriodEnd &&
     isLivingSubscriptionStatus(subscription.status)
   ) {
-    return "warning"
+    return "warning";
   }
   if (subscription.status === "active" || subscription.status === "trialing") {
-    return "success"
+    return "success";
   }
   if (subscription.status === "past_due" || subscription.status === "unpaid") {
-    return "destructive"
+    return "destructive";
   }
-  return "secondary"
+  return "secondary";
 }
 
 function readPortalReturnFlag(): boolean {
@@ -355,11 +350,13 @@ export function AccountSubscriptionPanel() {
 
   if (query.isError) {
     return (
-      <Alert variant="destructive">
-        <WarningCircleIcon />
-        <AlertTitle>Não foi possível carregar</AlertTitle>
-        <AlertDescription>Tente novamente em instantes.</AlertDescription>
-      </Alert>
+      <QueryErrorState
+        description="Não foi possível carregar a assinatura."
+        onRetry={() => {
+          void query.refetch();
+        }}
+        isRetrying={query.isFetching}
+      />
     );
   }
 

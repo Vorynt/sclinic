@@ -13,7 +13,7 @@ describe("canCreateScheduleBlock", () => {
   it("allows doctor to block own agenda", () => {
     assert.equal(
       canCreateScheduleBlock({
-        roleKey: "doctor",
+        roleKey: "clinician",
         ownProfessionalId: OWN,
         targetProfessionalId: OWN,
       }).ok,
@@ -23,7 +23,7 @@ describe("canCreateScheduleBlock", () => {
 
   it("denies doctor blocking another professional", () => {
     const result = canCreateScheduleBlock({
-      roleKey: "doctor",
+      roleKey: "clinician",
       ownProfessionalId: OWN,
       targetProfessionalId: OTHER,
     })
@@ -32,7 +32,7 @@ describe("canCreateScheduleBlock", () => {
 
   it("denies doctor creating clinic-wide block", () => {
     const result = canCreateScheduleBlock({
-      roleKey: "doctor",
+      roleKey: "clinician",
       ownProfessionalId: OWN,
       targetProfessionalId: null,
     })
@@ -63,7 +63,7 @@ describe("canDeleteScheduleBlock", () => {
   it("allows doctor to remove own block", () => {
     assert.equal(
       canDeleteScheduleBlock({
-        roleKey: "doctor",
+        roleKey: "clinician",
         ownProfessionalId: OWN,
         blockProfessionalId: OWN,
       }).ok,
@@ -74,7 +74,7 @@ describe("canDeleteScheduleBlock", () => {
   it("denies doctor removing another professional block", () => {
     assert.equal(
       canDeleteScheduleBlock({
-        roleKey: "doctor",
+        roleKey: "clinician",
         ownProfessionalId: OWN,
         blockProfessionalId: OTHER,
       }).ok,
@@ -85,7 +85,7 @@ describe("canDeleteScheduleBlock", () => {
   it("denies doctor removing clinic-wide block", () => {
     assert.equal(
       canDeleteScheduleBlock({
-        roleKey: "doctor",
+        roleKey: "clinician",
         ownProfessionalId: OWN,
         blockProfessionalId: null,
       }).ok,

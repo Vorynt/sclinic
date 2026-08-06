@@ -3,6 +3,7 @@
 import { ArrowUpRightIcon } from "@phosphor-icons/react";
 import Link from "next/link";
 
+import { QueryErrorState } from "@/components/status/QueryErrorState";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { routes } from "@/config/routes";
@@ -34,11 +35,13 @@ export function PatientCompactSummary({
 
   if (patientQuery.isError || !patientQuery.data) {
     return (
-      <section className="rounded-md border border-border px-3 py-3">
-        <p className="text-sm text-destructive">
-          Não foi possível carregar os dados do paciente.
-        </p>
-      </section>
+      <QueryErrorState
+        description="Não foi possível carregar os dados do paciente."
+        onRetry={() => {
+          void patientQuery.refetch();
+        }}
+        isRetrying={patientQuery.isFetching}
+      />
     );
   }
 

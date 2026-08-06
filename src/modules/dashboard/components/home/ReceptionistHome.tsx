@@ -3,7 +3,10 @@
 import {
   CalendarBlankIcon,
   CalendarPlusIcon,
+  ClockIcon,
+  CurrencyCircleDollarIcon,
   QuestionIcon,
+  StethoscopeIcon,
   UserPlusIcon,
 } from "@phosphor-icons/react"
 import { endOfDay, format, startOfDay } from "date-fns"
@@ -91,18 +94,21 @@ function ReceptionDayKpis() {
               label: "Próximos",
               value: String(counts.upcoming),
               hint: "Aguardando chegada",
+              icon: ClockIcon,
               accent: "info",
             },
             {
               label: "Em atendimento",
               value: String(counts.in_progress),
               hint: "Check-in feito",
+              icon: StethoscopeIcon,
               accent: "success",
             },
             {
               label: "Aguardando pagamento",
               value: String(counts.awaiting_payment),
               hint: "Cobrança pendente",
+              icon: CurrencyCircleDollarIcon,
               accent: "warning",
             },
           ]}

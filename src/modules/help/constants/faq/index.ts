@@ -1,5 +1,5 @@
 import { HELP_FAQ_ADMIN } from "@/modules/help/constants/faq/admin"
-import { HELP_FAQ_DOCTOR } from "@/modules/help/constants/faq/doctor"
+import { HELP_FAQ_CLINICIAN } from "@/modules/help/constants/faq/clinician"
 import { HELP_FAQ_FINANCIAL } from "@/modules/help/constants/faq/financial"
 import { HELP_FAQ_MANAGER } from "@/modules/help/constants/faq/manager"
 import { HELP_FAQ_NURSE } from "@/modules/help/constants/faq/nurse"
@@ -12,7 +12,7 @@ export const HELP_ROLE_KEYS = [
   "admin",
   "manager",
   "receptionist",
-  "doctor",
+  "clinician",
   "nurse",
   "financial",
 ] as const
@@ -24,7 +24,7 @@ export const HELP_FAQ_BY_ROLE: Record<HelpRoleKey, HelpFaqItem[]> = {
   admin: HELP_FAQ_ADMIN,
   manager: HELP_FAQ_MANAGER,
   receptionist: HELP_FAQ_RECEPTIONIST,
-  doctor: HELP_FAQ_DOCTOR,
+  clinician: HELP_FAQ_CLINICIAN,
   nurse: HELP_FAQ_NURSE,
   financial: HELP_FAQ_FINANCIAL,
 }

@@ -4,13 +4,17 @@ import { PlusIcon } from "@phosphor-icons/react"
 import { useEffect, useMemo, useRef, useState } from "react"
 
 import { PageHeader } from "@/components/layout/PageHeader"
+import { QueryErrorState } from "@/components/status/QueryErrorState"
 import { Button } from "@/components/ui/button"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { AppointmentDayView } from "@/modules/appointments/components/AppointmentDayView"
 import { AppointmentDetailDrawer } from "@/modules/appointments/components/AppointmentDetailDrawer"
 import { AppointmentFormDialog } from "@/modules/appointments/components/AppointmentFormDialog"
 import { AppointmentMonthView } from "@/modules/appointments/components/AppointmentMonthView"
-import { AppointmentProfessionalFilter } from "@/modules/appointments/components/AppointmentProfessionalFilter"
+import {
+  AppointmentFiltersDrawer,
+  type AppointmentFiltersValue,
+} from "@/modules/appointments/components/AppointmentFiltersDrawer"
 import { AppointmentsCalendarSkeleton } from "@/modules/appointments/components/AppointmentsPageSkeleton"
 import { AppointmentsToolbar } from "@/modules/appointments/components/AppointmentsToolbar"
 import { AppointmentWeekView } from "@/modules/appointments/components/AppointmentWeekView"
@@ -23,10 +27,7 @@ import {
 } from "@/modules/appointments/hooks/use-appointments"
 import { useCalendarQueryParams } from "@/modules/appointments/hooks/use-calendar-query-params"
 import { useScheduleBlocksQuery } from "@/modules/appointments/hooks/use-schedule-blocks"
-import type {
-  Appointment,
-  AppointmentModality,
-} from "@/modules/appointments/types/appointment"
+import type { Appointment } from "@/modules/appointments/types/appointment"
 import type { ScheduleBlock } from "@/modules/appointments/types/schedule-block"
 import {
   getNextAnchor,
@@ -60,12 +61,11 @@ export function AppointmentsPanel() {
   const [blockDefaultStartsAt, setBlockDefaultStartsAt] = useState<
     Date | undefined
   >(undefined)
-  const [selectedProfessionalIds, setSelectedProfessionalIds] = useState<
-    string[]
-  >([])
-  const [modalityFilter, setModalityFilter] = useState<
-    AppointmentModality | "all"
-  >("all")
+  const [filters, setFilters] = useState<AppointmentFiltersValue>({
+    professionalIds: [],
+    patientIds: [],
+    modality: "all",
+  })
 
   useEffect(() => {
     if (isMobile && !hasExplicitMode && !appliedMobileDefault.current) {
@@ -84,16 +84,21 @@ export function AppointmentsPanel() {
     () => ({
       ...range,
       professionalIds: showProfessionalFilter
-        ? selectedProfessionalIds.length > 0
-          ? selectedProfessionalIds
+        ? filters.professionalIds.length > 0
+          ? filters.professionalIds
           : undefined
         : undefined,
-      modality: modalityFilter === "all" ? undefined : modalityFilter,
+      patientIds:
+        filters.patientIds.length > 0 ? filters.patientIds : undefined,
+      modality: filters.modality === "all" ? undefined : filters.modality,
     }),
-    [range, selectedProfessionalIds, showProfessionalFilter, modalityFilter],
+    [range, filters, showProfessionalFilter],
   )
   const appointmentsQuery = useAppointmentsQuery(listFilters)
-  const scheduleBlocksQuery = useScheduleBlocksQuery(listFilters)
+  const scheduleBlocksQuery = useScheduleBlocksQuery({
+    ...range,
+    professionalIds: listFilters.professionalIds,
+  })
   const calendarHoursQuery = useCalendarClinicHoursQuery()
   const appointments = appointmentsQuery.data ?? []
   const scheduleBlocks = scheduleBlocksQuery.data ?? []
@@ -171,23 +176,33 @@ export function AppointmentsPanel() {
         onPrevious={handlePrevious}
         onNext={handleNext}
         onToday={handleToday}
-        modality={modalityFilter}
-        onModalityChange={setModalityFilter}
+        filters={
+          <AppointmentFiltersDrawer
+            value={filters}
+            onValueChange={setFilters}
+            showProfessionalFilter={showProfessionalFilter}
+          />
+        }
       />
-
-      {showProfessionalFilter ? (
-        <AppointmentProfessionalFilter
-          selectedIds={selectedProfessionalIds}
-          onSelectedIdsChange={setSelectedProfessionalIds}
-        />
-      ) : null}
 
       {isCalendarLoading ? (
         <AppointmentsCalendarSkeleton />
       ) : isCalendarError ? (
-        <p className="text-sm text-destructive">
-          Não foi possível carregar os agendamentos.
-        </p>
+        <QueryErrorState
+          description="Não foi possível carregar os agendamentos."
+          onRetry={() => {
+            void appointmentsQuery.refetch()
+            void scheduleBlocksQuery.refetch()
+            if (mode !== "month") {
+              void calendarHoursQuery.refetch()
+            }
+          }}
+          isRetrying={
+            appointmentsQuery.isFetching ||
+            scheduleBlocksQuery.isFetching ||
+            (mode !== "month" && calendarHoursQuery.isFetching)
+          }
+        />
       ) : (
         <>
           {mode === "month" ? (
@@ -254,8 +269,8 @@ export function AppointmentsPanel() {
         onOpenChange={setBlockDialogOpen}
         defaultStartsAt={blockDefaultStartsAt}
         defaultProfessionalId={
-          selectedProfessionalIds.length === 1
-            ? selectedProfessionalIds[0]
+          filters.professionalIds.length === 1
+            ? filters.professionalIds[0]
             : null
         }
       />

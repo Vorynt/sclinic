@@ -13,13 +13,38 @@ export type AffiliationType =
 
 export type ProfessionalStatus = "active" | "inactive"
 
-export type CouncilType = "CRM" | "CRO" | "COREN" | "CRF" | "OTHER"
+export type CouncilType =
+  | "CRM"
+  | "CRO"
+  | "COREN"
+  | "CRF"
+  | "CREFITO"
+  | "CRP"
+  | "OTHER"
 
-export type TreatmentPronoun = "dr" | "dra" | "sr" | "sra" | "enf" | "enfa"
+export type ProfessionType =
+  | "physician"
+  | "dentist"
+  | "physiotherapist"
+  | "nurse"
+  | "pharmacist"
+  | "psychologist"
+  | "other"
+
+export type TreatmentPronoun =
+  | "dr"
+  | "dra"
+  | "sr"
+  | "sra"
+  | "enf"
+  | "enfa"
+  | "ft"
+  | "fta"
 
 export type ProfessionalListItem = {
   id: string
   fullName: string | null
+  professionType: ProfessionType
   treatmentPronoun: TreatmentPronoun | null
   email: string | null
   roleKey: string

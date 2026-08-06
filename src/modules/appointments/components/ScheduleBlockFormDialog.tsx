@@ -1,14 +1,14 @@
-"use client"
+"use client";
 
-import { zodResolver } from "@hookform/resolvers/zod"
-import { addMinutes } from "date-fns"
-import { useEffect } from "react"
-import { Controller, useForm } from "react-hook-form"
-import { toast } from "sonner"
-import { z } from "zod"
+import { zodResolver } from "@hookform/resolvers/zod";
+import { addMinutes } from "date-fns";
+import { useEffect } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { z } from "zod";
 
-import { Button } from "@/components/ui/button"
-import { DatePicker } from "@/components/ui/date-picker"
+import { Button } from "@/components/ui/button";
+import { DatePicker } from "@/components/ui/date-picker";
 import {
   Dialog,
   DialogContent,
@@ -16,27 +16,32 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
+} from "@/components/ui/dialog";
 import {
   Field,
   FieldError,
   FieldGroup,
   FieldLabel,
-} from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Textarea } from "@/components/ui/textarea"
-import { isSelfScheduleOnlyRole } from "@/modules/appointments/constants/appointments"
-import { useCreateScheduleBlockMutation } from "@/modules/appointments/hooks/use-schedule-blocks"
-import { APPOINTMENT_DURATION_OPTIONS } from "@/modules/appointments/utils/calendar-constants"
-import { useAuthSession } from "@/modules/authentication/hooks/use-auth"
-import { ProfessionalCombobox } from "@/modules/professionals/components/ProfessionalCombobox"
+} from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
-  formatProfessionalDisplayName,
-} from "@/modules/professionals/constants/professionals"
-import { useProfessionalsForSchedulingQuery } from "@/modules/professionals/hooks/use-professionals"
-import { isAppError } from "@/shared/errors"
-import { parseISODate, toISODate } from "@/utils/date"
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { isSelfScheduleOnlyRole } from "@/modules/appointments/constants/appointments";
+import { useCreateScheduleBlockMutation } from "@/modules/appointments/hooks/use-schedule-blocks";
+import { APPOINTMENT_DURATION_OPTIONS } from "@/modules/appointments/utils/calendar-constants";
+import { useAuthSession } from "@/modules/authentication/hooks/use-auth";
+import { ProfessionalCombobox } from "@/modules/professionals/components/ProfessionalCombobox";
+import { formatProfessionalDisplayName } from "@/modules/professionals/constants/professionals";
+import { useProfessionalsForSchedulingQuery } from "@/modules/professionals/hooks/use-professionals";
+import { isAppError } from "@/shared/errors";
+import { parseISODate, toISODate } from "@/utils/date";
 
 const blockFormSchema = z
   .object({
@@ -56,38 +61,38 @@ const blockFormSchema = z
   })
   .superRefine((data, ctx) => {
     if (data.scope === "professional") {
-      const id = data.professionalId?.trim() ?? ""
+      const id = data.professionalId?.trim() ?? "";
       if (!z.string().uuid().safeParse(id).success) {
         ctx.addIssue({
           code: "custom",
           message: "Selecione um profissional",
           path: ["professionalId"],
-        })
+        });
       }
     }
 
-    const day = parseISODate(data.date)
-    if (!day) return
-    const [hours, minutes] = data.startTime.split(":").map(Number)
-    if (Number.isNaN(hours) || Number.isNaN(minutes)) return
-    const duration = Number(data.durationMinutes)
+    const day = parseISODate(data.date);
+    if (!day) return;
+    const [hours, minutes] = data.startTime.split(":").map(Number);
+    if (Number.isNaN(hours) || Number.isNaN(minutes)) return;
+    const duration = Number(data.durationMinutes);
     if (!Number.isFinite(duration) || duration <= 0) {
       ctx.addIssue({
         code: "custom",
         message: "Duração inválida.",
         path: ["durationMinutes"],
-      })
+      });
     }
-  })
+  });
 
-type BlockFormValues = z.infer<typeof blockFormSchema>
+type BlockFormValues = z.infer<typeof blockFormSchema>;
 
 type ScheduleBlockFormDialogProps = {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  defaultStartsAt?: Date
-  defaultProfessionalId?: string | null
-}
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  defaultStartsAt?: Date;
+  defaultProfessionalId?: string | null;
+};
 
 export function ScheduleBlockFormDialog({
   open,
@@ -95,26 +100,28 @@ export function ScheduleBlockFormDialog({
   defaultStartsAt,
   defaultProfessionalId,
 }: ScheduleBlockFormDialogProps) {
-  const sessionQuery = useAuthSession()
+  const sessionQuery = useAuthSession();
   const isProfessionalLocked = isSelfScheduleOnlyRole(
     sessionQuery.data?.membership?.roleKey,
-  )
-  const professionalsQuery = useProfessionalsForSchedulingQuery()
-  const professionals = professionalsQuery.data ?? []
+  );
+  const professionalsQuery = useProfessionalsForSchedulingQuery();
+  const professionals = professionalsQuery.data ?? [];
 
   const createMutation = useCreateScheduleBlockMutation({
     onSuccess: () => {
-      toast.success("Bloqueio criado.")
-      onOpenChange(false)
+      toast.success("Bloqueio criado.");
+      onOpenChange(false);
     },
     onError: (error) => {
       toast.error(
-        isAppError(error) ? error.message : "Não foi possível criar o bloqueio.",
-      )
+        isAppError(error)
+          ? error.message
+          : "Não foi possível criar o bloqueio.",
+      );
     },
-  })
+  });
 
-  const defaultDate = defaultStartsAt ?? new Date()
+  const defaultDate = defaultStartsAt ?? new Date();
   const form = useForm<BlockFormValues>({
     resolver: zodResolver(blockFormSchema),
     defaultValues: {
@@ -127,7 +134,7 @@ export function ScheduleBlockFormDialog({
       durationMinutes: "60",
       reason: "",
     },
-  })
+  });
 
   const {
     control,
@@ -136,22 +143,22 @@ export function ScheduleBlockFormDialog({
     setValue,
     watch,
     formState: { errors },
-  } = form
+  } = form;
 
-  const scope = watch("scope")
-
-  useEffect(() => {
-    if (!isProfessionalLocked) return
-    const selfProfessional = professionalsQuery.data?.[0]
-    if (!selfProfessional) return
-    setValue("scope", "professional")
-    setValue("professionalId", selfProfessional.id, { shouldValidate: true })
-  }, [isProfessionalLocked, professionalsQuery.data, setValue])
+  const scope = watch("scope");
 
   useEffect(() => {
-    if (isProfessionalLocked || !defaultProfessionalId) return
-    setValue("professionalId", defaultProfessionalId, { shouldValidate: true })
-  }, [defaultProfessionalId, isProfessionalLocked, setValue])
+    if (!isProfessionalLocked) return;
+    const selfProfessional = professionalsQuery.data?.[0];
+    if (!selfProfessional) return;
+    setValue("scope", "professional");
+    setValue("professionalId", selfProfessional.id, { shouldValidate: true });
+  }, [isProfessionalLocked, professionalsQuery.data, setValue]);
+
+  useEffect(() => {
+    if (isProfessionalLocked || !defaultProfessionalId) return;
+    setValue("professionalId", defaultProfessionalId, { shouldValidate: true });
+  }, [defaultProfessionalId, isProfessionalLocked, setValue]);
 
   const lockedProfessionalLabel = isProfessionalLocked
     ? professionals[0]
@@ -160,15 +167,15 @@ export function ScheduleBlockFormDialog({
           treatmentPronoun: professionals[0].treatmentPronoun,
         })
       : null
-    : null
+    : null;
 
   function onSubmit(data: BlockFormValues) {
-    const day = parseISODate(data.date)
-    if (!day) return
-    const [hours, minutes] = data.startTime.split(":").map(Number)
-    const startsAt = new Date(day)
-    startsAt.setHours(hours, minutes, 0, 0)
-    const endsAt = addMinutes(startsAt, Number(data.durationMinutes))
+    const day = parseISODate(data.date);
+    if (!day) return;
+    const [hours, minutes] = data.startTime.split(":").map(Number);
+    const startsAt = new Date(day);
+    startsAt.setHours(hours, minutes, 0, 0);
+    const endsAt = addMinutes(startsAt, Number(data.durationMinutes));
 
     createMutation.mutate({
       professionalId:
@@ -176,12 +183,12 @@ export function ScheduleBlockFormDialog({
       startsAt,
       endsAt,
       reason: data.reason?.trim() || undefined,
-    })
+    });
   }
 
   const formKey = open
     ? `${defaultProfessionalId ?? "none"}:${defaultStartsAt?.toISOString() ?? "new"}`
-    : "closed"
+    : "closed";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -197,8 +204,7 @@ export function ScheduleBlockFormDialog({
         <form
           key={formKey}
           className="flex flex-col gap-4"
-          onSubmit={handleSubmit(onSubmit)}
-        >
+          onSubmit={handleSubmit(onSubmit)}>
           <FieldGroup>
             {!isProfessionalLocked ? (
               <Field>
@@ -210,14 +216,19 @@ export function ScheduleBlockFormDialog({
                     <RadioGroup
                       value={field.value}
                       onValueChange={field.onChange}
-                      className="gap-3"
-                    >
+                      className="gap-3">
                       <label className="flex items-center gap-2 text-sm">
-                        <RadioGroupItem value="professional" id="block-scope-pro" />
+                        <RadioGroupItem
+                          value="professional"
+                          id="block-scope-pro"
+                        />
                         Um profissional
                       </label>
                       <label className="flex items-center gap-2 text-sm">
-                        <RadioGroupItem value="clinic" id="block-scope-clinic" />
+                        <RadioGroupItem
+                          value="clinic"
+                          id="block-scope-clinic"
+                        />
                         Toda a clínica
                       </label>
                     </RadioGroup>
@@ -273,27 +284,26 @@ export function ScheduleBlockFormDialog({
                 <FieldError errors={[errors.startTime]} />
               </Field>
               <Field
-                data-invalid={Boolean(errors.durationMinutes) || undefined}
-              >
+                data-invalid={Boolean(errors.durationMinutes) || undefined}>
                 <FieldLabel>Duração</FieldLabel>
                 <Controller
                   control={control}
                   name="durationMinutes"
                   render={({ field }) => (
-                    <select
-                      className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm"
-                      value={field.value}
-                      onChange={field.onChange}
-                    >
-                      {APPOINTMENT_DURATION_OPTIONS.map((minutes) => (
-                        <option key={minutes} value={String(minutes)}>
-                          {minutes} min
-                        </option>
-                      ))}
-                      <option value="120">120 min</option>
-                      <option value="240">240 min</option>
-                      <option value="480">480 min</option>
-                    </select>
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione a duração" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {APPOINTMENT_DURATION_OPTIONS.map((minutes) => (
+                          <SelectItem key={minutes} value={String(minutes)}>
+                            {minutes} min
+                          </SelectItem>
+                        ))}
+                        <SelectItem value="240">240 min</SelectItem>
+                        <SelectItem value="480">480 min</SelectItem>
+                      </SelectContent>
+                    </Select>
                   )}
                 />
                 <FieldError errors={[errors.durationMinutes]} />
@@ -311,8 +321,7 @@ export function ScheduleBlockFormDialog({
             <Button
               type="button"
               variant="outline"
-              onClick={() => onOpenChange(false)}
-            >
+              onClick={() => onOpenChange(false)}>
               Cancelar
             </Button>
             <Button type="submit" disabled={createMutation.isPending}>
@@ -322,5 +331,5 @@ export function ScheduleBlockFormDialog({
         </form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

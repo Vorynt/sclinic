@@ -1,5 +1,6 @@
 "use client"
 
+import { QueryErrorState } from "@/components/status/QueryErrorState"
 import { Spinner } from "@/components/ui/spinner"
 import { usePatient } from "@/modules/patients/hooks/use-patient"
 import type { Patient } from "@/modules/patients/types/patient"
@@ -24,11 +25,13 @@ export function PatientQuickCard({ patientId }: PatientQuickCardProps) {
 
   if (patientQuery.isError || !patientQuery.data) {
     return (
-      <section className="rounded-md border border-border px-4 py-4">
-        <p className="text-sm text-destructive">
-          Não foi possível carregar a ficha do paciente.
-        </p>
-      </section>
+      <QueryErrorState
+        description="Não foi possível carregar a ficha do paciente."
+        onRetry={() => {
+          void patientQuery.refetch()
+        }}
+        isRetrying={patientQuery.isFetching}
+      />
     )
   }
 

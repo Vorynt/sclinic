@@ -46,7 +46,7 @@ Inventário do que o sistema faz hoje. Status: **Done** | **Partial** | **Planne
 | Overview consolidado (CRM mínimo) | Planned | Roadmap H1 · E14 |
 | Pacientes inativos (última consulta + CTA) | Planned | Roadmap H3 · E14 |
 | Convite/gestão profissionais | Done | `/professionals` |
-| Perfil profissional (conselho, etc.) | Done | invite onboarding |
+| Multi-profissão (`profession_type` + `clinician`) | Done | ADR-012 |
 | Owner cria próprio perfil clínico (sem invite) | Done | ADR-007 |
 | Active/inactive profissional | Done | professionals |
 | Cadastro rápido de paciente (nome/CPF/telefone) | Done | ADR-011; `PatientFormDialog` variant `quick` |
@@ -55,18 +55,18 @@ Inventário do que o sistema faz hoje. Status: **Done** | **Partial** | **Planne
 
 | Feature | Status | Onde |
 |---------|--------|------|
-| Calendário dia/semana/mês | Done | `/appointments` |
+| Calendário dia/semana/mês | Done | `/appointments`; filtros em drawer (profissional, modalidade, paciente) |
 | Criar/remarcar/cancelar | Done | appointments |
 | Status: scheduled→…→completed | Done | appointment.service |
 | Iniciar atendimento (role gate) | Done | checked_in |
 | Workspace attendance | Done | `(attendance)` |
-| Self-schedule doctor/nurse | Done | constants |
+| Self-schedule clinician/nurse | Done | constants |
 | Disponibilidade vs clinic hours | Done | availability service |
 | Valor no agendamento → charge | Done | amountCents + collect |
 | Bloqueio de horários | Done | ADR-011; profissional ou clinic-wide; self-schedule; remoção na agenda |
 | Horário do profissional | Done | ADR-011; self-edit + override `professionals.manage` |
 | Lista de espera + encaixe | Done | ADR-011; `WaitlistPanel`, promote → appointment |
-| Modalidade presencial / online | Done | ADR-011; campo `modality` + filtro/badge |
+| Modalidade presencial / online | Done | ADR-011; campo `modality` + filtro no drawer da agenda / badge |
 | Horários recorrentes | Planned | Roadmap H3 · E15 |
 | Agenda por sala / equipamento | Later | Roadmap H3 · E15 (se ICP) |
 
@@ -111,7 +111,7 @@ Inventário do que o sistema faz hoje. Status: **Done** | **Partial** | **Planne
 |---------|--------|------|
 | Board 3 colunas | Done | ReceptionOpsBoard |
 | SSE clinic.ops | Done | `/api/realtime/clinic` |
-| Médico conclui sem cobrar | Done | ADR-006 |
+| Médico conclui sem cobrar | Done | ADR-006; profissional de saúde / clinician |
 | Broker multi-instância | Next | ADR-006 |
 | Confirmação em lote | Done | ADR-011; `ReceptionOpsBoard` seleção + confirmar dia |
 

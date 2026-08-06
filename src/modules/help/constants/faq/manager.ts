@@ -55,12 +55,12 @@ export const HELP_FAQ_MANAGER: HelpFaqItem[] = [
   {
     id: "invite-professional",
     categoryId: "team",
-    question: "Como chamo um médico ou enfermeiro?",
+    question: "Como chamo um profissional de saúde?",
     answer: [
       "Em Profissionais. A pessoa completa o cadastro e fica disponível na agenda.",
       "Se o convite for bloqueado por limite do plano, peça ao proprietário para ver Uso do plano.",
     ],
-    keywords: ["profissional", "médico", "enfermeiro"],
+    keywords: ["profissional", "profissional de saúde", "enfermeiro"],
     relatedRoutes: [{ label: "Profissionais", href: routes.professionals }],
   },
   {
@@ -70,7 +70,7 @@ export const HELP_FAQ_MANAGER: HelpFaqItem[] = [
     answer: [
       "Recepção: agenda, pacientes e cobrança no balcão.",
       "Financeiro: lista e gerencia cobranças das consultas.",
-      "Médico/enfermeiro: atende, escreve prontuário e emite receita.",
+      "Profissional de saúde: atende, escreve prontuário e emite documentos clínicos.",
       "Você (gestor) organiza a operação e convida pessoas, sem alterar configurações da clínica.",
     ],
     keywords: ["funções", "papéis", "diferença"],
@@ -145,7 +145,7 @@ export const HELP_FAQ_MANAGER: HelpFaqItem[] = [
     categoryId: "appointments",
     question: "Quem inicia o atendimento?",
     answer: [
-      "O profissional (médico ou enfermeiro) inicia na agenda. Você acompanha o status, mas o prontuário em escrita é dele.",
+      "O profissional de saúde inicia na agenda. Você acompanha o status, mas o prontuário em escrita é dele.",
     ],
     keywords: ["iniciar", "atendimento", "quem"],
     relatedRoutes: [{ label: "Agenda", href: routes.appointments }],
