@@ -46,7 +46,8 @@ Só `owner`, `admin`, `clinician`, `nurse`. Recepcionista **não** inicia.
 
 - Campo `modality` (`in_person` | `online`) em `appointments`, default `in_person`.
 - `createAppointmentSchema` valida o enum; `listAppointmentsSchema` aceita filtro opcional.
-- Agenda (`AppointmentsPanel`) tem filtro por modalidade; cada evento mostra badge Presencial/Online.
+- Agenda (`AppointmentsPanel`): filtros em drawer (lateral no desktop, inferior no mobile) com profissional, modalidade (tipo de agendamento) e paciente; busca nas listas; aplicar / restaurar padrões; indicador de filtro ativo e atalho Limpar fora do drawer.
+- Cada evento mostra badge Presencial/Online.
 
 ## Horário do profissional (ADR-011)
 

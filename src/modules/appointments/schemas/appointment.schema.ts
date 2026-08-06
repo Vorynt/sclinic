@@ -29,6 +29,10 @@ export const listAppointmentsSchema = z
       .array(z.string().uuid("Profissional inválido"))
       .max(100)
       .optional(),
+    patientIds: z
+      .array(z.string().uuid("Paciente inválido"))
+      .max(100)
+      .optional(),
     modality: appointmentModalitySchema.optional(),
   })
   .refine((data) => data.from < data.to, {

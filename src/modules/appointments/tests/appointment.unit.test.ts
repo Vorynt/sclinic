@@ -300,6 +300,24 @@ describe("listAppointmentsSchema", () => {
     })
     assert.equal(parsed.modality, "online")
   })
+
+  it("accepts optional patientIds", () => {
+    const parsed = listAppointmentsSchema.parse({
+      from: "2026-01-01T00:00:00.000Z",
+      to: "2026-01-31T23:59:59.000Z",
+      patientIds: [VALID_UUID, OTHER_UUID],
+    })
+    assert.deepEqual(parsed.patientIds, [VALID_UUID, OTHER_UUID])
+  })
+
+  it("rejects invalid patientIds", () => {
+    const result = listAppointmentsSchema.safeParse({
+      from: "2026-01-01T00:00:00.000Z",
+      to: "2026-01-31T23:59:59.000Z",
+      patientIds: ["not-a-uuid"],
+    })
+    assert.equal(result.success, false)
+  })
 })
 
 describe("listPatientAppointmentsSchema", () => {

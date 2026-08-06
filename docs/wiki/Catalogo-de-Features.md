@@ -55,7 +55,7 @@ Inventário do que o sistema faz hoje. Status: **Done** | **Partial** | **Planne
 
 | Feature | Status | Onde |
 |---------|--------|------|
-| Calendário dia/semana/mês | Done | `/appointments` |
+| Calendário dia/semana/mês | Done | `/appointments`; filtros em drawer (profissional, modalidade, paciente) |
 | Criar/remarcar/cancelar | Done | appointments |
 | Status: scheduled→…→completed | Done | appointment.service |
 | Iniciar atendimento (role gate) | Done | checked_in |
@@ -66,7 +66,7 @@ Inventário do que o sistema faz hoje. Status: **Done** | **Partial** | **Planne
 | Bloqueio de horários | Done | ADR-011; profissional ou clinic-wide; self-schedule; remoção na agenda |
 | Horário do profissional | Done | ADR-011; self-edit + override `professionals.manage` |
 | Lista de espera + encaixe | Done | ADR-011; `WaitlistPanel`, promote → appointment |
-| Modalidade presencial / online | Done | ADR-011; campo `modality` + filtro/badge |
+| Modalidade presencial / online | Done | ADR-011; campo `modality` + filtro no drawer da agenda / badge |
 | Horários recorrentes | Planned | Roadmap H3 · E15 |
 | Agenda por sala / equipamento | Later | Roadmap H3 · E15 (se ICP) |
 
