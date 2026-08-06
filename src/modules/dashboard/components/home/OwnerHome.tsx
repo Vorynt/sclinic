@@ -22,6 +22,7 @@ import { formatCentsToBrl } from "@/modules/billing/utils/money"
 import { useClinic } from "@/modules/clinics/hooks/use-clinic"
 import type { ClinicSubscriptionStatus } from "@/modules/clinics/types/clinic"
 import { useAppointmentsCountQuery } from "@/modules/appointments/hooks/use-appointments"
+import { OwnerSetupRoadmap } from "@/modules/dashboard/components/home/OwnerSetupRoadmap"
 import { HomeGreeting } from "@/modules/dashboard/components/home/shared/HomeGreeting"
 import { HomeQuickActions } from "@/modules/dashboard/components/home/shared/HomeQuickActions"
 import { HomeSection } from "@/modules/dashboard/components/home/shared/HomeSection"
@@ -81,6 +82,8 @@ export function OwnerHome() {
   return (
     <div className="flex flex-col gap-8">
       <HomeGreeting subtitle="Visão geral da clínica, plano e indicadores." />
+
+      <OwnerSetupRoadmap />
 
       <HomeSection
         title="Resumo da clínica"

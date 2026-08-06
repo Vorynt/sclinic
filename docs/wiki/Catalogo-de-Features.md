@@ -124,6 +124,7 @@ Inventário do que o sistema faz hoje. Status: **Done** | **Partial** | **Planne
 | Settings geral/hours/danger | Done | settings + clinics |
 | Uso do plano (owner) | Done | `/settings/usage` |
 | Help `/help` | Done | módulo `help`; FAQ por papel; nav + atalho nas homes |
+| Roadmap primeiros passos (owner home) | Done | `OwnerSetupRoadmap`; profissional → serviço → paciente → 1º agendamento |
 
 ## E9 — Marketing
 
