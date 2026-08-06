@@ -168,6 +168,7 @@ Personas de produto alinhadas aos papéis RBAC (`roleKey`). Cada persona descrev
 2. `/onboarding/plan` → Checkout Stripe.  
 3. `/onboarding/clinic` (+ opcional `alsoPractices` → perfil clínico).  
 4. `/onboarding/hours` → `/home`.  
+5. Na `/home`, roadmap “Primeiros passos” até poder agendar: profissional → serviço → paciente → primeiro agendamento (missões obrigatórias sem pular; card some ao concluir tudo).  
 
 Diagrama: [Diagramas §2](Diagramas).
 

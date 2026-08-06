@@ -48,7 +48,7 @@ Charge 1:1, markPaid/cancel, listagem `/billing`, collect vs view. Catálogo de 
 Board derivado de status+charge, SSE `clinic.ops`, desacoplar pagamento do “concluir” médico.
 
 ### E8 — Governança
-Audit logs, settings (geral, hours, prescriptions, usage, danger), RBAC seed, central de ajuda `/help`.
+Audit logs, settings (geral, hours, prescriptions, usage, danger), RBAC seed, central de ajuda `/help`, roadmap de setup na home do owner (`OwnerSetupRoadmap`).
 
 ### E9 — Marketing
 Landing pública.
