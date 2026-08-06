@@ -14,14 +14,15 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Permission } from "@/config/permissions"
 import { routes } from "@/config/routes"
 import { AppointmentFormDialog } from "@/modules/appointments/components/AppointmentFormDialog"
+import { WaitlistPanel } from "@/modules/appointments/components/WaitlistPanel"
 import { useAppointmentsQuery } from "@/modules/appointments/hooks/use-appointments"
 import { useActiveChargesByAppointmentsQuery } from "@/modules/billing/hooks/use-charges"
 import type { Charge } from "@/modules/billing/types/charge"
+import { ReceptionOpsBoard } from "@/modules/dashboard/components/home/ReceptionOpsBoard"
 import { HomeGreeting } from "@/modules/dashboard/components/home/shared/HomeGreeting"
 import { HomeQuickActions } from "@/modules/dashboard/components/home/shared/HomeQuickActions"
 import { HomeSection } from "@/modules/dashboard/components/home/shared/HomeSection"
 import { HomeStatCards } from "@/modules/dashboard/components/home/shared/HomeStatCards"
-import { ReceptionOpsBoard } from "@/modules/dashboard/components/home/ReceptionOpsBoard"
 import { countReceptionBoardColumns } from "@/modules/dashboard/utils/reception-board"
 import { PatientFormDialog } from "@/modules/patients/components/PatientFormDialog"
 import { useAuth } from "@/providers/AuthProvider"
@@ -90,16 +91,19 @@ function ReceptionDayKpis() {
               label: "Próximos",
               value: String(counts.upcoming),
               hint: "Aguardando chegada",
+              accent: "info",
             },
             {
               label: "Em atendimento",
               value: String(counts.in_progress),
               hint: "Check-in feito",
+              accent: "success",
             },
             {
               label: "Aguardando pagamento",
               value: String(counts.awaiting_payment),
               hint: "Cobrança pendente",
+              accent: "warning",
             },
           ]}
         />
@@ -123,21 +127,25 @@ export function ReceptionistHome() {
               label: "Novo agendamento",
               icon: CalendarPlusIcon,
               onClick: () => setAppointmentDialogOpen(true),
+              primary: true,
             },
             {
               label: "Novo paciente",
               icon: UserPlusIcon,
               onClick: () => setPatientDialogOpen(true),
+              primary: false,
             },
             {
               label: "Abrir agenda",
               href: routes.appointments,
               icon: CalendarBlankIcon,
+              primary: false,
             },
             {
               label: "Ajuda",
               href: routes.help,
               icon: QuestionIcon,
+              primary: false,
             },
           ]}
         />
@@ -145,6 +153,7 @@ export function ReceptionistHome() {
 
       <ReceptionDayKpis />
       <ReceptionOpsBoard />
+      <WaitlistPanel />
 
       <AppointmentFormDialog
         open={appointmentDialogOpen}
@@ -153,6 +162,7 @@ export function ReceptionistHome() {
       <PatientFormDialog
         open={patientDialogOpen}
         onOpenChange={setPatientDialogOpen}
+        variant="quick"
       />
     </div>
   )

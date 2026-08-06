@@ -56,6 +56,10 @@ Auth, multi-clínica, planos Stripe, pacientes, profissionais, agenda, attendanc
 
 Detalhe: [Visão do produto](Visao-do-Produto) · [Roadmap](Roadmap).
 
+### 1.6 Backlog priorizado (produto)
+
+Horizontes H1–H3 em [Roadmap](Roadmap) — documentos clínicos (E13), CRM/retenção (E14), agenda avançada (E15), recepção lote (E16), portal/pré-consulta (E17). Escopo de produto H1–H3 **exclui** WhatsApp, upload de arquivos e gateway de pagamento (este último permanece Next técnico · E10).
+
 ---
 
 ## 2. Personas
@@ -272,6 +276,7 @@ Convenção de ID: `RF-<DOMÍNIO>-NNN`.
 | RF-PRO-006 | Soft delete | + revoga convites pendentes | Gestores | Done |
 | RF-PRO-007 | Perfil clínico do owner | Sem invite; conta na cota | P10 | Done |
 | RF-PRO-008 | Integração agenda | Ativos; self-schedule doctor/nurse; owner clínico vê agenda completa | P3, P4, P10 | Done |
+| RF-PRO-009 | Horário semanal | Self-edit; override `professionals.manage`; demais só disponibilidade na agenda | P3, P4, P2 | Done |
 
 ### 4.6 Agendamentos — `RF-AGE`
 
@@ -287,6 +292,7 @@ Convenção de ID: `RF-<DOMÍNIO>-NNN`.
 | RF-AGE-008 | Valor → charge | `amountCents` + collect (legado) | Caixa | Done |
 | RF-AGE-009 | Self-schedule | Doctor/nurse só a si | P3, P4 | Done |
 | RF-AGE-010 | Serviço no agendamento | `serviceId` obrigatório; desconto %; cortesia/retorno | Caixa | Done |
+| RF-AGE-011 | Bloqueios | Profissional ou clínica; self-schedule só o próprio; remoção no card | Recepção + P3/P4 | Done |
 
 **Editável:** `scheduled\|confirmed\|checked_in`. **Terminais:** `completed\|canceled\|no_show`.
 
@@ -542,7 +548,7 @@ Diagramas Mermaid: [Diagramas](Diagramas).
 
 | ID | Título | Descrição | Fonte |
 |----|--------|-----------|-------|
-| RNF-110 | Tailwind v4 + shadcn + tokens | `config/theme.ts` | architecture/010 |
+| RNF-110 | Tailwind v4 + shadcn + tokens tintados | Neutros na hue do primary; `bg-app-wash` no chrome; clínico quieto | architecture/010 |
 | RNF-111 | Storybook-first (UI genérica) | `.storybook/` → `src/components/` | architecture/010 |
 | RNF-112 | Domínio vs genérico | Sem hex soltos nos módulos | architecture/010 |
 | RNF-123 | Forms RHF + Zod | Sem field state em `useState` | architecture/011 |

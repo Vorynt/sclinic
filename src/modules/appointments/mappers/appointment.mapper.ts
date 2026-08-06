@@ -1,5 +1,6 @@
 import type {
   Appointment,
+  AppointmentModality,
   AppointmentStatus,
   AppointmentType,
 } from "@/modules/appointments/types/appointment"
@@ -16,6 +17,7 @@ export type AppointmentRow = {
   startsAt: Date
   endsAt: Date
   type: string
+  modality: string
   status: string
   reason: string | null
   notes: string | null
@@ -42,6 +44,11 @@ const APPOINTMENT_TYPES = new Set<AppointmentType>([
   "other",
 ])
 
+const APPOINTMENT_MODALITIES = new Set<AppointmentModality>([
+  "in_person",
+  "online",
+])
+
 function toAppointmentStatus(value: string): AppointmentStatus {
   return APPOINTMENT_STATUSES.has(value as AppointmentStatus)
     ? (value as AppointmentStatus)
@@ -52,6 +59,12 @@ function toAppointmentType(value: string): AppointmentType {
   return APPOINTMENT_TYPES.has(value as AppointmentType)
     ? (value as AppointmentType)
     : "consultation"
+}
+
+function toAppointmentModality(value: string): AppointmentModality {
+  return APPOINTMENT_MODALITIES.has(value as AppointmentModality)
+    ? (value as AppointmentModality)
+    : "in_person"
 }
 
 export function toAppointment(row: AppointmentRow): Appointment {
@@ -66,6 +79,7 @@ export function toAppointment(row: AppointmentRow): Appointment {
     startsAt: row.startsAt,
     endsAt: row.endsAt,
     type: toAppointmentType(row.type),
+    modality: toAppointmentModality(row.modality),
     status: toAppointmentStatus(row.status),
     reason: row.reason,
     notes: row.notes,

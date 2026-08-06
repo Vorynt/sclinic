@@ -11,6 +11,7 @@ import {
 } from "@/db/schema"
 import { withDbError } from "@/db/with-db-error"
 import type { PrescriptionDocumentModel } from "@/modules/medical-records/prescription-template-designer"
+import type { ClinicalDocumentKind } from "@/modules/medical-records/constants/clinical-documents"
 import {
   toPrescription,
   toPrescriptionLayout,
@@ -27,6 +28,8 @@ const prescriptionSelect = {
   appointmentId: prescriptions.appointmentId,
   professionalId: prescriptions.professionalId,
   professionalName: professionalDisplayNameSql,
+  kind: prescriptions.kind,
+  metadata: prescriptions.metadata,
   layoutId: prescriptions.layoutId,
   status: prescriptions.status,
   body: prescriptions.body,
@@ -98,6 +101,7 @@ export const prescriptionRepository = {
   async listByAppointment(params: {
     clinicId: string
     appointmentId: string
+    kind?: ClinicalDocumentKind
   }): Promise<Prescription[]> {
     return withDbError(async () => {
       const rows = await prescriptionJoin()
@@ -105,6 +109,7 @@ export const prescriptionRepository = {
           and(
             eq(prescriptions.clinicId, params.clinicId),
             eq(prescriptions.appointmentId, params.appointmentId),
+            params.kind ? eq(prescriptions.kind, params.kind) : undefined,
             isNull(prescriptions.deletedAt),
           ),
         )
@@ -118,6 +123,7 @@ export const prescriptionRepository = {
     clinicId: string
     patientId: string
     excludeAppointmentId?: string
+    kind?: ClinicalDocumentKind
   }): Promise<Prescription[]> {
     return withDbError(async () => {
       const rows = await prescriptionJoin()
@@ -128,6 +134,7 @@ export const prescriptionRepository = {
             params.excludeAppointmentId
               ? ne(prescriptions.appointmentId, params.excludeAppointmentId)
               : undefined,
+            params.kind ? eq(prescriptions.kind, params.kind) : undefined,
             isNull(prescriptions.deletedAt),
             isNull(appointments.deletedAt),
           ),
@@ -143,6 +150,8 @@ export const prescriptionRepository = {
     patientId: string
     appointmentId: string
     professionalId: string | null
+    kind: ClinicalDocumentKind
+    metadata?: Record<string, unknown> | null
     layoutId: string | null
     body: string
     plainText: string
@@ -156,6 +165,8 @@ export const prescriptionRepository = {
           patientId: params.patientId,
           appointmentId: params.appointmentId,
           professionalId: params.professionalId,
+          kind: params.kind,
+          metadata: params.metadata ?? null,
           layoutId: params.layoutId,
           status: "draft",
           body: params.body,
@@ -185,6 +196,7 @@ export const prescriptionRepository = {
     clinicId: string
     professionalId: string | null
     layoutId?: string | null
+    metadata?: Record<string, unknown> | null
     body: string
     plainText: string
     updatedBy: string
@@ -198,6 +210,9 @@ export const prescriptionRepository = {
           professionalId: params.professionalId,
           ...(params.layoutId !== undefined
             ? { layoutId: params.layoutId }
+            : {}),
+          ...(params.metadata !== undefined
+            ? { metadata: params.metadata }
             : {}),
           updatedBy: params.updatedBy,
         })

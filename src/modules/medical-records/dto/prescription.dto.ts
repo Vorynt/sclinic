@@ -1,4 +1,5 @@
 import type {
+  CreateAttendanceDeclarationInput,
   CreatePrescriptionInput,
   CreatePrescriptionLayoutInput,
   DeletePrescriptionDraftInput,
@@ -8,12 +9,19 @@ import type {
   IssuePrescriptionInput,
   ListAppointmentPrescriptionsInput,
   ListPatientPrescriptionsInput,
+  SaveAndIssueAttendanceDeclarationInput,
   SetDefaultPrescriptionLayoutInput,
+  UpdateAttendanceDeclarationDraftInput,
   UpdatePrescriptionDraftInput,
   UpdatePrescriptionLayoutInput,
 } from "@/modules/medical-records/schemas/prescription.schema"
 
 export type CreatePrescriptionDto = CreatePrescriptionInput
+export type CreateAttendanceDeclarationDto = CreateAttendanceDeclarationInput
+export type UpdateAttendanceDeclarationDraftDto =
+  UpdateAttendanceDeclarationDraftInput
+export type SaveAndIssueAttendanceDeclarationDto =
+  SaveAndIssueAttendanceDeclarationInput
 export type UpdatePrescriptionDraftDto = UpdatePrescriptionDraftInput
 export type IssuePrescriptionDto = IssuePrescriptionInput
 export type DeletePrescriptionDraftDto = DeletePrescriptionDraftInput

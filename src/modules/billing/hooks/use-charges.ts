@@ -35,3 +35,10 @@ export function useBillingSummaryQuery(enabled = true) {
     enabled,
   })
 }
+
+export function useDelinquentPatientsQuery(enabled = true) {
+  return useQuery({
+    ...chargesQueries.delinquents(),
+    enabled,
+  })
+}

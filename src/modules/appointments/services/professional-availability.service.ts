@@ -1,4 +1,5 @@
 import { appointmentRepository } from "@/modules/appointments/repositories/appointment.repository"
+import { scheduleBlockRepository } from "@/modules/appointments/repositories/schedule-block.repository"
 import type {
   AvailabilityErrorMeta,
   BusyInterval,
@@ -6,16 +7,17 @@ import type {
   ProfessionalAvailabilityResult,
 } from "@/modules/appointments/types/availability"
 import {
+  getEffectiveMinuteIntervals,
+  isWithinEffectiveHours,
+} from "@/modules/appointments/utils/effective-working-hours"
+import {
   findNextAvailableStarts,
   SUGGESTED_SLOTS_LIMIT,
   SUGGESTED_SLOTS_SEARCH_DAYS,
 } from "@/modules/appointments/utils/suggested-slots"
 import { clinicHoursService } from "@/modules/clinics/services/clinic-hours.service"
-import {
-  getMinuteIntervalsForDay,
-  getZonedDayParts,
-  isWithinClinicHours,
-} from "@/modules/clinics/utils/clinic-hours-window"
+import { getZonedDayParts } from "@/modules/clinics/utils/clinic-hours-window"
+import { professionalHoursService } from "@/modules/professionals/services/professional-hours.service"
 import { AppError, ErrorCode } from "@/shared/errors"
 
 type DayIntervalsResolver = {
@@ -25,6 +27,9 @@ type DayIntervalsResolver = {
 
 type AvailabilityDeps = {
   hasOverlappingActiveAppointment: (
+    input: ProfessionalAvailabilityInput,
+  ) => Promise<boolean>
+  hasOverlappingScheduleBlock: (
     input: ProfessionalAvailabilityInput,
   ) => Promise<boolean>
   listBusyIntervals: (params: {
@@ -45,49 +50,90 @@ type AvailabilityDeps = {
 async function defaultIsWithinWorkingHours(
   input: ProfessionalAvailabilityInput,
 ): Promise<boolean> {
-  const { weeklyHours, timeZone } =
-    await clinicHoursService.getAvailabilityContext(input.clinicId)
+  const [{ weeklyHours, timeZone }, professionalHours] = await Promise.all([
+    clinicHoursService.getAvailabilityContext(input.clinicId),
+    professionalHoursService.getConfiguredHoursOrNull(
+      input.clinicId,
+      input.professionalId,
+    ),
+  ])
 
-  return isWithinClinicHours({
+  return isWithinEffectiveHours({
     startsAt: input.startsAt,
     endsAt: input.endsAt,
-    weeklyHours,
+    clinicHours: weeklyHours,
+    professionalHours,
     timeZone,
+    getZonedDayParts,
   })
 }
 
 async function defaultGetSuggestionDayContext(
   input: ProfessionalAvailabilityInput,
 ): Promise<DayIntervalsResolver> {
-  const { weeklyHours, timeZone } =
-    await clinicHoursService.getAvailabilityContext(input.clinicId)
+  const [{ weeklyHours, timeZone }, professionalHours] = await Promise.all([
+    clinicHoursService.getAvailabilityContext(input.clinicId),
+    professionalHoursService.getConfiguredHoursOrNull(
+      input.clinicId,
+      input.professionalId,
+    ),
+  ])
 
   return {
     timeZone,
     getDayIntervals: (day: Date) => {
       const { dayOfWeek } = getZonedDayParts(day, timeZone)
-      return getMinuteIntervalsForDay(weeklyHours, dayOfWeek)
+      return getEffectiveMinuteIntervals({
+        clinicHours: weeklyHours,
+        professionalHours,
+        dayOfWeek,
+      })
     },
   }
+}
+
+async function defaultListBusyIntervals(params: {
+  clinicId: string
+  professionalId: string
+  from: Date
+  to: Date
+  excludeAppointmentId?: string
+}): Promise<BusyInterval[]> {
+  const [appointments, blocks] = await Promise.all([
+    appointmentRepository.listBusyIntervals(params),
+    scheduleBlockRepository.listBusyIntervals({
+      clinicId: params.clinicId,
+      professionalId: params.professionalId,
+      from: params.from,
+      to: params.to,
+    }),
+  ])
+  return [...appointments, ...blocks].sort(
+    (a, b) => a.startsAt.getTime() - b.startsAt.getTime(),
+  )
 }
 
 const defaultDeps: AvailabilityDeps = {
   hasOverlappingActiveAppointment:
     appointmentRepository.hasOverlappingActiveAppointment,
-  listBusyIntervals: appointmentRepository.listBusyIntervals,
+  hasOverlappingScheduleBlock: scheduleBlockRepository.hasOverlappingBlock,
+  listBusyIntervals: defaultListBusyIntervals,
   isWithinWorkingHours: defaultIsWithinWorkingHours,
   getSuggestionDayContext: defaultGetSuggestionDayContext,
 }
 
 /**
  * Pure check used by the service and unit tests.
- * Working hours today = clinic business hours (professional schedules TBD).
+ * Working hours = clinic ∩ professional (ADR-011); no professional rows = clinic only.
+ * Busy = active appointments ∪ schedule blocks.
  */
 export async function checkProfessionalAvailability(
   input: ProfessionalAvailabilityInput,
   deps: Pick<
     AvailabilityDeps,
-    "hasOverlappingActiveAppointment" | "isWithinWorkingHours"
+    | "hasOverlappingActiveAppointment"
+    | "hasOverlappingScheduleBlock"
+    | "isWithinWorkingHours"
   >,
 ): Promise<ProfessionalAvailabilityResult> {
   const withinHours = await deps.isWithinWorkingHours(input)
@@ -95,8 +141,14 @@ export async function checkProfessionalAvailability(
     return { available: false, reason: "outside_working_hours" }
   }
 
-  const hasConflict = await deps.hasOverlappingActiveAppointment(input)
-  if (hasConflict) {
+  const hasAppointmentConflict =
+    await deps.hasOverlappingActiveAppointment(input)
+  if (hasAppointmentConflict) {
+    return { available: false, reason: "slot_conflict" }
+  }
+
+  const hasBlockConflict = await deps.hasOverlappingScheduleBlock(input)
+  if (hasBlockConflict) {
     return { available: false, reason: "slot_conflict" }
   }
 
@@ -166,10 +218,6 @@ function throwForUnavailable(
 }
 
 export const professionalAvailabilityService = {
-  /**
-   * Ensures the slot is bookable; throws AppError when not.
-   * Outside clinic hours or professional conflict → next free slots in `meta.suggestedSlots`.
-   */
   async ensureAvailable(
     input: ProfessionalAvailabilityInput,
     deps: AvailabilityDeps = defaultDeps,

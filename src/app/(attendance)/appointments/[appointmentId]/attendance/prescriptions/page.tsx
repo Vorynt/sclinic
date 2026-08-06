@@ -1,23 +1,15 @@
-import { ForbiddenBlock } from "@/components/status/ForbiddenBlock"
-import { Permission } from "@/config/permissions"
-import { PrescriptionsPanel } from "@/modules/medical-records/components/PrescriptionsPanel"
-import { PermissionProvider } from "@/providers/PermissionProvider"
+import { redirect } from "next/navigation"
 
-type AttendancePrescriptionsPageProps = {
+import { routes } from "@/config/routes"
+
+type AttendancePrescriptionsRedirectPageProps = {
   params: Promise<{ appointmentId: string }>
 }
 
-export default async function AttendancePrescriptionsPage({
+/** Legacy `/prescriptions` → `/documents` (ADR-010 product copy). */
+export default async function AttendancePrescriptionsRedirectPage({
   params,
-}: AttendancePrescriptionsPageProps) {
+}: AttendancePrescriptionsRedirectPageProps) {
   const { appointmentId } = await params
-
-  return (
-    <PermissionProvider
-      permission={Permission.RECORDS_READ}
-      fallback={<ForbiddenBlock />}
-    >
-      <PrescriptionsPanel appointmentId={appointmentId} />
-    </PermissionProvider>
-  )
+  redirect(routes.appointmentAttendanceDocuments(appointmentId))
 }

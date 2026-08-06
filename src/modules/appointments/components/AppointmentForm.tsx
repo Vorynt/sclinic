@@ -40,9 +40,15 @@ import {
   isSelfScheduleOnlyRole,
 } from "@/modules/appointments/constants/appointments";
 import { useCreateAppointmentMutation } from "@/modules/appointments/hooks/use-appointment-mutations";
+import { usePromoteWaitlistMutation } from "@/modules/appointments/hooks/use-waitlist";
+import { appointmentModalitySchema } from "@/modules/appointments/schemas/appointment.schema";
 import type { CreateAppointmentInput } from "@/modules/appointments/schemas/appointment.schema";
 import { appointmentTypeSchema } from "@/modules/appointments/schemas/appointment.schema";
-import type { AppointmentType } from "@/modules/appointments/types/appointment";
+import { APPOINTMENT_MODALITY_LABELS } from "@/modules/appointments/constants/appointments";
+import type {
+  AppointmentModality,
+  AppointmentType,
+} from "@/modules/appointments/types/appointment";
 import { APPOINTMENT_DURATION_OPTIONS } from "@/modules/appointments/utils/calendar-constants";
 import { readSuggestedSlotsFromMeta } from "@/modules/appointments/utils/suggested-slots";
 import { useAuthSession } from "@/modules/authentication/hooks/use-auth";
@@ -82,6 +88,7 @@ const scheduleFormSchema = z
     patientId: z.string().uuid("Selecione um paciente"),
     professionalId: z.string().uuid("Selecione um profissional"),
     type: appointmentTypeSchema,
+    modality: appointmentModalitySchema,
     date: z.string().trim().min(1, "Selecione a data"),
     startTime: z
       .string()
@@ -148,6 +155,8 @@ type AppointmentFormProps = {
   allowedTypes?: readonly AppointmentType[];
   /** Pre-select professional when the user can choose any. */
   defaultProfessionalId?: string | null;
+  /** When set, submitting promotes this waitlist entry instead of creating a plain appointment. */
+  waitlistId?: string;
   onSuccess?: () => void;
   onCancel?: () => void;
 };
@@ -178,6 +187,7 @@ export function AppointmentForm({
   defaultType = "consultation",
   allowedTypes,
   defaultProfessionalId = null,
+  waitlistId,
   onSuccess,
   onCancel,
 }: AppointmentFormProps) {
@@ -222,6 +232,7 @@ export function AppointmentForm({
       patientId: lockedPatient?.id ?? "",
       professionalId: defaultProfessionalId ?? "",
       type: resolvedDefaultType,
+      modality: "in_person",
       date: toISODate(initialDate),
       startTime: `${String(initialDate.getHours()).padStart(2, "0")}:${String(
         initialDate.getMinutes(),
@@ -331,6 +342,15 @@ export function AppointmentForm({
     onError: handleError,
   });
 
+  const promoteWaitlist = usePromoteWaitlistMutation({
+    onSuccess: () => {
+      toast.success("Paciente promovido da lista de espera");
+      clearAvailabilityFeedback();
+      onSuccess?.();
+    },
+    onError: handleError,
+  });
+
   const onSubmit = handleSubmit(
     (data) => {
       clearAvailabilityFeedback();
@@ -361,12 +381,18 @@ export function AppointmentForm({
         startsAt,
         endsAt,
         type: data.type,
+        modality: data.modality,
         reason: data.reason,
         serviceId: data.serviceId,
         discountPercent: canCollect ? (data.discountPercent ?? 0) : 0,
         billingKind: canCollect ? (data.billingKind ?? "standard") : "standard",
         ...(amountCentsOverride != null ? { amountCentsOverride } : {}),
       };
+
+      if (waitlistId) {
+        promoteWaitlist.mutate({ waitlistId, appointment: payload });
+        return;
+      }
 
       createAppointment.mutate(payload);
     },
@@ -380,7 +406,7 @@ export function AppointmentForm({
   const isServicesEmpty = !activeServicesQuery.isLoading && !hasActiveServices;
   const isProfessionalsEmpty =
     !professionalsQuery.isLoading && !hasProfessionals;
-  const isPending = createAppointment.isPending;
+  const isPending = createAppointment.isPending || promoteWaitlist.isPending;
 
   return (
     <>
@@ -488,6 +514,38 @@ export function AppointmentForm({
                   )}
                 />
                 <FieldError errors={[errors.type]} />
+              </Field>
+
+              <Field data-invalid={Boolean(errors.modality) || undefined}>
+                <FieldLabel>Modalidade</FieldLabel>
+                <Controller
+                  name="modality"
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      disabled={isPending}>
+                      <SelectTrigger
+                        aria-invalid={Boolean(errors.modality) || undefined}>
+                        <SelectValue placeholder="Selecione" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {(
+                          Object.entries(APPOINTMENT_MODALITY_LABELS) as [
+                            AppointmentModality,
+                            string,
+                          ][]
+                        ).map(([value, label]) => (
+                          <SelectItem key={value} value={value}>
+                            {label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+                <FieldError errors={[errors.modality]} />
               </Field>
 
               <div className="grid gap-4 sm:grid-cols-3">
@@ -791,6 +849,7 @@ export function AppointmentForm({
         <PatientFormDialog
           open={patientDialogOpen}
           onOpenChange={setPatientDialogOpen}
+          variant="quick"
           onSuccess={handlePatientCreated}
         />
       )}

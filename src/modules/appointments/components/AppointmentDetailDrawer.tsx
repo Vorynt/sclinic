@@ -40,6 +40,7 @@ import { AppointmentDetailsForm } from "@/modules/appointments/components/Appoin
 import { AppointmentRescheduleForm } from "@/modules/appointments/components/AppointmentRescheduleForm";
 import { useAuthSession } from "@/modules/authentication/hooks/use-auth";
 import {
+  APPOINTMENT_MODALITY_LABELS,
   APPOINTMENT_STATUS_LABELS,
   APPOINTMENT_TYPE_LABELS,
   canConfirmAppointment,
@@ -281,6 +282,9 @@ function AppointmentDetailContent({
               </Badge>
               <Badge variant="outline">
                 {APPOINTMENT_TYPE_LABELS[appointment.type]}
+              </Badge>
+              <Badge variant="outline">
+                {APPOINTMENT_MODALITY_LABELS[appointment.modality]}
               </Badge>
             </div>
 

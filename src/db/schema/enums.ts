@@ -107,6 +107,19 @@ export const appointmentTypeEnum = pgEnum("appointment_type", [
   "other",
 ])
 
+/** How the appointment is delivered (ADR-011). */
+export const appointmentModalityEnum = pgEnum("appointment_modality", [
+  "in_person",
+  "online",
+])
+
+/** Waitlist entry lifecycle (ADR-011). */
+export const waitlistStatusEnum = pgEnum("waitlist_status", [
+  "waiting",
+  "promoted",
+  "canceled",
+])
+
 export const auditStatusEnum = pgEnum("audit_status", ["success", "error"])
 
 /** Clinical alert categories on the patient chart. */
@@ -165,4 +178,15 @@ export const paymentProviderEnum = pgEnum("payment_provider", [
 export const prescriptionStatusEnum = pgEnum("prescription_status", [
   "draft",
   "issued",
+])
+
+/**
+ * Typed clinical documents stored in `prescriptions` (ADR-010).
+ * Table name stays `prescriptions`; product UI says "Documentos".
+ */
+export const clinicalDocumentKindEnum = pgEnum("clinical_document_kind", [
+  "prescription",
+  "attendance_declaration",
+  "medical_certificate",
+  "exam_request",
 ])

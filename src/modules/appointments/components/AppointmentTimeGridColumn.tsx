@@ -4,7 +4,9 @@ import { addMinutes, isSameDay, startOfDay } from "date-fns";
 
 import { cn } from "@/lib/utils";
 import { AppointmentEventCard } from "@/modules/appointments/components/AppointmentEventCard";
+import { ScheduleBlockEventCard } from "@/modules/appointments/components/ScheduleBlockEventCard";
 import type { Appointment } from "@/modules/appointments/types/appointment";
+import type { ScheduleBlock } from "@/modules/appointments/types/schedule-block";
 import {
   type CalendarHourRange,
   getUnavailableMinuteRanges,
@@ -17,10 +19,12 @@ import type { ClinicWeeklyHours } from "@/modules/clinics/types/clinic-hours";
 type AppointmentTimeGridColumnProps = {
   day: Date;
   appointments: Appointment[];
+  scheduleBlocks?: ScheduleBlock[];
   hourHeightPx: number;
   hourRange: CalendarHourRange;
   weeklyHours: ClinicWeeklyHours;
   onSelectAppointment: (appointment: Appointment) => void;
+  onSelectScheduleBlock?: (block: ScheduleBlock) => void;
   onSelectSlot: (date: Date) => void;
   className?: string;
 };
@@ -28,10 +32,12 @@ type AppointmentTimeGridColumnProps = {
 export function AppointmentTimeGridColumn({
   day,
   appointments,
+  scheduleBlocks = [],
   hourHeightPx,
   hourRange,
   weeklyHours,
   onSelectAppointment,
+  onSelectScheduleBlock,
   onSelectSlot,
   className,
 }: AppointmentTimeGridColumnProps) {
@@ -49,6 +55,9 @@ export function AppointmentTimeGridColumn({
     isSameDay(appointment.startsAt, day),
   );
   const laidOut = layoutOverlappingAppointments(dayAppointments);
+  const dayScheduleBlocks = scheduleBlocks.filter((block) =>
+    isSameDay(block.startsAt, day),
+  );
 
   function handleBackgroundClick(event: React.MouseEvent<HTMLDivElement>) {
     const rect = event.currentTarget.getBoundingClientRect();
@@ -97,6 +106,43 @@ export function AppointmentTimeGridColumn({
             title="Horário indisponível"
             className="pointer-events-none absolute inset-x-0 z-1 bg-muted/55 bg-[repeating-linear-gradient(-45deg,transparent,transparent_6px,var(--border)_6px,var(--border)_7px)]"
             style={{ top: topPx, height: heightPx }}
+          />
+        );
+      })}
+
+      {dayScheduleBlocks.map((block) => {
+        const clampedStart = Math.max(
+          block.startsAt.getTime(),
+          rangeStart.getTime(),
+        );
+        const clampedEnd = Math.min(
+          block.endsAt.getTime(),
+          rangeEnd.getTime(),
+        );
+        if (clampedEnd <= clampedStart) return null;
+
+        const topPx =
+          ((clampedStart - rangeStart.getTime()) / 60_000) * pxPerMinute;
+        const heightPx = Math.max(
+          ((clampedEnd - clampedStart) / 60_000) * pxPerMinute,
+          18,
+        );
+
+        return (
+          <ScheduleBlockEventCard
+            key={block.id}
+            block={block}
+            style={{
+              top: topPx,
+              height: heightPx,
+              left: 2,
+              right: 2,
+              zIndex: 1,
+            }}
+            onClick={(event) => {
+              event.stopPropagation();
+              onSelectScheduleBlock?.(block);
+            }}
           />
         );
       })}

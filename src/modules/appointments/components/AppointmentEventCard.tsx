@@ -1,7 +1,9 @@
 "use client";
 
+import { VideoCameraIcon } from "@phosphor-icons/react";
 import { format } from "date-fns";
 
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { getProfessionalCalendarColor } from "@/modules/appointments/constants/appointments";
 import type { Appointment } from "@/modules/appointments/types/appointment";
@@ -49,6 +51,9 @@ export function AppointmentEventCard({
         <span className="truncate">
           {format(appointment.startsAt, "HH:mm")} {appointment.patientName}
         </span>
+        {appointment.modality === "online" ? (
+          <VideoCameraIcon className="size-3 shrink-0 opacity-80" />
+        ) : null}
       </button>
     );
   }
@@ -77,6 +82,14 @@ export function AppointmentEventCard({
         {format(appointment.startsAt, "HH:mm")}–
         {format(appointment.endsAt, "HH:mm")}
       </span>
+      {appointment.modality === "online" ? (
+        <Badge
+          variant="outline"
+          className="mt-0.5 h-4 gap-0.5 border-current/30 px-1 text-[0.65rem] text-current">
+          <VideoCameraIcon className="size-2.5" />
+          Online
+        </Badge>
+      ) : null}
       {appointment.professionalName ? (
         <span className="truncate opacity-70 text-xs">
           {appointment.professionalName}

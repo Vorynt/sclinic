@@ -117,6 +117,8 @@ describe("toPrescription", () => {
       appointmentId: VALID_UUID,
       professionalId: null,
       professionalName: null,
+      kind: "prescription",
+      metadata: null,
       layoutId: null,
       status: "draft",
       body: "<p>x</p>",
@@ -132,6 +134,7 @@ describe("toPrescription", () => {
       updatedAt: now,
     })
     assert.equal(prescription.status, "draft")
+    assert.equal(prescription.kind, "prescription")
     assert.equal(prescription.plainText, "x")
     assert.equal(prescription.layoutId, null)
   })

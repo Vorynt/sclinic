@@ -4,6 +4,7 @@ import {
   CalendarBlankIcon,
   PencilSimpleIcon,
   TrashIcon,
+  UsersIcon,
 } from "@phosphor-icons/react";
 import Link from "next/link";
 import { useState } from "react";
@@ -27,6 +28,7 @@ import {
   Empty,
   EmptyDescription,
   EmptyHeader,
+  EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
 import {
@@ -94,8 +96,11 @@ export function PatientsTable({
 
   if (patients.length === 0) {
     return (
-      <Empty className="border">
+      <Empty className="border border-dashed py-10">
         <EmptyHeader>
+          <EmptyMedia variant="icon">
+            <UsersIcon weight="duotone" />
+          </EmptyMedia>
           <EmptyTitle>Nenhum paciente encontrado</EmptyTitle>
           <EmptyDescription>
             Cadastre um novo paciente para começar.

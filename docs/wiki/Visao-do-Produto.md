@@ -54,4 +54,12 @@ Implementado de ponta a ponta:
 
 ## Norte de produto
 
-Fechar o **loop operacional do dia** com realtime e papéis corretos; depois aprofundar prontuário, pagamentos clínicos automatizados e escala multi-estação — ver [Roadmap](Roadmap).
+Evolução desejada: **Agenda → Gestão da clínica → Plataforma operacional** (núcleo comum + módulos por especialidade), sem virar ERP completo.
+
+Backlog priorizado (sem WhatsApp / arquivos / gateway no eixo de produto H1–H3):
+
+1. **H1** — Documentos clínicos (atestado, declaração, solicitação de exames) + overview do paciente  
+2. **H2** — Agenda avançada e recepção operacional (bloqueios, espera, horário do profissional, confirmação em lote)  
+3. **H3** — Retenção, pré-consulta/portal, indicadores; depois especialidades e IA  
+
+Trilha técnica em paralelo: gateway clínico (ADR-002), broker SSE, cotas de storage — ver [Roadmap](Roadmap) e [Épicos](Epicos).

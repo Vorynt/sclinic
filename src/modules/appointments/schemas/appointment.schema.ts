@@ -14,6 +14,9 @@ export const appointmentTypeSchema = z.enum([
   "other",
 ])
 
+/** How the appointment is delivered (ADR-011). */
+export const appointmentModalitySchema = z.enum(["in_person", "online"])
+
 const MAX_APPOINTMENT_DURATION_MS = 8 * 60 * 60 * 1000
 
 export const appointmentIdSchema = z.string().uuid("ID inválido")
@@ -26,6 +29,7 @@ export const listAppointmentsSchema = z
       .array(z.string().uuid("Profissional inválido"))
       .max(100)
       .optional(),
+    modality: appointmentModalitySchema.optional(),
   })
   .refine((data) => data.from < data.to, {
     message: "A data inicial deve ser anterior à data final.",
@@ -50,6 +54,7 @@ export const createAppointmentSchema = z
     startsAt: z.coerce.date(),
     endsAt: z.coerce.date(),
     type: appointmentTypeSchema.default("consultation"),
+    modality: appointmentModalitySchema.default("in_person"),
     reason: optionalTrimmed,
     notes: optionalTrimmed,
     /** Required catalog service (ADR-009). */
@@ -151,6 +156,11 @@ export const listPatientAppointmentsSchema = z.object({
   limit: z.coerce.number().int().min(1).max(50).default(10),
 })
 
+/** Bulk confirm for the reception day board (ADR-011 extension). */
+export const confirmAppointmentsBatchSchema = z.object({
+  appointmentIds: z.array(appointmentIdSchema).min(1).max(100),
+})
+
 export type ListAppointmentsInput = z.infer<typeof listAppointmentsSchema>
 export type CountAppointmentsInput = z.infer<typeof countAppointmentsSchema>
 export type CreateAppointmentInput = z.infer<typeof createAppointmentSchema>
@@ -166,4 +176,7 @@ export type UpdateAppointmentStatusInput = z.infer<
 >
 export type ListPatientAppointmentsInput = z.infer<
   typeof listPatientAppointmentsSchema
+>
+export type ConfirmAppointmentsBatchInput = z.infer<
+  typeof confirmAppointmentsBatchSchema
 >

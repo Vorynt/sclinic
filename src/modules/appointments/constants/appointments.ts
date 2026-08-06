@@ -1,4 +1,5 @@
 import type {
+  AppointmentModality,
   AppointmentStatus,
   AppointmentType,
 } from "@/modules/appointments/types/appointment";
@@ -19,6 +20,13 @@ export const APPOINTMENT_TYPE_LABELS: Record<AppointmentType, string> = {
   evaluation: "Avaliação",
   other: "Outro",
 };
+
+/** How the appointment is delivered (ADR-011). */
+export const APPOINTMENT_MODALITY_LABELS: Record<AppointmentModality, string> =
+  {
+    in_person: "Presencial",
+    online: "Online",
+  };
 
 /**
  * Statuses that still allow reschedule / edit details.
@@ -41,6 +49,25 @@ export function isAppointmentScheduleEditable(
 /** Confirm is only meaningful from the initial scheduled state. */
 export function canConfirmAppointment(status: AppointmentStatus): boolean {
   return status === "scheduled";
+}
+
+/**
+ * Eligibility for the reception bulk-confirm action (ADR-011 extension).
+ * Self-schedule-only roles (doctor/nurse) may only confirm their own agenda.
+ */
+export function isAppointmentConfirmableInBatch(params: {
+  status: AppointmentStatus;
+  professionalId: string | null;
+  ownProfessionalId: string | null;
+}): boolean {
+  if (!canConfirmAppointment(params.status)) return false;
+  if (
+    params.ownProfessionalId &&
+    params.professionalId !== params.ownProfessionalId
+  ) {
+    return false;
+  }
+  return true;
 }
 
 /** No-show applies before the patient is checked in. */

@@ -8,10 +8,12 @@
 - Aceite `/invite/professional` + onboarding de perfil (conselho, pronome…)
 - **Perfil clínico do owner** (sem invite): onboarding da clínica e CTA em `/professionals`
 - Integração com agenda (só ativos; self-schedule para doctor/nurse)
+- **Horário semanal próprio** (ADR-011): self-edit + override com `professionals.manage`
 
 ## Regras
 
-- Perm: `professionals.manage`
+- Perm: `professionals.manage` (CRUD de cadastro/convite)
+- **Horários:** próprio profissional **ou** `professionals.manage` (ver [RBAC](RBAC-e-Permissoes))
 - Create via invite: email + `roleKey` (`doctor|nurse`) + `affiliationType`
 - Create owner profile: `createOwnerClinicalProfile` — exige membership `owner`; **não** troca o role RBAC
 - `assertPlanCapacity(professionals)` (ADR-004) — perfil do owner conta na cota
