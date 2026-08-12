@@ -1,5 +1,7 @@
 export const routes = {
   landing: "/",
+  terms: "/termos",
+  privacy: "/privacidade",
   login: "/login",
   signUp: "/sign-up",
   forgotPassword: "/forgot-password",

@@ -20,6 +20,8 @@ export function proxy(request: NextRequest) {
 
   const isPublicRoute =
     pathname === routes.landing ||
+    pathname === routes.terms ||
+    pathname === routes.privacy ||
     pathname === routes.invite ||
     pathname === routes.professionalInvite ||
     pathname.startsWith(routes.professionalInvite) ||

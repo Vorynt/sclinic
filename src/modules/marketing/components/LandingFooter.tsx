@@ -60,14 +60,27 @@ export function LandingFooter() {
       </div>
 
       <div className="border-t border-border/50 bg-muted/25">
-        <div className="flex items-center justify-center gap-3 px-6 py-5 text-sm text-muted-foreground">
+        <div className="mx-auto flex max-w-6xl flex-col items-center justify-center gap-3 px-6 py-5 text-sm text-muted-foreground sm:flex-row sm:gap-4">
           <span className="inline-flex items-center gap-1.5">
             <TextShimmer className="text-sm font-medium">Feito com</TextShimmer>
             <span aria-hidden="true">💙</span>
             <TextShimmer className="text-sm font-medium">by Vorynt</TextShimmer>
           </span>
-          <Separator orientation="vertical" className="h-4" />
+          <Separator orientation="vertical" className="hidden h-4 sm:block" />
           <span>© 2026</span>
+          <Separator orientation="vertical" className="hidden h-4 sm:block" />
+          <nav className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
+            <Link
+              href={routes.terms}
+              className="transition-colors hover:text-foreground">
+              {LANDING_COPY.footer.terms}
+            </Link>
+            <Link
+              href={routes.privacy}
+              className="transition-colors hover:text-foreground">
+              {LANDING_COPY.footer.privacy}
+            </Link>
+          </nav>
         </div>
       </div>
     </footer>

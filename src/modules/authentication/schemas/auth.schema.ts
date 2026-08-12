@@ -26,6 +26,9 @@ export const signUpSchema = z.object({
     .min(8, "Telefone inválido")
     .max(32, "Telefone inválido")
     .optional(),
+  acceptTerms: z.boolean().refine((value) => value === true, {
+    message: "Aceite os Termos de Uso e a Política de Privacidade",
+  }),
 })
 
 export const signInSchema = z.object({
