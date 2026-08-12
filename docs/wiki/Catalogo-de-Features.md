@@ -131,7 +131,7 @@ Inventário do que o sistema faz hoje. Status: **Done** | **Partial** | **Planne
 | Feature | Status | Onde |
 |---------|--------|------|
 | Landing pública (captação) | Done | `/` — hero teste grátis, benefícios, features, showcase (agenda/pacientes/atendimento/faturamento) |
-| Termos de Uso e Política de Privacidade | Done | `/termos`, `/privacidade` · footer · aceite no sign-up (placeholders; revisão jurídica) |
+| Termos, políticas e documentos legais | Done | Hub `/legal` · 9 docs públicos · footer · aceite Termos/Privacidade no sign-up (placeholders; revisão jurídica) |
 | Campanhas (aniversário / retorno) | Planned | Roadmap H3 · E14 (sem WhatsApp no 1º corte) |
 
 ## E13 — Documentos clínicos (além da receita)

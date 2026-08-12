@@ -1,10 +1,10 @@
-import type { LegalDocumentContent } from "@/modules/marketing/types/legal-document"
+import type { LegalDocumentContent } from "@/modules/marketing/types/legal-document";
 
 type LegalDocumentBodyProps = {
-  document: LegalDocumentContent
+  document: LegalDocumentContent;
   /** Hide the page-level H1 when the title is shown elsewhere (e.g. dialog). */
-  hideTitle?: boolean
-}
+  hideTitle?: boolean;
+};
 
 export function LegalDocumentBody({
   document,
@@ -49,9 +49,41 @@ export function LegalDocumentBody({
                 ))}
               </ul>
             ) : null}
+            {section.table ? (
+              <div className="overflow-x-auto rounded-lg border border-border/60">
+                <table className="w-full min-w-xl border-collapse text-left text-sm">
+                  <thead>
+                    <tr className="border-b border-border/60 bg-muted/40">
+                      {section.table.headers.map((header) => (
+                        <th
+                          key={`${section.id}-h-${header}`}
+                          className="px-3 py-2.5 font-heading text-xs font-semibold tracking-tight text-foreground sm:px-4 sm:text-sm">
+                          {header}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {section.table.rows.map((row, rowIndex) => (
+                      <tr
+                        key={`${section.id}-r-${rowIndex}`}
+                        className="border-b border-border/40 last:border-b-0">
+                        {row.map((cell, cellIndex) => (
+                          <td
+                            key={`${section.id}-r-${rowIndex}-c-${cellIndex}`}
+                            className="px-3 py-2.5 align-top text-sm leading-relaxed text-muted-foreground sm:px-4 sm:text-[15px] sm:leading-6">
+                            {cell}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : null}
           </section>
         ))}
       </div>
     </article>
-  )
+  );
 }

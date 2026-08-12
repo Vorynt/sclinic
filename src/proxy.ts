@@ -18,10 +18,21 @@ export function proxy(request: NextRequest) {
     pathname === routes.forgotPassword ||
     pathname.startsWith("/reset-password")
 
-  const isPublicRoute =
-    pathname === routes.landing ||
+  const isLegalRoute =
+    pathname === routes.legal ||
     pathname === routes.terms ||
     pathname === routes.privacy ||
+    pathname === routes.cookies ||
+    pathname === routes.saasAgreement ||
+    pathname === routes.dpa ||
+    pathname === routes.security ||
+    pathname === routes.retention ||
+    pathname === routes.incidents ||
+    pathname === routes.ropa
+
+  const isPublicRoute =
+    pathname === routes.landing ||
+    isLegalRoute ||
     pathname === routes.invite ||
     pathname === routes.professionalInvite ||
     pathname.startsWith(routes.professionalInvite) ||

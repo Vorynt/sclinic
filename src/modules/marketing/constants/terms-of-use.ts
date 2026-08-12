@@ -1,122 +1,121 @@
 import type { LegalDocumentContent } from "@/modules/marketing/types/legal-document"
 
 /**
- * Rascunho para lançamento — placeholders da empresa controladora.
+ * Rascunho para lançamento — placeholders da empresa prestadora.
  * Revisão jurídica obrigatória antes de uso produtivo.
  */
 export const TERMS_OF_USE: LegalDocumentContent = {
   title: "Termos de Uso",
   lastUpdated: "12 de agosto de 2026",
   disclaimer:
-    "Este documento é um rascunho operacional para o produto sclinic. Substitua os placeholders e submeta à revisão de um advogado antes de considerar o texto vinculante.",
+    "Os Termos de Uso devem ser harmonizados com o Contrato SaaS assinado/aceito pela clínica. Em caso de conflito, defina no contrato qual instrumento prevalece para cada matéria. Campos entre colchetes e revisão jurídica são obrigatórios antes da publicação vinculante.",
   sections: [
     {
+      id: "objeto",
+      title: "1. Objeto",
+      paragraphs: [
+        "O sclinic, disponibilizado por [RAZÃO SOCIAL], é um software SaaS multi-clínica de gestão clínica destinado a clínicas, profissionais e equipes autorizadas. Conforme o plano contratado, o Serviço pode incluir: autenticação e convites; cadastro de pacientes e profissionais; agenda (calendário, bloqueios, lista de espera, modalidade presencial/online); atendimento/prontuário operacional (notas clínicas, sinais vitais, alertas); documentos clínicos suportados (receita e declaração de comparecimento, com impressão HTML); cobrança clínica por registro manual; board de recepção com atualização em tempo quase real; auditoria; configurações da clínica; e gestão da assinatura do software (planos, cotas e portal de cobrança).",
+        "Funcionalidades previstas em roadmap (por exemplo inventário, gateway de pagamento clínico, portal do paciente, atestado/solicitação de exames ou mensageria) só passam a integrar o Serviço quando disponibilizadas e comunicadas.",
+      ],
+    },
+    {
       id: "aceitacao",
-      title: "1. Aceitação",
+      title: "2. Aceitação",
       paragraphs: [
-        "Ao criar uma conta, acessar ou utilizar o sclinic (“Serviço”), você concorda com estes Termos de Uso e com a Política de Privacidade. Se não concordar, não utilize o Serviço.",
-        "O Serviço é oferecido por [RAZÃO SOCIAL], inscrita no CNPJ sob o nº [CNPJ], com sede em [ENDEREÇO] (“Prestadora”, “nós”). A marca comercial do produto é sclinic; a Prestadora opera sob a identidade Vorynt quando indicada na interface.",
+        "Ao criar uma conta, contratar um plano ou utilizar o Serviço, o usuário declara possuir capacidade e poderes necessários para aceitar estes Termos e cumprir a legislação aplicável.",
       ],
     },
     {
-      id: "descricao",
-      title: "2. Descrição do Serviço",
+      id: "conta-acesso-seguranca",
+      title: "3. Conta, acesso e segurança",
       paragraphs: [
-        "O sclinic é um software como serviço (SaaS) multi-clínica voltado à gestão de consultórios e clínicas, incluindo, conforme o plano contratado: cadastro de pacientes e profissionais, agenda, atendimento e prontuário eletrônico, cobrança clínica operacional, usuários e papéis, auditoria e assinatura do software.",
-        "Funcionalidades marcadas como roadmap, beta ou planejadas podem não estar disponíveis ou podem mudar sem aviso prévio de caráter comercial, observado o razoável para a continuidade do Serviço.",
+        "Cada credencial deve ser utilizada por uma única pessoa, salvo mecanismo de acesso expressamente previsto pelo Serviço.",
+        "O titular da conta deve manter credenciais, dispositivos, e-mails e métodos de recuperação seguros.",
+        "A clínica é responsável por criar, revisar e revogar acessos de sua equipe e por configurar papéis e permissões de forma adequada.",
+        "O sclinic poderá bloquear ou suspender acessos quando necessário para segurança, prevenção de fraude, cumprimento legal ou proteção do Serviço.",
       ],
     },
     {
-      id: "elegibilidade",
-      title: "3. Conta e elegibilidade",
+      id: "uso-clinico",
+      title: "4. Uso clínico e responsabilidade profissional",
       paragraphs: [
-        "Você declara ter capacidade civil para contratar e, se agir em nome de uma clínica ou pessoa jurídica, ter poderes para vinculá-la a estes Termos.",
-        "Você é responsável por manter a confidencialidade das credenciais, pela veracidade dos dados cadastrais e por todas as atividades realizadas sob sua conta. Notifique-nos imediatamente em caso de uso não autorizado.",
-        "Podemos recusar, suspender ou encerrar contas que violem estes Termos, a legislação aplicável ou a segurança do Serviço.",
+        "O Serviço é ferramenta de apoio à gestão e não substitui a avaliação, julgamento, responsabilidade ou decisão do profissional de saúde. A clínica e os profissionais continuam responsáveis por prontuários, prescrições, registros, consentimentos, protocolos, obrigações regulatórias e decisões clínicas.",
       ],
     },
     {
-      id: "planos",
-      title: "4. Planos, trial e cobrança da assinatura",
+      id: "cobranca-clinica",
+      title: "5. Dados de pacientes e cobrança clínica",
       paragraphs: [
-        "O acesso ao software pode incluir período de teste (trial) e planos pagos. A cobrança da assinatura SaaS é processada por meio de prestador de pagamento (atualmente Stripe), conforme o fluxo de checkout e portal do cliente disponibilizados.",
-        "Valores, limites de uso, renovação e cancelamento seguem as condições exibidas no momento da contratação e no painel da conta. Impostos aplicáveis podem ser acrescentados conforme a legislação.",
-        "A cobrança de pacientes pela clínica (faturamento clínico no balcão) é distinta da assinatura do software: trata-se de registro operacional entre a clínica e seus pacientes, sob responsabilidade da clínica.",
+        "A clínica declara possuir legitimidade para inserir e tratar os dados no Serviço e deve fornecer aos titulares as informações exigidas pela legislação. Quando a Prestadora atua como operadora, o tratamento ocorre conforme o DPA e instruções da clínica controladora.",
+        "O módulo financeiro clínico registra cobranças e pagamentos de forma operacional (métodos manuais). No estado atual do produto, o sclinic não processa pagamento do paciente via gateway integrado; a clínica permanece responsável pelos meios de cobrança externos que utilizar.",
       ],
     },
     {
-      id: "papeis",
-      title: "5. Responsabilidades da clínica e da plataforma",
-      paragraphs: [
-        "A clínica (ou profissional contratante) é responsável pelo conteúdo inserido no sistema, pela relação com pacientes e equipe, pelo cumprimento de normas profissionais de saúde, pelo consentimento e bases legais perante os titulares dos dados clínicos, e pelas decisões clínicas e administrativas tomadas com auxílio do Serviço.",
-        "A Prestadora disponibiliza a plataforma tecnológica, busca manter disponibilidade e segurança razoáveis, e processa dados conforme a Política de Privacidade. O sclinic não substitui julgamento clínico, não presta telemedicina por si só e não constitui aconselhamento médico, jurídico ou financeiro.",
-      ],
-    },
-    {
-      id: "uso-aceitavel",
-      title: "6. Uso aceitável",
-      paragraphs: ["É vedado, entre outras condutas:"],
+      id: "condutas-vedadas",
+      title: "6. Condutas vedadas",
+      paragraphs: [],
       bullets: [
-        "Usar o Serviço de forma ilícita, fraudulenta ou que viole direitos de terceiros",
-        "Tentar obter acesso não autorizado a contas, dados ou infraestrutura",
-        "Interferir na integridade, desempenho ou segurança do Serviço",
-        "Realizar engenharia reversa indevida, scraping abusivo ou sobrecarga intencional",
-        "Inserir malware ou conteúdo ilegal",
-        "Revender o acesso sem autorização escrita da Prestadora",
+        "Tentar acessar dados, contas ou tenants (clínicas) sem autorização.",
+        "Explorar vulnerabilidades, interferir no funcionamento, introduzir código malicioso ou realizar testes de segurança não autorizados.",
+        "Utilizar o Serviço para finalidades ilícitas, fraudulentas ou incompatíveis com a documentação.",
+        "Compartilhar credenciais ou conceder permissões além do necessário à função (papéis RBAC).",
+        "Usar dados clínicos de outros titulares para finalidade incompatível com a atividade clínica ou com a legislação.",
       ],
     },
     {
-      id: "dados-saude",
-      title: "7. Dados de saúde e conteúdo da clínica",
+      id: "disponibilidade-mudancas",
+      title: "7. Disponibilidade e mudanças",
       paragraphs: [
-        "Dados de pacientes, prontuário, sinais vitais, alertas clínicos, receitas e documentos clínicos são inseridos e controlados pela clínica. A clínica deve assegurar base legal adequada (LGPD e normas setoriais) e orientar sua equipe quanto ao acesso mínimo necessário.",
-        "A Prestadora atua, em regra, como operadora desses dados por conta da clínica, e como controladora dos dados da conta SaaS e da cobrança da assinatura, conforme detalhado na Política de Privacidade.",
+        "O Serviço poderá passar por manutenção, atualizações e alterações. Quando houver indisponibilidade programada relevante, a Prestadora buscará comunicação razoável. Funcionalidades de terceiros podem depender de suas próprias condições e disponibilidade.",
       ],
     },
     {
-      id: "pi",
+      id: "propriedade-intelectual",
       title: "8. Propriedade intelectual",
       paragraphs: [
-        "O software, a marca sclinic, layouts, textos de interface e demais elementos da plataforma são de titularidade da Prestadora ou de seus licenciadores. Estes Termos não transferem propriedade intelectual ao usuário.",
-        "O conteúdo inserido pela clínica (dados de pacientes, textos clínicos etc.) permanece sob responsabilidade e titularidade aplicável da clínica ou do titular, concedendo à Prestadora apenas a licença necessária para hospedar, processar e exibir o conteúdo no âmbito do Serviço.",
+        "Software, marca, código, interfaces, documentação e demais elementos do sclinic pertencem à Prestadora ou a seus licenciantes e não são transferidos ao cliente. A clínica mantém os direitos sobre seus dados e conteúdo inserido no Serviço.",
       ],
     },
     {
-      id: "disponibilidade",
-      title: "9. Disponibilidade e alterações",
+      id: "privacidade-protecao-dados",
+      title: "9. Privacidade e proteção de dados",
       paragraphs: [
-        "Envidamos esforços razoáveis para manter o Serviço disponível, sem garantir disponibilidade ininterrupta. Manutenções, incidentes de terceiros (nuvem, e-mail, pagamentos) ou caso fortuito/força maior podem afetar o acesso.",
-        "Podemos atualizar funcionalidades e estes Termos. Alterações materiais serão comunicadas por meios razoáveis (por exemplo, e-mail ou aviso no produto). O uso continuado após a vigência das alterações constitui aceitação, quando permitido pela lei.",
+        "O tratamento de dados pessoais observará a Política de Privacidade, o DPA e demais documentos aplicáveis. A qualificação de controlador e operador será determinada conforme a operação realizada.",
       ],
     },
     {
-      id: "limitacao",
-      title: "10. Limitação de responsabilidade",
+      id: "rescisao-encerramento",
+      title: "10. Rescisão e encerramento",
       paragraphs: [
-        "Na máxima extensão permitida pela legislação brasileira aplicável a relações de consumo e empresariais, a Prestadora não responde por lucros cessantes, danos indiretos ou consequenciais, decisões clínicas tomadas com base em dados incompletos ou incorretos inseridos pela clínica, ou falhas de terceiros (provedores de nuvem, pagamento, e-mail ou analytics).",
-        "Em qualquer hipótese, a responsabilidade total da Prestadora relacionada ao Serviço fica limitada ao montante pago pelo contratante nos doze (12) meses anteriores ao evento, salvo dolo ou culpa grave, ou quando a lei consumerista impedir tal limitação.",
+        "No encerramento da contratação, os dados da clínica serão tratados conforme o Contrato SaaS e a Política de Retenção e Exclusão, considerando exportação, exclusão, obrigações legais, backups e registros necessários à defesa de direitos.",
       ],
     },
     {
-      id: "rescisao",
-      title: "11. Rescisão e exclusão",
+      id: "limitacoes-responsabilidades",
+      title: "11. Limitações e responsabilidades",
       paragraphs: [
-        "Você pode encerrar o uso cancelando a assinatura e solicitando a exclusão da conta/clínica pelos canais disponibilizados no produto, observadas retenções legais e de auditoria.",
-        "Podemos suspender ou encerrar o acesso em caso de inadimplemento, violação destes Termos, risco à segurança ou determinação legal.",
+        "As partes responderão nos limites previstos na legislação e no contrato aplicável. Nenhuma disposição destes Termos exclui responsabilidade que não possa ser excluída por lei.",
       ],
     },
     {
-      id: "lei",
-      title: "12. Lei aplicável e foro",
+      id: "lei-foro",
+      title: "12. Lei e foro",
       paragraphs: [
-        "Estes Termos são regidos pelas leis da República Federativa do Brasil. Fica eleito o foro da comarca de [CIDADE/UF], com renúncia a qualquer outro, por mais privilegiado que seja, ressalvado o foro do consumidor quando aplicável.",
+        "Estes Termos serão interpretados de acordo com as leis brasileiras. Fica eleito o foro de [COMARCA/UF], salvo disposição legal imperativa em sentido diverso.",
       ],
     },
     {
       id: "contato",
       title: "13. Contato",
       paragraphs: [
-        "Dúvidas sobre estes Termos: [E-MAIL LGPD] ou o canal de suporte indicado no produto.",
+        "Suporte: [E-MAIL DE SUPORTE]. Privacidade: [E-MAIL LGPD].",
+      ],
+    },
+    {
+      id: "atualizacao",
+      title: "14. Atualização",
+      paragraphs: [
+        "A versão vigente será disponibilizada no Serviço, com indicação de data de atualização. Alterações materiais serão comunicadas quando razoavelmente necessário.",
       ],
     },
   ],

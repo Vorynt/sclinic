@@ -25,11 +25,18 @@ export function LegalDocument({ document }: LegalDocumentProps) {
               {LANDING_COPY.brand}
             </span>
           </Link>
-          <Link
-            href={routes.landing}
-            className="text-sm text-muted-foreground transition-colors hover:text-foreground">
-            Voltar ao início
-          </Link>
+          <nav className="flex items-center gap-3 text-sm sm:gap-4">
+            <Link
+              href={routes.legal}
+              className="text-muted-foreground transition-colors hover:text-foreground">
+              Documentos legais
+            </Link>
+            <Link
+              href={routes.landing}
+              className="text-muted-foreground transition-colors hover:text-foreground">
+              Voltar ao início
+            </Link>
+          </nav>
         </div>
       </header>
 
