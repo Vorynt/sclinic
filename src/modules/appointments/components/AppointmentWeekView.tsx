@@ -91,7 +91,7 @@ export function AppointmentWeekView({
     (hourRange.end - hourRange.start) * CALENDAR_HOUR_HEIGHT_PX;
 
   return (
-    <ScrollArea className="max-h-[70vh] rounded-lg border">
+    <ScrollArea className="max-h-[min(70vh,calc(100dvh-14rem))] rounded-lg border md:max-h-[70vh]">
       <div className="grid grid-cols-[3rem_repeat(7,1fr)]">
         <div className="sticky top-0 border-r bg-background" />
         {days.map((day) => (

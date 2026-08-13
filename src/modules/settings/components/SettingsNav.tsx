@@ -22,7 +22,7 @@ export function SettingsNav() {
   return (
     <nav
       aria-label="Seções de configuração"
-      className="sticky top-20 flex flex-col gap-1">
+      className="sticky top-1.5 flex flex-wrap gap-1 lg:flex-col overflow-x-auto">
       {items.map((item) => {
         const isActive =
           pathname === item.href || pathname.startsWith(`${item.href}/`);

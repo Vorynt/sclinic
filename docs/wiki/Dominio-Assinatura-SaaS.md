@@ -66,6 +66,8 @@ Pré-requisito: prices do Portal precisam existir em `plans.stripe_price_id` (`n
 
 `/onboarding/plan`, `/account/subscription` (alert de plano atualizado pós-Portal), `/settings/usage` (owner), `PlanOverLimitBanner`, select-clinic (regularizar / excluir).
 
+Queries client: `mySubscription` e `clinicPlanQuota` usam `staleTime` (60s / 30s) e herdam `refetchOnWindowFocus: false` global — retorno do Portal continua com polling local em `/account/subscription`.
+
 ## Decisões
 
 Portal-first (sem lista de faturas no app). Downgrade livre sem apagar dados. MVP 1:1 assinatura↔clínica owned. Ver [ADR-003](../adr/003-user-saas-subscription.md).

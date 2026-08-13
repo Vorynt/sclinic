@@ -1,5 +1,7 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+
 import {
   Dialog,
   DialogContent,
@@ -9,6 +11,10 @@ import {
 } from "@/components/ui/dialog";
 import { AppointmentForm } from "@/modules/appointments/components/AppointmentForm";
 import type { AppointmentType } from "@/modules/appointments/types/appointment";
+import {
+  buildAppointmentNewHref,
+  type AppointmentNewHrefParams,
+} from "@/modules/appointments/utils/appointment-new-href";
 
 type LockedPatient = {
   id: string;
@@ -42,7 +48,9 @@ export function AppointmentFormDialog({
   title,
   description,
 }: AppointmentFormDialogProps) {
-  const resolvedTitle = title ?? (waitlistId ? "Promover da lista de espera" : "Novo agendamento");
+  const router = useRouter();
+  const resolvedTitle =
+    title ?? (waitlistId ? "Promover da lista de espera" : "Agendamento rápido");
   const formKey = open
     ? [
         lockedPatient?.id ?? "free",
@@ -58,13 +66,18 @@ export function AppointmentFormDialog({
     (waitlistId
       ? `Promova ${lockedPatient?.name ?? "o paciente"} da lista de espera para um agendamento.`
       : lockedPatient
-        ? `Informe horário e cobrança para ${lockedPatient.name}.`
-        : "Informe paciente, horário e cobrança.");
+        ? `Informe horário e serviço para ${lockedPatient.name}.`
+        : "Informe paciente, horário e serviço. Use Mais opções para cobrança e detalhes.");
+
+  function handleAdvanced(draft: AppointmentNewHrefParams) {
+    onOpenChange(false);
+    router.push(buildAppointmentNewHref(draft));
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="flex max-h-[min(90vh,720px)] w-full flex-col gap-0 overflow-hidden p-0 sm:max-w-lg"
+        className="flex max-h-[min(90vh,560px)] w-full flex-col gap-0 overflow-hidden p-0 sm:max-w-md"
         showCloseButton>
         <DialogHeader className="shrink-0 space-y-1.5 border-b border-border px-4 py-4 pr-12 text-left">
           <DialogTitle>{resolvedTitle}</DialogTitle>
@@ -72,6 +85,8 @@ export function AppointmentFormDialog({
         </DialogHeader>
         <AppointmentForm
           key={formKey}
+          variant="quick"
+          layout="dialog"
           defaultStartsAt={defaultStartsAt}
           lockedPatient={lockedPatient}
           defaultType={defaultType}
@@ -80,6 +95,7 @@ export function AppointmentFormDialog({
           waitlistId={waitlistId}
           onSuccess={() => onOpenChange(false)}
           onCancel={() => onOpenChange(false)}
+          onAdvanced={handleAdvanced}
         />
       </DialogContent>
     </Dialog>

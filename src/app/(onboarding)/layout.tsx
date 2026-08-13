@@ -3,15 +3,14 @@ import type { ReactNode } from "react";
 
 import { routes } from "@/config/routes";
 import { AuthShell } from "@/modules/authentication/components/AuthShell";
-import { authService } from "@/modules/authentication/services/auth.service";
-import { getAuthRequestContext } from "@/modules/authentication/utils/request-context";
+import { getCachedSession } from "@/modules/authentication/utils/get-cached-session";
 
 export default async function OnboardingLayout({
   children,
 }: Readonly<{
   children: ReactNode;
 }>) {
-  const session = await authService.getSession(await getAuthRequestContext());
+  const session = await getCachedSession();
 
   if (session?.user.mustChangePassword) {
     redirect(routes.changePassword);

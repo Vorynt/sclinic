@@ -1,5 +1,15 @@
 export const routes = {
   landing: "/",
+  legal: "/legal",
+  terms: "/termos",
+  privacy: "/privacidade",
+  cookies: "/cookies",
+  saasAgreement: "/contrato-saas",
+  dpa: "/dpa",
+  security: "/seguranca",
+  retention: "/retencao",
+  incidents: "/incidentes",
+  ropa: "/ropa",
   login: "/login",
   signUp: "/sign-up",
   forgotPassword: "/forgot-password",
@@ -30,6 +40,7 @@ export const routes = {
   professionals: "/professionals",
   billing: "/billing",
   appointments: "/appointments",
+  appointmentNew: "/appointments/new",
   appointmentAttendance: (appointmentId: string) =>
     `/appointments/${appointmentId}/attendance`,
   appointmentAttendanceNotes: (appointmentId: string) =>

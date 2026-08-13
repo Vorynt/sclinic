@@ -23,7 +23,7 @@ export type NavItem = {
   permissions?: PermissionKey[];
   /** Hidden until the module page exists. */
   enabled: boolean;
-  /** Nested links (rendered as SidebarMenuSub when present and visible). */
+  /** Nested links (rendered in overflow menus when present and visible). */
   children?: NavItem[];
 };
 
@@ -36,6 +36,16 @@ export type NavGroup = {
 };
 
 export type NavConfig = {
+  /** Always visible in top nav (desktop) and bottom tabs (mobile). */
+  primary: NavItem[];
+  /** Overflow sections — “Mais” dropdown / sheet. */
+  groups: NavGroup[];
+  /** Utility links in overflow (settings, help). */
+  secondary: NavItem[];
+};
+
+/** Shell-ready nav after permission filtering. */
+export type ShellNav = {
   primary: NavItem[];
   groups: NavGroup[];
   secondary: NavItem[];
@@ -59,21 +69,31 @@ export const NAV_CONFIG: NavConfig = {
       icon: HouseIcon,
       enabled: true,
     },
+    {
+      title: "Agendamentos",
+      href: routes.appointments,
+      icon: CalendarBlankIcon,
+      permissions: [
+        Permission.APPOINTMENTS_CREATE,
+        Permission.APPOINTMENTS_UPDATE,
+      ],
+      enabled: true,
+    },
+    {
+      title: "Pacientes",
+      href: routes.patients,
+      icon: UsersIcon,
+      permissions: [Permission.PATIENTS_READ],
+      enabled: true,
+    },
   ],
   groups: [
     {
-      id: "operation",
-      label: "Operação",
+      id: "management",
+      label: "Gestão",
       collapsible: true,
       defaultOpen: true,
       items: [
-        {
-          title: "Pacientes",
-          href: routes.patients,
-          icon: UsersIcon,
-          permissions: [Permission.PATIENTS_READ],
-          enabled: true,
-        },
         {
           title: "Profissionais",
           href: routes.professionals,
@@ -82,35 +102,17 @@ export const NAV_CONFIG: NavConfig = {
           enabled: true,
         },
         {
-          title: "Agendamentos",
-          href: routes.appointments,
-          icon: CalendarBlankIcon,
-          permissions: [
-            Permission.APPOINTMENTS_CREATE,
-            Permission.APPOINTMENTS_UPDATE,
-          ],
+          title: "Equipe",
+          href: routes.users,
+          icon: UsersThreeIcon,
+          permissions: [Permission.MEMBERS_INVITE],
           enabled: true,
         },
-      ],
-    },
-    {
-      id: "management",
-      label: "Gestão",
-      collapsible: true,
-      defaultOpen: true,
-      items: [
         {
           title: "Faturamento",
           href: routes.billing,
           icon: CurrencyCircleDollarIcon,
           permissions: [Permission.FINANCIAL_VIEW],
-          enabled: true,
-        },
-        {
-          title: "Equipe",
-          href: routes.users,
-          icon: UsersThreeIcon,
-          permissions: [Permission.MEMBERS_INVITE],
           enabled: true,
         },
       ],
@@ -304,6 +306,26 @@ export function getVisibleNavConfig(
       .filter((group) => group.items.length > 0),
     secondary: filterVisibleItems(NAV_CONFIG.secondary, canAny),
   };
+}
+
+/** Alias for the hybrid shell (top nav + bottom tabs + overflow). */
+export function getVisibleShellNav(
+  canAny: (...permissions: PermissionKey[]) => boolean,
+): ShellNav {
+  return getVisibleNavConfig(canAny);
+}
+
+export function isNavActive(pathname: string, href: string): boolean {
+  if (href === routes.home) return pathname === href;
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
+/** Whether overflow (“Mais”) has any destination the user can see. */
+export function hasOverflowNav(nav: ShellNav): boolean {
+  return (
+    nav.groups.some((group) => group.items.length > 0) ||
+    nav.secondary.length > 0
+  );
 }
 
 function flattenNavItems(items: NavItem[]): NavItem[] {

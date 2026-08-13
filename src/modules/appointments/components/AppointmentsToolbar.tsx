@@ -64,8 +64,6 @@ export function AppointmentsToolbar({
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-        {filters}
-
         <ToggleGroup
           type="single"
           variant="outline"
@@ -76,12 +74,16 @@ export function AppointmentsToolbar({
           aria-label="Modo de visualização">
           <ButtonGroup>
             {VIEW_MODE_OPTIONS.map((option) => (
-              <ToggleGroupItem key={option.value} value={option.value}>
+              <ToggleGroupItem
+                size={"sm"}
+                key={option.value}
+                value={option.value}>
                 {option.label}
               </ToggleGroupItem>
             ))}
           </ButtonGroup>
         </ToggleGroup>
+        {filters}
       </div>
     </div>
   );

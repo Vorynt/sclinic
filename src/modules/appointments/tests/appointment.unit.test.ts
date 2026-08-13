@@ -41,6 +41,10 @@ import {
   buildAttendanceHref,
 } from "@/modules/appointments/utils/agenda-href"
 import {
+  appointmentNewLocationFromSearchParams,
+  buildAppointmentNewHref,
+} from "@/modules/appointments/utils/appointment-new-href"
+import {
   getEffectiveMinuteIntervals,
   intersectMinuteIntervals,
   isWithinEffectiveHours,
@@ -1005,6 +1009,76 @@ describe("agenda href round-trip", () => {
       mode: "month",
       date: "2026-07-01",
     })
+  })
+})
+
+describe("appointment new href", () => {
+  it("returns base path when no params", () => {
+    assert.equal(buildAppointmentNewHref(), "/appointments/new")
+  })
+
+  it("omits empty optional params", () => {
+    assert.equal(
+      buildAppointmentNewHref({
+        patientId: VALID_UUID,
+        professionalId: "",
+        reason: "  ",
+      }),
+      `/appointments/new?patientId=${VALID_UUID}`,
+    )
+  })
+
+  it("serializes wall-clock date/time and labels (preferred over startsAt)", () => {
+    assert.equal(
+      buildAppointmentNewHref({
+        patientId: VALID_UUID,
+        patientName: "Ana",
+        lockPatient: true,
+        professionalId: VALID_UUID,
+        professionalName: "Dra. Bia",
+        date: "2026-08-20",
+        startTime: "14:30",
+        startsAt: new Date("2026-08-20T17:30:00.000Z"),
+        type: "follow_up",
+        modality: "online",
+        durationMinutes: 45,
+        serviceId: VALID_UUID,
+        waitlistId: VALID_UUID,
+      }),
+      `/appointments/new?patientId=${VALID_UUID}&patientName=Ana&lockPatient=1&professionalId=${VALID_UUID}&professionalName=Dra.+Bia&date=2026-08-20&startTime=14%3A30&type=follow_up&modality=online&durationMinutes=45&serviceId=${VALID_UUID}&waitlistId=${VALID_UUID}`,
+    )
+  })
+
+  it("falls back to startsAt ISO when date/time are missing", () => {
+    const startsAt = new Date("2026-08-20T14:30:00.000Z")
+    assert.equal(
+      buildAppointmentNewHref({
+        patientId: VALID_UUID,
+        startsAt,
+      }),
+      `/appointments/new?patientId=${VALID_UUID}&startsAt=2026-08-20T14%3A30%3A00.000Z`,
+    )
+  })
+
+  it("reads wall-clock params and locks on waitlist", () => {
+    const params = new URLSearchParams(
+      `patientId=${VALID_UUID}&patientName=Ana&professionalName=Dra.+Bia&date=2026-08-20&startTime=14:30&waitlistId=${VALID_UUID}&serviceId=${VALID_UUID}&durationMinutes=45`,
+    )
+    const location = appointmentNewLocationFromSearchParams(params)
+    assert.equal(location.patientId, VALID_UUID)
+    assert.equal(location.patientName, "Ana")
+    assert.equal(location.professionalName, "Dra. Bia")
+    assert.equal(location.date, "2026-08-20")
+    assert.equal(location.startTime, "14:30")
+    assert.equal(location.lockPatient, true)
+    assert.equal(location.waitlistId, VALID_UUID)
+    assert.equal(location.serviceId, VALID_UUID)
+    assert.equal(location.durationMinutes, "45")
+    assert.equal(location.startsAt?.getFullYear(), 2026)
+    assert.equal(location.startsAt?.getMonth(), 7)
+    assert.equal(location.startsAt?.getDate(), 20)
+    assert.equal(location.startsAt?.getHours(), 14)
+    assert.equal(location.startsAt?.getMinutes(), 30)
   })
 })
 

@@ -13,12 +13,20 @@
 - Neutros tintados na hue do **primary** (~242) — evita P&B seco sem perder contraste clínico.
 - Chrome do app (`AppShell`): utilitário estático `bg-app-wash` (radial primary leve). Sem orbs/grid animados no conteúdo operacional.
 - Headers de página: `src/components/layout/PageHeader.tsx` (alinhar skeleton em `PageHeaderSkeleton`).
+- Ações de página: `PageAction[]` no `PageHeader`; no mobile o `AppShell` renderiza `PageActionsFab` (primária maior embaixo, secundárias menores acima) via `page-actions.store`.
 - Auth / landing / loading podem ser mais expressivos (orbs, grid); o app do dia a dia fica **equilibrado**.
 
 ## Superfícies quietas (sem ornamento)
 
 - Atendimento (`AttendanceShell`), prontuário, forms densos, settings e print: só herdam tokens.
 - Proibido nessas superfícies: wash forte, orbs, grid decorativo, cards sem necessidade de interação.
+
+## Listagens responsivas
+
+- Em `md+`: `<Table>` (primitive em `ui/table`).
+- No mobile (`< md`): stack de `ListCard` via `ResponsiveDataView` em `src/components/data-table/` — evita scroll horizontal.
+- `ListCard` (estilo ChargeCard): título + `preview` + ações numa fila; `meta` só no collapse compacto.
+- Domínio define título/meta/ações em `*Table.tsx`; genérico só o chrome (Search, Pagination, ResponsiveDataView, ListCard).
 
 ## Regras
 

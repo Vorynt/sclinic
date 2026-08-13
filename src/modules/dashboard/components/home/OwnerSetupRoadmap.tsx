@@ -22,7 +22,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import type { OwnerSetupMissionId } from "@/modules/dashboard/constants/owner-setup-missions";
 import { useOwnerSetupProgress } from "@/modules/dashboard/hooks/use-owner-setup-progress";
@@ -111,24 +110,11 @@ function MissionRow({ mission }: { mission: OwnerSetupMissionView }) {
 export function OwnerSetupRoadmap() {
   const { progress, isLoading, isError } = useOwnerSetupProgress();
 
-  if (isError) return null;
-  if (!isLoading && progress?.allComplete) return null;
+  const missionsIsLoading = isLoading || !progress;
+  const missionsIsError = isError || !progress;
+  const missionsIsComplete = !isLoading && progress?.allComplete;
 
-  if (isLoading || !progress) {
-    return (
-      <Card size="sm" aria-busy="true" aria-label="Carregando primeiros passos">
-        <CardHeader>
-          <Skeleton className="h-5 w-48" />
-          <Skeleton className="h-4 w-72" />
-        </CardHeader>
-        <CardContent className="flex flex-col gap-3">
-          <Skeleton className="h-1 w-full" />
-          <Skeleton className="h-16 w-full" />
-          <Skeleton className="h-16 w-full" />
-        </CardContent>
-      </Card>
-    );
-  }
+  if (missionsIsError || missionsIsComplete || missionsIsLoading) return null;
 
   const nextMission = progress.missions.find((m) => !m.completed && !m.locked);
 

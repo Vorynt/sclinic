@@ -25,10 +25,8 @@ export const billingQueries = {
       queryKey: billingQueryKeys.mySubscription,
       queryFn: async () =>
         unwrapActionResult(await getMySubscriptionAction()),
-      // Portal cancel syncs via webhook — always revalidate on return.
-      staleTime: 0,
-      refetchOnMount: "always",
-      refetchOnWindowFocus: true,
+      // Portal return uses local polling; inherit global refetchOnWindowFocus: false.
+      staleTime: 60_000,
     }),
   hasLivingSubscription: () =>
     queryOptions({
@@ -43,6 +41,5 @@ export const billingQueries = {
       queryFn: async () =>
         unwrapActionResult(await getClinicPlanQuotaAction()),
       staleTime: 30_000,
-      refetchOnWindowFocus: true,
     }),
 }

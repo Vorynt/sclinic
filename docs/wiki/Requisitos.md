@@ -285,6 +285,7 @@ Convenção de ID: `RF-<DOMÍNIO>-NNN`.
 |----|--------|-----------|----------|--------|
 | RF-AGE-001 | Calendário | Dia/semana/mês | Agenda | Done |
 | RF-AGE-002 | Criar/editar | startsAt futuro; duração ≤ 8h; horário da clínica; sem overlap ≠ canceled; sugerir próximos slots livres | Quem agenda | Done |
+| RF-AGE-002a | Create híbrido | Modal rápido (slot/paciente/recepção/waitlist) + página `/appointments/new` (completo); Mais opções leva o draft | Quem agenda | Done |
 | RF-AGE-003 | Tipos | consultation, follow_up, procedure, evaluation, other | — | Done |
 | RF-AGE-004 | Transições de status | Ver §5 | Clínico / recepção | Done |
 | RF-AGE-005 | Cancelamento | Cascata: cancela charge `pending` | Quem cancela | Done |
@@ -371,7 +372,7 @@ Convenção de ID: `RF-<DOMÍNIO>-NNN`.
 
 | ID | Título | Descrição | Status |
 |----|--------|-----------|--------|
-| RF-DASH-001 | AppShell + nav por permissão | Itens somem sem perm | Done |
+| RF-DASH-001 | AppShell + nav por permissão | Top/bottom nav; itens somem sem perm | Done |
 | RF-DASH-002 | Homes por `roleKey` | Landing única `/home` | Done |
 | RF-DASH-003 | Atalho Ajuda nas homes | Todas as personas | Done |
 | RF-DASH-004 | AttendanceShell | Shell sem sidebar completa | Done |

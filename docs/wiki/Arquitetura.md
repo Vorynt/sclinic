@@ -12,7 +12,7 @@ Documentação humana. Regras normativas: pasta `architecture/` + `AGENTS.md`.
 | Server state | TanStack Query |
 | Client state | Zustand (nunca domínio) |
 | Pagamentos SaaS | Stripe (Checkout + Portal + webhooks) |
-| UI | Tailwind v4, shadcn, tokens tintados (`config/theme.ts` + `globals.css`), `PageHeader` compartilhado |
+| UI | Tailwind v4, shadcn, tokens tintados (`config/theme.ts` + `globals.css`), `PageHeader` + FAB mobile de ações (`PageActionsFab`); listagens CRUD: tabela em `md+`, `ListCard` no mobile (`ResponsiveDataView`) |
 | Realtime | SSE (`/api/realtime/clinic`) |
 
 ## Fluxo de camadas (obrigatório)
@@ -47,7 +47,7 @@ Módulos canônicos: `patients`, `professionals`, `appointments`, `medical-recor
 | Tipo | Onde |
 |------|------|
 | Server state | `queries/` + `mutations/` + hooks do módulo |
-| Client state | `src/stores/` (auth UI, theme, sidebar…) |
+| Client state | `src/stores/` (auth UI, theme…) |
 | Realtime ops | SSE + `core/realtime` |
 
 ## Validação e erros

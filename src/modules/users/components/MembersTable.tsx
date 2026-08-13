@@ -5,6 +5,9 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { DataTablePagination } from "@/components/data-table/DataTablePagination";
+import { ListCard } from "@/components/data-table/ListCard";
+import { ListCardSkeleton } from "@/components/data-table/ListCardSkeleton";
+import { ResponsiveDataView } from "@/components/data-table/ResponsiveDataView";
 import { QueryErrorState } from "@/components/status/QueryErrorState";
 import { TableSkeleton } from "@/components/status/TableSkeleton";
 import {
@@ -61,6 +64,7 @@ import {
   useInvitationsQuery,
   useMembersQuery,
 } from "@/modules/users/hooks/use-users";
+import type { ClinicInvitation } from "@/modules/users/types/invitation";
 import type { ClinicMember } from "@/modules/users/types/member";
 import { isAssignableRoleKey } from "@/modules/users/utils/member-rules";
 import { useAuth } from "@/providers/AuthProvider";
@@ -78,6 +82,89 @@ type MembersTableProps = {
 
 function statusBadgeVariant(status: TeamRowStatus): "secondary" | "outline" {
   return status === "active" ? "secondary" : "outline";
+}
+
+function RoleCell({
+  member,
+  canChangeRole,
+  roleLabel,
+  roles,
+  isPending,
+  onRoleChange,
+}: {
+  member: ClinicMember;
+  canChangeRole: boolean;
+  roleLabel: string;
+  roles: { id: string; key: string; name: string }[];
+  isPending: boolean;
+  onRoleChange: (roleKey: AssignableRoleKey) => void;
+}) {
+  if (canChangeRole) {
+    return (
+      <Select
+        value={member.roleKey}
+        onValueChange={(roleKey) =>
+          onRoleChange(roleKey as AssignableRoleKey)
+        }
+        disabled={isPending}>
+        <SelectTrigger size="sm" className="w-40">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {roles.map((role) => (
+            <SelectItem key={role.id} value={role.key}>
+              {getRoleLabel(role.key, role.name)}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    );
+  }
+
+  return <span>{roleLabel}</span>;
+}
+
+function MemberRowActions({
+  status,
+  isPending,
+  onToggleStatus,
+  onRemove,
+}: {
+  status: TeamRowStatus;
+  isPending: boolean;
+  onToggleStatus: () => void;
+  onRemove: () => void;
+}) {
+  return (
+    <ButtonGroup>
+      <Button
+        type="button"
+        variant={status === "suspended" ? "outline" : "destructive"}
+        size="icon"
+        tooltip={status === "suspended" ? "Reativar" : "Suspender"}
+        disabled={isPending}
+        onClick={onToggleStatus}>
+        {status === "suspended" ? (
+          <ArrowsClockwiseIcon />
+        ) : (
+          <ProhibitIcon />
+        )}
+        <span className="sr-only">
+          {status === "suspended" ? "Reativar" : "Suspender"}
+        </span>
+      </Button>
+      <Button
+        type="button"
+        variant="destructive"
+        size="icon"
+        tooltip="Remover da equipe"
+        disabled={isPending}
+        onClick={onRemove}>
+        <TrashIcon />
+        <span className="sr-only">Remover da equipe</span>
+      </Button>
+    </ButtonGroup>
+  );
 }
 
 export function MembersTable({ filters, onPageChange }: MembersTableProps) {
@@ -116,7 +203,12 @@ export function MembersTable({ filters, onPageChange }: MembersTableProps) {
   });
 
   if (membersQuery.isLoading || invitationsQuery.isLoading) {
-    return <TableSkeleton columns={5} rows={DEFAULT_LIST_PAGE_SIZE} />;
+    return (
+      <ResponsiveDataView
+        desktop={<TableSkeleton columns={5} rows={DEFAULT_LIST_PAGE_SIZE} />}
+        mobile={<ListCardSkeleton rows={DEFAULT_LIST_PAGE_SIZE} />}
+      />
+    );
   }
 
   if (membersQuery.isError || invitationsQuery.isError) {
@@ -135,6 +227,7 @@ export function MembersTable({ filters, onPageChange }: MembersTableProps) {
   const result = membersQuery.data;
   const members = result?.items ?? [];
   const invitations = invitationsQuery.data ?? [];
+  const roles = rolesQuery.data ?? [];
   const showInvitations = !filters.q && (filters.page ?? 1) === 1;
 
   if (members.length === 0 && (!showInvitations || invitations.length === 0)) {
@@ -153,156 +246,233 @@ export function MembersTable({ filters, onPageChange }: MembersTableProps) {
     );
   }
 
+  function invitationCard(invitation: ClinicInvitation) {
+    const roleLabel = getRoleLabel(invitation.roleKey, invitation.roleName);
+
+    return (
+      <ListCard
+        key={`invite-${invitation.id}`}
+        title={invitation.email}
+        badges={
+          <Badge variant={statusBadgeVariant("invite_pending")}>
+            {getTeamStatusLabel("invite_pending")}
+          </Badge>
+        }
+        preview={roleLabel}
+        actions={
+          <ButtonGroup>
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              tooltip="Cancelar convite"
+              disabled={revokeInvite.isPending}
+              onClick={() =>
+                revokeInvite.mutate({ invitationId: invitation.id })
+              }>
+              <ProhibitIcon />
+              <span className="sr-only">Cancelar convite</span>
+            </Button>
+          </ButtonGroup>
+        }
+      />
+    );
+  }
+
   return (
     <div className="flex flex-col gap-4">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Nome</TableHead>
-            <TableHead>E-mail</TableHead>
-            <TableHead>Papel</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead className="text-right">Ações</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {showInvitations
-            ? invitations.map((invitation) => (
-                <TableRow key={`invite-${invitation.id}`}>
-                  <TableCell className="text-muted-foreground">—</TableCell>
-                  <TableCell className="font-medium">
-                    {invitation.email}
-                  </TableCell>
-                  <TableCell>
-                    {getRoleLabel(invitation.roleKey, invitation.roleName)}
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={statusBadgeVariant("invite_pending")}>
-                      {getTeamStatusLabel("invite_pending")}
+      <ResponsiveDataView
+        desktop={
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Nome</TableHead>
+                <TableHead>E-mail</TableHead>
+                <TableHead>Papel</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Ações</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {showInvitations
+                ? invitations.map((invitation) => (
+                    <TableRow key={`invite-${invitation.id}`}>
+                      <TableCell className="text-muted-foreground">—</TableCell>
+                      <TableCell className="font-medium">
+                        {invitation.email}
+                      </TableCell>
+                      <TableCell>
+                        {getRoleLabel(invitation.roleKey, invitation.roleName)}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={statusBadgeVariant("invite_pending")}>
+                          {getTeamStatusLabel("invite_pending")}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="flex items-end justify-end text-right">
+                        <ButtonGroup>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            tooltip="Cancelar convite"
+                            disabled={revokeInvite.isPending}
+                            onClick={() =>
+                              revokeInvite.mutate({
+                                invitationId: invitation.id,
+                              })
+                            }>
+                            <ProhibitIcon />
+                            <span className="sr-only">Cancelar convite</span>
+                          </Button>
+                        </ButtonGroup>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                : null}
+
+              {members.map((member) => {
+                const isSelf = member.userId === auth?.user.id;
+                const isOwner =
+                  member.roleKey === USERS_CONSTANTS.OWNER_ROLE_KEY;
+                const canManage = !isSelf && !isOwner;
+                const canChangeRole =
+                  canManage && isAssignableRoleKey(member.roleKey);
+                const roleLabel = getRoleLabel(member.roleKey, member.roleName);
+                const status: TeamRowStatus =
+                  member.status === "suspended" ? "suspended" : "active";
+
+                return (
+                  <TableRow key={member.id}>
+                    <TableCell
+                      className="max-w-60 truncate font-medium"
+                      title={member.userName}>
+                      {member.userName}
+                    </TableCell>
+                    <TableCell>{member.userEmail}</TableCell>
+                    <TableCell>
+                      <RoleCell
+                        member={member}
+                        canChangeRole={canChangeRole}
+                        roleLabel={roleLabel}
+                        roles={roles}
+                        isPending={updateRole.isPending}
+                        onRoleChange={(roleKey) =>
+                          updateRole.mutate({
+                            membershipId: member.id,
+                            roleKey,
+                          })
+                        }
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={statusBadgeVariant(status)}>
+                        {getTeamStatusLabel(status)}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="flex items-end justify-end text-right">
+                      {canManage ? (
+                        <MemberRowActions
+                          status={status}
+                          isPending={
+                            updateStatus.isPending || removeMember.isPending
+                          }
+                          onToggleStatus={() =>
+                            updateStatus.mutate({
+                              membershipId: member.id,
+                              status:
+                                status === "suspended"
+                                  ? "active"
+                                  : "suspended",
+                            })
+                          }
+                          onRemove={() => setMemberToRemove(member)}
+                        />
+                      ) : null}
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        }
+        mobile={
+          <div className="flex flex-col gap-2">
+            {showInvitations ? invitations.map(invitationCard) : null}
+
+            {members.map((member) => {
+              const isSelf = member.userId === auth?.user.id;
+              const isOwner =
+                member.roleKey === USERS_CONSTANTS.OWNER_ROLE_KEY;
+              const canManage = !isSelf && !isOwner;
+              const canChangeRole =
+                canManage && isAssignableRoleKey(member.roleKey);
+              const roleLabel = getRoleLabel(member.roleKey, member.roleName);
+              const status: TeamRowStatus =
+                member.status === "suspended" ? "suspended" : "active";
+
+              return (
+                <ListCard
+                  key={member.id}
+                  collapsible
+                  title={member.userName}
+                  badges={
+                    <Badge variant={statusBadgeVariant(status)}>
+                      {getTeamStatusLabel(status)}
                     </Badge>
-                  </TableCell>
-                  <TableCell className="flex items-end justify-end text-right">
-                    <ButtonGroup>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        tooltip="Cancelar convite"
-                        disabled={revokeInvite.isPending}
-                        onClick={() =>
-                          revokeInvite.mutate({ invitationId: invitation.id })
-                        }>
-                        <ProhibitIcon />
-                        <span className="sr-only">Cancelar convite</span>
-                      </Button>
-                    </ButtonGroup>
-                  </TableCell>
-                </TableRow>
-              ))
-            : null}
-
-          {members.map((member) => {
-            const isSelf = member.userId === auth?.user.id;
-            const isOwner = member.roleKey === USERS_CONSTANTS.OWNER_ROLE_KEY;
-            const canManage = !isSelf && !isOwner;
-            const canChangeRole =
-              canManage && isAssignableRoleKey(member.roleKey);
-            const roleLabel = getRoleLabel(member.roleKey, member.roleName);
-            const status: TeamRowStatus =
-              member.status === "suspended" ? "suspended" : "active";
-
-            return (
-              <TableRow key={member.id}>
-                <TableCell
-                  className="max-w-60 truncate font-medium"
-                  title={member.userName}>
-                  {member.userName}
-                </TableCell>
-                <TableCell>{member.userEmail}</TableCell>
-                <TableCell>
-                  {canChangeRole ? (
-                    <Select
-                      value={member.roleKey}
-                      onValueChange={(roleKey) =>
-                        updateRole.mutate({
-                          membershipId: member.id,
-                          roleKey: roleKey as AssignableRoleKey,
-                        })
-                      }
-                      disabled={updateRole.isPending}>
-                      <SelectTrigger size="sm" className="w-40">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {(rolesQuery.data ?? []).map((role) => (
-                          <SelectItem key={role.id} value={role.key}>
-                            {getRoleLabel(role.key, role.name)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  ) : (
-                    <div className="flex flex-col gap-0.5">
-                      <span>{roleLabel}</span>
-                    </div>
-                  )}
-                </TableCell>
-                <TableCell>
-                  <Badge variant={statusBadgeVariant(status)}>
-                    {getTeamStatusLabel(status)}
-                  </Badge>
-                </TableCell>
-                <TableCell className="flex items-end justify-end text-right">
-                  {canManage ? (
-                    <ButtonGroup>
-                      <Button
-                        type="button"
-                        variant={
-                          status === "suspended" ? "outline" : "destructive"
-                        }
-                        size="icon"
-                        tooltip={
-                          status === "suspended" ? "Reativar" : "Suspender"
-                        }
-                        disabled={
+                  }
+                  preview={
+                    canChangeRole
+                      ? member.userEmail
+                      : [member.userEmail, roleLabel]
+                          .filter(Boolean)
+                          .join(" · ")
+                  }
+                  meta={[
+                    { label: "E-mail", value: member.userEmail },
+                    {
+                      label: "Papel",
+                      value: (
+                        <RoleCell
+                          member={member}
+                          canChangeRole={canChangeRole}
+                          roleLabel={roleLabel}
+                          roles={roles}
+                          isPending={updateRole.isPending}
+                          onRoleChange={(roleKey) =>
+                            updateRole.mutate({
+                              membershipId: member.id,
+                              roleKey,
+                            })
+                          }
+                        />
+                      ),
+                    },
+                  ]}
+                  actions={
+                    canManage ? (
+                      <MemberRowActions
+                        status={status}
+                        isPending={
                           updateStatus.isPending || removeMember.isPending
                         }
-                        onClick={() =>
+                        onToggleStatus={() =>
                           updateStatus.mutate({
                             membershipId: member.id,
                             status:
                               status === "suspended" ? "active" : "suspended",
                           })
-                        }>
-                        {status === "suspended" ? (
-                          <ArrowsClockwiseIcon />
-                        ) : (
-                          <ProhibitIcon />
-                        )}
-                        <span className="sr-only">
-                          {status === "suspended" ? "Reativar" : "Suspender"}
-                        </span>
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="destructive"
-                        size="icon"
-                        tooltip="Remover da equipe"
-                        disabled={
-                          updateStatus.isPending || removeMember.isPending
                         }
-                        onClick={() => setMemberToRemove(member)}>
-                        <TrashIcon />
-                        <span className="sr-only">Remover da equipe</span>
-                      </Button>
-                    </ButtonGroup>
-                  ) : null}
-                </TableCell>
-              </TableRow>
-            );
-          })}
-        </TableBody>
-      </Table>
+                        onRemove={() => setMemberToRemove(member)}
+                      />
+                    ) : undefined
+                  }
+                />
+              );
+            })}
+          </div>
+        }
+      />
 
       <DataTablePagination
         page={result?.page ?? filters.page ?? 1}

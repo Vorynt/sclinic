@@ -10,6 +10,8 @@ import { chargesQueryKeys } from "@/modules/billing/queries/charges.query"
 
 const SSE_PATH = "/api/realtime/clinic"
 const RECONNECT_MS = 2_000
+/** Collapse bursty clinic.ops events into one invalidation wave. */
+const INVALIDATE_DEBOUNCE_MS = 400
 
 /**
  * Subscribes to clinic ops SSE and invalidates agenda/charge caches.
@@ -25,6 +27,7 @@ export function useClinicOpsRealtime(enabled = true) {
 
     let source: EventSource | null = null
     let reconnectTimer: ReturnType<typeof setTimeout> | undefined
+    let invalidateTimer: ReturnType<typeof setTimeout> | undefined
     let closed = false
 
     const invalidateOps = () => {
@@ -37,12 +40,20 @@ export function useClinicOpsRealtime(enabled = true) {
       ])
     }
 
+    const scheduleInvalidate = () => {
+      if (invalidateTimer) clearTimeout(invalidateTimer)
+      invalidateTimer = setTimeout(() => {
+        invalidateTimer = undefined
+        invalidateOps()
+      }, INVALIDATE_DEBOUNCE_MS)
+    }
+
     const connect = () => {
       if (closed) return
       source = new EventSource(SSE_PATH)
 
       source.addEventListener("clinic.ops", () => {
-        invalidateOps()
+        scheduleInvalidate()
       })
 
       source.onerror = () => {
@@ -58,6 +69,7 @@ export function useClinicOpsRealtime(enabled = true) {
     return () => {
       closed = true
       if (reconnectTimer) clearTimeout(reconnectTimer)
+      if (invalidateTimer) clearTimeout(invalidateTimer)
       source?.close()
     }
   }, [enabled])

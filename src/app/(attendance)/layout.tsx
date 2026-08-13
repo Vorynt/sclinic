@@ -3,8 +3,7 @@ import type { ReactNode } from "react"
 
 import { routes } from "@/config/routes"
 import { AttendanceShell } from "@/modules/appointments/components/AttendanceShell"
-import { authService } from "@/modules/authentication/services/auth.service"
-import { getAuthRequestContext } from "@/modules/authentication/utils/request-context"
+import { getCachedSession } from "@/modules/authentication/utils/get-cached-session"
 
 type AttendanceRootLayoutProps = {
   children: ReactNode
@@ -17,7 +16,7 @@ type AttendanceRootLayoutProps = {
 export default async function AttendanceRootLayout({
   children,
 }: AttendanceRootLayoutProps) {
-  const session = await authService.getSession(await getAuthRequestContext())
+  const session = await getCachedSession()
 
   if (!session) {
     redirect(routes.login)

@@ -11,6 +11,9 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { DataTablePagination } from "@/components/data-table/DataTablePagination";
+import { ListCard } from "@/components/data-table/ListCard";
+import { ListCardSkeleton } from "@/components/data-table/ListCardSkeleton";
+import { ResponsiveDataView } from "@/components/data-table/ResponsiveDataView";
 import { QueryErrorState } from "@/components/status/QueryErrorState";
 import { TableSkeleton } from "@/components/status/TableSkeleton";
 import {
@@ -58,6 +61,54 @@ type PatientsTableProps = {
   onSchedule?: (patient: Patient) => void;
 };
 
+function PatientRowActions({
+  patient,
+  canSchedule,
+  onSchedule,
+  onEdit,
+  onDelete,
+}: {
+  patient: Patient;
+  canSchedule: boolean;
+  onSchedule?: (patient: Patient) => void;
+  onEdit: (patient: Patient) => void;
+  onDelete: (patient: Patient) => void;
+}) {
+  return (
+    <ButtonGroup>
+      {canSchedule ? (
+        <Button
+          type="button"
+          variant="secondary"
+          size="icon"
+          tooltip="Agendar"
+          onClick={() => onSchedule?.(patient)}>
+          <CalendarBlankIcon />
+          <span className="sr-only">Agendar</span>
+        </Button>
+      ) : null}
+      <Button
+        type="button"
+        variant="secondary"
+        size="icon"
+        tooltip="Editar"
+        onClick={() => onEdit(patient)}>
+        <PencilSimpleIcon />
+        <span className="sr-only">Editar</span>
+      </Button>
+      <Button
+        type="button"
+        variant="destructive"
+        size="icon"
+        tooltip="Remover"
+        onClick={() => onDelete(patient)}>
+        <TrashIcon />
+        <span className="sr-only">Remover</span>
+      </Button>
+    </ButtonGroup>
+  );
+}
+
 export function PatientsTable({
   filters,
   onPageChange,
@@ -81,7 +132,12 @@ export function PatientsTable({
   });
 
   if (patientsQuery.isLoading) {
-    return <TableSkeleton columns={5} rows={DEFAULT_LIST_PAGE_SIZE} />;
+    return (
+      <ResponsiveDataView
+        desktop={<TableSkeleton columns={5} rows={DEFAULT_LIST_PAGE_SIZE} />}
+        mobile={<ListCardSkeleton rows={DEFAULT_LIST_PAGE_SIZE} />}
+      />
+    );
   }
 
   if (patientsQuery.isError) {
@@ -117,72 +173,95 @@ export function PatientsTable({
 
   return (
     <div className="flex flex-col gap-4">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Nome</TableHead>
-            <TableHead>CPF</TableHead>
-            <TableHead>Telefone</TableHead>
-            <TableHead>E-mail</TableHead>
-            <TableHead className="text-right">Ações</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {patients.map((patient) => (
-            <TableRow key={patient.id}>
-              <TableCell className="max-w-60 font-medium">
-                <Link
-                  href={buildPatientDetailHref(patient.id, {
-                    q: filters.q,
-                    page: filters.page,
-                  })}
-                  title={patient.name}
-                  className="block truncate text-foreground underline-offset-4 hover:underline">
-                  {patient.name}
-                </Link>
-              </TableCell>
-              <TableCell>{formatCpf(patient.cpf)}</TableCell>
-              <TableCell>
-                {patient.phone ? formatPhone(patient.phone) : "—"}
-              </TableCell>
-              <TableCell>{patient.email || "—"}</TableCell>
-              <TableCell className="text-right flex justify-end items-end">
-                <ButtonGroup>
-                  {canSchedule ? (
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      size="icon"
-                      tooltip="Agendar"
-                      onClick={() => onSchedule?.(patient)}>
-                      <CalendarBlankIcon />
-                      <span className="sr-only">Agendar</span>
-                    </Button>
-                  ) : null}
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    size="icon"
-                    tooltip="Editar"
-                    onClick={() => onEdit(patient)}>
-                    <PencilSimpleIcon />
-                    <span className="sr-only">Editar</span>
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    size="icon"
-                    tooltip="Remover"
-                    onClick={() => setPatientToDelete(patient)}>
-                    <TrashIcon />
-                    <span className="sr-only">Remover</span>
-                  </Button>
-                </ButtonGroup>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+      <ResponsiveDataView
+        desktop={
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Nome</TableHead>
+                <TableHead>CPF</TableHead>
+                <TableHead>Telefone</TableHead>
+                <TableHead>E-mail</TableHead>
+                <TableHead className="text-right">Ações</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {patients.map((patient) => (
+                <TableRow key={patient.id}>
+                  <TableCell className="max-w-60 font-medium">
+                    <Link
+                      href={buildPatientDetailHref(patient.id, {
+                        q: filters.q,
+                        page: filters.page,
+                      })}
+                      title={patient.name}
+                      className="block truncate text-foreground underline-offset-4 hover:underline">
+                      {patient.name}
+                    </Link>
+                  </TableCell>
+                  <TableCell>{formatCpf(patient.cpf)}</TableCell>
+                  <TableCell>
+                    {patient.phone ? formatPhone(patient.phone) : "—"}
+                  </TableCell>
+                  <TableCell>{patient.email || "—"}</TableCell>
+                  <TableCell className="flex items-end justify-end text-right">
+                    <PatientRowActions
+                      patient={patient}
+                      canSchedule={canSchedule}
+                      onSchedule={onSchedule}
+                      onEdit={onEdit}
+                      onDelete={setPatientToDelete}
+                    />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        }
+        mobile={
+          <div className="flex flex-col gap-2">
+            {patients.map((patient) => {
+              const phone = patient.phone ? formatPhone(patient.phone) : null;
+              const preview = [formatCpf(patient.cpf), phone]
+                .filter(Boolean)
+                .join(" · ");
+
+              return (
+                <ListCard
+                  key={patient.id}
+                  collapsible
+                  title={
+                    <Link
+                      href={buildPatientDetailHref(patient.id, {
+                        q: filters.q,
+                        page: filters.page,
+                      })}
+                      title={patient.name}
+                      className="underline-offset-4 hover:underline">
+                      {patient.name}
+                    </Link>
+                  }
+                  preview={preview}
+                  meta={[
+                    { label: "CPF", value: formatCpf(patient.cpf) },
+                    { label: "Telefone", value: phone ?? "—" },
+                    { label: "E-mail", value: patient.email || "—" },
+                  ]}
+                  actions={
+                    <PatientRowActions
+                      patient={patient}
+                      canSchedule={canSchedule}
+                      onSchedule={onSchedule}
+                      onEdit={onEdit}
+                      onDelete={setPatientToDelete}
+                    />
+                  }
+                />
+              );
+            })}
+          </div>
+        }
+      />
 
       <DataTablePagination
         page={result?.page ?? filters.page ?? 1}

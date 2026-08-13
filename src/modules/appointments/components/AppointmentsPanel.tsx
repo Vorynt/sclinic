@@ -1,46 +1,49 @@
-"use client"
+"use client";
 
-import { PlusIcon } from "@phosphor-icons/react"
-import { useEffect, useMemo, useRef, useState } from "react"
+import { CalendarPlusIcon, ProhibitInsetIcon } from "@phosphor-icons/react";
+import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useRef, useState } from "react";
 
-import { PageHeader } from "@/components/layout/PageHeader"
-import { QueryErrorState } from "@/components/status/QueryErrorState"
-import { Button } from "@/components/ui/button"
-import { useIsMobile } from "@/hooks/use-mobile"
-import { AppointmentDayView } from "@/modules/appointments/components/AppointmentDayView"
-import { AppointmentDetailDrawer } from "@/modules/appointments/components/AppointmentDetailDrawer"
-import { AppointmentFormDialog } from "@/modules/appointments/components/AppointmentFormDialog"
-import { AppointmentMonthView } from "@/modules/appointments/components/AppointmentMonthView"
+import { PageHeader } from "@/components/layout/PageHeader";
+import { QueryErrorState } from "@/components/status/QueryErrorState";
+import { routes } from "@/config/routes";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { AppointmentDayView } from "@/modules/appointments/components/AppointmentDayView";
+import { AppointmentDetailDrawer } from "@/modules/appointments/components/AppointmentDetailDrawer";
 import {
   AppointmentFiltersDrawer,
   type AppointmentFiltersValue,
-} from "@/modules/appointments/components/AppointmentFiltersDrawer"
-import { AppointmentsCalendarSkeleton } from "@/modules/appointments/components/AppointmentsPageSkeleton"
-import { AppointmentsToolbar } from "@/modules/appointments/components/AppointmentsToolbar"
-import { AppointmentWeekView } from "@/modules/appointments/components/AppointmentWeekView"
-import { ScheduleBlockDetailDialog } from "@/modules/appointments/components/ScheduleBlockDetailDialog"
-import { ScheduleBlockFormDialog } from "@/modules/appointments/components/ScheduleBlockFormDialog"
-import { isSelfScheduleOnlyRole } from "@/modules/appointments/constants/appointments"
+} from "@/modules/appointments/components/AppointmentFiltersDrawer";
+import { AppointmentFormDialog } from "@/modules/appointments/components/AppointmentFormDialog";
+import { AppointmentMonthView } from "@/modules/appointments/components/AppointmentMonthView";
+import { AppointmentsCalendarSkeleton } from "@/modules/appointments/components/AppointmentsPageSkeleton";
+import { AppointmentsToolbar } from "@/modules/appointments/components/AppointmentsToolbar";
+import { AppointmentWeekView } from "@/modules/appointments/components/AppointmentWeekView";
+import { ScheduleBlockDetailDialog } from "@/modules/appointments/components/ScheduleBlockDetailDialog";
+import { ScheduleBlockFormDialog } from "@/modules/appointments/components/ScheduleBlockFormDialog";
+import { isSelfScheduleOnlyRole } from "@/modules/appointments/constants/appointments";
 import {
   useAppointmentsQuery,
   useCalendarClinicHoursQuery,
-} from "@/modules/appointments/hooks/use-appointments"
-import { useCalendarQueryParams } from "@/modules/appointments/hooks/use-calendar-query-params"
-import { useScheduleBlocksQuery } from "@/modules/appointments/hooks/use-schedule-blocks"
-import type { Appointment } from "@/modules/appointments/types/appointment"
-import type { ScheduleBlock } from "@/modules/appointments/types/schedule-block"
+} from "@/modules/appointments/hooks/use-appointments";
+import { useCalendarQueryParams } from "@/modules/appointments/hooks/use-calendar-query-params";
+import { useScheduleBlocksQuery } from "@/modules/appointments/hooks/use-schedule-blocks";
+import type { Appointment } from "@/modules/appointments/types/appointment";
+import type { ScheduleBlock } from "@/modules/appointments/types/schedule-block";
 import {
   getNextAnchor,
   getPeriodLabel,
   getPreviousAnchor,
   getVisibleRange,
-} from "@/modules/appointments/utils/calendar-range"
-import { useAuthSession } from "@/modules/authentication/hooks/use-auth"
+} from "@/modules/appointments/utils/calendar-range";
+import { useAuthSession } from "@/modules/authentication/hooks/use-auth";
+import type { PageAction } from "@/types/page-action";
 
 export function AppointmentsPanel() {
-  const isMobile = useIsMobile()
-  const appliedMobileDefault = useRef(false)
-  const sessionQuery = useAuthSession()
+  const router = useRouter();
+  const isMobile = useIsMobile();
+  const appliedMobileDefault = useRef(false);
+  const sessionQuery = useAuthSession();
   const {
     mode,
     date: anchor,
@@ -48,38 +51,41 @@ export function AppointmentsPanel() {
     setMode,
     setDate,
     setModeAndDate,
-  } = useCalendarQueryParams()
+  } = useCalendarQueryParams();
 
   const [detailAppointment, setDetailAppointment] =
-    useState<Appointment | null>(null)
-  const [detailBlock, setDetailBlock] = useState<ScheduleBlock | null>(null)
-  const [formDialogOpen, setFormDialogOpen] = useState(false)
-  const [blockDialogOpen, setBlockDialogOpen] = useState(false)
+    useState<Appointment | null>(null);
+  const [detailBlock, setDetailBlock] = useState<ScheduleBlock | null>(null);
+  const [formDialogOpen, setFormDialogOpen] = useState(false);
+  const [blockDialogOpen, setBlockDialogOpen] = useState(false);
   const [formDefaultStartsAt, setFormDefaultStartsAt] = useState<
     Date | undefined
-  >(undefined)
+  >(undefined);
   const [blockDefaultStartsAt, setBlockDefaultStartsAt] = useState<
     Date | undefined
-  >(undefined)
+  >(undefined);
   const [filters, setFilters] = useState<AppointmentFiltersValue>({
     professionalIds: [],
     patientIds: [],
     modality: "all",
-  })
+  });
 
   useEffect(() => {
     if (isMobile && !hasExplicitMode && !appliedMobileDefault.current) {
-      setMode("day")
-      appliedMobileDefault.current = true
+      setMode("day");
+      appliedMobileDefault.current = true;
     }
-  }, [hasExplicitMode, isMobile, setMode])
+  }, [hasExplicitMode, isMobile, setMode]);
 
-  const roleKey = sessionQuery.data?.membership?.roleKey
+  const roleKey = sessionQuery.data?.membership?.roleKey;
   const showProfessionalFilter =
-    Boolean(roleKey) && !isSelfScheduleOnlyRole(roleKey)
+    Boolean(roleKey) && !isSelfScheduleOnlyRole(roleKey);
 
-  const range = useMemo(() => getVisibleRange(mode, anchor), [mode, anchor])
-  const periodLabel = useMemo(() => getPeriodLabel(mode, anchor), [mode, anchor])
+  const range = useMemo(() => getVisibleRange(mode, anchor), [mode, anchor]);
+  const periodLabel = useMemo(
+    () => getPeriodLabel(mode, anchor),
+    [mode, anchor],
+  );
   const listFilters = useMemo(
     () => ({
       ...range,
@@ -93,80 +99,85 @@ export function AppointmentsPanel() {
       modality: filters.modality === "all" ? undefined : filters.modality,
     }),
     [range, filters, showProfessionalFilter],
-  )
-  const appointmentsQuery = useAppointmentsQuery(listFilters)
+  );
+  const appointmentsQuery = useAppointmentsQuery(listFilters);
   const scheduleBlocksQuery = useScheduleBlocksQuery({
     ...range,
     professionalIds: listFilters.professionalIds,
-  })
-  const calendarHoursQuery = useCalendarClinicHoursQuery()
-  const appointments = appointmentsQuery.data ?? []
-  const scheduleBlocks = scheduleBlocksQuery.data ?? []
-  const weeklyHours = calendarHoursQuery.data
+  });
+  const calendarHoursQuery = useCalendarClinicHoursQuery();
+  const appointments = appointmentsQuery.data ?? [];
+  const scheduleBlocks = scheduleBlocksQuery.data ?? [];
+  const weeklyHours = calendarHoursQuery.data;
   const isCalendarLoading =
     appointmentsQuery.isLoading ||
     scheduleBlocksQuery.isLoading ||
-    (mode !== "month" && calendarHoursQuery.isLoading)
+    (mode !== "month" && calendarHoursQuery.isLoading);
   const isCalendarError =
     appointmentsQuery.isError ||
     scheduleBlocksQuery.isError ||
-    (mode !== "month" && calendarHoursQuery.isError)
+    (mode !== "month" && calendarHoursQuery.isError);
 
   function handlePrevious() {
-    setDate(getPreviousAnchor(mode, anchor))
+    setDate(getPreviousAnchor(mode, anchor));
   }
 
   function handleNext() {
-    setDate(getNextAnchor(mode, anchor))
+    setDate(getNextAnchor(mode, anchor));
   }
 
   function handleToday() {
-    setDate(new Date())
+    setDate(new Date());
   }
 
   function handleSelectDay(date: Date) {
-    setModeAndDate("day", date)
+    setModeAndDate("day", date);
   }
 
   function handleSelectAppointment(appointment: Appointment) {
-    setDetailAppointment(appointment)
+    setDetailAppointment(appointment);
   }
 
   function handleSelectScheduleBlock(block: ScheduleBlock) {
-    setDetailBlock(block)
+    setDetailBlock(block);
   }
 
   function handleSelectSlot(date: Date) {
-    setFormDefaultStartsAt(date)
-    setFormDialogOpen(true)
+    setFormDefaultStartsAt(date);
+    setFormDialogOpen(true);
   }
 
-  function handleNewAppointment() {
-    setFormDefaultStartsAt(undefined)
-    setFormDialogOpen(true)
-  }
-
-  function handleNewBlock() {
-    setBlockDefaultStartsAt(undefined)
-    setBlockDialogOpen(true)
-  }
+  const pageActions = useMemo<PageAction[]>(
+    () => [
+      {
+        id: "block-slot",
+        label: "Bloquear horário",
+        icon: ProhibitInsetIcon,
+        priority: "secondary",
+        onClick: () => {
+          setBlockDefaultStartsAt(undefined);
+          setBlockDialogOpen(true);
+        },
+      },
+      {
+        id: "new-appointment",
+        label: "Novo agendamento",
+        icon: CalendarPlusIcon,
+        priority: "primary",
+        onClick: () => {
+          router.push(routes.appointmentNew);
+        },
+      },
+    ],
+    [router],
+  );
 
   return (
     <div className="flex min-w-0 flex-col gap-6">
       <PageHeader
         title="Agendamentos"
         description="Consulte e organize a agenda de consultas da clínica."
-        actions={
-          <>
-            <Button type="button" variant="outline" onClick={handleNewBlock}>
-              Bloquear horário
-            </Button>
-            <Button type="button" onClick={handleNewAppointment}>
-              <PlusIcon />
-              Novo agendamento
-            </Button>
-          </>
-        }
+        actions={pageActions}
       />
 
       <AppointmentsToolbar
@@ -191,10 +202,10 @@ export function AppointmentsPanel() {
         <QueryErrorState
           description="Não foi possível carregar os agendamentos."
           onRetry={() => {
-            void appointmentsQuery.refetch()
-            void scheduleBlocksQuery.refetch()
+            void appointmentsQuery.refetch();
+            void scheduleBlocksQuery.refetch();
             if (mode !== "month") {
-              void calendarHoursQuery.refetch()
+              void calendarHoursQuery.refetch();
             }
           }}
           isRetrying={
@@ -233,6 +244,7 @@ export function AppointmentsPanel() {
               appointments={appointments}
               scheduleBlocks={scheduleBlocks}
               weeklyHours={weeklyHours}
+              isMobile={isMobile}
               onSelectAppointment={handleSelectAppointment}
               onSelectScheduleBlock={handleSelectScheduleBlock}
               onSelectSlot={handleSelectSlot}
@@ -245,7 +257,7 @@ export function AppointmentsPanel() {
         appointment={detailAppointment}
         open={Boolean(detailAppointment)}
         onOpenChange={(open) => {
-          if (!open) setDetailAppointment(null)
+          if (!open) setDetailAppointment(null);
         }}
         onAppointmentChange={setDetailAppointment}
       />
@@ -254,7 +266,7 @@ export function AppointmentsPanel() {
         block={detailBlock}
         open={Boolean(detailBlock)}
         onOpenChange={(open) => {
-          if (!open) setDetailBlock(null)
+          if (!open) setDetailBlock(null);
         }}
       />
 
@@ -275,5 +287,5 @@ export function AppointmentsPanel() {
         }
       />
     </div>
-  )
+  );
 }

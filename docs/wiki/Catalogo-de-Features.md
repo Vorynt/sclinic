@@ -57,6 +57,7 @@ Inventário do que o sistema faz hoje. Status: **Done** | **Partial** | **Planne
 |---------|--------|------|
 | Calendário dia/semana/mês | Done | `/appointments`; filtros em drawer (profissional, modalidade, paciente) |
 | Criar/remarcar/cancelar | Done | appointments |
+| Agendamento rápido (modal) + completo (`/appointments/new`) | Done | `AppointmentForm` `quick`/`full`; `buildAppointmentNewHref` |
 | Status: scheduled→…→completed | Done | appointment.service |
 | Iniciar atendimento (role gate) | Done | checked_in |
 | Workspace attendance | Done | `(attendance)` |
@@ -131,6 +132,7 @@ Inventário do que o sistema faz hoje. Status: **Done** | **Partial** | **Planne
 | Feature | Status | Onde |
 |---------|--------|------|
 | Landing pública (captação) | Done | `/` — hero teste grátis, benefícios, features, showcase (agenda/pacientes/atendimento/faturamento) |
+| Termos, políticas e documentos legais | Done | Hub `/legal` · 9 docs públicos · footer · aceite Termos/Privacidade no sign-up (placeholders; revisão jurídica) |
 | Campanhas (aniversário / retorno) | Planned | Roadmap H3 · E14 (sem WhatsApp no 1º corte) |
 
 ## E13 — Documentos clínicos (além da receita)

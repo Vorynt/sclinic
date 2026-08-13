@@ -27,7 +27,7 @@ const MIN_SEARCH_CHARS = 3;
 
 type PatientComboboxProps = {
   value: string;
-  onValueChange: (patientId: string) => void;
+  onValueChange: (patientId: string, meta?: { name: string }) => void;
   /** Label known by the parent (e.g. after inline create) while the list refetches. */
   displayLabel?: string | null;
   onCreatePatient?: () => void;
@@ -80,7 +80,7 @@ export function PatientCombobox({
   }, [displayLabel, patients, value]);
 
   function handleSelect(patient: Patient) {
-    onValueChange(patient.id);
+    onValueChange(patient.id, { name: patient.name });
     setSelectedLabel(patient.name);
     setOpen(false);
     setSearch("");

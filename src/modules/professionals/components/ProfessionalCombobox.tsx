@@ -30,7 +30,10 @@ const MIN_SEARCH_CHARS = 3;
 
 type ProfessionalComboboxProps = {
   value: string;
-  onValueChange: (professionalId: string) => void;
+  onValueChange: (
+    professionalId: string,
+    meta?: { label: string },
+  ) => void;
   /** Label known by the parent (e.g. locked self-schedule) while the list refetches. */
   displayLabel?: string | null;
   disabled?: boolean;
@@ -89,14 +92,13 @@ export function ProfessionalCombobox({
   }, [displayLabel, professionals, value]);
 
   function handleSelect(professional: ProfessionalSchedulingItem) {
-    onValueChange(professional.id);
-    setSelectedLabel(
-      formatProfessionalSchedulingLabel({
-        fullName: professional.fullName,
-        treatmentPronoun: professional.treatmentPronoun,
-        specialty: professional.specialty,
-      }),
-    );
+    const label = formatProfessionalSchedulingLabel({
+      fullName: professional.fullName,
+      treatmentPronoun: professional.treatmentPronoun,
+      specialty: professional.specialty,
+    });
+    onValueChange(professional.id, { label });
+    setSelectedLabel(label);
     setOpen(false);
     setSearch("");
   }

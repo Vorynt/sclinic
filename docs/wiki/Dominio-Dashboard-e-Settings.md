@@ -4,11 +4,32 @@
 
 ## Dashboard
 
-- `AppShell` (wash estático `bg-app-wash`), sidebar (`nav.ts`), homes por role (`HomeByRole`)
+- `AppShell` (wash estático `bg-app-wash`), shell híbrido sem sidebar: top nav (desktop) + bottom tabs (mobile) via `nav.ts`, homes por role (`HomeByRole`)
 - Headers de listagem: `PageHeader` em `src/components/layout/`
 - Homes: Owner, Admin, Manager, Receptionist (+ board com accent semântico), Doctor, Nurse, Financial, Default
-- AttendanceShell separado (sem sidebar; **quieto** — só herda tokens, sem wash/orbs)
+- AttendanceShell separado (sem nav de módulos; **quieto** — só herda tokens, sem wash/orbs)
 - Landing única em `/home`; diferenciação por `roleKey` (sem redirect pós-login por papel)
+
+### Navegação do shell
+
+| Camada | Destinos | Onde aparece |
+|--------|----------|--------------|
+| Primária | Início, Agendamentos, Pacientes | Top nav (md+) e bottom tabs (mobile) |
+| Overflow (“Mais”) | Profissionais, Equipe, Faturamento | Dropdown no desktop; sheet no mobile |
+| Utilitária | Configurações, Ajuda | Dentro do overflow |
+
+Itens sem permissão continuam filtrados por `getVisibleShellNav` / `canAny`. Header do shell sem título de página (já vem do `PageHeader` / `SettingsPageHeader`). Tema fica no menu da conta. Shell em `h-dvh` com main scrollável; bottom tabs **no fluxo** (não `fixed`) para não cobrir conteúdo no mobile.
+
+### Ações de página (mobile FAB)
+
+`PageHeader` recebe `PageAction[]` declarativas (não `ReactNode`). No desktop renderiza botões no header; no mobile registra em `page-actions.store` e o `AppShell` exibe `PageActionsFab`:
+
+| Quantidade | Comportamento |
+|------------|---------------|
+| 1 | Um FAB grande (primária) |
+| 2+ | Secundárias menores empilhadas acima; primária maior embaixo |
+
+Primária = `priority: "primary"` ou, se omitido, a **última** ação da lista. Evita botões soltos quebrando o header no mobile.
 
 ### Conteúdo por papel
 
@@ -54,7 +75,7 @@ Shell fino em `/settings/*`; domínio real em clinics / audit / medical-records 
 
 ## Ajuda
 
-Central de FAQ em `/help` (módulo `help`) — conteúdo **por papel**; ver [Dominio-Ajuda](Dominio-Ajuda). Item na sidebar + atalho Ajuda nas homes de todos os papéis.
+Central de FAQ em `/help` (módulo `help`) — conteúdo **por papel**; ver [Dominio-Ajuda](Dominio-Ajuda). Item Ajuda no overflow da nav + atalho Ajuda nas homes de todos os papéis.
 
 ## Decisão
 

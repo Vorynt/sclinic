@@ -1,6 +1,12 @@
 "use client";
 
-import { SignOutIcon, UserIcon } from "@phosphor-icons/react";
+import {
+  MoonIcon,
+  SignOutIcon,
+  SunIcon,
+  UserIcon,
+} from "@phosphor-icons/react";
+import { useTheme } from "next-themes";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -13,11 +19,21 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { routes } from "@/config/routes";
 import { useSignOutMutation } from "@/modules/authentication/hooks/use-auth";
 import { useAuth } from "@/providers/AuthProvider";
+
+const THEMES = ["light", "dark", "system"] as const;
+const THEME_LABELS = {
+  light: "Claro",
+  dark: "Escuro",
+  system: "Sistema",
+} as const;
 
 function initialsFromName(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean);
@@ -29,6 +45,7 @@ function initialsFromName(name: string): string {
 export function UserMenu() {
   const router = useRouter();
   const { auth } = useAuth();
+  const { theme, setTheme } = useTheme();
   const user = auth?.user;
 
   const signOut = useSignOutMutation({
@@ -47,15 +64,15 @@ export function UserMenu() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
+          type="button"
           variant="ghost"
-          className=" gap-2 rounded-none px-2 py-1.5 h-auto"
-          aria-label="Menu da conta">
-          <span className="hidden min-w-0 text-right leading-tight sm:block">
-            <span className="block max-w-40 truncate text-sm font-medium">
+          size="sm"
+          className="h-9 gap-2 rounded-md px-1.5 sm:px-2"
+          aria-label="Menu da conta"
+        >
+          <span className="hidden min-w-0 text-right leading-tight lg:block">
+            <span className="block max-w-36 truncate text-sm font-medium">
               {user.name}
-            </span>
-            <span className="block max-w-40 truncate text-xs text-muted-foreground">
-              {user.email}
             </span>
           </span>
           <Avatar size="sm">
@@ -82,14 +99,32 @@ export function UserMenu() {
             Minha conta
           </Link>
         </DropdownMenuItem>
-
+        <DropdownMenuSub>
+          <DropdownMenuSubTrigger>
+            <SunIcon className="dark:hidden" />
+            <MoonIcon className="hidden dark:inline" />
+            Tema
+          </DropdownMenuSubTrigger>
+          <DropdownMenuSubContent>
+            {THEMES.map((value) => (
+              <DropdownMenuItem
+                key={value}
+                onClick={() => setTheme(value)}
+                className={theme === value ? "bg-accent" : undefined}
+              >
+                {THEME_LABELS[value]}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuSubContent>
+        </DropdownMenuSub>
         <DropdownMenuSeparator />
         <DropdownMenuItem
           variant="destructive"
           disabled={signOut.isPending}
           onSelect={() => {
             signOut.mutate();
-          }}>
+          }}
+        >
           <SignOutIcon />
           Sair
         </DropdownMenuItem>

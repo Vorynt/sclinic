@@ -2,13 +2,13 @@ import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Inter, Space_Grotesk } from "next/font/google";
-import { headers } from "next/headers";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 
 import { AttendancePreparingOverlay } from "@/components/status/AttendancePreparingOverlay";
+import { SessionBootstrapOverlay } from "@/components/status/SessionBootstrapOverlay";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { authService } from "@/modules/authentication/services/auth.service";
+import { getCachedSession } from "@/modules/authentication/utils/get-cached-session";
 import { AuthProvider } from "@/providers/AuthProvider";
 import { QueryProvider } from "@/providers/QueryProvider";
 import { ThemeProvider } from "@/providers/ThemeProvider";
@@ -44,17 +44,18 @@ export const metadata: Metadata = {
 
 export default async function RootLayout({
   children,
+  modal,
 }: Readonly<{
   children: React.ReactNode;
+  modal: React.ReactNode;
 }>) {
-  const initialSession = await authService
-    .getSession({ headers: await headers() })
-    .catch(() => null);
+  const initialSession = await getCachedSession().catch(() => null);
 
   return (
     <html
       lang="pt-BR"
       suppressHydrationWarning
+      data-scroll-behavior="smooth"
       className={cn(
         "h-full",
         "antialiased scroll-smooth",
@@ -71,7 +72,9 @@ export default async function RootLayout({
               <AuthProvider initialSession={initialSession}>
                 <TooltipProvider>
                   {children}
+                  {modal}
                   <AttendancePreparingOverlay />
+                  <SessionBootstrapOverlay />
                   <Toaster richColors />
                 </TooltipProvider>
               </AuthProvider>

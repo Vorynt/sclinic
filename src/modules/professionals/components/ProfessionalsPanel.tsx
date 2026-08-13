@@ -1,10 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import { PlusIcon } from "@phosphor-icons/react"
+import { useMemo, useState } from "react"
 
 import { DataTableSearch } from "@/components/data-table/DataTableSearch"
 import { PageHeader } from "@/components/layout/PageHeader"
-import { Button } from "@/components/ui/button"
 import { useListQueryParams } from "@/hooks/use-list-query-params"
 import { OwnerClinicalProfileCallout } from "@/modules/professionals/components/OwnerClinicalProfileCallout"
 import { ProfessionalFormDialog } from "@/modules/professionals/components/ProfessionalFormDialog"
@@ -12,6 +12,7 @@ import { ProfessionalHoursDialog } from "@/modules/professionals/components/Prof
 import { ProfessionalsTable } from "@/modules/professionals/components/ProfessionalsTable"
 import { formatProfessionalDisplayName } from "@/modules/professionals/constants/professionals"
 import type { ProfessionalListItem } from "@/modules/professionals/types/professional"
+import type { PageAction } from "@/types/page-action"
 
 export function ProfessionalsPanel() {
   const { q, page, pageSize, setQ, setPage } = useListQueryParams()
@@ -21,11 +22,6 @@ export function ProfessionalsPanel() {
     useState<ProfessionalListItem | null>(null)
   const [hoursProfessional, setHoursProfessional] =
     useState<ProfessionalListItem | null>(null)
-
-  function handleNewProfessional() {
-    setEditingProfessional(null)
-    setDialogOpen(true)
-  }
 
   function handleEditProfessional(professional: ProfessionalListItem) {
     setEditingProfessional(professional)
@@ -37,16 +33,27 @@ export function ProfessionalsPanel() {
     setHoursDialogOpen(true)
   }
 
+  const pageActions = useMemo<PageAction[]>(
+    () => [
+      {
+        id: "new-professional",
+        label: "Novo profissional",
+        icon: PlusIcon,
+        onClick: () => {
+          setEditingProfessional(null)
+          setDialogOpen(true)
+        },
+      },
+    ],
+    [],
+  )
+
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
         title="Profissionais"
         description="Cadastro e convites de profissionais de saúde da clínica."
-        actions={
-          <Button type="button" onClick={handleNewProfessional}>
-            Novo profissional
-          </Button>
-        }
+        actions={pageActions}
       />
 
       <OwnerClinicalProfileCallout />

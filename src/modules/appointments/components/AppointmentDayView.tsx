@@ -1,6 +1,11 @@
 "use client";
 
+import { format, isSameDay, isToday } from "date-fns";
+import { ptBR } from "date-fns/locale";
+
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { cn } from "@/lib/utils";
+import { AppointmentEventCard } from "@/modules/appointments/components/AppointmentEventCard";
 import { AppointmentTimeGridColumn } from "@/modules/appointments/components/AppointmentTimeGridColumn";
 import type { Appointment } from "@/modules/appointments/types/appointment";
 import type { ScheduleBlock } from "@/modules/appointments/types/schedule-block";
@@ -13,6 +18,7 @@ type AppointmentDayViewProps = {
   appointments: Appointment[];
   scheduleBlocks?: ScheduleBlock[];
   weeklyHours: ClinicWeeklyHours;
+  isMobile: boolean;
   onSelectAppointment: (appointment: Appointment) => void;
   onSelectScheduleBlock?: (block: ScheduleBlock) => void;
   onSelectSlot: (date: Date) => void;
@@ -23,10 +29,47 @@ export function AppointmentDayView({
   appointments,
   scheduleBlocks = [],
   weeklyHours,
+  isMobile,
   onSelectAppointment,
   onSelectScheduleBlock,
   onSelectSlot,
 }: AppointmentDayViewProps) {
+  if (isMobile) {
+    const dayAppointments = appointments
+      .filter((appointment) => isSameDay(appointment.startsAt, anchor))
+      .sort((a, b) => a.startsAt.getTime() - b.startsAt.getTime());
+
+    return (
+      <div className="flex flex-col gap-1.5">
+        <div className="flex items-center gap-2">
+          <span
+            className={cn(
+              "font-heading text-sm font-medium text-foreground capitalize",
+              isToday(anchor) && "text-primary",
+            )}>
+            {format(anchor, "EEEE, dd 'de' MMM", { locale: ptBR })}
+          </span>
+        </div>
+
+        {dayAppointments.length === 0 ? (
+          <p className="text-xs text-muted-foreground">Nenhum agendamento</p>
+        ) : (
+          <div className="flex flex-col gap-1.5">
+            {dayAppointments.map((appointment) => (
+              <AppointmentEventCard
+                key={appointment.id}
+                appointment={appointment}
+                variant="chip"
+                className="h-auto py-1.5 text-xs"
+                onClick={() => onSelectAppointment(appointment)}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
   const hourRange = resolveVisibleHourRange(weeklyHours, [anchor]);
   const hourMarks = Array.from(
     { length: hourRange.end - hourRange.start },
@@ -36,7 +79,7 @@ export function AppointmentDayView({
     (hourRange.end - hourRange.start) * CALENDAR_HOUR_HEIGHT_PX;
 
   return (
-    <ScrollArea className="max-h-[70vh] rounded-lg border">
+    <ScrollArea className="max-h-[min(70vh,calc(100dvh-14rem))] rounded-lg border md:max-h-[70vh]">
       <div className="grid grid-cols-[3.5rem_1fr] pt-4">
         <div className="relative border-r" style={{ height: gridHeight }}>
           {hourMarks.map((hour, index) => (

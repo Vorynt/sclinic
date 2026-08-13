@@ -28,7 +28,7 @@ export function PatientDetailNav({ patientId }: PatientDetailNavProps) {
   return (
     <nav
       aria-label="Seções do paciente"
-      className="sticky top-6 flex flex-col gap-1">
+      className="sticky top-6 flex flex-wrap gap-1 lg:flex-col overflow-x-auto">
       {items.map((item) => {
         const href = withPatientsListParams(item.href, listLocation);
         const isActive =

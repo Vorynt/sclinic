@@ -1,5 +1,5 @@
 /**
- * AuthStore — client-only UI flags (sidebar/clinic switcher open, etc.).
+ * AuthStore — client-only UI flags (clinic switcher, session bootstrap overlay, etc.).
  * Session/membership data lives in TanStack Query (authQueries).
  */
 import { create } from "zustand"
@@ -12,6 +12,10 @@ type AuthUiState = {
   switchingClinicName: string | null
   beginClinicSwitch: (clinicName?: string | null) => void
   endClinicSwitch: () => void
+  /** Full-screen overlay after sign-in until dashboard session/permissions settle. */
+  isBootstrappingSession: boolean
+  beginSessionBootstrap: () => void
+  endSessionBootstrap: () => void
 }
 
 export const useAuthUiStore = create<AuthUiState>((set) => ({
@@ -27,4 +31,7 @@ export const useAuthUiStore = create<AuthUiState>((set) => ({
     }),
   endClinicSwitch: () =>
     set({ isSwitchingClinic: false, switchingClinicName: null }),
+  isBootstrappingSession: false,
+  beginSessionBootstrap: () => set({ isBootstrappingSession: true }),
+  endSessionBootstrap: () => set({ isBootstrappingSession: false }),
 }))

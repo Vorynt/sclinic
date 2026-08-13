@@ -23,8 +23,9 @@ import { Spinner } from "@/components/ui/spinner";
 import { routes } from "@/config/routes";
 import { useSignInMutation } from "@/modules/authentication/hooks/use-auth";
 import { signInSchema } from "@/modules/authentication/schemas/auth.schema";
-import { getPostAuthRedirect } from "@/modules/authentication/utils/post-auth-redirect";
+import { getPostAuthRedirect, getSafeNextPath } from "@/modules/authentication/utils/post-auth-redirect";
 import { ErrorCode, getClientMessage, isAppError } from "@/shared/errors";
+import { useAuthUiStore } from "@/stores/auth.store";
 
 type SignInValues = z.input<typeof signInSchema>;
 type SignInOutput = z.output<typeof signInSchema>;
@@ -40,9 +41,23 @@ export function SignInForm() {
     code: string;
   } | null>(null);
 
+  const beginSessionBootstrap = useAuthUiStore((s) => s.beginSessionBootstrap);
+
   const signIn = useSignInMutation({
     onSuccess: (data) => {
-      router.replace(getPostAuthRedirect(data, next));
+      const dest = getPostAuthRedirect(data, next);
+      const safeNext = getSafeNextPath(next);
+      // Only bootstrap when landing in AppShell (sidebar needs permissions).
+      const landsInAppShell =
+        Boolean(data.membership) &&
+        data.user.emailVerified &&
+        !data.user.mustChangePassword &&
+        !(safeNext?.startsWith(routes.invite) ?? false);
+
+      if (landsInAppShell) {
+        beginSessionBootstrap();
+      }
+      router.replace(dest);
     },
     onError: (error) => {
       console.error(error);
@@ -119,6 +134,7 @@ export function SignInForm() {
             <FieldLabel htmlFor="sign-in-password">Senha</FieldLabel>
             <Link
               href={routes.forgotPassword}
+              tabIndex={-1}
               className="text-xs font-medium text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline">
               Esqueci minha senha
             </Link>

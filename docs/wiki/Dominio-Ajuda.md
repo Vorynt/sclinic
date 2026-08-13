@@ -19,7 +19,7 @@ Sem LLM — o conteúdo vive em `constants/faq/<papel>.ts` e deve ser atualizado
 | Atalhos para telas reais | Done | `relatedRoutes` |
 | Deep link `?q=&category=&article=` | Done | `HelpCenter` |
 | Filtro esconde assuntos sem artigos no papel | Done | `HelpCategoryFilter` |
-| Item Ajuda na sidebar (sem permissão extra) | Done | `nav.ts` `enabled: true` |
+| Item Ajuda no overflow da nav (sem permissão extra) | Done | `nav.ts` `enabled: true` |
 | Atalho Ajuda nas homes por papel | Done | `*Home.tsx` |
 
 ## Regras

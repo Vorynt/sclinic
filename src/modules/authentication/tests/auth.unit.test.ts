@@ -27,8 +27,10 @@ describe("auth schemas", () => {
       name: "Ana",
       email: "Ana@Clinic.COM",
       password: "senha-forte",
+      acceptTerms: true,
     })
     assert.equal(parsed.email, "ana@clinic.com")
+    assert.equal(parsed.acceptTerms, true)
   })
 
   it("rejects short passwords on sign-up", () => {
@@ -36,6 +38,17 @@ describe("auth schemas", () => {
       name: "Ana",
       email: "ana@clinic.com",
       password: "curta",
+      acceptTerms: true,
+    })
+    assert.equal(result.success, false)
+  })
+
+  it("requires acceptTerms on sign-up", () => {
+    const result = signUpSchema.safeParse({
+      name: "Ana",
+      email: "ana@clinic.com",
+      password: "senha-forte",
+      acceptTerms: false,
     })
     assert.equal(result.success, false)
   })
@@ -79,11 +92,13 @@ describe("auth schemas", () => {
       name: " Ana ",
       email: "Ana@Clinic.COM",
       password: "senha-forte",
+      acceptTerms: true,
     })
     assert.equal(result.success, true)
     if (result.success) {
       assert.equal(result.data.name, "Ana")
       assert.equal(result.data.email, "ana@clinic.com")
+      assert.equal(result.data.acceptTerms, true)
     }
   })
 })

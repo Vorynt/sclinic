@@ -1,7 +1,7 @@
 "use client"
 
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Controller, useForm } from "react-hook-form"
 import { toast } from "sonner"
 import type { z } from "zod"
@@ -14,7 +14,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog"
 import {
   Field,
@@ -41,8 +40,15 @@ import { ErrorCode, getClientMessage, isAppError } from "@/shared/errors"
 type InviteMemberValues = z.input<typeof inviteMemberSchema>
 type InviteMemberOutput = z.output<typeof inviteMemberSchema>
 
-export function InviteMemberDialog() {
-  const [open, setOpen] = useState(false)
+type InviteMemberDialogProps = {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+}
+
+export function InviteMemberDialog({
+  open,
+  onOpenChange,
+}: InviteMemberDialogProps) {
   const [formError, setFormError] = useState<{
     message: string
     code: string
@@ -65,6 +71,11 @@ export function InviteMemberDialog() {
     },
   })
 
+  useEffect(() => {
+    if (open) return
+    setFormError(null)
+  }, [open])
+
   const invite = useInviteMemberMutation({
     onSuccess: () => {
       toast.success("Convite enviado por e-mail.")
@@ -74,7 +85,7 @@ export function InviteMemberDialog() {
         roleKey: "receptionist",
       })
       setFormError(null)
-      setOpen(false)
+      onOpenChange(false)
     },
     onError: (error) => {
       if (isAppError(error)) {
@@ -97,16 +108,12 @@ export function InviteMemberDialog() {
     <Dialog
       open={open}
       onOpenChange={(next) => {
-        setOpen(next)
+        onOpenChange(next)
         if (!next) {
           setFormError(null)
         }
       }}
     >
-      <DialogTrigger asChild>
-        <Button type="button">Convidar colaborador</Button>
-      </DialogTrigger>
-
       <DialogContent className="sm:max-w-md" showCloseButton>
         <DialogHeader>
           <DialogTitle>Convidar colaborador</DialogTitle>
@@ -175,7 +182,7 @@ export function InviteMemberDialog() {
             <Button
               type="button"
               variant="outline"
-              onClick={() => setOpen(false)}
+              onClick={() => onOpenChange(false)}
               disabled={invite.isPending}
             >
               Cancelar

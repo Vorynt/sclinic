@@ -1,14 +1,15 @@
 "use client"
 
-import { useState } from "react"
+import { PlusIcon } from "@phosphor-icons/react"
+import { useMemo, useState } from "react"
 
 import { DataTableSearch } from "@/components/data-table/DataTableSearch"
 import { PageHeader } from "@/components/layout/PageHeader"
-import { Button } from "@/components/ui/button"
 import { useListQueryParams } from "@/hooks/use-list-query-params"
 import { PatientFormDialog } from "@/modules/patients/components/PatientFormDialog"
 import { PatientsTable } from "@/modules/patients/components/PatientsTable"
 import type { Patient } from "@/modules/patients/types/patient"
+import type { PageAction } from "@/types/page-action"
 
 type PatientsPanelProps = {
   onSchedulePatient?: (patient: Patient) => void
@@ -19,26 +20,32 @@ export function PatientsPanel({ onSchedulePatient }: PatientsPanelProps) {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingPatient, setEditingPatient] = useState<Patient | null>(null)
 
-  function handleNewPatient() {
-    setEditingPatient(null)
-    setDialogOpen(true)
-  }
-
   function handleEditPatient(patient: Patient) {
     setEditingPatient(patient)
     setDialogOpen(true)
   }
+
+  const pageActions = useMemo<PageAction[]>(
+    () => [
+      {
+        id: "new-patient",
+        label: "Novo paciente",
+        icon: PlusIcon,
+        onClick: () => {
+          setEditingPatient(null)
+          setDialogOpen(true)
+        },
+      },
+    ],
+    [],
+  )
 
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
         title="Pacientes"
         description="Cadastro e busca de pacientes da clínica."
-        actions={
-          <Button type="button" onClick={handleNewPatient}>
-            Novo paciente
-          </Button>
-        }
+        actions={pageActions}
       />
 
       <DataTableSearch

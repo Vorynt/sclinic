@@ -243,6 +243,7 @@ export function AppointmentFiltersDrawer({
       <SheetTrigger asChild>
         <Button
           type="button"
+          size={"sm"}
           variant="outline"
           aria-pressed={hasActiveFilters || undefined}
           className={cn(
