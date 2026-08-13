@@ -44,8 +44,10 @@ export const metadata: Metadata = {
 
 export default async function RootLayout({
   children,
+  modal,
 }: Readonly<{
   children: React.ReactNode;
+  modal: React.ReactNode;
 }>) {
   const initialSession = await authService
     .getSession({ headers: await headers() })
@@ -55,6 +57,7 @@ export default async function RootLayout({
     <html
       lang="pt-BR"
       suppressHydrationWarning
+      data-scroll-behavior="smooth"
       className={cn(
         "h-full",
         "antialiased scroll-smooth",
@@ -71,6 +74,7 @@ export default async function RootLayout({
               <AuthProvider initialSession={initialSession}>
                 <TooltipProvider>
                   {children}
+                  {modal}
                   <AttendancePreparingOverlay />
                   <Toaster richColors />
                 </TooltipProvider>

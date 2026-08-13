@@ -4,13 +4,15 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import type { z } from "zod";
 
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Field,
+  FieldContent,
   FieldError,
   FieldGroup,
   FieldLabel,
@@ -40,6 +42,7 @@ export function SignUpForm() {
 
   const {
     register,
+    control,
     handleSubmit,
     formState: { errors },
   } = useForm<SignUpValues, unknown, SignUpOutput>({
@@ -48,6 +51,7 @@ export function SignUpForm() {
       name: "",
       email: "",
       password: "",
+      acceptTerms: false,
     },
   });
 
@@ -142,6 +146,47 @@ export function SignUpForm() {
             {...register("password")}
           />
           <FieldError errors={[errors.password]} />
+        </Field>
+
+        <Field
+          orientation="horizontal"
+          data-invalid={Boolean(errors.acceptTerms) || undefined}>
+          <Controller
+            name="acceptTerms"
+            control={control}
+            render={({ field }) => (
+              <Checkbox
+                id="sign-up-accept-terms"
+                checked={field.value === true}
+                onCheckedChange={(checked) => {
+                  field.onChange(checked === true);
+                }}
+                disabled={signUp.isPending}
+                aria-invalid={Boolean(errors.acceptTerms) || undefined}
+              />
+            )}
+          />
+          <FieldContent>
+            <FieldLabel
+              htmlFor="sign-up-accept-terms"
+              className="font-normal leading-snug text-muted-foreground">
+              Li e aceito os{" "}
+              <Link
+                href={routes.terms}
+                className="font-medium text-foreground underline-offset-4 hover:underline"
+                onClick={(event) => event.stopPropagation()}>
+                Termos de Uso
+              </Link>{" "}
+              e a{" "}
+              <Link
+                href={routes.privacy}
+                className="font-medium text-foreground underline-offset-4 hover:underline"
+                onClick={(event) => event.stopPropagation()}>
+                Política de Privacidade
+              </Link>
+            </FieldLabel>
+            <FieldError errors={[errors.acceptTerms]} />
+          </FieldContent>
         </Field>
       </FieldGroup>
 

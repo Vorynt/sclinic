@@ -134,5 +134,9 @@ export const LANDING_COPY = {
   },
   footer: {
     tagline: "Software clínico para consultórios e clínicas que crescem com ordem.",
+    productHeading: "Produto",
+    accountHeading: "Conta",
+    legalHeading: "Documentos legais",
+    legal: "Ver todos",
   },
 } as const

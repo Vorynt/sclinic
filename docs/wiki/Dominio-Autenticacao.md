@@ -9,13 +9,14 @@ Sessão (Better Auth), redirects pós-login, guards de permissão/clínica, util
 ## Fluxos
 
 - Login, sign-up, forgot/reset password
+- Sign-up exige aceite obrigatório dos Termos de Uso e da Política de Privacidade (`acceptTerms` no `signUpSchema`; campo não é enviado ao Better Auth). Links abrem modal via intercepting routes (`@modal/(.)termos` / `(.)privacidade`)
 - Verify email; change-password (senha provisória)
 - Ordem canônica de redirect: `post-auth-redirect.ts` (ver [Diagramas](Diagramas))
 - Invite paths podem preceder verify-email (token prova ownership)
 
 ## Regras
 
-- Proxy/cookie: paths públicos vs autenticados (`src/proxy.ts`)
+- Proxy/cookie: paths públicos vs autenticados (`src/proxy.ts`) — inclui hub `/legal` e docs (`/termos`, `/privacidade`, `/cookies`, `/contrato-saas`, `/dpa`, `/seguranca`, `/retencao`, `/incidentes`, `/ropa`)
 - `requireClinic` / `assertClinicEntitled` bloqueiam clínica sem assinatura viva (produto)
 - `requireOwnedClinicTeardown` — exclusão de clínica owned **sem** exigir entitlement
 - Conta (`/account`): owner com assinatura bloqueada acessa self-service de billing
