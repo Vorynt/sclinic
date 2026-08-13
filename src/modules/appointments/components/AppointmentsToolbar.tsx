@@ -36,6 +36,25 @@ export function AppointmentsToolbar({
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex items-center gap-2">
+        <ToggleGroup
+          type="single"
+          variant="outline"
+          value={mode}
+          onValueChange={(value) => {
+            if (value) onModeChange(value as CalendarViewMode);
+          }}
+          aria-label="Modo de visualização">
+          <ButtonGroup>
+            {VIEW_MODE_OPTIONS.map((option) => (
+              <ToggleGroupItem
+                size={"sm"}
+                key={option.value}
+                value={option.value}>
+                {option.label}
+              </ToggleGroupItem>
+            ))}
+          </ButtonGroup>
+        </ToggleGroup>
         <ButtonGroup>
           <Button
             type="button"
@@ -63,26 +82,7 @@ export function AppointmentsToolbar({
         </span>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2">
-        {filters}
-
-        <ToggleGroup
-          type="single"
-          variant="outline"
-          value={mode}
-          onValueChange={(value) => {
-            if (value) onModeChange(value as CalendarViewMode);
-          }}
-          aria-label="Modo de visualização">
-          <ButtonGroup>
-            {VIEW_MODE_OPTIONS.map((option) => (
-              <ToggleGroupItem key={option.value} value={option.value}>
-                {option.label}
-              </ToggleGroupItem>
-            ))}
-          </ButtonGroup>
-        </ToggleGroup>
-      </div>
+      <div className="flex flex-wrap items-center gap-2">{filters}</div>
     </div>
   );
 }
