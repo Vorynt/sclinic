@@ -1,5 +1,5 @@
 /**
- * AuthStore — client-only UI flags (sidebar/clinic switcher open, etc.).
+ * AuthStore — client-only UI flags (clinic switcher, session bootstrap overlay, etc.).
  * Session/membership data lives in TanStack Query (authQueries).
  */
 import { create } from "zustand"

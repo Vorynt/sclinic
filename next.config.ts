@@ -7,6 +7,7 @@ const nextConfig: NextConfig = {
     // Enables next/navigation `forbidden()` → app/forbidden.tsx (403).
     authInterrupts: true,
   },
+  allowedDevOrigins: ["192.168.1.200"],
   async redirects() {
     return [
       {
@@ -14,7 +15,7 @@ const nextConfig: NextConfig = {
         destination: "/home",
         permanent: true,
       },
-    ]
+    ];
   },
 };
 

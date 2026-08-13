@@ -371,7 +371,7 @@ Convenção de ID: `RF-<DOMÍNIO>-NNN`.
 
 | ID | Título | Descrição | Status |
 |----|--------|-----------|--------|
-| RF-DASH-001 | AppShell + nav por permissão | Itens somem sem perm | Done |
+| RF-DASH-001 | AppShell + nav por permissão | Top/bottom nav; itens somem sem perm | Done |
 | RF-DASH-002 | Homes por `roleKey` | Landing única `/home` | Done |
 | RF-DASH-003 | Atalho Ajuda nas homes | Todas as personas | Done |
 | RF-DASH-004 | AttendanceShell | Shell sem sidebar completa | Done |

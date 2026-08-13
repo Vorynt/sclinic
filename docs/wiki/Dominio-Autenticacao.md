@@ -13,7 +13,7 @@ Sessão (Better Auth), redirects pós-login, guards de permissão/clínica, util
 - Verify email; change-password (senha provisória)
 - Ordem canônica de redirect: `post-auth-redirect.ts` (ver [Diagramas](Diagramas))
 - Invite paths podem preceder verify-email (token prova ownership)
-- Pós-login com membership: `useSignInMutation` faz seed do cache da sessão (`setQueryData`) + `SessionBootstrapOverlay` (`LoadingScreen`) até o `AppShell` confirmar auth/permissions no client — evita sidebar vazia no primeiro paint
+- Pós-login com membership: `useSignInMutation` faz seed do cache da sessão (`setQueryData`) + `SessionBootstrapOverlay` (`LoadingScreen`) até o `AppShell` confirmar auth/permissions no client — evita nav vazia no primeiro paint
 
 ## Regras
 

@@ -20,6 +20,6 @@ Fonte canônica: `src/config/routes.ts`. Route groups `(auth)`, `(dashboard)` et
 - Dashboard / attendance / account: e-mail verificado, senha ok, membership, entitlement.
 - Settings: `settings.manage`; subtítulos `audit.read` / owner-only usage.
 - Patient clinical tabs: `records.read`.
-- `/help`: FAQ curado por papel (módulo `help`); item Ajuda na sidebar habilitado para todos.
+- `/help`: FAQ curado por papel (módulo `help`); item Ajuda no overflow da nav, habilitado para todos.
 
-Nav: `src/modules/dashboard/constants/nav.ts` (itens somem sem permissão).
+Nav: `src/modules/dashboard/constants/nav.ts` — shell híbrido (top nav + bottom tabs + “Mais”); itens somem sem permissão. Ações de página (`PageAction[]` no `PageHeader`) viram FAB mobile no `AppShell` (`PageActionsFab`).

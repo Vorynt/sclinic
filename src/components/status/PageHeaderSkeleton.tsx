@@ -15,6 +15,7 @@ type PageHeaderSkeletonProps = {
 /**
  * Silhouette for the standard dashboard page header
  * (title + description + optional primary action).
+ * Action skeleton is desktop-only — mobile uses the AppShell FAB.
  */
 export function PageHeaderSkeleton({
   hasAction = true,
@@ -29,7 +30,7 @@ export function PageHeaderSkeleton({
         <Skeleton className={descriptionClassName} />
       </div>
       {hasAction ? (
-        <Skeleton className={cn("shrink-0", actionClassName)} />
+        <Skeleton className={cn("hidden shrink-0 md:block", actionClassName)} />
       ) : null}
     </div>
   )

@@ -5,6 +5,9 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { DataTablePagination } from "@/components/data-table/DataTablePagination";
+import { ListCard } from "@/components/data-table/ListCard";
+import { ListCardSkeleton } from "@/components/data-table/ListCardSkeleton";
+import { ResponsiveDataView } from "@/components/data-table/ResponsiveDataView";
 import { QueryErrorState } from "@/components/status/QueryErrorState";
 import { TableSkeleton } from "@/components/status/TableSkeleton";
 import {
@@ -78,6 +81,72 @@ function accountStatusLabel(status: ProfessionalAccountStatus): string {
   return ACCOUNT_STATUS_LABELS[status] ?? status;
 }
 
+function ProfessionalRowActions({
+  professional,
+  isTogglePending,
+  onEdit,
+  onEditHours,
+  onToggleStatus,
+  onDelete,
+}: {
+  professional: ProfessionalListItem;
+  isTogglePending: boolean;
+  onEdit: (professional: ProfessionalListItem) => void;
+  onEditHours?: (professional: ProfessionalListItem) => void;
+  onToggleStatus: (professional: ProfessionalListItem) => void;
+  onDelete: (professional: ProfessionalListItem) => void;
+}) {
+  return (
+    <ButtonGroup>
+      <Button
+        type="button"
+        variant="secondary"
+        size="icon"
+        tooltip="Editar"
+        onClick={() => onEdit(professional)}>
+        <PencilSimpleIcon />
+        <span className="sr-only">Editar</span>
+      </Button>
+      {onEditHours ? (
+        <Button
+          type="button"
+          variant="secondary"
+          size="icon"
+          tooltip="Ajustar horários"
+          onClick={() => onEditHours(professional)}>
+          <ClockIcon />
+          <span className="sr-only">Ajustar horários</span>
+        </Button>
+      ) : null}
+      <Button
+        type="button"
+        variant="secondary"
+        size="icon"
+        tooltip={professional.status === "active" ? "Desativar" : "Ativar"}
+        disabled={isTogglePending}
+        onClick={() => onToggleStatus(professional)}>
+        {professional.status === "active" ? (
+          <ProhibitIcon />
+        ) : (
+          <CheckCircleIcon />
+        )}
+        <span className="sr-only">
+          {professional.status === "active" ? "Desativar" : "Ativar"}
+        </span>
+      </Button>
+      <Button
+        type="button"
+        variant="destructive"
+        size="icon"
+        tooltip="Remover"
+        onClick={() => onDelete(professional)}>
+        <TrashIcon />
+        <span className="sr-only">Remover</span>
+      </Button>
+    </ButtonGroup>
+  );
+}
+
 export function ProfessionalsTable({
   filters,
   onPageChange,
@@ -103,7 +172,12 @@ export function ProfessionalsTable({
   });
 
   if (professionalsQuery.isLoading) {
-    return <TableSkeleton columns={6} rows={DEFAULT_LIST_PAGE_SIZE} />;
+    return (
+      <ResponsiveDataView
+        desktop={<TableSkeleton columns={6} rows={DEFAULT_LIST_PAGE_SIZE} />}
+        mobile={<ListCardSkeleton rows={DEFAULT_LIST_PAGE_SIZE} />}
+      />
+    );
   }
 
   if (professionalsQuery.isError) {
@@ -137,122 +211,139 @@ export function ProfessionalsTable({
     );
   }
 
+  function toggleStatus(professional: ProfessionalListItem) {
+    const nextStatus =
+      professional.status === "active" ? "inactive" : "active";
+    setStatus.mutate({
+      id: professional.id,
+      status: nextStatus,
+    });
+  }
+
   return (
     <div className="flex flex-col gap-4">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Nome</TableHead>
-            <TableHead>E-mail</TableHead>
-            <TableHead>Profissão</TableHead>
-            <TableHead>Afiliação</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead className="text-right">Ações</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {professionals.map((professional) => {
-            const nextStatus =
-              professional.status === "active" ? "inactive" : "active";
-            const isTogglePending = setStatus.isPending;
-            const displayName = formatProfessionalDisplayName({
-              fullName: professional.fullName,
-              treatmentPronoun: professional.treatmentPronoun,
-              fallback: professional.email ?? "—",
-            });
-
-            return (
-              <TableRow key={professional.id}>
-                <TableCell
-                  className="max-w-60 truncate font-medium"
-                  title={displayName}>
-                  {displayName}
-                </TableCell>
-                <TableCell>{professional.email || "—"}</TableCell>
-                <TableCell>
-                  <span title={getProfessionalRoleLabel(
-                    professional.roleKey,
-                    professional.roleName,
-                  )}>
-                    {getProfessionTypeLabel(professional.professionType)}
-                  </span>
-                </TableCell>
-                <TableCell>
-                  {getAffiliationTypeLabel(professional.affiliationType)}
-                </TableCell>
-                <TableCell>
-                  <Badge
-                    variant={accountStatusBadgeVariant(
-                      professional.accountStatus,
-                    )}>
-                    {accountStatusLabel(professional.accountStatus)}
-                  </Badge>
-                </TableCell>
-                <TableCell className="flex items-end justify-end text-right">
-                  <ButtonGroup>
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      size="icon"
-                      tooltip="Editar"
-                      onClick={() => onEdit(professional)}>
-                      <PencilSimpleIcon />
-                      <span className="sr-only">Editar</span>
-                    </Button>
-                    {onEditHours ? (
-                      <Button
-                        type="button"
-                        variant="secondary"
-                        size="icon"
-                        tooltip="Ajustar horários"
-                        onClick={() => onEditHours(professional)}>
-                        <ClockIcon />
-                        <span className="sr-only">Ajustar horários</span>
-                      </Button>
-                    ) : null}
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      size="icon"
-                      tooltip={
-                        professional.status === "active"
-                          ? "Desativar"
-                          : "Ativar"
-                      }
-                      disabled={isTogglePending}
-                      onClick={() =>
-                        setStatus.mutate({
-                          id: professional.id,
-                          status: nextStatus,
-                        })
-                      }>
-                      {professional.status === "active" ? (
-                        <ProhibitIcon />
-                      ) : (
-                        <CheckCircleIcon />
-                      )}
-                      <span className="sr-only">
-                        {professional.status === "active"
-                          ? "Desativar"
-                          : "Ativar"}
-                      </span>
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      size="icon"
-                      tooltip="Remover"
-                      onClick={() => setProfessionalToDelete(professional)}>
-                      <TrashIcon />
-                      <span className="sr-only">Remover</span>
-                    </Button>
-                  </ButtonGroup>
-                </TableCell>
+      <ResponsiveDataView
+        desktop={
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Nome</TableHead>
+                <TableHead>E-mail</TableHead>
+                <TableHead>Profissão</TableHead>
+                <TableHead>Afiliação</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Ações</TableHead>
               </TableRow>
-            );
-          })}
-        </TableBody>
-      </Table>
+            </TableHeader>
+            <TableBody>
+              {professionals.map((professional) => {
+                const displayName = formatProfessionalDisplayName({
+                  fullName: professional.fullName,
+                  treatmentPronoun: professional.treatmentPronoun,
+                  fallback: professional.email ?? "—",
+                });
+
+                return (
+                  <TableRow key={professional.id}>
+                    <TableCell
+                      className="max-w-60 truncate font-medium"
+                      title={displayName}>
+                      {displayName}
+                    </TableCell>
+                    <TableCell>{professional.email || "—"}</TableCell>
+                    <TableCell>
+                      <span
+                        title={getProfessionalRoleLabel(
+                          professional.roleKey,
+                          professional.roleName,
+                        )}>
+                        {getProfessionTypeLabel(professional.professionType)}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      {getAffiliationTypeLabel(professional.affiliationType)}
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={accountStatusBadgeVariant(
+                          professional.accountStatus,
+                        )}>
+                        {accountStatusLabel(professional.accountStatus)}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="flex items-end justify-end text-right">
+                      <ProfessionalRowActions
+                        professional={professional}
+                        isTogglePending={setStatus.isPending}
+                        onEdit={onEdit}
+                        onEditHours={onEditHours}
+                        onToggleStatus={toggleStatus}
+                        onDelete={setProfessionalToDelete}
+                      />
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        }
+        mobile={
+          <div className="flex flex-col gap-2">
+            {professionals.map((professional) => {
+              const displayName = formatProfessionalDisplayName({
+                fullName: professional.fullName,
+                treatmentPronoun: professional.treatmentPronoun,
+                fallback: professional.email ?? "—",
+              });
+
+              return (
+                <ListCard
+                  key={professional.id}
+                  collapsible
+                  title={displayName}
+                  badges={
+                    <Badge
+                      variant={accountStatusBadgeVariant(
+                        professional.accountStatus,
+                      )}>
+                      {accountStatusLabel(professional.accountStatus)}
+                    </Badge>
+                  }
+                  preview={[
+                    professional.email || null,
+                    getProfessionTypeLabel(professional.professionType),
+                  ]
+                    .filter(Boolean)
+                    .join(" · ")}
+                  meta={[
+                    { label: "E-mail", value: professional.email || "—" },
+                    {
+                      label: "Profissão",
+                      value: getProfessionTypeLabel(professional.professionType),
+                    },
+                    {
+                      label: "Afiliação",
+                      value: getAffiliationTypeLabel(
+                        professional.affiliationType,
+                      ),
+                    },
+                  ]}
+                  actions={
+                    <ProfessionalRowActions
+                      professional={professional}
+                      isTogglePending={setStatus.isPending}
+                      onEdit={onEdit}
+                      onEditHours={onEditHours}
+                      onToggleStatus={toggleStatus}
+                      onDelete={setProfessionalToDelete}
+                    />
+                  }
+                />
+              );
+            })}
+          </div>
+        }
+      />
 
       <DataTablePagination
         page={result?.page ?? filters.page ?? 1}

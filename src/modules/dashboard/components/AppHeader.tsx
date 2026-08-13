@@ -1,63 +1,31 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Fragment } from "react";
-
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
-import { Separator } from "@/components/ui/separator";
-import { SidebarTrigger } from "@/components/ui/sidebar";
-import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { AppTopNav } from "@/modules/dashboard/components/AppTopNav";
+import { ClinicIndicator } from "@/modules/dashboard/components/ClinicIndicator";
 import { UserMenu } from "@/modules/dashboard/components/UserMenu";
-import { getPageMeta } from "@/modules/dashboard/constants/nav";
+import type { ShellNav } from "@/modules/dashboard/constants/nav";
 
-export function AppHeader() {
-  const pathname = usePathname();
-  const { title, breadcrumbs } = getPageMeta(pathname);
+type AppHeaderProps = {
+  nav: ShellNav;
+};
 
+export function AppHeader({ nav }: AppHeaderProps) {
   return (
-    <header className="sticky top-0 z-10 flex h-12 shrink-0 items-center gap-2 border-b border-border/70 bg-background/80 px-4 backdrop-blur-xl supports-backdrop-filter:bg-background/65">
-      <SidebarTrigger className="-ml-1" />
-      <Separator orientation="vertical" className="mx-1" />
+    <header className="sticky top-0 z-10 border-b border-border/70 bg-background/80 backdrop-blur-xl supports-backdrop-filter:bg-background/65">
+      <div className="flex h-14 items-center gap-3 px-3 md:gap-4 md:px-4">
+        <ClinicIndicator />
 
-      {/* Mobile: current page name (breadcrumb is hidden below sm) */}
-      <p className="min-w-0 flex-1 truncate text-sm font-medium text-foreground sm:hidden">
-        {title}
-      </p>
+        <div
+          className="hidden h-5 w-px shrink-0 bg-border/80 md:block"
+          aria-hidden
+        />
 
-      <Breadcrumb className="hidden min-w-0 flex-1 sm:block">
-        <BreadcrumbList>
-          {breadcrumbs.map((segment, index) => {
-            const isLast = index === breadcrumbs.length - 1;
+        <AppTopNav nav={nav} />
 
-            return (
-              <Fragment key={`${segment.label}-${index}`}>
-                {index > 0 ? <BreadcrumbSeparator /> : null}
-                <BreadcrumbItem>
-                  {isLast || !segment.href ? (
-                    <BreadcrumbPage>{segment.label}</BreadcrumbPage>
-                  ) : (
-                    <BreadcrumbLink asChild>
-                      <Link href={segment.href}>{segment.label}</Link>
-                    </BreadcrumbLink>
-                  )}
-                </BreadcrumbItem>
-              </Fragment>
-            );
-          })}
-        </BreadcrumbList>
-      </Breadcrumb>
-      <section className="flex items-center h-full *:border-l *:border-l-border *:pl-2">
-        <ThemeToggle />
-        <UserMenu />
-      </section>
+        <div className="ml-auto shrink-0">
+          <UserMenu />
+        </div>
+      </div>
     </header>
   );
 }
