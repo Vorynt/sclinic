@@ -78,7 +78,7 @@ export default async function RootLayout({
                   {modal}
                   <AttendancePreparingOverlay />
                   <SessionBootstrapOverlay />
-                  <Toaster richColors />
+                  <Toaster />
                 </TooltipProvider>
               </AuthProvider>
             </QueryProvider>

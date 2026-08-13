@@ -3,6 +3,7 @@
 import {
   ArrowsClockwiseIcon,
   CheckIcon,
+  DotsThreeIcon,
   PencilSimpleIcon,
   StethoscopeIcon,
   UserMinusIcon,
@@ -26,7 +27,13 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ButtonGroup } from "@/components/ui/button-group";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Sheet,
   SheetContent,
@@ -305,108 +312,106 @@ function AppointmentDetailContent({
               </div>
             </dl>
 
-            <div className="flex gap-2">
-              {showAttendance ? (
-                <Button
-                  type="button"
-                  disabled={isStatusPending}
-                  onClick={handleAttendanceClick}>
-                  {isStatusPending &&
-                  updateStatus.variables?.status === "checked_in" ? (
-                    <Spinner />
-                  ) : (
-                    <StethoscopeIcon />
-                  )}
-                  {attendanceLabel}
-                </Button>
-              ) : null}
-
-              {showActionGroup ? (
-                <ButtonGroup>
-                  {showConfirm ? (
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      size="icon"
-                      tooltip="Confirmar"
-                      disabled={isStatusPending}
-                      onClick={() =>
-                        updateStatus.mutate({
-                          id: appointment.id,
-                          status: "confirmed",
-                        })
-                      }>
-                      {isStatusPending &&
-                      updateStatus.variables?.status === "confirmed" ? (
-                        <Spinner />
-                      ) : (
-                        <CheckIcon />
-                      )}
-                      <span className="sr-only">Confirmar</span>
-                    </Button>
-                  ) : null}
-
-                  {showNoShow ? (
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      size="icon"
-                      tooltip="Marcar falta"
-                      disabled={isStatusPending}
-                      onClick={() =>
-                        updateStatus.mutate({
-                          id: appointment.id,
-                          status: "no_show",
-                        })
-                      }>
-                      {isStatusPending &&
-                      updateStatus.variables?.status === "no_show" ? (
-                        <Spinner />
-                      ) : (
-                        <UserMinusIcon />
-                      )}
-                      <span className="sr-only">Marcar falta</span>
-                    </Button>
-                  ) : null}
-
-                  {canEditSchedule ? (
-                    <>
-                      <Button
-                        type="button"
-                        variant="secondary"
-                        size="icon"
-                        tooltip="Remarcar"
-                        disabled={isStatusPending}
-                        onClick={() => setMode("reschedule")}>
-                        <ArrowsClockwiseIcon />
-                        <span className="sr-only">Remarcar</span>
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="secondary"
-                        size="icon"
-                        tooltip="Editar detalhes"
-                        disabled={isStatusPending}
-                        onClick={() => setMode("edit-details")}>
-                        <PencilSimpleIcon />
-                        <span className="sr-only">Editar detalhes</span>
-                      </Button>
-                    </>
-                  ) : null}
-
+            {showAttendance || showActionGroup ? (
+              <div className="flex items-center gap-2">
+                {showAttendance ? (
                   <Button
                     type="button"
-                    variant="destructive"
-                    size="icon"
-                    tooltip="Cancelar agendamento"
+                    // className="min-w-0 flex-1"
                     disabled={isStatusPending}
-                    onClick={() => setConfirmOpen(true)}>
-                    <XCircleIcon />
-                    <span className="sr-only">Cancelar agendamento</span>
+                    onClick={handleAttendanceClick}>
+                    {isStatusPending &&
+                    updateStatus.variables?.status === "checked_in" ? (
+                      <Spinner />
+                    ) : (
+                      <StethoscopeIcon />
+                    )}
+                    {attendanceLabel}
                   </Button>
-                </ButtonGroup>
-              ) : null}
-            </div>
+                ) : null}
+
+                {showActionGroup ? (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        disabled={isStatusPending}
+                        aria-label="Mais ações">
+                        <DotsThreeIcon />
+                        <span>Ações</span>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="min-w-48">
+                      {showConfirm ? (
+                        <DropdownMenuItem
+                          disabled={isStatusPending}
+                          onSelect={() =>
+                            updateStatus.mutate({
+                              id: appointment.id,
+                              status: "confirmed",
+                            })
+                          }>
+                          {isStatusPending &&
+                          updateStatus.variables?.status === "confirmed" ? (
+                            <Spinner />
+                          ) : (
+                            <CheckIcon />
+                          )}
+                          Confirmar
+                        </DropdownMenuItem>
+                      ) : null}
+
+                      {showNoShow ? (
+                        <DropdownMenuItem
+                          disabled={isStatusPending}
+                          onSelect={() =>
+                            updateStatus.mutate({
+                              id: appointment.id,
+                              status: "no_show",
+                            })
+                          }>
+                          {isStatusPending &&
+                          updateStatus.variables?.status === "no_show" ? (
+                            <Spinner />
+                          ) : (
+                            <UserMinusIcon />
+                          )}
+                          Marcar falta
+                        </DropdownMenuItem>
+                      ) : null}
+
+                      {canEditSchedule ? (
+                        <>
+                          <DropdownMenuItem
+                            disabled={isStatusPending}
+                            onSelect={() => setMode("reschedule")}>
+                            <ArrowsClockwiseIcon />
+                            Remarcar
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            disabled={isStatusPending}
+                            onSelect={() => setMode("edit-details")}>
+                            <PencilSimpleIcon />
+                            Editar detalhes
+                          </DropdownMenuItem>
+                        </>
+                      ) : null}
+
+                      <DropdownMenuSeparator />
+
+                      <DropdownMenuItem
+                        variant="destructive"
+                        disabled={isStatusPending}
+                        onSelect={() => setConfirmOpen(true)}>
+                        <XCircleIcon />
+                        Cancelar agendamento
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                ) : null}
+              </div>
+            ) : null}
           </div>
         </div>
 

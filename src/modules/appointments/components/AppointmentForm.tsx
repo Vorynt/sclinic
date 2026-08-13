@@ -18,7 +18,10 @@ import {
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field";
-import { FormErrorAlert, scrollFormToTop } from "@/components/ui/form-error-alert";
+import {
+  FormErrorAlert,
+  scrollFormToTop,
+} from "@/components/ui/form-error-alert";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -34,17 +37,20 @@ import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import { Permission } from "@/config/permissions";
 import { routes } from "@/config/routes";
+import { cn } from "@/lib/utils";
 import { SuggestedAvailabilitySlots } from "@/modules/appointments/components/SuggestedAvailabilitySlots";
 import {
+  APPOINTMENT_MODALITY_LABELS,
   APPOINTMENT_TYPE_LABELS,
   isSelfScheduleOnlyRole,
 } from "@/modules/appointments/constants/appointments";
 import { useCreateAppointmentMutation } from "@/modules/appointments/hooks/use-appointment-mutations";
 import { usePromoteWaitlistMutation } from "@/modules/appointments/hooks/use-waitlist";
-import { appointmentModalitySchema } from "@/modules/appointments/schemas/appointment.schema";
 import type { CreateAppointmentInput } from "@/modules/appointments/schemas/appointment.schema";
-import { appointmentTypeSchema } from "@/modules/appointments/schemas/appointment.schema";
-import { APPOINTMENT_MODALITY_LABELS } from "@/modules/appointments/constants/appointments";
+import {
+  appointmentModalitySchema,
+  appointmentTypeSchema,
+} from "@/modules/appointments/schemas/appointment.schema";
 import type {
   AppointmentModality,
   AppointmentType,
@@ -72,7 +78,6 @@ import { formatProfessionalSchedulingLabel } from "@/modules/professionals/const
 import { useProfessionalsForSchedulingQuery } from "@/modules/professionals/hooks/use-professionals";
 import { useAuth } from "@/providers/AuthProvider";
 import { ErrorCode, getClientMessage, isAppError } from "@/shared/errors";
-import { cn } from "@/lib/utils";
 import { parseISODate, toISODate } from "@/utils/date";
 import { CURRENCY_MASK_OPTIONS, MASKS } from "@/utils/mask";
 
@@ -504,11 +509,7 @@ export function AppointmentForm({
                 ? "px-0 py-0"
                 : "min-h-0 flex-1 overflow-y-auto px-4 py-4",
             )}>
-            {formError && (
-              <FormErrorAlert
-                message={formError.message}
-              />
-            )}
+            {formError && <FormErrorAlert message={formError.message} />}
             <FieldGroup className="flex flex-col gap-4">
               <Field data-invalid={Boolean(errors.patientId) || undefined}>
                 <FieldLabel>Paciente</FieldLabel>
@@ -644,9 +645,9 @@ export function AppointmentForm({
                 </>
               ) : null}
 
-              <div className="grid gap-4 sm:grid-cols-3">
+              <div className="grid gap-4 sm:grid-cols-4">
                 <Field
-                  className="sm:col-span-1"
+                  className="sm:col-span-2"
                   data-invalid={Boolean(errors.date) || undefined}>
                   <FieldLabel htmlFor="appointment-date">Data</FieldLabel>
                   <Controller
@@ -938,7 +939,7 @@ export function AppointmentForm({
               ) : null}
               <Button type="submit" disabled={isPending || isServicesEmpty}>
                 {isPending ? <Spinner /> : null}
-                Salvar
+                Agendar
               </Button>
             </div>
           ) : (

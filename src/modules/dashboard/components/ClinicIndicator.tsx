@@ -9,7 +9,6 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useTransition } from "react";
 import { toast } from "sonner";
 
-import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -94,10 +93,12 @@ export function ClinicIndicator() {
         </span>
       </span>
       {canSwitch ? (
-        <CaretUpDownIcon
-          className="size-3.5 shrink-0 opacity-60"
-          aria-hidden
-        />
+        <span className="flex items-center transition-colors justify-center size-7 shrink-0 rounded-md group-hover/clinic-indicator-trigger:bg-primary/10">
+          <CaretUpDownIcon
+            className="size-3.5 shrink-0 opacity-60"
+            aria-hidden
+          />
+        </span>
       ) : null}
     </>
   );
@@ -106,8 +107,7 @@ export function ClinicIndicator() {
     return (
       <div
         className="flex max-w-44 items-center gap-2 sm:max-w-52"
-        title={`${label} · ${roleLabel}`}
-      >
+        title={`${label} · ${roleLabel}`}>
         {content}
       </div>
     );
@@ -115,16 +115,10 @@ export function ClinicIndicator() {
 
   return (
     <DropdownMenu open={switcherOpen} onOpenChange={setSwitcherOpen}>
-      <DropdownMenuTrigger asChild>
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          className="h-9 max-w-44 gap-2 px-1.5 sm:max-w-52"
-          aria-label="Selecionar clínica"
-        >
-          {content}
-        </Button>
+      <DropdownMenuTrigger
+        aria-label="Selecionar clínica"
+        className="group/clinic-indicator-trigger flex max-w-44 items-center gap-2 sm:max-w-52  px-1.5 py-1 rounded-md transition-colors">
+        {content}
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-64" align="start" sideOffset={6}>
         <DropdownMenuLabel>Suas clínicas</DropdownMenuLabel>
@@ -148,8 +142,7 @@ export function ClinicIndicator() {
                 isSuspended
                   ? "Seu acesso a esta clínica está suspenso"
                   : undefined
-              }
-            >
+              }>
               <span className="min-w-0 leading-tight">
                 <span className="block truncate font-medium">{name}</span>
                 <span className="block truncate text-xs text-muted-foreground">
