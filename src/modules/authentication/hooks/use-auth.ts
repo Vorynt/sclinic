@@ -43,6 +43,10 @@ export function useSignInMutation({
   return useMutation({
     ...authMutations.signIn(),
     onSuccess: async (data) => {
+      // Seed session before invalidate so permissions are available on redirect
+      // (AuthProvider was hydrated with null on /login and does not remount).
+      setQueryClinicId(data.session.activeClinicId ?? null);
+      queryClient.setQueryData(authQueryKeys.session, data);
       await queryClient.invalidateQueries({ queryKey: authQueryKeys.all });
       onSuccess?.(data);
     },

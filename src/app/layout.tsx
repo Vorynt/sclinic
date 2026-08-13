@@ -6,6 +6,7 @@ import { headers } from "next/headers";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 
 import { AttendancePreparingOverlay } from "@/components/status/AttendancePreparingOverlay";
+import { SessionBootstrapOverlay } from "@/components/status/SessionBootstrapOverlay";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { authService } from "@/modules/authentication/services/auth.service";
@@ -76,6 +77,7 @@ export default async function RootLayout({
                   {children}
                   {modal}
                   <AttendancePreparingOverlay />
+                  <SessionBootstrapOverlay />
                   <Toaster richColors />
                 </TooltipProvider>
               </AuthProvider>

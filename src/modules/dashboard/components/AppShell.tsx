@@ -1,12 +1,13 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 
 import { LoadingScreen } from "@/components/status/LoadingScreen";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { PlanOverLimitBanner } from "@/modules/billing/components/PlanOverLimitBanner";
 import { AppHeader } from "@/modules/dashboard/components/AppHeader";
 import { AppSidebar } from "@/modules/dashboard/components/AppSidebar";
+import { useAuth } from "@/providers/AuthProvider";
 import { useAuthUiStore } from "@/stores/auth.store";
 
 type AppShellProps = {
@@ -14,8 +15,16 @@ type AppShellProps = {
 };
 
 export function AppShell({ children }: AppShellProps) {
+  const { auth } = useAuth();
   const isSwitchingClinic = useAuthUiStore((s) => s.isSwitchingClinic);
   const switchingClinicName = useAuthUiStore((s) => s.switchingClinicName);
+  const isBootstrappingSession = useAuthUiStore((s) => s.isBootstrappingSession);
+  const endSessionBootstrap = useAuthUiStore((s) => s.endSessionBootstrap);
+
+  useEffect(() => {
+    if (!isBootstrappingSession || !auth) return;
+    endSessionBootstrap();
+  }, [isBootstrappingSession, auth, endSessionBootstrap]);
 
   return (
     <SidebarProvider>
