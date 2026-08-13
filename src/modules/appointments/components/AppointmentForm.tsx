@@ -49,6 +49,7 @@ import type {
   AppointmentModality,
   AppointmentType,
 } from "@/modules/appointments/types/appointment";
+import type { AppointmentNewHrefParams } from "@/modules/appointments/utils/appointment-new-href";
 import { APPOINTMENT_DURATION_OPTIONS } from "@/modules/appointments/utils/calendar-constants";
 import { readSuggestedSlotsFromMeta } from "@/modules/appointments/utils/suggested-slots";
 import { useAuthSession } from "@/modules/authentication/hooks/use-auth";
@@ -71,6 +72,7 @@ import { formatProfessionalSchedulingLabel } from "@/modules/professionals/const
 import { useProfessionalsForSchedulingQuery } from "@/modules/professionals/hooks/use-professionals";
 import { useAuth } from "@/providers/AuthProvider";
 import { ErrorCode, getClientMessage, isAppError } from "@/shared/errors";
+import { cn } from "@/lib/utils";
 import { parseISODate, toISODate } from "@/utils/date";
 import { CURRENCY_MASK_OPTIONS, MASKS } from "@/utils/mask";
 
@@ -146,19 +148,37 @@ type LockedPatient = {
 };
 
 type AppointmentFormProps = {
+  /** `quick` hides type/modality/reason/financial; default `full`. */
+  variant?: "full" | "quick";
+  /** `dialog` uses DialogFooter + scroll; `page` is for `/appointments/new`. */
+  layout?: "dialog" | "page";
   defaultStartsAt?: Date;
   /** When set, patient is pre-selected and the combobox is disabled. */
   lockedPatient?: LockedPatient;
+  /** Prefill patient without locking the combobox. */
+  defaultPatientId?: string | null;
+  defaultPatientLabel?: string | null;
   /** Pre-select appointment type (e.g. follow_up from attendance). */
   defaultType?: AppointmentType;
   /** When set, only these types appear in the select. */
   allowedTypes?: readonly AppointmentType[];
   /** Pre-select professional when the user can choose any. */
   defaultProfessionalId?: string | null;
+  defaultProfessionalLabel?: string | null;
+  /** Local `YYYY-MM-DD` — preferred over deriving from `defaultStartsAt` (no rounding). */
+  defaultDate?: string | null;
+  /** Local `HH:mm` — preferred over deriving from `defaultStartsAt`. */
+  defaultStartTime?: string | null;
+  defaultModality?: AppointmentModality;
+  defaultDurationMinutes?: string;
+  defaultServiceId?: string;
+  defaultReason?: string;
   /** When set, submitting promotes this waitlist entry instead of creating a plain appointment. */
   waitlistId?: string;
   onSuccess?: () => void;
   onCancel?: () => void;
+  /** Quick → full page with current draft (dialog only). */
+  onAdvanced?: (draft: AppointmentNewHrefParams) => void;
 };
 
 function roundToNextStep(date: Date, stepMinutes: number): Date {
@@ -182,16 +202,30 @@ function resolveInitialStartsAt(defaultStartsAt?: Date): Date {
 }
 
 export function AppointmentForm({
+  variant = "full",
+  layout = "dialog",
   defaultStartsAt,
   lockedPatient,
+  defaultPatientId = null,
+  defaultPatientLabel = null,
   defaultType = "consultation",
   allowedTypes,
   defaultProfessionalId = null,
+  defaultProfessionalLabel = null,
+  defaultDate = null,
+  defaultStartTime = null,
+  defaultModality = "in_person",
+  defaultDurationMinutes = "30",
+  defaultServiceId = "",
+  defaultReason = "",
   waitlistId,
   onSuccess,
   onCancel,
+  onAdvanced,
 }: AppointmentFormProps) {
   const formId = useId();
+  const isQuick = variant === "quick";
+  const isPageLayout = layout === "page";
   const [formError, setFormError] = useState<{
     message: string;
     code: string;
@@ -200,11 +234,20 @@ export function AppointmentForm({
   const [patientDialogOpen, setPatientDialogOpen] = useState(false);
   const [selectedPatientLabel, setSelectedPatientLabel] = useState<
     string | null
-  >(lockedPatient?.name ?? null);
+  >(lockedPatient?.name ?? defaultPatientLabel ?? null);
+  const [selectedProfessionalLabel, setSelectedProfessionalLabel] = useState<
+    string | null
+  >(defaultProfessionalLabel ?? null);
 
   const isPatientLocked = Boolean(lockedPatient);
   const today = startOfDay(new Date());
-  const initialDate = resolveInitialStartsAt(defaultStartsAt);
+  const initialFromStartsAt = resolveInitialStartsAt(defaultStartsAt);
+  const resolvedDate = defaultDate?.trim() || toISODate(initialFromStartsAt);
+  const resolvedStartTime =
+    defaultStartTime?.trim() ||
+    `${String(initialFromStartsAt.getHours()).padStart(2, "0")}:${String(
+      initialFromStartsAt.getMinutes(),
+    ).padStart(2, "0")}`;
   const typeOptions = allowedTypes
     ? appointmentTypeOptions.filter(([value]) => allowedTypes.includes(value))
     : appointmentTypeOptions;
@@ -229,17 +272,15 @@ export function AppointmentForm({
   const form = useForm<ScheduleFormValues, unknown, ScheduleFormOutput>({
     resolver: zodResolver(scheduleFormSchema),
     defaultValues: {
-      patientId: lockedPatient?.id ?? "",
+      patientId: lockedPatient?.id ?? defaultPatientId ?? "",
       professionalId: defaultProfessionalId ?? "",
       type: resolvedDefaultType,
-      modality: "in_person",
-      date: toISODate(initialDate),
-      startTime: `${String(initialDate.getHours()).padStart(2, "0")}:${String(
-        initialDate.getMinutes(),
-      ).padStart(2, "0")}`,
-      durationMinutes: "30",
-      reason: "",
-      serviceId: "",
+      modality: defaultModality,
+      date: resolvedDate,
+      startTime: resolvedStartTime,
+      durationMinutes: defaultDurationMinutes,
+      reason: defaultReason,
+      serviceId: defaultServiceId,
       discountPercent: 0,
       billingKind: "standard",
       amountBrl: "",
@@ -251,6 +292,7 @@ export function AppointmentForm({
     control,
     handleSubmit,
     setValue,
+    getValues,
     watch,
     formState: { errors },
   } = form;
@@ -287,6 +329,8 @@ export function AppointmentForm({
         })
       : null
     : null;
+  const professionalDisplayLabel =
+    lockedProfessionalLabel ?? selectedProfessionalLabel;
 
   useEffect(() => {
     if (!isProfessionalLocked) return;
@@ -295,6 +339,13 @@ export function AppointmentForm({
     setValue("professionalId", selfProfessional.id, {
       shouldValidate: true,
     });
+    setSelectedProfessionalLabel(
+      formatProfessionalSchedulingLabel({
+        fullName: selfProfessional.fullName,
+        treatmentPronoun: selfProfessional.treatmentPronoun,
+        specialty: selfProfessional.specialty,
+      }),
+    );
   }, [isProfessionalLocked, professionalsQuery.data, setValue]);
 
   useEffect(() => {
@@ -303,6 +354,11 @@ export function AppointmentForm({
       shouldValidate: true,
     });
   }, [defaultProfessionalId, isProfessionalLocked, setValue]);
+
+  useEffect(() => {
+    if (!defaultProfessionalLabel) return;
+    setSelectedProfessionalLabel(defaultProfessionalLabel);
+  }, [defaultProfessionalLabel]);
 
   function clearAvailabilityFeedback() {
     setFormError(null);
@@ -314,6 +370,28 @@ export function AppointmentForm({
     setValue("patientId", patient.id, {
       shouldValidate: true,
       shouldDirty: true,
+    });
+  }
+
+  function handleAdvanced() {
+    if (!onAdvanced) return;
+    const values = getValues();
+
+    onAdvanced({
+      patientId: values.patientId || undefined,
+      patientName: selectedPatientLabel ?? lockedPatient?.name ?? undefined,
+      lockPatient: isPatientLocked,
+      professionalId: values.professionalId || undefined,
+      professionalName:
+        professionalDisplayLabel ?? selectedProfessionalLabel ?? undefined,
+      date: values.date || undefined,
+      startTime: values.startTime || undefined,
+      type: values.type,
+      modality: values.modality,
+      durationMinutes: values.durationMinutes || undefined,
+      serviceId: values.serviceId || undefined,
+      waitlistId,
+      reason: values.reason || undefined,
     });
   }
 
@@ -414,9 +492,18 @@ export function AppointmentForm({
         <form
           id={formId}
           onSubmit={onSubmit}
-          className="flex min-h-0 flex-1 flex-col"
+          className={cn(
+            "flex flex-col",
+            isPageLayout ? "gap-0" : "min-h-0 flex-1",
+          )}
           noValidate>
-          <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-4 py-4">
+          <div
+            className={cn(
+              "flex flex-col gap-4",
+              isPageLayout
+                ? "px-0 py-0"
+                : "min-h-0 flex-1 overflow-y-auto px-4 py-4",
+            )}>
             {formError && (
               <FormErrorAlert
                 message={formError.message}
@@ -431,8 +518,8 @@ export function AppointmentForm({
                   render={({ field }) => (
                     <PatientCombobox
                       value={field.value}
-                      onValueChange={(patientId) => {
-                        setSelectedPatientLabel(null);
+                      onValueChange={(patientId, meta) => {
+                        setSelectedPatientLabel(meta?.name ?? null);
                         field.onChange(patientId);
                       }}
                       displayLabel={selectedPatientLabel}
@@ -457,8 +544,11 @@ export function AppointmentForm({
                   render={({ field }) => (
                     <ProfessionalCombobox
                       value={field.value}
-                      onValueChange={field.onChange}
-                      displayLabel={lockedProfessionalLabel}
+                      onValueChange={(professionalId, meta) => {
+                        setSelectedProfessionalLabel(meta?.label ?? null);
+                        field.onChange(professionalId);
+                      }}
+                      displayLabel={professionalDisplayLabel}
                       disabled={
                         isPending ||
                         sessionQuery.isLoading ||
@@ -489,64 +579,70 @@ export function AppointmentForm({
                 <FieldError errors={[errors.professionalId]} />
               </Field>
 
-              <Field data-invalid={Boolean(errors.type) || undefined}>
-                <FieldLabel>Tipo do atendimento</FieldLabel>
-                <Controller
-                  name="type"
-                  control={control}
-                  render={({ field }) => (
-                    <Select
-                      value={field.value}
-                      onValueChange={field.onChange}
-                      disabled={isPending}>
-                      <SelectTrigger
-                        aria-invalid={Boolean(errors.type) || undefined}>
-                        <SelectValue placeholder="Selecione" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {typeOptions.map(([value, label]) => (
-                          <SelectItem key={value} value={value}>
-                            {label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )}
-                />
-                <FieldError errors={[errors.type]} />
-              </Field>
+              {!isQuick ? (
+                <>
+                  <Field data-invalid={Boolean(errors.type) || undefined}>
+                    <FieldLabel>Tipo do atendimento</FieldLabel>
+                    <Controller
+                      name="type"
+                      control={control}
+                      render={({ field }) => (
+                        <Select
+                          value={field.value}
+                          onValueChange={field.onChange}
+                          disabled={isPending}>
+                          <SelectTrigger
+                            aria-invalid={Boolean(errors.type) || undefined}>
+                            <SelectValue placeholder="Selecione" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {typeOptions.map(([value, label]) => (
+                              <SelectItem key={value} value={value}>
+                                {label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
+                    <FieldError errors={[errors.type]} />
+                  </Field>
 
-              <Field data-invalid={Boolean(errors.modality) || undefined}>
-                <FieldLabel>Modalidade</FieldLabel>
-                <Controller
-                  name="modality"
-                  control={control}
-                  render={({ field }) => (
-                    <Select
-                      value={field.value}
-                      onValueChange={field.onChange}
-                      disabled={isPending}>
-                      <SelectTrigger
-                        aria-invalid={Boolean(errors.modality) || undefined}>
-                        <SelectValue placeholder="Selecione" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {(
-                          Object.entries(APPOINTMENT_MODALITY_LABELS) as [
-                            AppointmentModality,
-                            string,
-                          ][]
-                        ).map(([value, label]) => (
-                          <SelectItem key={value} value={value}>
-                            {label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )}
-                />
-                <FieldError errors={[errors.modality]} />
-              </Field>
+                  <Field data-invalid={Boolean(errors.modality) || undefined}>
+                    <FieldLabel>Modalidade</FieldLabel>
+                    <Controller
+                      name="modality"
+                      control={control}
+                      render={({ field }) => (
+                        <Select
+                          value={field.value}
+                          onValueChange={field.onChange}
+                          disabled={isPending}>
+                          <SelectTrigger
+                            aria-invalid={
+                              Boolean(errors.modality) || undefined
+                            }>
+                            <SelectValue placeholder="Selecione" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {(
+                              Object.entries(APPOINTMENT_MODALITY_LABELS) as [
+                                AppointmentModality,
+                                string,
+                              ][]
+                            ).map(([value, label]) => (
+                              <SelectItem key={value} value={value}>
+                                {label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
+                    <FieldError errors={[errors.modality]} />
+                  </Field>
+                </>
+              ) : null}
 
               <div className="grid gap-4 sm:grid-cols-3">
                 <Field
@@ -624,19 +720,21 @@ export function AppointmentForm({
                 />
               )}
 
-              <Field data-invalid={Boolean(errors.reason) || undefined}>
-                <FieldLabel htmlFor="appointment-reason">
-                  Motivo da consulta
-                </FieldLabel>
-                <Textarea
-                  id="appointment-reason"
-                  placeholder="Opcional — ex.: check-up, dor"
-                  aria-invalid={Boolean(errors.reason) || undefined}
-                  disabled={isPending}
-                  {...register("reason")}
-                />
-                <FieldError errors={[errors.reason]} />
-              </Field>
+              {!isQuick ? (
+                <Field data-invalid={Boolean(errors.reason) || undefined}>
+                  <FieldLabel htmlFor="appointment-reason">
+                    Motivo da consulta
+                  </FieldLabel>
+                  <Textarea
+                    id="appointment-reason"
+                    placeholder="Opcional — ex.: check-up, dor"
+                    aria-invalid={Boolean(errors.reason) || undefined}
+                    disabled={isPending}
+                    {...register("reason")}
+                  />
+                  <FieldError errors={[errors.reason]} />
+                </Field>
+              ) : null}
 
               <Field data-invalid={Boolean(errors.serviceId) || undefined}>
                 <FieldLabel>Serviço</FieldLabel>
@@ -684,7 +782,7 @@ export function AppointmentForm({
                 <FieldError errors={[errors.serviceId]} />
               </Field>
 
-              {canCollect ? (
+              {!isQuick && canCollect ? (
                 <>
                   <Field
                     data-invalid={Boolean(errors.discountPercent) || undefined}>
@@ -797,7 +895,7 @@ export function AppointmentForm({
                 </>
               ) : null}
 
-              {canManageFinancial ? (
+              {!isQuick && canManageFinancial ? (
                 <Field data-invalid={Boolean(errors.amountBrl) || undefined}>
                   <FieldLabel htmlFor="appointment-amount-override">
                     Outro valor
@@ -827,21 +925,48 @@ export function AppointmentForm({
             </FieldGroup>
           </div>
 
-          <DialogFooter className="mx-0 mb-0 shrink-0 rounded-none">
-            {onCancel ? (
-              <Button
-                type="button"
-                variant="outline"
-                onClick={onCancel}
-                disabled={isPending}>
-                Cancelar
+          {isPageLayout ? (
+            <div className="mt-6 flex flex-col-reverse gap-2 border-t border-border pt-4 sm:flex-row sm:justify-end">
+              {onCancel ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={onCancel}
+                  disabled={isPending}>
+                  Cancelar
+                </Button>
+              ) : null}
+              <Button type="submit" disabled={isPending || isServicesEmpty}>
+                {isPending ? <Spinner /> : null}
+                Salvar
               </Button>
-            ) : null}
-            <Button type="submit" disabled={isPending || isServicesEmpty}>
-              {isPending ? <Spinner /> : null}
-              Agendar
-            </Button>
-          </DialogFooter>
+            </div>
+          ) : (
+            <DialogFooter className="mx-0 mb-0 shrink-0 rounded-none">
+              {onCancel ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={onCancel}
+                  disabled={isPending}>
+                  Cancelar
+                </Button>
+              ) : null}
+              {isQuick && onAdvanced ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleAdvanced}
+                  disabled={isPending}>
+                  Mais opções
+                </Button>
+              ) : null}
+              <Button type="submit" disabled={isPending || isServicesEmpty}>
+                {isPending ? <Spinner /> : null}
+                Agendar
+              </Button>
+            </DialogFooter>
+          )}
         </form>
       </FormProvider>
 

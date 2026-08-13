@@ -57,6 +57,7 @@ Inventário do que o sistema faz hoje. Status: **Done** | **Partial** | **Planne
 |---------|--------|------|
 | Calendário dia/semana/mês | Done | `/appointments`; filtros em drawer (profissional, modalidade, paciente) |
 | Criar/remarcar/cancelar | Done | appointments |
+| Agendamento rápido (modal) + completo (`/appointments/new`) | Done | `AppointmentForm` `quick`/`full`; `buildAppointmentNewHref` |
 | Status: scheduled→…→completed | Done | appointment.service |
 | Iniciar atendimento (role gate) | Done | checked_in |
 | Workspace attendance | Done | `(attendance)` |

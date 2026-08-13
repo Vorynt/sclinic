@@ -5,11 +5,25 @@
 ## Features
 
 - Calendário `/appointments`
+- **Create híbrido:** agendamento rápido (modal) + completo (`/appointments/new`)
 - Workspace `(attendance)` com notas/vitais/receitas
 - Transições de status + cancelamento
 - Valor opcional → charge (ADR-002) — legado
 - Serviço obrigatório + desconto % / cortesia (ADR-009) — Done
 - Modalidade presencial/online, bloqueios de horário, horário do profissional e lista de espera (ADR-011) — Done
+
+## Create — rápido vs completo
+
+Espelha o padrão `PatientForm` (`quick` / `full`):
+
+| Fluxo | UI | Campos | Entrypoints |
+|-------|-----|--------|-------------|
+| **Rápido** | `AppointmentFormDialog` → `AppointmentForm` `variant="quick"` | Paciente, profissional, data/hora/duração, serviço (tipo/modalidade/cobrança com defaults) | Clique em slot vazio; Agendar no paciente; home da recepção; promover waitlist; próximo atendimento |
+| **Completo** | `/appointments/new` → `AppointmentNewPanel` + `variant="full"` `layout="page"` | Tudo do rápido + tipo, modalidade, motivo, desconto/cobrança/override | Ação **Novo agendamento** na agenda; botão **Mais opções** no modal (leva draft via query params) |
+
+- Helper: `buildAppointmentNewHref` / `appointmentNewLocationFromSearchParams` (`utils/appointment-new-href.ts`).
+- Mesma action/service de create; edição continua no `AppointmentDetailDrawer` (remarcar / detalhes).
+- Waitlist promote: modal rápido com `lockedPatient`; **Mais opções** preserva `waitlistId` + paciente na URL.
 
 ## Máquina de status
 
@@ -70,7 +84,7 @@ Só `owner`, `admin`, `clinician`, `nurse`. Recepcionista **não** inicia.
 - `appointment_waitlist`: fila por paciente, com profissional/serviço opcionais e observações; status `waiting|promoted|canceled`.
 - **Não reserva slot** — só ao promover (`waitlistService.promote`) é que um appointment real é criado via `appointmentService.create` (mesmas checagens de disponibilidade/horário).
 - Guarda pura testável: `assertWaitlistPromotable` (só promove entrada `waiting`; paciente do agendamento deve ser o da fila).
-- UI: `WaitlistPanel` na home da recepção; promoção abre `AppointmentFormDialog` com paciente travado (`lockedPatient`).
+- UI: `WaitlistPanel` na home da recepção; promoção abre `AppointmentFormDialog` (**quick**) com paciente travado (`lockedPatient`); **Mais opções** abre `/appointments/new` com draft + `waitlistId`.
 
 > Disponibilidade = horário efetivo (clínica ∩ profissional) − bloqueios − conflitos de agenda. Horários recorrentes e agenda por sala/equipamento permanecem **Backlog H3 · E15** — ver [Roadmap](Roadmap).
 

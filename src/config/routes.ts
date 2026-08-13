@@ -40,6 +40,7 @@ export const routes = {
   professionals: "/professionals",
   billing: "/billing",
   appointments: "/appointments",
+  appointmentNew: "/appointments/new",
   appointmentAttendance: (appointmentId: string) =>
     `/appointments/${appointmentId}/attendance`,
   appointmentAttendanceNotes: (appointmentId: string) =>

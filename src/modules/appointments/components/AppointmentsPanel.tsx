@@ -1,10 +1,12 @@
 "use client";
 
 import { CalendarPlusIcon, ProhibitInsetIcon } from "@phosphor-icons/react";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { PageHeader } from "@/components/layout/PageHeader";
 import { QueryErrorState } from "@/components/status/QueryErrorState";
+import { routes } from "@/config/routes";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { AppointmentDayView } from "@/modules/appointments/components/AppointmentDayView";
 import { AppointmentDetailDrawer } from "@/modules/appointments/components/AppointmentDetailDrawer";
@@ -38,6 +40,7 @@ import { useAuthSession } from "@/modules/authentication/hooks/use-auth";
 import type { PageAction } from "@/types/page-action";
 
 export function AppointmentsPanel() {
+  const router = useRouter();
   const isMobile = useIsMobile();
   const appliedMobileDefault = useRef(false);
   const sessionQuery = useAuthSession();
@@ -162,12 +165,11 @@ export function AppointmentsPanel() {
         icon: CalendarPlusIcon,
         priority: "primary",
         onClick: () => {
-          setFormDefaultStartsAt(undefined);
-          setFormDialogOpen(true);
+          router.push(routes.appointmentNew);
         },
       },
     ],
-    [],
+    [router],
   );
 
   return (
