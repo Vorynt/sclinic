@@ -88,6 +88,12 @@ const onSubmit = handleSubmit((data) => {
 
 Referência: `src/modules/authentication/hooks/use-auth.ts`.
 
+### Troca de clínica (exceção)
+
+O isolamento por clínica no client usa `queryKeyHashFn` + `setQueryClinicId` (`src/lib/get-query-client.ts`). No switch **não** usar `invalidateQueries()` sem filtro: fazer `clear()` + reseed de `authQueryKeys.session` para evitar refetch da sessão já seedada e limpar orphans da clínica anterior. Queries montadas cold-fetch no novo scope.
+
+Layouts RSC devem ler sessão via `getCachedSession` (`React.cache`) para deduplicar root + segment layout no mesmo request.
+
 ### Anti-padrões
 
 - `try/catch` em torno de `mutateAsync` no form para tratar erro de domínio.

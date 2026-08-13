@@ -49,6 +49,7 @@ Fora do board: canceled, no_show, completed sem charge ou paid.
 - `GET /api/realtime/clinic` → evento `clinic.ops`
 - Hub **in-process** (limitação multi-instância documentada no ADR)
 - Entidades: `appointment`, `charge`, `waitlist`
+- `useClinicOpsRealtime` debounced (~400ms) invalida prefixes `appointments` / `schedule-blocks` / `waitlist` / `charges` — colapsa rajadas de eventos numa única onda de refetch
 - Próximo: broker (ver [Roadmap](Roadmap))
 
 ## Decisão

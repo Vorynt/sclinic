@@ -14,6 +14,8 @@ Sessão (Better Auth), redirects pós-login, guards de permissão/clínica, util
 - Ordem canônica de redirect: `post-auth-redirect.ts` (ver [Diagramas](Diagramas))
 - Invite paths podem preceder verify-email (token prova ownership)
 - Pós-login com membership: `useSignInMutation` faz seed do cache da sessão (`setQueryData`) + `SessionBootstrapOverlay` (`LoadingScreen`) até o `AppShell` confirmar auth/permissions no client — evita nav vazia no primeiro paint
+- Troca de clínica (`useSwitchClinicMutation`): atualiza o scope do hash (`setQueryClinicId`), `queryClient.clear()` + reseed da session — sem `invalidateQueries()` global (evita storm de refetch da sessão já seedada e de orphans da clínica anterior). Queries montadas fazem cold fetch no novo scope; `ClinicIndicator` ainda chama `router.refresh()` para RSC/permissions
+- Layouts RSC (root + segmentos autenticados) usam `getCachedSession` (`React.cache`) — um `getSession` por request HTTP, compartilhado entre root e layout de segmento
 
 ## Regras
 
@@ -29,4 +31,4 @@ Notebook `auth-invite-email-verified`, `subscription-access-guard`.
 
 ## Arquivos-chave
 
-`permissions/guards.ts`, `utils/post-auth-redirect.ts`, `queries/auth.query.ts`, `hooks/use-auth.ts` (seed de sessão no sign-in), `SessionBootstrapOverlay`, `stores/auth.store.ts` (`isBootstrappingSession`)
+`permissions/guards.ts`, `utils/post-auth-redirect.ts`, `utils/get-cached-session.ts`, `queries/auth.query.ts`, `hooks/use-auth.ts` (seed de sessão no sign-in / clear+reseed no switch de clínica), `SessionBootstrapOverlay`, `stores/auth.store.ts` (`isBootstrappingSession`)

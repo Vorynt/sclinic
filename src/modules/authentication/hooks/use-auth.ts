@@ -102,12 +102,13 @@ export function useSwitchClinicMutation({
 
   return useMutation({
     ...authMutations.switchClinic(),
-    onSuccess: async (data) => {
-      // Update hash scope before touching the cache so keys resolve to the new clinic.
+    onSuccess: (data) => {
+      // Scope hash to the new clinic, drop all cached entries (incl. orphans from
+      // the previous clinic), then reseed session so we do not refetch it.
+      // Mounted domain queries cold-fetch under the new scope — no global invalidate storm.
       setQueryClinicId(data.session.activeClinicId ?? null);
+      queryClient.clear();
       queryClient.setQueryData(authQueryKeys.session, data);
-      // Clinic-scoped domain caches (patients, members, …) must not leak.
-      await queryClient.invalidateQueries();
       onSuccess?.(data);
     },
     onError: (error) => {

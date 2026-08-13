@@ -3,8 +3,7 @@ import type { ReactNode } from "react"
 
 import { routes } from "@/config/routes"
 import { AppShell } from "@/modules/dashboard/components/AppShell"
-import { getAuthRequestContext } from "@/modules/authentication/utils/request-context"
-import { authService } from "@/modules/authentication/services/auth.service"
+import { getCachedSession } from "@/modules/authentication/utils/get-cached-session"
 
 type DashboardLayoutProps = {
   children: ReactNode
@@ -13,7 +12,7 @@ type DashboardLayoutProps = {
 export default async function DashboardLayout({
   children,
 }: DashboardLayoutProps) {
-  const session = await authService.getSession(await getAuthRequestContext())
+  const session = await getCachedSession()
 
   if (!session) {
     redirect(routes.login)
