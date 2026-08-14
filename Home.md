@@ -15,13 +15,18 @@ Handbook oficial do produto e da engenharia. Público-alvo: **qualquer novo cola
 
 ## Mapa da documentação
 
-| Seção | Páginas |
-|-------|---------|
-| **Produto** | [Visão](Visao-do-Produto), [Requisitos](Requisitos), [Glossário](Glossario), [Roadmap](Roadmap), [Épicos](Epicos), [Features](Catalogo-de-Features) |
-| **Arquitetura** | [Arquitetura](Arquitetura), [Módulos](Modulos-e-Boundaries), [Rotas](Rotas-e-Navegacao), [RBAC](RBAC-e-Permissoes), [Diagramas](Diagramas) |
-| **Domínio** | Auth, Clínicas, Equipe, Pacientes, Profissionais, Agenda, Prontuário, Recepção, Faturamento, SaaS, Auditoria, Dashboard/Settings, Ajuda, Marketing |
-| **Decisões** | [Índice de decisões](Indice-de-Decisoes) → ADRs em `docs/adr/` |
-| **Operação** | [Ambientes](Ambientes-e-Operacao), [Manutenção da doc](Manutencao-da-Documentacao) |
+**Produto** — [Visão](Visao-do-Produto) · [Requisitos](Requisitos) · [Glossário](Glossario) · [Roadmap](Roadmap) · [Épicos](Epicos) · [Features](Catalogo-de-Features)
+
+**Arquitetura** — [Arquitetura](Arquitetura) · [Módulos](Modulos-e-Boundaries) · [Rotas](Rotas-e-Navegacao) · [RBAC](RBAC-e-Permissoes) · [Diagramas](Diagramas)
+
+**Domínio**
+- *Plataforma:* [Autenticação](Dominio-Autenticacao) · [Clínicas](Dominio-Clinicas) · [Usuários e equipe](Dominio-Usuarios-e-Equipe) · [Dashboard e settings](Dominio-Dashboard-e-Settings) · [Auditoria](Dominio-Auditoria) · [Ajuda](Dominio-Ajuda) · [Marketing](Dominio-Marketing)
+- *Assistência:* [Pacientes](Dominio-Pacientes) · [Profissionais](Dominio-Profissionais) · [Agendamentos](Dominio-Agendamentos) · [Prontuário](Dominio-Prontuario) · [Recepção](Dominio-Recepcao-e-Realtime)
+- *Financeiro:* [Faturamento clínico](Dominio-Faturamento-Clinico) · [Assinatura SaaS](Dominio-Assinatura-SaaS)
+
+**Decisões** — [Índice de decisões](Indice-de-Decisoes) → ADRs em `docs/adr/`
+
+**Operação** — [Ambientes](Ambientes-e-Operacao) · [Manutenção da doc](Manutencao-da-Documentacao)
 
 ## Princípios desta wiki
 
