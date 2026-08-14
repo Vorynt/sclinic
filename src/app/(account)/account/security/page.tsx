@@ -12,7 +12,7 @@ export default function AccountSecurityPage() {
     <div className="flex flex-col gap-6">
       <AccountPageHeader
         title="Segurança"
-        description="Altere a senha de acesso à sua conta."
+        description="Senha, autenticação em duas etapas e sessões em outros dispositivos."
       />
       <AccountSecurityPanel />
     </div>

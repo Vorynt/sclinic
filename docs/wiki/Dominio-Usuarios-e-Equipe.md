@@ -12,7 +12,7 @@ Membros da clínica, convites assignable, conta do usuário (`/account/*`).
 - Invite TTL 7 dias; roles: `admin|manager|receptionist|financial`
 - Suspender / reativar membro (permanece na listagem)
 - Soft-remove → `status=removed` + `deletedAt` (some da listagem; histórico/FK preservados; libera vaga)
-- Conta: overview, profile, security, subscription (se living)
+- Conta: overview, profile, security (senha via modal + 2FA + sessões), subscription (se living)
 
 ## Regras
 
@@ -26,6 +26,8 @@ Membros da clínica, convites assignable, conta do usuário (`/account/*`).
 
 name, email, roleKey; senha no aceite ≥ 8.
 
-## Relacionados
+## Ver também
 
-[RBAC](RBAC-e-Permissoes), [Assinatura SaaS](Dominio-Assinatura-SaaS), profissionais (outro fluxo de convite).
+- [RBAC](RBAC-e-Permissoes)
+- [Assinatura SaaS](Dominio-Assinatura-SaaS)
+- [Profissionais](Dominio-Profissionais) (outro fluxo de convite)

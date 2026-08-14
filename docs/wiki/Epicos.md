@@ -2,6 +2,16 @@
 
 Épicos de produto inferidos das capacidades entregues, ADRs e [Roadmap](Roadmap) priorizado. IDs internos da wiki (`E1`…).
 
+## Sumário
+
+- [Done](#done)
+- [Partial](#partial)
+- [Backlog](#backlog)
+- [Next / Later / Deferred](#next--later--deferred)
+- [Detalhamento](#detalhamento)
+
+## Done
+
 | ID | Épico | Status | ADRs | Módulos |
 |----|-------|--------|------|---------|
 | **E1** | Plataforma, identidade e multi-clínica | Done | 007 | authentication, clinics, users |
@@ -13,14 +23,29 @@
 | **E7** | Operação da recepção em tempo real | Done | 006 | dashboard, core/realtime |
 | **E8** | Governança, auditoria, settings e ajuda | Done | 001 | audit, settings, clinics, help |
 | **E9** | Aquisição (marketing site) | Done | — | marketing |
+
+## Partial
+
+| ID | Épico | Status | ADRs | Módulos |
+|----|-------|--------|------|---------|
+| **E13** | Documentos clínicos além da receita | Partial (kind + declaração Done) | 005, 010 | medical-records |
+| **E15** | Agenda avançada | Partial (H2 Done; recorrência/sala H3) | 011 | appointments, professionals |
+| **E16** | Recepção operacional (lote / balcão) | Partial (H2 Done; extensões H3) | 006, 011 | appointments, dashboard |
+
+## Backlog
+
+| ID | Épico | Status | ADRs | Módulos |
+|----|-------|--------|------|---------|
+| **E14** | CRM do paciente e retenção | Backlog H1→H3 | — | patients, dashboard |
+| **E17** | Pré-consulta e portal do paciente | Backlog H3 | — | medical-records, auth, portal |
+
+## Next / Later / Deferred
+
+| ID | Épico | Status | ADRs | Módulos |
+|----|-------|--------|------|---------|
 | **E10** | Pagamentos clínicos automatizados | Next | 002 | billing |
 | **E11** | Inventário / estoque | Deferred | — | inventory (vazio) |
 | **E12** | Escala realtime & multi-owner | Later | 003, 006 | core, billing |
-| **E13** | Documentos clínicos além da receita | Partial (kind + declaração Done) | 005, 010 | medical-records |
-| **E14** | CRM do paciente e retenção | Backlog H1→H3 | — | patients, dashboard |
-| **E15** | Agenda avançada | Partial (H2 Done; recorrência/sala H3) | 011 | appointments, professionals |
-| **E16** | Recepção operacional (lote / balcão) | Partial (H2 Done; extensões H3) | 006, 011 | appointments, dashboard |
-| **E17** | Pré-consulta e portal do paciente | Backlog H3 | — | medical-records, auth, portal |
 | **E18** | Indicadores, automações e IA clínica | Later / H3+ | — | dashboard, medical-records |
 | **E19** | Módulos / templates por especialidade | Later / H3+ | — | medical-records |
 
@@ -86,3 +111,8 @@ Núcleo comum + packs de templates/formulários/documentos por especialidade.
 ## Como evoluir
 
 Ao shipar: atualizar status na tabela e o [Roadmap](Roadmap). Novos épicos só quando o boundary de produto for claro (não inventar módulo sem alinhar `architecture/` + lista de domínios).
+
+## Ver também
+
+- [Roadmap](Roadmap)
+- [Catálogo de features](Catalogo-de-Features)

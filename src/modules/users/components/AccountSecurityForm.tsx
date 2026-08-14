@@ -1,132 +1,70 @@
-"use client"
+"use client";
 
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useState } from "react"
-import { useForm } from "react-hook-form"
-import { toast } from "sonner"
-import type { z } from "zod"
+import { useRef, useState } from "react";
+import { toast } from "sonner";
 
-import { Button } from "@/components/ui/button"
-import {
-  Field,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-} from "@/components/ui/field"
-import { FormErrorAlert } from "@/components/ui/form-error-alert"
-import { Input } from "@/components/ui/input"
-import { Spinner } from "@/components/ui/spinner"
-import { useChangePasswordMutation } from "@/modules/authentication/hooks/use-auth"
-import { changePasswordSchema } from "@/modules/authentication/schemas/auth.schema"
-import { ErrorCode, getClientMessage, isAppError } from "@/shared/errors"
-
-type ChangePasswordValues = z.input<typeof changePasswordSchema>
-type ChangePasswordOutput = z.output<typeof changePasswordSchema>
+import { Button } from "@/components/ui/button";
+import { ChangePasswordDialog } from "@/modules/authentication/components/ChangePasswordDialog";
+import { useChangePasswordMutation } from "@/modules/authentication/hooks/use-auth";
+import type { ChangePasswordInput } from "@/modules/authentication/schemas/auth.schema";
+import { ErrorCode, getClientMessage, isAppError } from "@/shared/errors";
 
 export function AccountSecurityForm() {
+  const [open, setOpen] = useState(false);
+  const revokedOthersRef = useRef(false);
   const [formError, setFormError] = useState<{
-    message: string
-    code: string
-  } | null>(null)
-
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors },
-  } = useForm<ChangePasswordValues, unknown, ChangePasswordOutput>({
-    resolver: zodResolver(changePasswordSchema),
-    defaultValues: {
-      currentPassword: "",
-      newPassword: "",
-      confirmPassword: "",
-    },
-  })
+    message: string;
+    code: string;
+  } | null>(null);
 
   const changePassword = useChangePasswordMutation({
     onSuccess: () => {
-      toast.success("Senha atualizada")
-      reset()
-      setFormError(null)
+      toast.success(
+        revokedOthersRef.current
+          ? "Senha atualizada. Outras sessões foram encerradas."
+          : "Senha atualizada",
+      );
+      setFormError(null);
+      setOpen(false);
     },
     onError: (error) => {
       if (isAppError(error)) {
-        setFormError({ message: error.message, code: error.code })
-        return
+        setFormError({
+          message: getClientMessage(error.code),
+          code: error.code,
+        });
+        return;
       }
       setFormError({
         message: getClientMessage(ErrorCode.INTERNAL_ERROR),
         code: ErrorCode.INTERNAL_ERROR,
-      })
+      });
     },
-  })
-
-  const onSubmit = handleSubmit((data) => {
-    setFormError(null)
-    changePassword.mutate(data)
-  })
+  });
 
   return (
-    <form
-      onSubmit={onSubmit}
-      className="flex max-w-md flex-col gap-6"
-      noValidate
-    >
-      {formError ? (
-        <FormErrorAlert message={formError.message} />
-      ) : null}
-
-      <FieldGroup className="flex flex-col gap-4">
-        <Field data-invalid={Boolean(errors.currentPassword)}>
-          <FieldLabel htmlFor="account-current-password">Senha atual</FieldLabel>
-          <Input
-            id="account-current-password"
-            type="password"
-            autoComplete="current-password"
-            aria-invalid={Boolean(errors.currentPassword)}
-            disabled={changePassword.isPending}
-            {...register("currentPassword")}
-          />
-          <FieldError>{errors.currentPassword?.message}</FieldError>
-        </Field>
-
-        <Field data-invalid={Boolean(errors.newPassword)}>
-          <FieldLabel htmlFor="account-new-password">Nova senha</FieldLabel>
-          <Input
-            id="account-new-password"
-            type="password"
-            autoComplete="new-password"
-            aria-invalid={Boolean(errors.newPassword)}
-            disabled={changePassword.isPending}
-            {...register("newPassword")}
-          />
-          <FieldError>{errors.newPassword?.message}</FieldError>
-        </Field>
-
-        <Field data-invalid={Boolean(errors.confirmPassword)}>
-          <FieldLabel htmlFor="account-confirm-password">
-            Confirmar nova senha
-          </FieldLabel>
-          <Input
-            id="account-confirm-password"
-            type="password"
-            autoComplete="new-password"
-            aria-invalid={Boolean(errors.confirmPassword)}
-            disabled={changePassword.isPending}
-            {...register("confirmPassword")}
-          />
-          <FieldError>{errors.confirmPassword?.message}</FieldError>
-        </Field>
-      </FieldGroup>
-
+    <>
       <Button
-        type="submit"
-        disabled={changePassword.isPending}
+        type="button"
+        variant={"outline"}
         className="w-fit"
-      >
-        {changePassword.isPending ? <Spinner /> : null}
-        Atualizar senha
+        onClick={() => setOpen(true)}>
+        Alterar senha
       </Button>
-    </form>
-  )
+      <ChangePasswordDialog
+        open={open}
+        onOpenChange={(next) => {
+          setOpen(next);
+          if (!next) setFormError(null);
+        }}
+        isPending={changePassword.isPending}
+        error={formError}
+        onConfirm={(data: ChangePasswordInput) => {
+          setFormError(null);
+          revokedOthersRef.current = data.revokeOtherSessions;
+          changePassword.mutate(data);
+        }}
+      />
+    </>
+  );
 }

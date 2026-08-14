@@ -16,6 +16,7 @@ const clientMessages: Record<string, string> = {
   [ErrorCode.DB_QUERY_FAILED]: "Algo deu errado. Tente novamente.",
   [ErrorCode.EMAIL_SEND_FAILED]: "Não foi possível enviar o e-mail. Tente novamente.",
   [ErrorCode.INVALID_CREDENTIALS]: "E-mail ou senha inválidos.",
+  [ErrorCode.INVALID_CURRENT_PASSWORD]: "Senha atual incorreta.",
   [ErrorCode.EMAIL_ALREADY_EXISTS]: "Já existe uma conta com este e-mail.",
   [ErrorCode.USER_INACTIVE]: "Sua conta está inativa. Contate o suporte.",
   [ErrorCode.USER_SUSPENDED]: "Sua conta está suspensa. Contate o suporte.",
@@ -33,6 +34,14 @@ const clientMessages: Record<string, string> = {
   [ErrorCode.TOKEN_EXPIRED]: "Este link expirou. Solicite um novo.",
   [ErrorCode.PASSWORD_CHANGE_REQUIRED]:
     "Altere sua senha provisória para continuar.",
+  [ErrorCode.TWO_FACTOR_INVALID_CODE]:
+    "Código de autenticação inválido. Tente novamente.",
+  [ErrorCode.TWO_FACTOR_LOCKED]:
+    "Muitas tentativas. Aguarde alguns minutos e tente de novo.",
+  [ErrorCode.TWO_FACTOR_COOKIE_INVALID]:
+    "A verificação expirou. Faça login novamente.",
+  [ErrorCode.CANNOT_REVOKE_CURRENT_SESSION]:
+    "Você não pode encerrar a sessão deste dispositivo.",
   [ErrorCode.INVITATION_NOT_FOUND]: "Convite não encontrado.",
   [ErrorCode.INVITATION_REVOKED]: "Este convite foi cancelado.",
   [ErrorCode.INVITATION_ALREADY_ACCEPTED]: "Este convite já foi aceito.",

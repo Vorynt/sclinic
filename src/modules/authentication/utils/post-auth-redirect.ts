@@ -1,5 +1,6 @@
 import { routes } from "@/config/routes"
 import type { AuthContext } from "@/modules/authentication/types/auth"
+import { isAuthEntryPath } from "@/modules/authentication/utils/route-access"
 
 /**
  * Destination after sign-in / sign-up / email verification.
@@ -9,6 +10,10 @@ import type { AuthContext } from "@/modules/authentication/types/auth"
  */
 export function getSafeNextPath(next: string | null | undefined): string | null {
   if (!next || !next.startsWith("/") || next.startsWith("//")) {
+    return null
+  }
+  const pathname = next.split("?")[0] ?? next
+  if (isAuthEntryPath(pathname)) {
     return null
   }
   return next
@@ -21,6 +26,10 @@ function withNext(path: string, next: string | null): string {
   const url = new URL(path, "http://local")
   url.searchParams.set("next", next)
   return `${url.pathname}${url.search}`
+}
+
+export function getTwoFactorPath(next?: string | null): string {
+  return withNext(routes.twoFactor, getSafeNextPath(next))
 }
 
 export function getPostAuthRedirect(

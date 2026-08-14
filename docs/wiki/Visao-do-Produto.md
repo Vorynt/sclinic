@@ -63,3 +63,11 @@ Backlog priorizado (sem WhatsApp / arquivos / gateway no eixo de produto H1–H3
 3. **H3** — Retenção, pré-consulta/portal, indicadores; depois especialidades e IA  
 
 Trilha técnica em paralelo: gateway clínico (ADR-002), broker SSE, cotas de storage — ver [Roadmap](Roadmap) e [Épicos](Epicos).
+
+## Ver também
+
+- [Requisitos](Requisitos)
+- [RBAC e permissões](RBAC-e-Permissoes)
+- [Glossário](Glossario)
+- [Roadmap](Roadmap)
+- [Épicos](Epicos)

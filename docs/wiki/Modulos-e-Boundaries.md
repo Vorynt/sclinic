@@ -4,19 +4,19 @@
 
 | Módulo | Responsabilidade | Maturidade |
 |--------|------------------|------------|
-| `authentication` | Sessão, guards, permissões runtime | Done |
-| `clinics` | Clínica, hours, switcher, create/delete | Done |
-| `users` | Equipe, convites, conta | Done |
-| `patients` | Cadastro e detalhe do paciente | Done (**referência canônica**) |
-| `professionals` | Convite e perfil clínico | Done |
-| `appointments` | Agenda, status, attendance shell | Done |
-| `medical-records` | Notas, vitais, alertas, receitas | Done |
-| `billing` | SaaS + charges clínicos | Done |
-| `dashboard` | Shell, nav, homes por role, board | Done |
-| `settings` | Nav/shell de configurações | Done (fino) |
-| `audit` | Leitura + emissão via events | Done |
-| `marketing` | Landing | Done |
-| `help` | Central de ajuda (FAQ curado) | Done |
+| [`authentication`](Dominio-Autenticacao) | Sessão, guards, permissões runtime | Done |
+| [`clinics`](Dominio-Clinicas) | Clínica, hours, switcher, create/delete | Done |
+| [`users`](Dominio-Usuarios-e-Equipe) | Equipe, convites, conta | Done |
+| [`patients`](Dominio-Pacientes) | Cadastro e detalhe do paciente | Done (**referência canônica**) |
+| [`professionals`](Dominio-Profissionais) | Convite e perfil clínico | Done |
+| [`appointments`](Dominio-Agendamentos) | Agenda, status, attendance shell | Done |
+| [`medical-records`](Dominio-Prontuario) | Notas, vitais, alertas, receitas | Done |
+| [`billing`](Dominio-Faturamento-Clinico) ([SaaS](Dominio-Assinatura-SaaS)) | SaaS + charges clínicos | Done |
+| [`dashboard`](Dominio-Dashboard-e-Settings) | Shell, nav, homes por role, board | Done |
+| [`settings`](Dominio-Dashboard-e-Settings) | Nav/shell de configurações | Done (fino) |
+| [`audit`](Dominio-Auditoria) | Leitura + emissão via events | Done |
+| [`marketing`](Dominio-Marketing) | Landing | Done |
+| [`help`](Dominio-Ajuda) | Central de ajuda (FAQ curado) | Done |
 | `inventory` | Reservado | Deferred |
 
 ## Boundaries de import
@@ -46,3 +46,8 @@ Espelhar `patients` ao criar feature nova.
 | `shared/components` espelhado | topo `src/components/` |
 
 Ver `architecture/001`–`003`.
+
+## Ver também
+
+- [Arquitetura](Arquitetura)
+- [Pacientes](Dominio-Pacientes)

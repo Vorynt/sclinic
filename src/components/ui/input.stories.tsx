@@ -107,11 +107,13 @@ export const Password: Story = {
   args: {
     type: "password",
     placeholder: "Digite sua senha",
+    defaultValue: "senha-secreta",
   },
   parameters: {
     docs: {
       description: {
-        story: "Campo do tipo password para ocultar caracteres sensíveis.",
+        story:
+          "Campo do tipo password com botão de olho para revelar ou ocultar o valor.",
       },
     },
   },

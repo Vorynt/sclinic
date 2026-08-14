@@ -1,22 +1,29 @@
 ---
-description: Localização e pirâmide de testes
+description: Localização, runner e pirâmide de testes
 globs: src/modules/**/tests/**,**/__tests__/**,**/*.{test,spec}.{ts,tsx}
 alwaysApply: false
 ---
 
 # Testing
 
-Ver `architecture/009-testing.md`.
+Ver `architecture/009-testing.md` e ADR-013.
 
 ## Localização
 
 Testes de domínio em `modules/<feature>/tests/`.
 
+## Runner
+
+- Jest (`*.spec.ts` / `*.spec.tsx`) — unit, API (actions), interface.
+- Specs: `import { describe, it, expect } from "@jest/globals"`.
+- UI: `/** @jest-environment jsdom */` no topo do `*.ui.spec.tsx`.
+
 ## Pirâmide
 
-- Unit: services, validators, utils, mappers
-- Integration: repositories (DB de teste) e actions
-- E2E: fluxos críticos — fase posterior
+- Unit: services, validators, utils, mappers (`*.unit.spec.ts`, env `node`)
+- API: Server Actions com repos mockados (`*.api.spec.ts`, env `node`)
+- Interface: componentes client + Testing Library (`*.ui.spec.tsx`, jsdom)
+- E2E: fluxos críticos — fase posterior, fora do Jest
 
 ## Regras
 

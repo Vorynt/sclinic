@@ -5,6 +5,7 @@ import { useEffect, type ReactNode } from "react";
 import { PageActionsFab } from "@/components/layout/PageActionsFab";
 import { LoadingScreen } from "@/components/status/LoadingScreen";
 import { cn } from "@/lib/utils";
+import { TwoFactorNudgeDialog } from "@/modules/authentication/components/TwoFactorNudgeDialog";
 import { PlanOverLimitBanner } from "@/modules/billing/components/PlanOverLimitBanner";
 import { AppBottomNav } from "@/modules/dashboard/components/AppBottomNav";
 import { AppHeader } from "@/modules/dashboard/components/AppHeader";
@@ -46,6 +47,7 @@ export function AppShell({ children }: AppShellProps) {
       </div>
       <AppBottomNav nav={nav} />
       <PageActionsFab />
+      <TwoFactorNudgeDialog />
 
       {isSwitchingClinic ? (
         <LoadingScreen

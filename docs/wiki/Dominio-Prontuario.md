@@ -2,7 +2,15 @@
 
 **Módulo:** `src/modules/medical-records/` · **Épicos:** E5, E13 · **ADR-005** · **ADR-008** · **ADR-010**
 
-## Escopo
+## Sumário
+
+- [Responsabilidade](#responsabilidade)
+- [Clinical notes](#clinical-notes)
+- [Vital signs](#vital-signs)
+- [Clinical alerts](#clinical-alerts)
+- [Prescriptions](#prescriptions-adr-005--adr-008--adr-010)
+
+## Responsabilidade
 
 Não há rota top-level: vive no attendance e no detalhe do paciente.
 
@@ -40,11 +48,16 @@ Não há rota top-level: vive no attendance e no detalhe do paciente.
 - UI attendance: seção **Documentos** (`/attendance/documents`); legado `/prescriptions` redireciona
 - Paciente: histórico em `/patients/:id/documents`
 
-## Decisão
+## Decisões relacionadas
 
 Entidade própria na tabela `prescriptions` (nome físico mantido; produto fala “Documentos”). Designer isolado no módulo; domínio clínico consome HTML/`layoutId`. Extensões: PDF, assinatura, layouts custom por kind — ver ADR-005/008/010 e [Roadmap](Roadmap).
 
-## ADR-010
-
 Ver [Índice de decisões](Indice-de-Decisoes) · `docs/adr/010-clinical-document-kinds.md`.
 
+## Ver também
+
+- [Pacientes](Dominio-Pacientes)
+- [Agendamentos](Dominio-Agendamentos)
+- [Dashboard e settings](Dominio-Dashboard-e-Settings)
+- [Roadmap](Roadmap)
+- [Índice de decisões](Indice-de-Decisoes)

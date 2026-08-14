@@ -51,7 +51,9 @@ Notas:
 
 | Script | Uso |
 |--------|-----|
-| `npm run test` | Testes de domínio |
+| `npm run test` | Jest (`*.spec.ts` / `*.spec.tsx`) |
+| `npm run test:watch` | Jest em watch |
+| `npm run test:coverage` | Cobertura Jest; falha abaixo do piso (80% lines, 60% branches, 55% functions no escopo de `architecture/009-testing.md`) |
 | `npm run storybook` | Design system |
 | `npm run docs:wiki:sync` | Publica esta wiki no GitHub |
 | `npm run db:studio` | Drizzle Studio |
@@ -118,3 +120,9 @@ Se falhar em `db:migrate` / `applying migrations`, leia o erro Postgres no log. 
 ## Proxy
 
 Next 16 usa `src/proxy.ts` (não `middleware.ts`) para cookies/rotas públicas.
+
+## Ver também
+
+- [Onboarding do colaborador](Onboarding-do-Colaborador)
+- [Autenticação](Dominio-Autenticacao)
+- [Assinatura SaaS](Dominio-Assinatura-SaaS)

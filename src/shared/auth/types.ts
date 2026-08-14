@@ -27,6 +27,7 @@ export type AuthUser = {
   phone: string | null
   status: UserStatus
   mustChangePassword: boolean
+  twoFactorEnabled: boolean
 }
 
 export type AuthSession = {

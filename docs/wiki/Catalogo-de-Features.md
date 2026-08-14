@@ -2,11 +2,25 @@
 
 Inventário do que o sistema faz hoje. Status: **Done** | **Partial** | **Planned** | **Deferred**.
 
-## E1 — Plataforma
+## Sumário
+
+- [Entregue (E1–E9)](#entregue-e1e9)
+- [Em evolução (E13–E18)](#em-evolução-e13e18)
+- [Reservado (E11)](#reservado-e11)
+
+Para regras detalhadas, abra a página **Domínio-*** correspondente. Prioridade e critérios: [Roadmap](Roadmap).
+
+## Entregue (E1–E9)
+
+### E1 — Plataforma
 
 | Feature | Status | Onde |
 |---------|--------|------|
 | Login / sign-up / forgot-reset | Done | `(auth)` |
+| Remember-me no login | Done | `SignInForm` |
+| 2FA (TOTP + backup) | Done | `/two-factor`, `/account/security` |
+| Modal pós-login incentiva 2FA | Done | `TwoFactorNudgeDialog` |
+| Revogar sessões (exceto a atual) | Done | `/account/security` |
 | Verificação de e-mail | Done | `/verify-email` |
 | Troca forçada de senha provisória | Done | `/change-password` |
 | Convite de equipe | Done | `/invite`, users |
@@ -19,7 +33,7 @@ Inventário do que o sistema faz hoje. Status: **Done** | **Partial** | **Planne
 | Tela membership inactive | Done | `/membership-inactive` |
 | Select-clinic / subscription blocked | Done | ADR-003; regularizar + excluir |
 
-## E2 — SaaS
+### E2 — SaaS
 
 | Feature | Status | Onde |
 |---------|--------|------|
@@ -36,7 +50,7 @@ Inventário do que o sistema faz hoje. Status: **Done** | **Partial** | **Planne
 | Cota storage | Planned | ADR-004 |
 | N clínicas owned por assinatura | Later | ADR-003 MVP 1:1 |
 
-## E3 — Cadastros
+### E3 — Cadastros
 
 | Feature | Status | Onde |
 |---------|--------|------|
@@ -51,7 +65,7 @@ Inventário do que o sistema faz hoje. Status: **Done** | **Partial** | **Planne
 | Active/inactive profissional | Done | professionals |
 | Cadastro rápido de paciente (nome/CPF/telefone) | Done | ADR-011; `PatientFormDialog` variant `quick` |
 
-## E4 — Agenda
+### E4 — Agenda
 
 | Feature | Status | Onde |
 |---------|--------|------|
@@ -71,7 +85,7 @@ Inventário do que o sistema faz hoje. Status: **Done** | **Partial** | **Planne
 | Horários recorrentes | Planned | Roadmap H3 · E15 |
 | Agenda por sala / equipamento | Later | Roadmap H3 · E15 (se ICP) |
 
-## E5 — Prontuário
+### E5 — Prontuário
 
 | Feature | Status | Onde |
 |---------|--------|------|
@@ -91,7 +105,7 @@ Inventário do que o sistema faz hoje. Status: **Done** | **Partial** | **Planne
 | Solicitação de exames (documento) | Planned | Roadmap H1 · E13 |
 | Templates / packs por especialidade | Later | Roadmap H3 · E19 |
 
-## E6 — Recebíveis
+### E6 — Recebíveis
 
 | Feature | Status | Onde |
 |---------|--------|------|
@@ -106,7 +120,7 @@ Inventário do que o sistema faz hoje. Status: **Done** | **Partial** | **Planne
 | Gateway clínico | Planned | provider fields · E10 |
 | Comissão / caixa diário | Later | Roadmap Later |
 
-## E7 — Recepção
+### E7 — Recepção
 
 | Feature | Status | Onde |
 |---------|--------|------|
@@ -116,7 +130,7 @@ Inventário do que o sistema faz hoje. Status: **Done** | **Partial** | **Planne
 | Broker multi-instância | Next | ADR-006 |
 | Confirmação em lote | Done | ADR-011; `ReceptionOpsBoard` seleção + confirmar dia |
 
-## E8 — Governança
+### E8 — Governança
 
 | Feature | Status | Onde |
 |---------|--------|------|
@@ -127,7 +141,7 @@ Inventário do que o sistema faz hoje. Status: **Done** | **Partial** | **Planne
 | Help `/help` | Done | módulo `help`; FAQ por papel; nav + atalho nas homes |
 | Roadmap primeiros passos (owner home) | Done | `OwnerSetupRoadmap`; profissional → serviço → paciente → 1º agendamento |
 
-## E9 — Marketing
+### E9 — Marketing
 
 | Feature | Status | Onde |
 |---------|--------|------|
@@ -135,7 +149,9 @@ Inventário do que o sistema faz hoje. Status: **Done** | **Partial** | **Planne
 | Termos, políticas e documentos legais | Done | Hub `/legal` · 9 docs públicos · footer · aceite Termos/Privacidade no sign-up (placeholders; revisão jurídica) |
 | Campanhas (aniversário / retorno) | Planned | Roadmap H3 · E14 (sem WhatsApp no 1º corte) |
 
-## E13 — Documentos clínicos (além da receita)
+## Em evolução (E13–E18)
+
+### E13 — Documentos clínicos (além da receita)
 
 | Feature | Status | Onde |
 |---------|--------|------|
@@ -144,7 +160,7 @@ Inventário do que o sistema faz hoje. Status: **Done** | **Partial** | **Planne
 | Atestado / solicitação de exames | Planned | Roadmap H1 |
 | Assinatura eletrônica (consentimento/LGPD) | Planned | Roadmap H3 |
 
-## E14 — CRM e retenção
+### E14 — CRM e retenção
 
 | Feature | Status | Onde |
 |---------|--------|------|
@@ -152,7 +168,7 @@ Inventário do que o sistema faz hoje. Status: **Done** | **Partial** | **Planne
 | Overview consolidado (última/próxima + financeiro) | Planned | Roadmap H1 · E14 |
 | Pacientes inativos (última consulta + CTA) | Planned | Roadmap H3 · E14 |
 
-## E16 — Recepção operacional
+### E16 — Recepção operacional
 
 | Feature | Status | Onde |
 |---------|--------|------|
@@ -160,24 +176,29 @@ Inventário do que o sistema faz hoje. Status: **Done** | **Partial** | **Planne
 | Cadastro rápido de paciente | Done | ADR-011; `PatientFormDialog` variant `quick` |
 | Tarefas internas / histórico de contatos | Later | Roadmap Later |
 
-## E17 — Pré-consulta e portal
+### E17 — Pré-consulta e portal
 
 | Feature | Status | Onde |
 |---------|--------|------|
 | Formulários pré-consulta | Planned | Roadmap H3 |
 | Portal do paciente | Planned | Roadmap H3 |
 
-## E18 — Indicadores e IA
+### E18 — Indicadores e IA
 
 | Feature | Status | Onde |
 |---------|--------|------|
 | KPIs gerenciais (ocupação, no-show, retenção) | Planned | Roadmap H3 · E18 |
 | Automações avançadas / IA clínica | Later | Roadmap H3+ · E18 |
 
-## E11 — Inventário
+## Reservado (E11)
+
+### E11 — Inventário
 
 | Feature | Status | Onde |
 |---------|--------|------|
 | Estoque | Deferred | módulo/schema vazios |
 
-Para regras detalhadas, abra a página **Domínio-*** correspondente. Prioridade e critérios: [Roadmap](Roadmap).
+## Ver também
+
+- [Épicos](Epicos)
+- [Roadmap](Roadmap)

@@ -32,6 +32,14 @@ name, tradeName, document, email, phone, logo, website, timezone, endereço, sub
 
 Form de create também aceita campos clínicos condicionais (`alsoPractices`, tipo de atuação, nome na agenda, conselho…) — não vão para a tabela `clinics`.
 
-## Decisões
+## Decisões relacionadas
 
 Notebook `clinic-switcher-suspended`. ADR-003 (status espelhado). ADR-007 (perfil clínico do owner).
+
+## Ver também
+
+- [Autenticação](Dominio-Autenticacao)
+- [Assinatura SaaS](Dominio-Assinatura-SaaS)
+- [Profissionais](Dominio-Profissionais)
+- [Agendamentos](Dominio-Agendamentos)
+- [Índice de decisões](Indice-de-Decisoes)

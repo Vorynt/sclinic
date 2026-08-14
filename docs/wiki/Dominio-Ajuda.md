@@ -26,6 +26,7 @@ Sem LLM — o conteúdo vive em `constants/faq/<papel>.ts` e deve ser atualizado
 
 - Disponível no dashboard sem permissão extra (como `/home`).
 - Copy voltado ao papel da membership ativa: sem jargão técnico; só fluxos que o papel realmente usa.
+- FAQ de conta (`SHARED_ACCOUNT_FAQ`) cobre 2FA e encerrar sessões em outros dispositivos.
 - Papel desconhecido → fallback no FAQ do `owner`.
 - Não importa internals de outros módulos; rotas via `@/config/routes`.
 
@@ -36,3 +37,9 @@ Sem LLM — o conteúdo vive em `constants/faq/<papel>.ts` e deve ser atualizado
 - `src/modules/help/components/HelpCenter.tsx`
 - `src/app/(dashboard)/help/page.tsx`
 - `src/modules/dashboard/constants/nav.ts`
+
+## Ver também
+
+- [Dashboard e settings](Dominio-Dashboard-e-Settings)
+- [Autenticação](Dominio-Autenticacao)
+- [Rotas e navegação](Rotas-e-Navegacao)

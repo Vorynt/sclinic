@@ -43,3 +43,14 @@
 ## Schema
 
 `clinic_services` + `charges` / `payments` em `src/db/schema/`; services `clinic-service.service.ts` / `charge.service.ts`. Campo `charges.due_at` (ADR-011).
+
+## Decisões relacionadas
+
+ADR-002, ADR-009, ADR-011.
+
+## Ver também
+
+- [Assinatura SaaS](Dominio-Assinatura-SaaS)
+- [Agendamentos](Dominio-Agendamentos)
+- [RBAC e permissões](RBAC-e-Permissoes)
+- [Índice de decisões](Indice-de-Decisoes)

@@ -50,7 +50,7 @@ Ver `AGENTS.md` e `architecture/`.
 2. Espelhar `src/modules/patients/`.
 3. Ordem: schema/DTO → repository → service → action → queries/mutations → UI → page.
 4. Atualizar `docs/wiki/` (skill `system-docs-sync`) se o comportamento for observável.
-5. Testes de domínio em `modules/<feature>/tests/` quando houver lógica.
+5. Testes de domínio em `modules/<feature>/tests/` quando houver lógica — Jest (`*.unit.spec.ts`); `npm run test:coverage` é o gate (80% lines no escopo de `architecture/009-testing.md`). ADR-013.
 
 ## 6. Contatos mentais
 
@@ -60,3 +60,10 @@ Ver `AGENTS.md` e `architecture/`.
 | “Onde fica a regra de negócio?” | Service do módulo |
 | “Por que foi feito assim?” | ADR + página de domínio |
 | “O que vem depois?” | [Roadmap](Roadmap) |
+
+## Ver também
+
+- [Home](Home)
+- [Arquitetura](Arquitetura)
+- [Ambientes e operação](Ambientes-e-Operacao)
+- [Índice de decisões](Indice-de-Decisoes)

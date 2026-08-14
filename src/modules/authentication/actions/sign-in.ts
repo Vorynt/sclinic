@@ -1,18 +1,18 @@
-"use server"
+"use server";
 
-import { getAuthRequestContext } from "@/modules/authentication/utils/request-context"
-import type { AuthContext } from "@/modules/authentication/types/auth"
-import { signInSchema } from "@/modules/authentication/schemas/auth.schema"
-import { authService } from "@/modules/authentication/services/auth.service"
-import { toActionResult } from "@/shared/errors"
-import { parseOrThrow } from "@/shared/validators"
-import type { ApiResponse } from "@/types/api"
+import { signInSchema } from "@/modules/authentication/schemas/auth.schema";
+import { authService } from "@/modules/authentication/services/auth.service";
+import type { SignInResult } from "@/modules/authentication/types/auth";
+import { getAuthRequestContext } from "@/modules/authentication/utils/request-context";
+import { toActionResult } from "@/shared/errors";
+import { parseOrThrow } from "@/shared/validators";
+import type { ApiResponse } from "@/types/api";
 
 export async function signInAction(
   data: unknown,
-): Promise<ApiResponse<AuthContext>> {
+): Promise<ApiResponse<SignInResult>> {
   return toActionResult(async () => {
-    const parsed = parseOrThrow(signInSchema, data)
-    return authService.signIn(parsed, await getAuthRequestContext())
-  })
+    const parsed = parseOrThrow(signInSchema, data);
+    return authService.signIn(parsed, await getAuthRequestContext());
+  });
 }

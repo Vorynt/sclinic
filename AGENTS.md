@@ -93,7 +93,7 @@ Módulos: `patients`, `professionals`, `appointments`, `medical-records`, `billi
 1. Confirmar módulo existente vs novo.
 2. Criar apenas as pastas necessárias (não scaffold vazio desnecessário).
 3. Seguir a ordem de camadas acima.
-4. Adicionar testes de domínio em `modules/<feature>/tests/` (unit de service/validator primeiro).
+4. Adicionar testes de domínio em `modules/<feature>/tests/` — Jest (`*.unit.spec.ts` / `*.api.spec.ts` / `*.ui.spec.tsx`); unit de service/validator primeiro (ver [009](architecture/009-testing.md)).
 
 ### Nova Server Action
 
@@ -129,7 +129,7 @@ Módulos: `patients`, `professionals`, `appointments`, `medical-records`, `billi
 - [ ] Fluxo Action → Service → Repository respeitado (004–006)
 - [ ] Imports e boundaries ok (003)
 - [ ] Erros tipados / não engolidos (008)
-- [ ] Testes de domínio quando houver lógica (009)
+- [ ] Testes de domínio quando houver lógica (009) — Jest `*.spec.ts(x)`
 - [ ] UI genérica vs domínio no lugar certo (010)
 - [ ] Forms: RHF + `zodResolver` no client e `parseOrThrow` na action, mesmo schema (011)
 - [ ] Mutations: `MutationCallbacks` + `invalidateQueries` no hook; form usa `mutate()` sem try/catch (007)

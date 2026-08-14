@@ -26,6 +26,7 @@ Ver também:
 - [ADR-004 — downgrade e modo over_limit](../docs/adr/004-plan-downgrade-over-limit.md)
 - [ADR-005 — receitas médicas (prescrição)](../docs/adr/005-prescriptions.md)
 - [ADR-006 — fluxo operacional da recepção + SSE](../docs/adr/006-reception-ops-sse.md)
+- [ADR-013 — Jest como runner de testes](../docs/adr/013-jest.md)
 
 ## Fluxo de camadas
 

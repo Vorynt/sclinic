@@ -6,22 +6,28 @@ Handbook oficial do produto e da engenharia. Público-alvo: **qualquer novo cola
 
 ## Comece por aqui
 
-1. [Onboarding do colaborador](Onboarding-do-Colaborador)
-2. [Visão do produto](Visao-do-Produto)
-3. [Requisitos](Requisitos) (RF, RNF, personas)
-4. [Arquitetura](Arquitetura)
-5. [Módulos e boundaries](Modulos-e-Boundaries)
-6. [Catálogo de features](Catalogo-de-Features) · [Épicos](Epicos) · [Roadmap](Roadmap)
+**Colaborador novo** — [Onboarding do colaborador](Onboarding-do-Colaborador)
+
+**Produto** — [Visão do produto](Visao-do-Produto) · [Requisitos](Requisitos) (RF, RNF, personas)
+
+**Engenharia** — [Arquitetura](Arquitetura) · [Módulos e boundaries](Modulos-e-Boundaries)
+
+**Planejamento** — [Catálogo de features](Catalogo-de-Features) · [Épicos](Epicos) · [Roadmap](Roadmap)
 
 ## Mapa da documentação
 
-| Seção | Páginas |
-|-------|---------|
-| **Produto** | [Visão](Visao-do-Produto), [Requisitos](Requisitos), [Glossário](Glossario), [Roadmap](Roadmap), [Épicos](Epicos), [Features](Catalogo-de-Features) |
-| **Arquitetura** | [Arquitetura](Arquitetura), [Módulos](Modulos-e-Boundaries), [Rotas](Rotas-e-Navegacao), [RBAC](RBAC-e-Permissoes), [Diagramas](Diagramas) |
-| **Domínio** | Auth, Clínicas, Equipe, Pacientes, Profissionais, Agenda, Prontuário, Recepção, Faturamento, SaaS, Auditoria, Dashboard/Settings, Ajuda, Marketing |
-| **Decisões** | [Índice de decisões](Indice-de-Decisoes) → ADRs em `docs/adr/` |
-| **Operação** | [Ambientes](Ambientes-e-Operacao), [Manutenção da doc](Manutencao-da-Documentacao) |
+**Produto** — [Visão](Visao-do-Produto) · [Requisitos](Requisitos) · [Glossário](Glossario) · [Roadmap](Roadmap) · [Épicos](Epicos) · [Features](Catalogo-de-Features)
+
+**Arquitetura** — [Arquitetura](Arquitetura) · [Módulos](Modulos-e-Boundaries) · [Rotas](Rotas-e-Navegacao) · [RBAC](RBAC-e-Permissoes) · [Diagramas](Diagramas)
+
+**Domínio**
+- *Plataforma:* [Autenticação](Dominio-Autenticacao) · [Clínicas](Dominio-Clinicas) · [Usuários e equipe](Dominio-Usuarios-e-Equipe) · [Dashboard e settings](Dominio-Dashboard-e-Settings) · [Auditoria](Dominio-Auditoria) · [Ajuda](Dominio-Ajuda) · [Marketing](Dominio-Marketing)
+- *Assistência:* [Pacientes](Dominio-Pacientes) · [Profissionais](Dominio-Profissionais) · [Agendamentos](Dominio-Agendamentos) · [Prontuário](Dominio-Prontuario) · [Recepção](Dominio-Recepcao-e-Realtime)
+- *Financeiro:* [Faturamento clínico](Dominio-Faturamento-Clinico) · [Assinatura SaaS](Dominio-Assinatura-SaaS)
+
+**Decisões** — [Índice de decisões](Indice-de-Decisoes) → ADRs em `docs/adr/`
+
+**Operação** — [Ambientes](Ambientes-e-Operacao) · [Manutenção da doc](Manutencao-da-Documentacao)
 
 ## Princípios desta wiki
 
@@ -32,7 +38,7 @@ Handbook oficial do produto e da engenharia. Público-alvo: **qualquer novo cola
 
 ## Stack (resumo)
 
-Next.js 16 · React 19 · Drizzle · Neon · Better Auth · TanStack Query · Stripe · Tailwind v4 / shadcn
+Next.js 16 · React 19 · Drizzle · Neon · Better Auth · TanStack Query · Stripe · Tailwind v4 / shadcn · Jest
 
 ---
 

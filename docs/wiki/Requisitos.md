@@ -224,6 +224,10 @@ Convenção de ID: `RF-<DOMÍNIO>-NNN`.
 | RF-AUTH-007 | Aceite de invite | Invite pode preceder verify-email; token prova ownership | P9 | Done |
 | RF-AUTH-008 | Guard entitlement | Clínica sem assinatura viva bloqueada (`requireClinic`) | Membros | Done |
 | RF-AUTH-009 | Resolução de permissões | Runtime por membership + seed RBAC | Todas | Done |
+| RF-AUTH-010 | 2FA TOTP + backup | Plugin Better Auth; opt-in em `/account/security`; desafio em `/two-factor` | Todas | Done |
+| RF-AUTH-011 | Revogar sessões | Listar dispositivos; revogar outras (não a atual); opção na troca de senha | Todas | Done |
+| RF-AUTH-012 | Remember-me | Cookie persistente (7d) ou de sessão no login | Todas | Done |
+| RF-AUTH-013 | Nudge 2FA pós-login | Modal quando 2FA está desligado; pular ou ir para Segurança | Todas | Done |
 
 ### 4.2 Clínicas — `RF-CLI`
 
@@ -542,9 +546,10 @@ Diagramas Mermaid: [Diagramas](Diagramas).
 
 | ID | Título | Descrição | Fonte |
 |----|--------|-----------|-------|
-| RNF-100 | Pirâmide | Unit (service/validator) → integration → E2E depois | architecture/009 |
-| RNF-101 | Testes no módulo | `modules/<feature>/tests/` | architecture/009 |
+| RNF-100 | Pirâmide | Unit → API (actions) → interface (Testing Library) → E2E depois | architecture/009, ADR-013 |
+| RNF-101 | Testes no módulo | `modules/<feature>/tests/` (`*.unit.spec.ts` / `*.api.spec.ts` / `*.ui.spec.tsx`) | architecture/009 |
 | RNF-102 | Quota testável | Poucos call sites de `assertPlanCapacity` | ADR-004 |
+| RNF-103 | Gate de cobertura | Jest: 80% statements/lines, 60% branches, 55% functions em schemas/utils/mappers + `shared/errors` e `shared/validators`. Fora: app/UI/actions/repos/db/services (fase atual) | architecture/009 |
 
 ### 6.10 Design system e UX
 

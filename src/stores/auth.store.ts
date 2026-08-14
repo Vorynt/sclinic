@@ -16,6 +16,10 @@ type AuthUiState = {
   isBootstrappingSession: boolean
   beginSessionBootstrap: () => void
   endSessionBootstrap: () => void
+  /** Show 2FA setup nudge once after a login without two-factor. */
+  pendingTwoFactorNudge: boolean
+  requestTwoFactorNudge: () => void
+  dismissTwoFactorNudge: () => void
 }
 
 export const useAuthUiStore = create<AuthUiState>((set) => ({
@@ -34,4 +38,7 @@ export const useAuthUiStore = create<AuthUiState>((set) => ({
   isBootstrappingSession: false,
   beginSessionBootstrap: () => set({ isBootstrappingSession: true }),
   endSessionBootstrap: () => set({ isBootstrappingSession: false }),
+  pendingTwoFactorNudge: false,
+  requestTwoFactorNudge: () => set({ pendingTwoFactorNudge: true }),
+  dismissTwoFactorNudge: () => set({ pendingTwoFactorNudge: false }),
 }))

@@ -2,6 +2,23 @@
 
 **Módulo:** `src/modules/appointments/` · **Épicos:** E4, E7, E15, E16 · **ADR-006**, **ADR-009**, **ADR-011**
 
+## Sumário
+
+- [Responsabilidade](#responsabilidade)
+- [Features](#features)
+- [Create — rápido vs completo](#create--rápido-vs-completo)
+- [Máquina de status](#máquina-de-status)
+- [Validações](#validações)
+- [Modalidade](#modalidade-adr-011)
+- [Horário do profissional](#horário-do-profissional-adr-011)
+- [Bloqueio de horários](#bloqueio-de-horários-adr-011)
+- [Lista de espera](#lista-de-espera-adr-011)
+- [Cancelamento](#cancelamento)
+
+## Responsabilidade
+
+Calendário `/appointments`; create híbrido (rápido + completo); workspace `(attendance)`; transições de status.
+
 ## Features
 
 - Calendário `/appointments`
@@ -91,3 +108,16 @@ Só `owner`, `admin`, `clinician`, `nurse`. Recepcionista **não** inicia.
 ## Cancelamento
 
 Cancela charge `pending` automaticamente.
+
+## Decisões relacionadas
+
+ADR-006, ADR-009, ADR-011.
+
+## Ver também
+
+- [Recepção e realtime](Dominio-Recepcao-e-Realtime)
+- [Faturamento clínico](Dominio-Faturamento-Clinico)
+- [Profissionais](Dominio-Profissionais)
+- [RBAC e permissões](RBAC-e-Permissoes)
+- [Roadmap](Roadmap)
+- [Índice de decisões](Indice-de-Decisoes)

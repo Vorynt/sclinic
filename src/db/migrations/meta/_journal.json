@@ -168,6 +168,13 @@
       "when": 1786089600000,
       "tag": "0023_multi_profession_clinician",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1786651200000,
+      "tag": "0024_two_factor_auth",
+      "breakpoints": true
     }
   ],
   "version": "7"

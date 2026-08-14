@@ -135,6 +135,18 @@
   }
 }
 
+@keyframes caret-blink {
+  0%,
+  70%,
+  100% {
+    opacity: 1;
+  }
+  20%,
+  50% {
+    opacity: 0;
+  }
+}
+
 @keyframes text-shimmer {
   0% {
     background-position: 100% center;
@@ -206,6 +218,10 @@
   }
 }
 
+@utility animate-caret-blink {
+  animation: caret-blink 1s ease-out infinite;
+}
+
 @utility animate-text-shimmer {
   animation: text-shimmer 2.4s ease-in-out infinite;
 }
@@ -256,6 +272,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .animate-caret-blink,
   .animate-text-shimmer,
   .animate-auth-orb,
   .animate-auth-orb-alt,

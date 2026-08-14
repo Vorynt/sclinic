@@ -23,7 +23,7 @@ export function AccountNav() {
   return (
     <nav
       aria-label="Seções da conta"
-      className="sticky top-8 flex flex-col gap-1">
+      className="sticky top-18 flex flex-col gap-1">
       {items.map((item) => {
         const isActive =
           pathname === item.href || pathname.startsWith(`${item.href}/`);

@@ -2,6 +2,10 @@
 
 **Módulo:** `src/modules/professionals/` · **Épico:** E3 · **ADR:** 007, **012**
 
+## Responsabilidade
+
+Lista, convite, edição, active/inactive, soft delete; perfil clínico do owner (sem invite); integração com agenda.
+
 ## Features
 
 - Lista, convite, edição, active/inactive, soft delete
@@ -39,14 +43,53 @@ Coexistem: um membership `owner` + um registro professional vinculado ao `userId
 
 ## Status de conta (UI)
 
-`invite_pending` | `invite_expired` | `invite_revoked` | `active` | `inactive`
+| Status |
+|--------|
+| `invite_pending` |
+| `invite_expired` |
+| `invite_revoked` |
+| `active` |
+| `inactive` |
 
 ## Affiliation
 
-`attending` | `coordinator` | `locum` | `resident`
+| Affiliation |
+|-------------|
+| `attending` |
+| `coordinator` |
+| `locum` |
+| `resident` |
 
 ## Profissão (ADR-012)
 
-`physician` | `dentist` | `physiotherapist` | `nurse` | `pharmacist` | `psychologist` | `other`
+| `profession_type` |
+|-------------------|
+| `physician` |
+| `dentist` |
+| `physiotherapist` |
+| `nurse` |
+| `pharmacist` |
+| `psychologist` |
+| `other` |
 
-Conselhos: `CRM` | `CRO` | `COREN` | `CRF` | `CREFITO` | `CRP` | `OTHER`.
+| Conselho |
+|----------|
+| `CRM` |
+| `CRO` |
+| `COREN` |
+| `CRF` |
+| `CREFITO` |
+| `CRP` |
+| `OTHER` |
+
+## Decisões relacionadas
+
+ADR-007 (perfil clínico do owner). ADR-012 (multi-profissão). ADR-011 (horário do profissional).
+
+## Ver também
+
+- [RBAC e permissões](RBAC-e-Permissoes)
+- [Clínicas](Dominio-Clinicas)
+- [Agendamentos](Dominio-Agendamentos)
+- [Usuários e equipe](Dominio-Usuarios-e-Equipe)
+- [Índice de decisões](Indice-de-Decisoes)

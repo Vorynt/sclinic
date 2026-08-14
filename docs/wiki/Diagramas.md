@@ -19,7 +19,10 @@ flowchart LR
 
 ```mermaid
 flowchart TD
-  A[Login / Session] --> B{mustChangePassword?}
+  A[Login / senha] --> TFA{2FA habilitado?}
+  TFA -->|sim| TF[/two-factor]
+  TFA -->|não| B{mustChangePassword?}
+  TF --> B
   B -->|sim| C[/change-password]
   B -->|não| D{invite next?}
   D -->|sim| E[Aceitar invite]
@@ -30,6 +33,9 @@ flowchart TD
   H -->|blocked / seleção| J[/select-clinic]
   H -->|nenhuma| K[/onboarding/plan]
   H -->|ativa + entitled| L[/home]
+  L --> Nudge{2FA desligado?}
+  Nudge -->|sim| Modal[Modal ativar 2FA]
+  Nudge -->|não| Stay[App]
   K --> M[/onboarding/clinic]
   M --> M2{alsoPractices?}
   M2 -->|sim| M3[Perfil clínico do owner]
@@ -117,3 +123,11 @@ flowchart TB
 ```
 
 Mais detalhes nas páginas de domínio e ADRs.
+
+## Ver também
+
+- [Arquitetura](Arquitetura)
+- [Índice de decisões](Indice-de-Decisoes)
+- [Agendamentos](Dominio-Agendamentos)
+- [Recepção e realtime](Dominio-Recepcao-e-Realtime)
+- [Assinatura SaaS](Dominio-Assinatura-SaaS)

@@ -18,6 +18,7 @@ Decisões canônicas: **ADRs** em `docs/adr/`. Notas curtas de implementação: 
 | [010](https://github.com/ViniciusSantos31/sclinic/blob/main/docs/adr/010-clinical-document-kinds.md) | Documentos clínicos tipados (`kind`) | Accepted | declaração; atestado/exames no enum |
 | [011](https://github.com/ViniciusSantos31/sclinic/blob/main/docs/adr/011-advanced-scheduling.md) | Agenda avançada (E15) | Accepted | blocks; horário profissional; waitlist; modalidade |
 | [012](https://github.com/ViniciusSantos31/sclinic/blob/main/docs/adr/012-multi-profession-clinician.md) | Multi-profissão (`clinician` × `profession_type`) | Accepted | role genérico; tipo no perfil; sem role por profissão |
+| [013](https://github.com/ViniciusSantos31/sclinic/blob/main/docs/adr/013-jest.md) | Jest como runner (unit / API / interface) | Accepted | `next/jest`; migração de `node:test` concluída |
 
 Paths locais: `docs/adr/00N-*.md`.
 
@@ -39,6 +40,7 @@ Paths locais: `docs/adr/00N-*.md`.
 | Agenda avançada | Blocks próprios; horário profissional ⊂ clínica; waitlist sem hold; modalidade tipada | ADR-011, [Agendamentos](Dominio-Agendamentos) |
 | Multi-profissão | Role `clinician` + `profession_type` no perfil; nurse separado por capabilities | ADR-012, [Profissionais](Dominio-Profissionais) |
 | Módulo referência | `patients` como template | architecture/001 |
+| Testes | Jest (`next/jest`) para unit/API/UI; gate de cobertura em schemas/utils/mappers + shared | ADR-013, architecture/009 |
 
 ## Notebooks (implementação)
 
@@ -53,3 +55,9 @@ Paths locais: `docs/adr/00N-*.md`.
 ## Quando criar ADR novo
 
 Mudança de boundary entre módulos, modelo de dados irreversível, trade-off de produto com impacto arquitetural, ou “vamos fazer diferente do architecture/”. Processo sugerido: skill `create-adr` / pasta `docs/adr/`.
+
+## Ver também
+
+- [Arquitetura](Arquitetura)
+- [Roadmap](Roadmap)
+- [Épicos](Epicos)

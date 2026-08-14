@@ -5,6 +5,7 @@ import type { ReactNode } from "react"
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
 import { routes } from "@/config/routes"
+import { TwoFactorNudgeDialog } from "@/modules/authentication/components/TwoFactorNudgeDialog"
 
 type AccountShellProps = {
   children: ReactNode
@@ -51,6 +52,7 @@ export function AccountShell({
       <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-4 py-8 md:px-6">
         {children}
       </main>
+      <TwoFactorNudgeDialog />
     </div>
   )
 }
