@@ -26,6 +26,8 @@ Membros da clínica, convites assignable, conta do usuário (`/account/*`).
 
 name, email, roleKey; senha no aceite ≥ 8.
 
-## Relacionados
+## Ver também
 
-[RBAC](RBAC-e-Permissoes), [Assinatura SaaS](Dominio-Assinatura-SaaS), profissionais (outro fluxo de convite).
+- [RBAC](RBAC-e-Permissoes)
+- [Assinatura SaaS](Dominio-Assinatura-SaaS)
+- [Profissionais](Dominio-Profissionais) (outro fluxo de convite)

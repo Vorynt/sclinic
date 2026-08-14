@@ -4,7 +4,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 SRC="$ROOT/docs/wiki"
-REPO_SSH="${SCLINIC_WIKI_SSH:-git@github.com:ViniciusSantos31/sclinic.wiki.git}"
+REPO_SSH="${SCLINIC_WIKI_SSH:-git@github.com:Vorynt/sclinic.git}"
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 
@@ -50,4 +50,4 @@ git -c user.name="sclinic-docs" -c user.email="docs@sclinic.local" commit -m "do
 Synced from repository docs/wiki source of truth."
 git push origin HEAD
 
-echo "✓ Wiki published: https://github.com/ViniciusSantos31/sclinic/wiki"
+echo "✓ Wiki published: https://https://github.com/Vorynt/sclinic/wiki"

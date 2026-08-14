@@ -33,3 +33,8 @@ Qualquer mudança observável: feature, regra, schema, rota, RBAC, status machin
 3. `npm run docs:wiki:sync`  
 
 URL: https://github.com/ViniciusSantos31/sclinic/wiki
+
+## Ver também
+
+- [Home](Home)
+- [Índice de decisões](Indice-de-Decisoes)

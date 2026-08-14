@@ -4,6 +4,15 @@ Derivado do **código implementado** + ADRs 001–009 + gaps de produto prioriza
 
 Escopo deste backlog **exclui** (trilhas à parte ou já listadas em Next): envio WhatsApp, upload/storage de arquivos e gateway de pagamento clínico (este último permanece em Next por ADR-002).
 
+## Sumário
+
+- [Legenda](#legenda)
+- [Agora (Done)](#agora-done--fundação-operacional)
+- [Backlog priorizado](#backlog-priorizado-produto)
+- [Próximo (Next)](#próximo-next--trilha-técnica--extensões-de-adr)
+- [Depois (Later)](#depois-later--já-rastreados)
+- [Não planejado neste ciclo](#não-planejado-neste-ciclo)
+
 ## Legenda
 
 | Status | Significado |
@@ -136,3 +145,8 @@ Corre **em paralelo** ao backlog de produto. Não compete com H1 por valor clín
 1. Ao **aceitar ADR** ou **shipar feature**: mover item entre H1/H2/H3 ↔ Done; refletir em [Épicos](Epicos) / [Catálogo](Catalogo-de-Features).
 2. Itens Backlog que mudam schema ou boundary → ADR antes do código.
 3. Skill: `system-docs-sync`.
+
+## Ver também
+
+- [Épicos](Epicos)
+- [Catálogo de features](Catalogo-de-Features)

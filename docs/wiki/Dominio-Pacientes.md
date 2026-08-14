@@ -2,6 +2,10 @@
 
 **Módulo:** `src/modules/patients/` · **Épico:** E3 · **Referência canônica de estrutura de módulo**
 
+## Responsabilidade
+
+Referência canônica de estrutura de módulo.
+
 ## Features
 
 - Lista paginada + busca + CRUD (`/patients`)
@@ -30,3 +34,15 @@ Ver [Roadmap](Roadmap).
 | emergencyContact* | opcionais |
 
 Status: `active` | `inactive` | `archived`.
+
+## Decisões relacionadas
+
+Módulo referência: `patients` como template (`architecture/001`).
+
+## Ver também
+
+- [Prontuário](Dominio-Prontuario)
+- [Agendamentos](Dominio-Agendamentos)
+- [RBAC e permissões](RBAC-e-Permissoes)
+- [Roadmap](Roadmap)
+- [Módulos e boundaries](Modulos-e-Boundaries)

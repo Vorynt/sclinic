@@ -82,12 +82,20 @@ Não atualizar por: refactor interno sem mudança observável; só tipagem; poli
 
 **Módulo:** `src/modules/<feature>/` · **Épico:** Ex · **ADR:** …
 
-## Responsabilidade / Features
-## Regras de negócio
-## Schema (quando relevante)
+## Responsabilidade
+## Features
+## Regras
+## Schema            (quando relevante)
 ## Decisões relacionadas
-## Arquivos-chave
+## Arquivos-chave    (quando relevante)
+## Ver também
 ```
+
+Seções temáticas extras (máquina de status, trial, board…) ficam **entre** Regras e Decisões.
+
+Páginas com muitos H2 (Catálogo, Épicos, Roadmap, Agendamentos, Assinatura SaaS, Autenticação, Prontuário, Dashboard) abrem com **Sumário** (lista de âncoras), no padrão de `Requisitos.md`.
+
+Página nova → link em `Home.md` e `_Sidebar.md` na seção da IA (Comece aqui / Produto / Arquitetura / Domínio Plataforma|Assistência|Financeiro / Decisões / Operação).
 
 ## Template — feature no catálogo
 
@@ -95,7 +103,7 @@ Não atualizar por: refactor interno sem mudança observável; só tipagem; poli
 
 ## Checklist “pronto”
 
-- [ ] Domínio / catálogo atualizados
+- [ ] Domínio / catálogo atualizados (esqueleto canônico + Ver também)
 - [ ] Roadmap/épicos se status mudou
 - [ ] ADR linkado se houve decisão
 - [ ] Diagrama se fluxo mudou

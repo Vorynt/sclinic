@@ -4,16 +4,39 @@ Fonte canônica: `src/config/routes.ts`. Route groups `(auth)`, `(dashboard)` et
 
 ## Mapa
 
-| Área | Paths principais |
-|------|------------------|
-| Marketing | `/`, `/legal`, `/termos`, `/privacidade`, `/cookies`, `/contrato-saas`, `/dpa`, `/seguranca`, `/retencao`, `/incidentes`, `/ropa` (soft nav Termos/Privacidade → modal `@modal/(.)…`) |
-| Auth | `/login`, `/sign-up`, `/forgot-password`, `/reset-password`, `/two-factor`, `/verify-email`, `/change-password`, `/invite`, `/invite/professional`, `/select-clinic`, `/membership-inactive` |
-| Onboarding | `/onboarding/plan`, `/onboarding/clinic`, `/onboarding/hours` |
-| App | `/home`, `/patients`, `/patients/[id]/*`, `/professionals`, `/appointments`, `/appointments/new`, `/billing`, `/users`, `/settings/*`, `/help` |
-| Attendance | `/appointments/[id]/attendance/*` (`documents`; `/prescriptions` → redirect) |
-| Account | `/account/overview`, `profile`, `security`, `subscription` |
-| Print | `/prescriptions/[id]/print` |
-| API | `/api/auth/[...all]`, `/api/stripe/webhook`, `/api/realtime/clinic` |
+### Marketing
+
+`/` · `/legal` · `/termos` · `/privacidade` · `/cookies` · `/contrato-saas` · `/dpa` · `/seguranca` · `/retencao` · `/incidentes` · `/ropa`
+
+Soft nav Termos/Privacidade → modal `@modal/(.)…`.
+
+### Auth
+
+`/login` · `/sign-up` · `/forgot-password` · `/reset-password` · `/two-factor` · `/verify-email` · `/change-password` · `/invite` · `/invite/professional` · `/select-clinic` · `/membership-inactive`
+
+### Onboarding
+
+`/onboarding/plan` · `/onboarding/clinic` · `/onboarding/hours`
+
+### App
+
+`/home` · `/patients` · `/patients/[id]/*` · `/professionals` · `/appointments` · `/appointments/new` · `/billing` · `/users` · `/settings/*` · `/help`
+
+### Attendance
+
+`/appointments/[id]/attendance/*` (`documents`; `/prescriptions` → redirect)
+
+### Account
+
+`/account/overview` · `profile` · `security` · `subscription`
+
+### Print
+
+`/prescriptions/[id]/print`
+
+### API
+
+`/api/auth/[...all]` · `/api/stripe/webhook` · `/api/realtime/clinic`
 
 ## Gates de layout (resumo)
 
@@ -24,3 +47,9 @@ Fonte canônica: `src/config/routes.ts`. Route groups `(auth)`, `(dashboard)` et
 - `/help`: FAQ curado por papel (módulo `help`); item Ajuda no overflow da nav, habilitado para todos.
 
 Nav: `src/modules/dashboard/constants/nav.ts` — shell híbrido (top nav + bottom tabs + “Mais”); itens somem sem permissão. Ações de página (`PageAction[]` no `PageHeader`) viram FAB mobile no `AppShell` (`PageActionsFab`).
+
+## Ver também
+
+- [Autenticação](Dominio-Autenticacao)
+- [Dashboard e settings](Dominio-Dashboard-e-Settings)
+- [RBAC e permissões](RBAC-e-Permissoes)

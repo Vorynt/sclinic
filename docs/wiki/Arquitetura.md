@@ -12,8 +12,10 @@ Documentação humana. Regras normativas: pasta `architecture/` + `AGENTS.md`.
 | Server state | TanStack Query |
 | Client state | Zustand (nunca domínio) |
 | Pagamentos SaaS | Stripe (Checkout + Portal + webhooks) |
-| UI | Tailwind v4, shadcn, tokens tintados (`config/theme.ts` + `globals.css`), `PageHeader` + FAB mobile de ações (`PageActionsFab`); listagens CRUD: tabela em `md+`, `ListCard` no mobile (`ResponsiveDataView`) |
+| UI | Tailwind v4, shadcn, tokens tintados (`config/theme.ts` + `globals.css`) |
+| Listagens / ações | `PageHeader` + FAB mobile (`PageActionsFab`); CRUD: tabela em `md+`, `ListCard` no mobile (`ResponsiveDataView`) |
 | Realtime | SSE (`/api/realtime/clinic`) |
+| Testes | Jest (`next/jest`) para unit / API (actions) / interface (ADR-013). Gate: 80% statements/lines, 60% branches, 55% functions em `schemas/` / `utils/` / `mappers/` + `shared/errors` e `shared/validators` (`architecture/009-testing.md`) |
 
 ## Fluxo de camadas (obrigatório)
 
@@ -61,7 +63,7 @@ Módulos canônicos: `patients`, `professionals`, `appointments`, `medical-recor
 - Entitlement SaaS vem da assinatura do **owner** da clínica (ADR-003).
 - Membership `suspended` ≠ clínica sem assinatura.
 
-## Referências
+## Ver também
 
 - `architecture/README.md`
 - [Módulos e boundaries](Modulos-e-Boundaries)

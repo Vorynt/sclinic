@@ -546,9 +546,10 @@ Diagramas Mermaid: [Diagramas](Diagramas).
 
 | ID | Título | Descrição | Fonte |
 |----|--------|-----------|-------|
-| RNF-100 | Pirâmide | Unit (service/validator) → integration → E2E depois | architecture/009 |
-| RNF-101 | Testes no módulo | `modules/<feature>/tests/` | architecture/009 |
+| RNF-100 | Pirâmide | Unit → API (actions) → interface (Testing Library) → E2E depois | architecture/009, ADR-013 |
+| RNF-101 | Testes no módulo | `modules/<feature>/tests/` (`*.unit.spec.ts` / `*.api.spec.ts` / `*.ui.spec.tsx`) | architecture/009 |
 | RNF-102 | Quota testável | Poucos call sites de `assertPlanCapacity` | ADR-004 |
+| RNF-103 | Gate de cobertura | Jest: 80% statements/lines, 60% branches, 55% functions em schemas/utils/mappers + `shared/errors` e `shared/validators`. Fora: app/UI/actions/repos/db/services (fase atual) | architecture/009 |
 
 ### 6.10 Design system e UX
 

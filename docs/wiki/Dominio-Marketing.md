@@ -2,7 +2,7 @@
 
 **Módulo:** `src/modules/marketing/` · **Épico:** E9
 
-## Escopo
+## Responsabilidade
 
 Landing pública `/` para captação: nav, hero (CTA teste grátis), faixa de confiança, benefícios, funcionalidades de destaque, showcase com mocks do produto, CTA final e footer.
 
@@ -41,3 +41,9 @@ Soft navigation (ex.: links no sign-up) abre Termos/Privacidade em modal via Par
 | Footer | Copyright + coluna Documentos (hub + lista dos 9 docs) |
 
 Não validar mocks do showcase como dados reais do produto.
+
+## Ver também
+
+- [Autenticação](Dominio-Autenticacao)
+- [Rotas e navegação](Rotas-e-Navegacao)
+- [Visão do produto](Visao-do-Produto)

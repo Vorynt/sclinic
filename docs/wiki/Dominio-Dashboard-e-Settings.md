@@ -2,6 +2,12 @@
 
 **Módulos:** `dashboard`, `settings` · **Épico:** E8 (+ E7 no board)
 
+## Sumário
+
+- [Dashboard](#dashboard)
+- [Settings](#settings)
+- [Ajuda](#ajuda)
+
 ## Dashboard
 
 - `AppShell` (wash estático `bg-app-wash`), shell híbrido sem sidebar: top nav (desktop) + bottom tabs (mobile) via `nav.ts`, homes por role (`HomeByRole`)
@@ -77,6 +83,14 @@ Shell fino em `/settings/*`; domínio real em clinics / audit / medical-records 
 
 Central de FAQ em `/help` (módulo `help`) — conteúdo **por papel**; ver [Dominio-Ajuda](Dominio-Ajuda). Item Ajuda no overflow da nav + atalho Ajuda nas homes de todos os papéis.
 
-## Decisão
+## Decisões relacionadas
 
 Settings não vira “god module”: só navegação e composição de UIs de outros domínios.
+
+## Ver também
+
+- [Ajuda](Dominio-Ajuda)
+- [Recepção e realtime](Dominio-Recepcao-e-Realtime)
+- [Rotas e navegação](Rotas-e-Navegacao)
+- [RBAC e permissões](RBAC-e-Permissoes)
+- [Auditoria](Dominio-Auditoria)
