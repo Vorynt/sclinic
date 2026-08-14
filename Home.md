@@ -6,12 +6,13 @@ Handbook oficial do produto e da engenharia. Público-alvo: **qualquer novo cola
 
 ## Comece por aqui
 
-1. [Onboarding do colaborador](Onboarding-do-Colaborador)
-2. [Visão do produto](Visao-do-Produto)
-3. [Requisitos](Requisitos) (RF, RNF, personas)
-4. [Arquitetura](Arquitetura)
-5. [Módulos e boundaries](Modulos-e-Boundaries)
-6. [Catálogo de features](Catalogo-de-Features) · [Épicos](Epicos) · [Roadmap](Roadmap)
+**Colaborador novo** — [Onboarding do colaborador](Onboarding-do-Colaborador)
+
+**Produto** — [Visão do produto](Visao-do-Produto) · [Requisitos](Requisitos) (RF, RNF, personas)
+
+**Engenharia** — [Arquitetura](Arquitetura) · [Módulos e boundaries](Modulos-e-Boundaries)
+
+**Planejamento** — [Catálogo de features](Catalogo-de-Features) · [Épicos](Epicos) · [Roadmap](Roadmap)
 
 ## Mapa da documentação
 

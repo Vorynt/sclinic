@@ -55,3 +55,9 @@ Paths locais: `docs/adr/00N-*.md`.
 ## Quando criar ADR novo
 
 Mudança de boundary entre módulos, modelo de dados irreversível, trade-off de produto com impacto arquitetural, ou “vamos fazer diferente do architecture/”. Processo sugerido: skill `create-adr` / pasta `docs/adr/`.
+
+## Ver também
+
+- [Arquitetura](Arquitetura)
+- [Roadmap](Roadmap)
+- [Épicos](Epicos)

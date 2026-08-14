@@ -2,7 +2,19 @@
 
 **Módulo:** `billing` (subscriptions/plans) · **Épico:** E2 · **ADRs 003, 004**
 
-## Modelo
+## Sumário
+
+- [Responsabilidade](#responsabilidade)
+- [Trial](#trial-teste-grátis)
+- [Planos](#planos-seed)
+- [Entitlement vs over_limit](#entitlement-vs-over_limit)
+- [Zonas de acesso](#zonas-de-acesso-adr-003-amend)
+- [Regularização](#regularização)
+- [Troca de plano](#troca-de-plano-customer-portal)
+- [Exclusão de clínica](#exclusão-de-clínica)
+- [UI](#ui)
+
+## Responsabilidade
 
 - Assinatura por **`userId`** (owner), não por clinic
 - Unique viva: `trialing` | `active` | `past_due`
@@ -68,6 +80,14 @@ Pré-requisito: prices do Portal precisam existir em `plans.stripe_price_id` (`n
 
 Queries client: `mySubscription` e `clinicPlanQuota` usam `staleTime` (60s / 30s) e herdam `refetchOnWindowFocus: false` global — retorno do Portal continua com polling local em `/account/subscription`.
 
-## Decisões
+## Decisões relacionadas
 
-Portal-first (sem lista de faturas no app). Downgrade livre sem apagar dados. MVP 1:1 assinatura↔clínica owned. Ver [ADR-003](../adr/003-user-saas-subscription.md).
+Portal-first (sem lista de faturas no app). Downgrade livre sem apagar dados. MVP 1:1 assinatura↔clínica owned. Ver [Índice de decisões](Indice-de-Decisoes) (ADR-003).
+
+## Ver também
+
+- [Faturamento clínico](Dominio-Faturamento-Clinico)
+- [Clínicas](Dominio-Clinicas)
+- [Autenticação](Dominio-Autenticacao)
+- [Usuários e equipe](Dominio-Usuarios-e-Equipe)
+- [Índice de decisões](Indice-de-Decisoes)

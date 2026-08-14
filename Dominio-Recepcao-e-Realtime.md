@@ -52,6 +52,14 @@ Fora do board: canceled, no_show, completed sem charge ou paid.
 - `useClinicOpsRealtime` debounced (~400ms) invalida prefixes `appointments` / `schedule-blocks` / `waitlist` / `charges` — colapsa rajadas de eventos numa única onda de refetch
 - Próximo: broker (ver [Roadmap](Roadmap))
 
-## Decisão
+## Decisões relacionadas
 
 Separar papel clínico do caixa; board derivado (sem status novo de appointment).
+
+## Ver também
+
+- [Agendamentos](Dominio-Agendamentos)
+- [Dashboard e settings](Dominio-Dashboard-e-Settings)
+- [Faturamento clínico](Dominio-Faturamento-Clinico)
+- [Roadmap](Roadmap)
+- [Índice de decisões](Indice-de-Decisoes)

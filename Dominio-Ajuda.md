@@ -37,3 +37,9 @@ Sem LLM — o conteúdo vive em `constants/faq/<papel>.ts` e deve ser atualizado
 - `src/modules/help/components/HelpCenter.tsx`
 - `src/app/(dashboard)/help/page.tsx`
 - `src/modules/dashboard/constants/nav.ts`
+
+## Ver também
+
+- [Dashboard e settings](Dominio-Dashboard-e-Settings)
+- [Autenticação](Dominio-Autenticacao)
+- [Rotas e navegação](Rotas-e-Navegacao)

@@ -60,3 +60,10 @@ Ver `AGENTS.md` e `architecture/`.
 | “Onde fica a regra de negócio?” | Service do módulo |
 | “Por que foi feito assim?” | ADR + página de domínio |
 | “O que vem depois?” | [Roadmap](Roadmap) |
+
+## Ver também
+
+- [Home](Home)
+- [Arquitetura](Arquitetura)
+- [Ambientes e operação](Ambientes-e-Operacao)
+- [Índice de decisões](Indice-de-Decisoes)

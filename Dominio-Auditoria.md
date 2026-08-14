@@ -14,6 +14,12 @@ Mutações instrumentadas: patient, appointment, clinic, hours, member, invitati
 
 Campos: ator, action, status success|error, entity, changes (sem secrets), erro tipado.
 
-## Decisão
+## Decisões relacionadas
 
 Módulo próprio + pub/sub em vez de acoplar todos os services ao audit repository. Instrumentação ainda **manual** por mutator (aceito no estágio atual).
+
+## Ver também
+
+- [Dashboard e settings](Dominio-Dashboard-e-Settings)
+- [Índice de decisões](Indice-de-Decisoes)
+- [RBAC e permissões](RBAC-e-Permissoes)

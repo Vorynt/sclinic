@@ -120,3 +120,9 @@ Se falhar em `db:migrate` / `applying migrations`, leia o erro Postgres no log. 
 ## Proxy
 
 Next 16 usa `src/proxy.ts` (não `middleware.ts`) para cookies/rotas públicas.
+
+## Ver também
+
+- [Onboarding do colaborador](Onboarding-do-Colaborador)
+- [Autenticação](Dominio-Autenticacao)
+- [Assinatura SaaS](Dominio-Assinatura-SaaS)
