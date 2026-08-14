@@ -2,6 +2,7 @@ import { relations } from "drizzle-orm"
 import {
   boolean,
   index,
+  integer,
   pgTable,
   text,
   timestamp,
@@ -28,6 +29,8 @@ export const user = pgTable("user", {
   lastLoginAt: timestamp("last_login_at", { withTimezone: true, mode: "date" }),
   /** When true, user must set a new password before using the app. */
   mustChangePassword: boolean("must_change_password").default(false).notNull(),
+  /** Better Auth two-factor plugin — true only after TOTP verification. */
+  twoFactorEnabled: boolean("two_factor_enabled").default(false).notNull(),
   ...timestamps,
 })
 
@@ -76,6 +79,27 @@ export const account = pgTable(
   (t) => [index("account_user_id_idx").on(t.userId)],
 )
 
+export const twoFactor = pgTable(
+  "twoFactor",
+  {
+    id: primaryTextId(),
+    secret: text("secret").notNull(),
+    backupCodes: text("backup_codes").notNull(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    verified: boolean("verified").default(true).notNull(),
+    failedVerificationCount: integer("failed_verification_count")
+      .default(0)
+      .notNull(),
+    lockedUntil: timestamp("locked_until", {
+      withTimezone: true,
+      mode: "date",
+    }),
+  },
+  (t) => [index("two_factor_user_id_idx").on(t.userId)],
+)
+
 export const verification = pgTable(
   "verification",
   {
@@ -91,6 +115,14 @@ export const verification = pgTable(
 export const userRelations = relations(user, ({ many }) => ({
   sessions: many(session),
   accounts: many(account),
+  twoFactors: many(twoFactor),
+}))
+
+export const twoFactorRelations = relations(twoFactor, ({ one }) => ({
+  user: one(user, {
+    fields: [twoFactor.userId],
+    references: [user.id],
+  }),
 }))
 
 export const sessionRelations = relations(session, ({ one }) => ({
@@ -109,3 +141,4 @@ export const accountRelations = relations(account, ({ one }) => ({
 
 export type User = typeof user.$inferSelect
 export type NewUser = typeof user.$inferInsert
+export type TwoFactor = typeof twoFactor.$inferSelect

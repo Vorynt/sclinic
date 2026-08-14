@@ -34,9 +34,31 @@ export const SHARED_ACCOUNT_FAQ: HelpFaqItem[] = [
     categoryId: "account",
     question: "Como troco a senha?",
     answer: [
-      "Em Minha conta → Segurança. Se você entrou com uma senha temporária (por convite), o sistema pode pedir a troca na primeira vez.",
+      "Em Minha conta → Segurança, toque em Alterar senha. Informe a senha atual e a nova.",
+      "Você pode marcar para encerrar o acesso nos outros dispositivos. Se entrou com uma senha temporária (por convite), o sistema pode pedir a troca na primeira vez.",
     ],
     keywords: ["senha", "trocar senha", "segurança", "password"],
+    relatedRoutes: [{ label: "Segurança", href: routes.accountSecurity }],
+  },
+  {
+    id: "two-factor",
+    categoryId: "account",
+    question: "Como ativo a autenticação em duas etapas?",
+    answer: [
+      "Em Minha conta → Segurança. Confirme a senha; no modal, escaneie o QR no app autenticador e guarde os códigos de backup.",
+      "No próximo login o sistema pedirá o código do app. Se perder o celular, use um código de backup.",
+    ],
+    keywords: ["2fa", "duas etapas", "autenticador", "totp", "backup"],
+    relatedRoutes: [{ label: "Segurança", href: routes.accountSecurity }],
+  },
+  {
+    id: "revoke-sessions",
+    categoryId: "account",
+    question: "Como encerro o acesso em outro dispositivo?",
+    answer: [
+      "Em Minha conta → Segurança, na lista de sessões ativas. Você pode encerrar uma sessão específica ou todas as outras. A sessão deste dispositivo não pode ser encerrada por aí — use Sair.",
+    ],
+    keywords: ["sessão", "dispositivo", "encerrar", "sair de outros"],
     relatedRoutes: [{ label: "Segurança", href: routes.accountSecurity }],
   },
   {

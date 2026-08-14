@@ -4,12 +4,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import type { z } from "zod";
 
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Field,
+  FieldContent,
   FieldError,
   FieldGroup,
   FieldLabel,
@@ -23,7 +25,11 @@ import { Spinner } from "@/components/ui/spinner";
 import { routes } from "@/config/routes";
 import { useSignInMutation } from "@/modules/authentication/hooks/use-auth";
 import { signInSchema } from "@/modules/authentication/schemas/auth.schema";
-import { getPostAuthRedirect, getSafeNextPath } from "@/modules/authentication/utils/post-auth-redirect";
+import {
+  getPostAuthRedirect,
+  getSafeNextPath,
+  getTwoFactorPath,
+} from "@/modules/authentication/utils/post-auth-redirect";
 import { ErrorCode, getClientMessage, isAppError } from "@/shared/errors";
 import { useAuthUiStore } from "@/stores/auth.store";
 
@@ -42,12 +48,22 @@ export function SignInForm() {
   } | null>(null);
 
   const beginSessionBootstrap = useAuthUiStore((s) => s.beginSessionBootstrap);
+  const requestTwoFactorNudge = useAuthUiStore((s) => s.requestTwoFactorNudge);
 
   const signIn = useSignInMutation({
-    onSuccess: (data) => {
+    onSuccess: (result) => {
+      if (result.status === "twoFactorRequired") {
+        router.replace(getTwoFactorPath(next));
+        return;
+      }
+
+      const data = result.context;
+      if (!data.user.twoFactorEnabled) {
+        requestTwoFactorNudge();
+      }
+
       const dest = getPostAuthRedirect(data, next);
       const safeNext = getSafeNextPath(next);
-      // Only bootstrap when landing in AppShell (sidebar needs permissions).
       const landsInAppShell =
         Boolean(data.membership) &&
         data.user.emailVerified &&
@@ -60,7 +76,6 @@ export function SignInForm() {
       router.replace(dest);
     },
     onError: (error) => {
-      console.error(error);
       if (isAppError(error)) {
         setFormError({
           message: getClientMessage(error.code),
@@ -77,6 +92,7 @@ export function SignInForm() {
 
   const {
     register,
+    control,
     handleSubmit,
     formState: { errors },
   } = useForm<SignInValues, unknown, SignInOutput>({
@@ -84,6 +100,7 @@ export function SignInForm() {
     defaultValues: {
       email: "",
       password: "",
+      rememberMe: true,
     },
   });
 
@@ -149,6 +166,30 @@ export function SignInForm() {
             {...register("password")}
           />
           <FieldError errors={[errors.password]} />
+        </Field>
+
+        <Field orientation="horizontal">
+          <Controller
+            name="rememberMe"
+            control={control}
+            render={({ field }) => (
+              <Checkbox
+                id="sign-in-remember-me"
+                checked={field.value === true}
+                onCheckedChange={(checked) => {
+                  field.onChange(checked === true);
+                }}
+                disabled={signIn.isPending}
+              />
+            )}
+          />
+          <FieldContent>
+            <FieldLabel
+              htmlFor="sign-in-remember-me"
+              className="font-normal leading-snug text-muted-foreground">
+              Lembrar de mim neste dispositivo
+            </FieldLabel>
+          </FieldContent>
         </Field>
       </FieldGroup>
 

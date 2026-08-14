@@ -224,6 +224,10 @@ Convenção de ID: `RF-<DOMÍNIO>-NNN`.
 | RF-AUTH-007 | Aceite de invite | Invite pode preceder verify-email; token prova ownership | P9 | Done |
 | RF-AUTH-008 | Guard entitlement | Clínica sem assinatura viva bloqueada (`requireClinic`) | Membros | Done |
 | RF-AUTH-009 | Resolução de permissões | Runtime por membership + seed RBAC | Todas | Done |
+| RF-AUTH-010 | 2FA TOTP + backup | Plugin Better Auth; opt-in em `/account/security`; desafio em `/two-factor` | Todas | Done |
+| RF-AUTH-011 | Revogar sessões | Listar dispositivos; revogar outras (não a atual); opção na troca de senha | Todas | Done |
+| RF-AUTH-012 | Remember-me | Cookie persistente (7d) ou de sessão no login | Todas | Done |
+| RF-AUTH-013 | Nudge 2FA pós-login | Modal quando 2FA está desligado; pular ou ir para Segurança | Todas | Done |
 
 ### 4.2 Clínicas — `RF-CLI`
 

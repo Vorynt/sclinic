@@ -3,6 +3,7 @@ import { ALL_PERMISSIONS } from "@/config/permissions"
 import type {
   AuthMembership,
   AuthSession,
+  AuthSessionDevice,
   AuthUser,
   MembershipStatus,
   UserStatus,
@@ -43,6 +44,7 @@ export function toAuthUser(row: {
   phone: string | null
   status: unknown
   mustChangePassword?: boolean | null
+  twoFactorEnabled?: boolean | null
 }): AuthUser {
   return {
     id: row.id,
@@ -53,6 +55,7 @@ export function toAuthUser(row: {
     phone: row.phone,
     status: toUserStatus(row.status),
     mustChangePassword: Boolean(row.mustChangePassword),
+    twoFactorEnabled: Boolean(row.twoFactorEnabled),
   }
 }
 
@@ -69,6 +72,24 @@ export function toAuthSession(row: {
     token: row.token,
     expiresAt: row.expiresAt,
     activeClinicId: row.activeClinicId,
+  }
+}
+
+export function toAuthSessionDevice(
+  row: {
+    id: string
+    createdAt: Date
+    expiresAt: Date
+    ipAddress: string | null
+    userAgent: string | null
+  },
+): Omit<AuthSessionDevice, "isCurrent"> {
+  return {
+    id: row.id,
+    createdAt: row.createdAt,
+    expiresAt: row.expiresAt,
+    ipAddress: row.ipAddress,
+    userAgent: row.userAgent,
   }
 }
 

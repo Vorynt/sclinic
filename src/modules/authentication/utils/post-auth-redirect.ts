@@ -23,6 +23,10 @@ function withNext(path: string, next: string | null): string {
   return `${url.pathname}${url.search}`
 }
 
+export function getTwoFactorPath(next?: string | null): string {
+  return withNext(routes.twoFactor, getSafeNextPath(next))
+}
+
 export function getPostAuthRedirect(
   auth: AuthContext,
   next?: string | null,

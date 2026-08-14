@@ -1,10 +1,18 @@
-import { eq } from "drizzle-orm"
+import { and, desc, eq, gt } from "drizzle-orm"
 
 import { db } from "@/db"
 import { session } from "@/db/schema"
 import { withDbError } from "@/db/with-db-error"
-import { toAuthSession } from "@/modules/authentication/mappers/auth.mapper"
-import type { AuthSession } from "@/modules/authentication/types/auth"
+import {
+  toAuthSession,
+  toAuthSessionDevice,
+} from "@/modules/authentication/mappers/auth.mapper"
+import type {
+  AuthSession,
+  AuthSessionDevice,
+} from "@/modules/authentication/types/auth"
+
+type SessionDeviceRecord = Omit<AuthSessionDevice, "isCurrent">
 
 export const sessionRepository = {
   async findById(id: string): Promise<AuthSession | null> {
@@ -26,6 +34,26 @@ export const sessionRepository = {
         .where(eq(session.token, token))
         .limit(1)
       return row ? toAuthSession(row) : null
+    })
+  },
+
+  async listActiveByUserId(userId: string): Promise<SessionDeviceRecord[]> {
+    return withDbError(async () => {
+      const rows = await db
+        .select({
+          id: session.id,
+          createdAt: session.createdAt,
+          expiresAt: session.expiresAt,
+          ipAddress: session.ipAddress,
+          userAgent: session.userAgent,
+        })
+        .from(session)
+        .where(
+          and(eq(session.userId, userId), gt(session.expiresAt, new Date())),
+        )
+        .orderBy(desc(session.createdAt))
+
+      return rows.map(toAuthSessionDevice)
     })
   },
 

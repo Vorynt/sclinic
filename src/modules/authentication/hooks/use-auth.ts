@@ -6,7 +6,12 @@ import {
   authQueries,
   authQueryKeys,
 } from "@/modules/authentication/queries/auth.query";
-import type { AuthContext } from "@/modules/authentication/types/auth";
+import type {
+  AuthContext,
+  BackupCodesResult,
+  SignInResult,
+  TwoFactorEnableResult,
+} from "@/modules/authentication/types/auth";
 import {
   AppError,
   ErrorCode,
@@ -34,20 +39,26 @@ export function useAuthMemberships() {
   return useQuery(authQueries.memberships());
 }
 
+export function useAuthSessions() {
+  return useQuery(authQueries.sessions());
+}
+
 export function useSignInMutation({
   onSuccess,
   onError,
-}: MutationCallbacks<AuthContext> = {}) {
+}: MutationCallbacks<SignInResult> = {}) {
   const queryClient = useQueryClient();
 
   return useMutation({
     ...authMutations.signIn(),
     onSuccess: async (data) => {
-      // Seed session before invalidate so permissions are available on redirect
-      // (AuthProvider was hydrated with null on /login and does not remount).
-      setQueryClinicId(data.session.activeClinicId ?? null);
-      queryClient.setQueryData(authQueryKeys.session, data);
-      await queryClient.invalidateQueries({ queryKey: authQueryKeys.all });
+      if (data.status === "authenticated") {
+        // Seed session before invalidate so permissions are available on redirect
+        // (AuthProvider was hydrated with null on /login and does not remount).
+        setQueryClinicId(data.context.session.activeClinicId ?? null);
+        queryClient.setQueryData(authQueryKeys.session, data.context);
+        await queryClient.invalidateQueries({ queryKey: authQueryKeys.all });
+      }
       onSuccess?.(data);
     },
     onError: (error) => {
@@ -141,6 +152,7 @@ export function useChangePasswordMutation({
   return useMutation({
     ...authMutations.changePassword(),
     onSuccess: async (data) => {
+      queryClient.setQueryData(authQueryKeys.session, data);
       await queryClient.invalidateQueries({ queryKey: authQueryKeys.all });
       onSuccess?.(data);
     },
@@ -172,6 +184,160 @@ export function useResetPasswordMutation({
   return useMutation({
     ...authMutations.resetPassword(),
     onSuccess: (data) => {
+      onSuccess?.(data);
+    },
+    onError: (error) => {
+      onError?.(toAppError(error));
+    },
+  });
+}
+
+function seedAuthenticatedSession(
+  queryClient: ReturnType<typeof useQueryClient>,
+  data: AuthContext,
+) {
+  setQueryClinicId(data.session.activeClinicId ?? null);
+  queryClient.setQueryData(authQueryKeys.session, data);
+}
+
+export function useVerifyTwoFactorMutation({
+  onSuccess,
+  onError,
+}: MutationCallbacks<AuthContext> = {}) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    ...authMutations.verifyTwoFactor(),
+    onSuccess: async (data) => {
+      seedAuthenticatedSession(queryClient, data);
+      await queryClient.invalidateQueries({ queryKey: authQueryKeys.all });
+      onSuccess?.(data);
+    },
+    onError: (error) => {
+      onError?.(toAppError(error));
+    },
+  });
+}
+
+export function useVerifyBackupCodeMutation({
+  onSuccess,
+  onError,
+}: MutationCallbacks<AuthContext> = {}) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    ...authMutations.verifyBackupCode(),
+    onSuccess: async (data) => {
+      seedAuthenticatedSession(queryClient, data);
+      await queryClient.invalidateQueries({ queryKey: authQueryKeys.all });
+      onSuccess?.(data);
+    },
+    onError: (error) => {
+      onError?.(toAppError(error));
+    },
+  });
+}
+
+export function useEnableTwoFactorMutation({
+  onSuccess,
+  onError,
+}: MutationCallbacks<TwoFactorEnableResult> = {}) {
+  return useMutation({
+    ...authMutations.enableTwoFactor(),
+    onSuccess: (data) => {
+      onSuccess?.(data);
+    },
+    onError: (error) => {
+      onError?.(toAppError(error));
+    },
+  });
+}
+
+export function useVerifyTwoFactorSetupMutation({
+  onSuccess,
+  onError,
+}: MutationCallbacks<AuthContext> = {}) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    ...authMutations.verifyTwoFactorSetup(),
+    onSuccess: async (data) => {
+      queryClient.setQueryData(authQueryKeys.session, data);
+      await queryClient.invalidateQueries({ queryKey: authQueryKeys.all });
+      onSuccess?.(data);
+    },
+    onError: (error) => {
+      onError?.(toAppError(error));
+    },
+  });
+}
+
+export function useDisableTwoFactorMutation({
+  onSuccess,
+  onError,
+}: MutationCallbacks<AuthContext> = {}) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    ...authMutations.disableTwoFactor(),
+    onSuccess: async (data) => {
+      queryClient.setQueryData(authQueryKeys.session, data);
+      await queryClient.invalidateQueries({ queryKey: authQueryKeys.all });
+      onSuccess?.(data);
+    },
+    onError: (error) => {
+      onError?.(toAppError(error));
+    },
+  });
+}
+
+export function useRegenerateBackupCodesMutation({
+  onSuccess,
+  onError,
+}: MutationCallbacks<BackupCodesResult> = {}) {
+  return useMutation({
+    ...authMutations.regenerateBackupCodes(),
+    onSuccess: (data) => {
+      onSuccess?.(data);
+    },
+    onError: (error) => {
+      onError?.(toAppError(error));
+    },
+  });
+}
+
+export function useRevokeSessionMutation({
+  onSuccess,
+  onError,
+}: MutationCallbacks = {}) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    ...authMutations.revokeSession(),
+    onSuccess: async (data) => {
+      await queryClient.invalidateQueries({
+        queryKey: authQueryKeys.sessions,
+      });
+      onSuccess?.(data);
+    },
+    onError: (error) => {
+      onError?.(toAppError(error));
+    },
+  });
+}
+
+export function useRevokeOtherSessionsMutation({
+  onSuccess,
+  onError,
+}: MutationCallbacks = {}) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    ...authMutations.revokeOtherSessions(),
+    onSuccess: async (data) => {
+      await queryClient.invalidateQueries({
+        queryKey: authQueryKeys.sessions,
+      });
       onSuccess?.(data);
     },
     onError: (error) => {

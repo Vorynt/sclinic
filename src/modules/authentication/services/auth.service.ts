@@ -4,11 +4,17 @@ import { auth, isBetterAuthError, mapBetterAuthError } from "@/core/auth";
 import { AUTH_CONSTANTS } from "@/modules/authentication/constants/auth";
 import type {
   ChangePasswordDto,
+  DisableTwoFactorDto,
+  EnableTwoFactorDto,
+  RegenerateBackupCodesDto,
   RequestPasswordResetDto,
   ResetPasswordDto,
+  RevokeSessionDto,
   SignInDto,
   SignUpDto,
   SwitchClinicDto,
+  VerifyBackupCodeDto,
+  VerifyTotpDto,
 } from "@/modules/authentication/dto/auth.dto";
 import {
   toAuthSession,
@@ -23,9 +29,14 @@ import type {
   AuthContext,
   AuthMembership,
   AuthSession,
+  AuthSessionDevice,
   AuthUser,
+  BackupCodesResult,
+  SignInResult,
+  TwoFactorEnableResult,
 } from "@/modules/authentication/types/auth";
 import { assertUserCanAuthenticate } from "@/modules/authentication/utils/assert-user";
+import { assertCanRevokeSession } from "@/modules/authentication/utils/session-rules";
 import { billingService } from "@/modules/billing/services/billing.service";
 import type { AuthRequestContext } from "@/shared/auth";
 import { AppError } from "@/shared/errors/app-error";
@@ -35,7 +46,17 @@ type BaSessionResult = NonNullable<
   Awaited<ReturnType<typeof auth.api.getSession>>
 >;
 
-type BaAuthUser = BaSessionResult["user"];
+type BaUserLike = {
+  id: string;
+  name: string;
+  email: string;
+  emailVerified: boolean;
+  image?: string | null;
+  phone?: string | null;
+  status?: unknown;
+  mustChangePassword?: boolean | null;
+  twoFactorEnabled?: boolean | null;
+};
 
 async function resolvePermissions(
   membership: AuthMembership | null,
@@ -101,18 +122,17 @@ async function ensureActiveClinic(
   };
 }
 
-function mapBaUser(baUser: BaAuthUser): AuthUser {
+function mapBaUser(baUser: BaUserLike): AuthUser {
   return toAuthUser({
     id: baUser.id,
     name: baUser.name,
     email: baUser.email,
     emailVerified: baUser.emailVerified,
     image: baUser.image ?? null,
-    phone: (baUser as { phone?: string | null }).phone ?? null,
-    status: toUserStatus((baUser as { status?: unknown }).status),
-    mustChangePassword: Boolean(
-      (baUser as { mustChangePassword?: boolean | null }).mustChangePassword,
-    ),
+    phone: baUser.phone ?? null,
+    status: toUserStatus(baUser.status),
+    mustChangePassword: Boolean(baUser.mustChangePassword),
+    twoFactorEnabled: Boolean(baUser.twoFactorEnabled),
   });
 }
 
@@ -216,8 +236,8 @@ async function buildAuthContext(ba: BaSessionResult): Promise<AuthContext> {
  * Use the returned token and load the session from the DB instead.
  */
 async function buildAuthContextFromBaResult(result: {
-  user: BaAuthUser;
-  token: string | null;
+  user: BaUserLike;
+  token?: string | null;
 }): Promise<AuthContext> {
   if (!result.user || !result.token) {
     throw new AppError(ErrorCode.UNAUTHORIZED);
@@ -233,6 +253,17 @@ async function buildAuthContextFromBaResult(result: {
 
 function generateOpaquePassword(): string {
   return randomBytes(32).toString("base64url");
+}
+
+function isTwoFactorRedirect(
+  result: unknown,
+): result is { twoFactorRedirect: true } {
+  return (
+    typeof result === "object" &&
+    result !== null &&
+    "twoFactorRedirect" in result &&
+    (result as { twoFactorRedirect?: unknown }).twoFactorRedirect === true
+  );
 }
 
 export const authService = {
@@ -306,10 +337,16 @@ export const authService = {
 
     await userRepository.setMustChangePassword(existing.id, false);
 
-    return this.signIn(
-      { email: params.email, password: params.newPassword },
+    const result = await this.signIn(
+      { email: params.email, password: params.newPassword, rememberMe: true },
       ctx,
     );
+
+    if (result.status !== "authenticated") {
+      throw new AppError(ErrorCode.UNAUTHORIZED);
+    }
+
+    return result.context;
   },
 
   async signUp(data: SignUpDto, ctx: AuthRequestContext): Promise<AuthContext> {
@@ -332,20 +369,25 @@ export const authService = {
     }
   },
 
-  async signIn(data: SignInDto, ctx: AuthRequestContext): Promise<AuthContext> {
+  async signIn(data: SignInDto, ctx: AuthRequestContext): Promise<SignInResult> {
     try {
       const result = await auth.api.signInEmail({
         body: {
           email: data.email,
           password: data.password,
+          rememberMe: data.rememberMe,
         },
         headers: ctx.headers,
       });
 
+      if (isTwoFactorRedirect(result)) {
+        return { status: "twoFactorRequired" };
+      }
+
       const authContext = await buildAuthContextFromBaResult(result);
       await userRepository.updateLastLoginAt(authContext.user.id);
 
-      return authContext;
+      return { status: "authenticated", context: authContext };
     } catch (error) {
       if (error instanceof AppError) throw error;
       mapBetterAuthError(error);
@@ -547,19 +589,36 @@ export const authService = {
     const authContext = await this.requireSession(ctx);
 
     try {
-      await auth.api.changePassword({
+      const result = await auth.api.changePassword({
         body: {
           currentPassword: data.currentPassword,
           newPassword: data.newPassword,
+          revokeOtherSessions: data.revokeOtherSessions,
         },
         headers: ctx.headers,
       });
-    } catch (error) {
-      mapBetterAuthError(error);
-    }
 
-    if (authContext.user.mustChangePassword) {
-      await userRepository.setMustChangePassword(authContext.user.id, false);
+      if (authContext.user.mustChangePassword) {
+        await userRepository.setMustChangePassword(authContext.user.id, false);
+      }
+
+      // BA deletes every session and issues a new cookie when revoking others.
+      if (data.revokeOtherSessions) {
+        if (!result?.token) {
+          throw new AppError(ErrorCode.UNAUTHORIZED);
+        }
+        const nextContext = await buildAuthContextFromBaResult({
+          user: result.user,
+          token: result.token,
+        });
+        return {
+          ...nextContext,
+          user: { ...nextContext.user, mustChangePassword: false },
+        };
+      }
+    } catch (error) {
+      if (error instanceof AppError) throw error;
+      mapBetterAuthError(error);
     }
 
     return this.requireSession(ctx);
@@ -611,6 +670,185 @@ export const authService = {
         }
       }
 
+      mapBetterAuthError(error);
+    }
+  },
+
+  async verifyTotp(
+    data: VerifyTotpDto,
+    ctx: AuthRequestContext,
+  ): Promise<AuthContext> {
+    try {
+      const result = await auth.api.verifyTOTP({
+        body: { code: data.code },
+        headers: ctx.headers,
+      });
+
+      const authContext = await buildAuthContextFromBaResult(result);
+      await userRepository.updateLastLoginAt(authContext.user.id);
+      return authContext;
+    } catch (error) {
+      if (error instanceof AppError) throw error;
+      mapBetterAuthError(error);
+    }
+  },
+
+  async verifyBackupCode(
+    data: VerifyBackupCodeDto,
+    ctx: AuthRequestContext,
+  ): Promise<AuthContext> {
+    try {
+      const result = await auth.api.verifyBackupCode({
+        body: { code: data.code },
+        headers: ctx.headers,
+      });
+
+      const authContext = await buildAuthContextFromBaResult(result);
+      await userRepository.updateLastLoginAt(authContext.user.id);
+      return authContext;
+    } catch (error) {
+      if (error instanceof AppError) throw error;
+      mapBetterAuthError(error);
+    }
+  },
+
+  async enableTwoFactor(
+    data: EnableTwoFactorDto,
+    ctx: AuthRequestContext,
+  ): Promise<TwoFactorEnableResult> {
+    await this.requireSession(ctx);
+
+    try {
+      const result = await auth.api.enableTwoFactor({
+        body: { password: data.password },
+        headers: ctx.headers,
+      });
+
+      if (!result?.totpURI || !result.backupCodes) {
+        throw new AppError(ErrorCode.INTERNAL_ERROR);
+      }
+
+      return {
+        totpURI: result.totpURI,
+        backupCodes: result.backupCodes,
+      };
+    } catch (error) {
+      if (error instanceof AppError) throw error;
+      mapBetterAuthError(error);
+    }
+  },
+
+  async verifyTwoFactorSetup(
+    data: VerifyTotpDto,
+    ctx: AuthRequestContext,
+  ): Promise<AuthContext> {
+    const authContext = await this.requireSession(ctx);
+
+    try {
+      await auth.api.verifyTOTP({
+        body: { code: data.code },
+        headers: ctx.headers,
+      });
+    } catch (error) {
+      mapBetterAuthError(error);
+    }
+
+    // BA may rotate the session cookie; request headers still have the old token.
+    return {
+      ...authContext,
+      user: { ...authContext.user, twoFactorEnabled: true },
+    };
+  },
+
+  async disableTwoFactor(
+    data: DisableTwoFactorDto,
+    ctx: AuthRequestContext,
+  ): Promise<AuthContext> {
+    const authContext = await this.requireSession(ctx);
+
+    try {
+      await auth.api.disableTwoFactor({
+        body: { password: data.password },
+        headers: ctx.headers,
+      });
+    } catch (error) {
+      mapBetterAuthError(error);
+    }
+
+    // BA rotates the session cookie on disable; avoid getSession on stale headers.
+    return {
+      ...authContext,
+      user: { ...authContext.user, twoFactorEnabled: false },
+    };
+  },
+
+  async regenerateBackupCodes(
+    data: RegenerateBackupCodesDto,
+    ctx: AuthRequestContext,
+  ): Promise<BackupCodesResult> {
+    await this.requireSession(ctx);
+
+    try {
+      const result = await auth.api.generateBackupCodes({
+        body: { password: data.password },
+        headers: ctx.headers,
+      });
+
+      if (!result?.backupCodes) {
+        throw new AppError(ErrorCode.INTERNAL_ERROR);
+      }
+
+      return { backupCodes: result.backupCodes };
+    } catch (error) {
+      if (error instanceof AppError) throw error;
+      mapBetterAuthError(error);
+    }
+  },
+
+  async listSessions(ctx: AuthRequestContext): Promise<AuthSessionDevice[]> {
+    const authContext = await this.requireSession(ctx);
+    const sessions = await sessionRepository.listActiveByUserId(
+      authContext.user.id,
+    );
+
+    return sessions.map((item) => ({
+      ...item,
+      isCurrent: item.id === authContext.session.id,
+    }));
+  },
+
+  async revokeSession(
+    data: RevokeSessionDto,
+    ctx: AuthRequestContext,
+  ): Promise<void> {
+    const authContext = await this.requireSession(ctx);
+    assertCanRevokeSession(authContext.session.id, data.sessionId);
+
+    const target = await sessionRepository.findById(data.sessionId);
+    if (!target || target.userId !== authContext.user.id) {
+      throw new AppError(ErrorCode.NOT_FOUND, {
+        message: "Sessão não encontrada.",
+      });
+    }
+
+    try {
+      await auth.api.revokeSession({
+        body: { token: target.token },
+        headers: ctx.headers,
+      });
+    } catch (error) {
+      mapBetterAuthError(error);
+    }
+  },
+
+  async revokeOtherSessions(ctx: AuthRequestContext): Promise<void> {
+    await this.requireSession(ctx);
+
+    try {
+      await auth.api.revokeOtherSessions({
+        headers: ctx.headers,
+      });
+    } catch (error) {
       mapBetterAuthError(error);
     }
   },

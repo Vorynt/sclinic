@@ -34,6 +34,7 @@ export const signUpSchema = z.object({
 export const signInSchema = z.object({
   email: emailSchema,
   password: z.string().min(1, "Senha é obrigatória"),
+  rememberMe: z.boolean().default(true),
 })
 
 export const switchClinicSchema = z.object({
@@ -67,11 +68,39 @@ export const changePasswordSchema = z
     currentPassword: z.string().min(1, "Senha atual é obrigatória"),
     newPassword: passwordSchema,
     confirmPassword: z.string().min(1, "Confirme a nova senha"),
+    revokeOtherSessions: z.boolean().default(false),
   })
   .refine((data) => data.newPassword === data.confirmPassword, {
     message: "As senhas não coincidem",
     path: ["confirmPassword"],
   })
+
+export const verifyTotpSchema = z.object({
+  code: z
+    .string()
+    .trim()
+    .regex(/^\d{6}$/, "Informe o código de 6 dígitos"),
+})
+
+export const verifyBackupCodeSchema = z.object({
+  code: z
+    .string()
+    .trim()
+    .min(8, "Código de backup inválido")
+    .max(32, "Código de backup inválido"),
+})
+
+const confirmPasswordSchema = z.object({
+  password: z.string().min(1, "Senha é obrigatória"),
+})
+
+export const enableTwoFactorSchema = confirmPasswordSchema
+export const disableTwoFactorSchema = confirmPasswordSchema
+export const regenerateBackupCodesSchema = confirmPasswordSchema
+
+export const revokeSessionSchema = z.object({
+  sessionId: z.string().min(1, "Sessão inválida"),
+})
 
 export type SignUpInput = z.infer<typeof signUpSchema>
 export type SignInInput = z.infer<typeof signInSchema>
@@ -82,3 +111,11 @@ export type RequestPasswordResetInput = z.infer<
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>
 export type ResetPasswordFormInput = z.infer<typeof resetPasswordFormSchema>
 export type ChangePasswordInput = z.infer<typeof changePasswordSchema>
+export type VerifyTotpInput = z.infer<typeof verifyTotpSchema>
+export type VerifyBackupCodeInput = z.infer<typeof verifyBackupCodeSchema>
+export type EnableTwoFactorInput = z.infer<typeof enableTwoFactorSchema>
+export type DisableTwoFactorInput = z.infer<typeof disableTwoFactorSchema>
+export type RegenerateBackupCodesInput = z.infer<
+  typeof regenerateBackupCodesSchema
+>
+export type RevokeSessionInput = z.infer<typeof revokeSessionSchema>

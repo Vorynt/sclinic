@@ -7,6 +7,10 @@ Inventário do que o sistema faz hoje. Status: **Done** | **Partial** | **Planne
 | Feature | Status | Onde |
 |---------|--------|------|
 | Login / sign-up / forgot-reset | Done | `(auth)` |
+| Remember-me no login | Done | `SignInForm` |
+| 2FA (TOTP + backup) | Done | `/two-factor`, `/account/security` |
+| Modal pós-login incentiva 2FA | Done | `TwoFactorNudgeDialog` |
+| Revogar sessões (exceto a atual) | Done | `/account/security` |
 | Verificação de e-mail | Done | `/verify-email` |
 | Troca forçada de senha provisória | Done | `/change-password` |
 | Convite de equipe | Done | `/invite`, users |

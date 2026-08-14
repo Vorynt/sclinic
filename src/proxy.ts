@@ -16,6 +16,7 @@ export function proxy(request: NextRequest) {
     pathname === routes.login ||
     pathname === routes.signUp ||
     pathname === routes.forgotPassword ||
+    pathname === routes.twoFactor ||
     pathname.startsWith("/reset-password")
 
   const isLegalRoute =

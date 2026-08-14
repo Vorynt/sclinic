@@ -14,6 +14,7 @@ export const routes = {
   signUp: "/sign-up",
   forgotPassword: "/forgot-password",
   resetPassword: "/reset-password",
+  twoFactor: "/two-factor",
   verifyEmail: "/verify-email",
   changePassword: "/change-password",
   invite: "/invite",

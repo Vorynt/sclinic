@@ -1,12 +1,13 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
+import { twoFactor } from "better-auth/plugins";
 
 import { env } from "@/config/env";
 import { email } from "@/core/email";
 import { logger } from "@/core/logger";
 import { db } from "@/db";
-import { account, session, user, verification } from "@/db/schema";
+import { account, session, twoFactor as twoFactorTable, user, verification } from "@/db/schema";
 
 /**
  * Better Auth instance (platform).
@@ -26,6 +27,7 @@ export const auth = betterAuth({
       session,
       account,
       verification,
+      twoFactor: twoFactorTable,
     },
     // Matches Drizzle column property names (emailVerified, userId, …).
     camelCase: true,
@@ -130,7 +132,7 @@ export const auth = betterAuth({
       enabled: false,
     },
   },
-  plugins: [nextCookies()],
+  plugins: [twoFactor({ issuer: "sclinic" }), nextCookies()],
 });
 
 export type BetterAuthSession = typeof auth.$Infer.Session;

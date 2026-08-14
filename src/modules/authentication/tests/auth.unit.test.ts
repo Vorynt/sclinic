@@ -3,16 +3,21 @@ import { describe, it } from "node:test"
 
 import {
   changePasswordSchema,
+  revokeSessionSchema,
   signInSchema,
   signUpSchema,
   switchClinicSchema,
+  verifyBackupCodeSchema,
+  verifyTotpSchema,
 } from "@/modules/authentication/schemas/auth.schema"
 import {
   toPermissionKeys,
   toUserStatus,
 } from "@/modules/authentication/mappers/auth.mapper"
 import { assertUserCanAuthenticate } from "@/modules/authentication/utils/assert-user"
-import { getPostAuthRedirect } from "@/modules/authentication/utils/post-auth-redirect"
+import { getPostAuthRedirect, getTwoFactorPath } from "@/modules/authentication/utils/post-auth-redirect"
+import { sessionDeviceLabel } from "@/modules/authentication/utils/session-device-label"
+import { assertCanRevokeSession } from "@/modules/authentication/utils/session-rules"
 import type { AuthContext } from "@/modules/authentication/types/auth"
 import { routes } from "@/config/routes"
 import { AppError } from "@/shared/errors/app-error"
@@ -53,6 +58,23 @@ describe("auth schemas", () => {
     assert.equal(result.success, false)
   })
 
+  it("defaults rememberMe to true", () => {
+    const parsed = signInSchema.parse({
+      email: "ana@clinic.com",
+      password: "senha-ok",
+    })
+    assert.equal(parsed.rememberMe, true)
+  })
+
+  it("accepts rememberMe false", () => {
+    const parsed = signInSchema.parse({
+      email: "ana@clinic.com",
+      password: "senha-ok",
+      rememberMe: false,
+    })
+    assert.equal(parsed.rememberMe, false)
+  })
+
   it("requires password on sign-in", () => {
     const result = signInSchema.safeParse({
       email: "ana@clinic.com",
@@ -73,6 +95,17 @@ describe("auth schemas", () => {
       confirmPassword: "nova-senha-ok",
     })
     assert.equal(parsed.newPassword, "nova-senha-ok")
+    assert.equal(parsed.revokeOtherSessions, false)
+  })
+
+  it("accepts revokeOtherSessions on change password", () => {
+    const parsed = changePasswordSchema.parse({
+      currentPassword: "antiga-senha",
+      newPassword: "nova-senha-ok",
+      confirmPassword: "nova-senha-ok",
+      revokeOtherSessions: true,
+    })
+    assert.equal(parsed.revokeOtherSessions, true)
   })
 
   it("parseForm returns first field error for invalid sign-in", () => {
@@ -131,6 +164,7 @@ describe("assertUserCanAuthenticate", () => {
     image: null,
     phone: null,
     mustChangePassword: false,
+    twoFactorEnabled: false,
   }
 
   it("allows active users", () => {
@@ -167,6 +201,7 @@ describe("getPostAuthRedirect", () => {
       phone: null,
       status: "active",
       mustChangePassword: false,
+      twoFactorEnabled: false,
     },
     session: {
       id: "s1",
@@ -373,6 +408,65 @@ describe("permission checks", () => {
         [Permission.FINANCIAL_VIEW],
       ),
       false,
+    )
+  })
+})
+
+describe("two-factor schemas", () => {
+  it("accepts a 6-digit TOTP code", () => {
+    const parsed = verifyTotpSchema.parse({ code: "123456" })
+    assert.equal(parsed.code, "123456")
+  })
+
+  it("rejects a short TOTP code", () => {
+    assert.equal(verifyTotpSchema.safeParse({ code: "123" }).success, false)
+  })
+
+  it("accepts a backup code", () => {
+    const parsed = verifyBackupCodeSchema.parse({ code: "abcd1234ef" })
+    assert.equal(parsed.code, "abcd1234ef")
+  })
+})
+
+describe("session rules", () => {
+  it("rejects revoking the current session", () => {
+    assert.throws(
+      () => assertCanRevokeSession("s1", "s1"),
+      (error: unknown) =>
+        error instanceof AppError &&
+        error.code === ErrorCode.CANNOT_REVOKE_CURRENT_SESSION,
+    )
+  })
+
+  it("allows revoking another session", () => {
+    assert.doesNotThrow(() => assertCanRevokeSession("s1", "s2"))
+  })
+
+  it("requires a session id", () => {
+    assert.equal(revokeSessionSchema.safeParse({ sessionId: "" }).success, false)
+  })
+})
+
+describe("sessionDeviceLabel", () => {
+  it("labels chrome on macOS", () => {
+    assert.equal(
+      sessionDeviceLabel(
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      ),
+      "Chrome · macOS",
+    )
+  })
+
+  it("falls back when UA is missing", () => {
+    assert.equal(sessionDeviceLabel(null), "Dispositivo desconhecido")
+  })
+})
+
+describe("getTwoFactorPath", () => {
+  it("preserves a safe next path", () => {
+    assert.equal(
+      getTwoFactorPath("/home"),
+      `${routes.twoFactor}?next=%2Fhome`,
     )
   })
 })

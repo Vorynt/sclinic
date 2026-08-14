@@ -28,6 +28,6 @@ export const ACCOUNT_NAV_ITEMS: AccountNavItem[] = [
   {
     title: "Segurança",
     href: routes.accountSecurity,
-    description: "Alterar senha de acesso",
+    description: "Senha, 2FA e sessões",
   },
 ];
