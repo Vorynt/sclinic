@@ -17,6 +17,7 @@ Fonte canônica: `src/config/routes.ts`. Route groups `(auth)`, `(dashboard)` et
 
 ## Gates de layout (resumo)
 
+- Proxy: cookie ausente → `/login?next=…`; cookie presente não tira o usuário de auth entry. Login / sign-up / forgot-password / two-factor: se a sessão for real, `getPostAuthRedirect`.
 - Dashboard / attendance / account: e-mail verificado, senha ok, membership, entitlement.
 - Settings: `settings.manage`; subtítulos `audit.read` / owner-only usage.
 - Patient clinical tabs: `records.read`.

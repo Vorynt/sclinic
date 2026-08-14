@@ -15,7 +15,15 @@ import {
   toUserStatus,
 } from "@/modules/authentication/mappers/auth.mapper"
 import { assertUserCanAuthenticate } from "@/modules/authentication/utils/assert-user"
-import { getPostAuthRedirect, getTwoFactorPath } from "@/modules/authentication/utils/post-auth-redirect"
+import {
+  getPostAuthRedirect,
+  getSafeNextPath,
+  getTwoFactorPath,
+} from "@/modules/authentication/utils/post-auth-redirect"
+import {
+  isAuthEntryPath,
+  isPublicPath,
+} from "@/modules/authentication/utils/route-access"
 import { sessionDeviceLabel } from "@/modules/authentication/utils/session-device-label"
 import { assertCanRevokeSession } from "@/modules/authentication/utils/session-rules"
 import type { AuthContext } from "@/modules/authentication/types/auth"
@@ -356,6 +364,27 @@ describe("getPostAuthRedirect", () => {
     )
   })
 
+  it("ignores auth-entry next and sends members home", () => {
+    assert.equal(
+      getPostAuthRedirect(
+        {
+          ...baseAuth,
+          membership: {
+            id: "m1",
+            clinicId: "c1",
+            roleId: "r1",
+            roleKey: "owner",
+            roleName: "Owner",
+            status: "active",
+            isDefault: true,
+          },
+        },
+        routes.login,
+      ),
+      routes.home,
+    )
+  })
+
   it("sends verified users with membership to home", () => {
     assert.equal(
       getPostAuthRedirect({
@@ -468,5 +497,64 @@ describe("getTwoFactorPath", () => {
       getTwoFactorPath("/home"),
       `${routes.twoFactor}?next=%2Fhome`,
     )
+  })
+
+  it("drops auth-entry next paths", () => {
+    assert.equal(getTwoFactorPath(routes.login), routes.twoFactor)
+  })
+})
+
+describe("getSafeNextPath", () => {
+  it("rejects protocol-relative and absolute URLs", () => {
+    assert.equal(getSafeNextPath("//evil.example"), null)
+    assert.equal(getSafeNextPath("https://evil.example"), null)
+  })
+
+  it("rejects auth entry paths including query strings", () => {
+    assert.equal(getSafeNextPath(routes.login), null)
+    assert.equal(getSafeNextPath(`${routes.login}?next=/home`), null)
+    assert.equal(getSafeNextPath(routes.twoFactor), null)
+    assert.equal(getSafeNextPath(routes.resetPassword), null)
+  })
+
+  it("keeps in-app destinations", () => {
+    assert.equal(getSafeNextPath(routes.home), routes.home)
+    assert.equal(
+      getSafeNextPath(`${routes.invite}?token=abc`),
+      `${routes.invite}?token=abc`,
+    )
+  })
+})
+
+describe("route access", () => {
+  it("treats auth entry paths as public guest routes", () => {
+    assert.equal(isAuthEntryPath(routes.login), true)
+    assert.equal(isAuthEntryPath(routes.signUp), true)
+    assert.equal(isAuthEntryPath(routes.forgotPassword), true)
+    assert.equal(isAuthEntryPath(routes.twoFactor), true)
+    assert.equal(isAuthEntryPath(routes.resetPassword), true)
+    assert.equal(isAuthEntryPath(`${routes.resetPassword}/token`), true)
+    assert.equal(isPublicPath(routes.login), true)
+    assert.equal(isPublicPath(routes.twoFactor), true)
+  })
+
+  it("treats marketing, legal, invite and auth APIs as public", () => {
+    assert.equal(isPublicPath(routes.landing), true)
+    assert.equal(isPublicPath(routes.legal), true)
+    assert.equal(isPublicPath(routes.terms), true)
+    assert.equal(isPublicPath(routes.invite), true)
+    assert.equal(isPublicPath(routes.professionalInvite), true)
+    assert.equal(isPublicPath("/api/auth"), true)
+    assert.equal(isPublicPath("/api/stripe/webhook"), true)
+  })
+
+  it("does not treat app or session-gated auth paths as public or auth-entry", () => {
+    assert.equal(isAuthEntryPath(routes.home), false)
+    assert.equal(isAuthEntryPath(routes.verifyEmail), false)
+    assert.equal(isPublicPath(routes.home), false)
+    assert.equal(isPublicPath(routes.patients), false)
+    assert.equal(isPublicPath(routes.verifyEmail), false)
+    assert.equal(isPublicPath(routes.changePassword), false)
+    assert.equal(isPublicPath(routes.onboardingPlan), false)
   })
 })

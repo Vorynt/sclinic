@@ -23,7 +23,10 @@ Sessão (Better Auth), redirects pós-login, guards de permissão/clínica, util
 
 ## Regras
 
-- Proxy/cookie: paths públicos vs autenticados (`src/proxy.ts`) — inclui hub `/legal` e docs (`/termos`, `/privacidade`, `/cookies`, `/contrato-saas`, `/dpa`, `/seguranca`, `/retencao`, `/incidentes`, `/ropa`)
+- Proxy/cookie **one-way** (`src/proxy.ts` + `utils/route-access.ts`): cookie ausente + path privado → `/login?next=…`. Cookie presente **não** bounceia auth entry (`/login`, `/sign-up`, `/forgot-password`, `/two-factor`, `/reset-password*`) — isso ciclava TOO_MANY_REDIRECTS quando o cookie estava stale (sessão inexistente no banco). Classificação de path: `isPublicPath` / `isAuthEntryPath`
+- Páginas guest validam sessão real via `getCachedSession` + `getPostAuthRedirect`. Cookie stale: o layout autenticado manda a `/login` e o form aparece (sem ciclo). Sessão válida em `/login` (etc.) segue o redirect canônico. Desafio 2FA pendente continua com `getSession() === null`
+- `getSafeNextPath` recusa auth entry (`/login?next=/login` não cicla)
+- Paths públicos incluem hub `/legal` e docs (`/termos`, `/privacidade`, `/cookies`, `/contrato-saas`, `/dpa`, `/seguranca`, `/retencao`, `/incidentes`, `/ropa`)
 - `requireClinic` / `assertClinicEntitled` bloqueiam clínica sem assinatura viva (produto)
 - `requireOwnedClinicTeardown` — exclusão de clínica owned **sem** exigir entitlement
 - Conta (`/account`): owner com assinatura bloqueada acessa self-service de billing
@@ -43,4 +46,4 @@ Notebook `auth-invite-email-verified`, `subscription-access-guard`.
 
 ## Arquivos-chave
 
-`permissions/guards.ts`, `utils/post-auth-redirect.ts`, `utils/get-cached-session.ts`, `queries/auth.query.ts`, `hooks/use-auth.ts` (seed de sessão no sign-in / clear+reseed no switch de clínica), `SessionBootstrapOverlay`, `stores/auth.store.ts` (`isBootstrappingSession`, `pendingTwoFactorNudge`), `TwoFactorNudgeDialog`, `/two-factor`
+`permissions/guards.ts`, `utils/post-auth-redirect.ts`, `utils/route-access.ts`, `utils/get-cached-session.ts`, `queries/auth.query.ts`, `hooks/use-auth.ts` (seed de sessão no sign-in / clear+reseed no switch de clínica), `SessionBootstrapOverlay`, `stores/auth.store.ts` (`isBootstrappingSession`, `pendingTwoFactorNudge`), `TwoFactorNudgeDialog`, `/two-factor`

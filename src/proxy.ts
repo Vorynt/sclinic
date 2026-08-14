@@ -3,54 +3,23 @@ import { NextResponse } from "next/server"
 import { getSessionCookie } from "better-auth/cookies"
 
 import { routes } from "@/config/routes"
+import { isPublicPath } from "@/modules/authentication/utils/route-access"
 
 /**
- * Proxy Next.js 16 — optimistic auth redirects via session cookie presence.
- * Always re-validate with requireAuth / requireClinic on pages and actions.
+ * Proxy Next.js 16 — optimistic one-way gate via session cookie presence.
+ * Cookie absent + private path → login. Cookie present is never bounced from
+ * auth entry pages here: those pages validate the real session (stale cookies
+ * would otherwise loop login ↔ home). Always re-validate with requireAuth /
+ * requireClinic on pages and actions.
  */
 export function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl
   const sessionCookie = getSessionCookie(request)
 
-  const isAuthRoute =
-    pathname === routes.login ||
-    pathname === routes.signUp ||
-    pathname === routes.forgotPassword ||
-    pathname === routes.twoFactor ||
-    pathname.startsWith("/reset-password")
-
-  const isLegalRoute =
-    pathname === routes.legal ||
-    pathname === routes.terms ||
-    pathname === routes.privacy ||
-    pathname === routes.cookies ||
-    pathname === routes.saasAgreement ||
-    pathname === routes.dpa ||
-    pathname === routes.security ||
-    pathname === routes.retention ||
-    pathname === routes.incidents ||
-    pathname === routes.ropa
-
-  const isPublicRoute =
-    pathname === routes.landing ||
-    isLegalRoute ||
-    pathname === routes.invite ||
-    pathname === routes.professionalInvite ||
-    pathname.startsWith(routes.professionalInvite) ||
-    pathname.startsWith("/api/auth") ||
-    pathname.startsWith("/api/stripe/webhook") ||
-    isAuthRoute
-
-  if (!sessionCookie && !isPublicRoute) {
+  if (!sessionCookie && !isPublicPath(pathname)) {
     const loginUrl = new URL(routes.login, request.url)
     loginUrl.searchParams.set("next", `${pathname}${search}`)
     return NextResponse.redirect(loginUrl)
-  }
-
-  // Cookie present on auth pages → app entry; pages decide onboarding vs home.
-  // /verify-email, /change-password and /invite are intentionally excluded.
-  if (sessionCookie && isAuthRoute) {
-    return NextResponse.redirect(new URL(routes.home, request.url))
   }
 
   return NextResponse.next()
