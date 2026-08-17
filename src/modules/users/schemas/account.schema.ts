@@ -24,3 +24,9 @@ export const updateAccountProfileSchema = z.object({
 export type UpdateAccountProfileInput = z.infer<
   typeof updateAccountProfileSchema
 >
+
+export const leaveOwnClinicSchema = z.object({
+  clinicId: z.string().uuid("Clínica inválida"),
+})
+
+export type LeaveOwnClinicInput = z.infer<typeof leaveOwnClinicSchema>

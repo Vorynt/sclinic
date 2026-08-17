@@ -36,3 +36,13 @@ export function isClinicEntitledStatus(
 ): boolean {
   return (LIVING_SUBSCRIPTION_STATUSES as readonly string[]).includes(status);
 }
+
+/**
+ * Portal pays an existing Stripe subscription (open invoices / incomplete
+ * checkout). A `canceled` row has no subscription left — that path is Checkout.
+ */
+export function shouldOpenBillingPortalForRegularize(
+  status: SubscriptionStatus,
+): boolean {
+  return status === "unpaid" || status === "incomplete";
+}

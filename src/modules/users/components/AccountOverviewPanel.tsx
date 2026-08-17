@@ -1,10 +1,14 @@
 "use client"
 
+import Link from "next/link"
+
 import { QueryErrorState } from "@/components/status/QueryErrorState"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { Spinner } from "@/components/ui/spinner"
+import { routes } from "@/config/routes"
 import { CreateOwnedClinicCta } from "@/modules/users/components/CreateOwnedClinicCta"
 import { USERS_CONSTANTS } from "@/modules/users/constants/users"
 import { useAccountOverview } from "@/modules/users/hooks/use-account"
@@ -16,21 +20,6 @@ function initialsFromName(name: string): string {
   if (parts.length === 0) return "?"
   if (parts.length === 1) return parts[0]!.slice(0, 2).toUpperCase()
   return `${parts[0]![0] ?? ""}${parts[parts.length - 1]![0] ?? ""}`.toUpperCase()
-}
-
-function membershipStatusLabel(status: AccountMembershipSummary["status"]) {
-  switch (status) {
-    case "active":
-      return "Ativa"
-    case "suspended":
-      return "Suspensa"
-    case "invited":
-      return "Convidada"
-    case "removed":
-      return "Removida"
-    default:
-      return status
-  }
 }
 
 function hasActiveOwnedClinic(
@@ -126,38 +115,16 @@ export function AccountOverviewPanel() {
             Nenhuma clínica vinculada a esta conta.
           </p>
         ) : (
-          <ul className="flex flex-col gap-2">
-            {data.memberships.map((membership) => (
-              <li
-                key={membership.clinicId}
-                className="flex flex-col gap-1 rounded-md border border-border px-3 py-2 sm:flex-row sm:items-center sm:justify-between"
-              >
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-medium text-foreground">
-                    {membership.clinicName}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {membership.roleName}
-                  </p>
-                </div>
-                <div className="flex flex-wrap gap-1.5">
-                  {membership.isCurrent ? (
-                    <Badge variant="secondary">Atual</Badge>
-                  ) : null}
-                  {membership.isDefault ? (
-                    <Badge variant="outline">Padrão</Badge>
-                  ) : null}
-                  <Badge
-                    variant={
-                      membership.status === "active" ? "outline" : "destructive"
-                    }
-                  >
-                    {membershipStatusLabel(membership.status)}
-                  </Badge>
-                </div>
-              </li>
-            ))}
-          </ul>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm text-muted-foreground">
+              {data.memberships.length === 1
+                ? "1 clínica vinculada a esta conta."
+                : `${data.memberships.length} clínicas vinculadas a esta conta.`}
+            </p>
+            <Button asChild variant="outline" size="sm">
+              <Link href={routes.accountClinics}>Gerenciar clínicas</Link>
+            </Button>
+          </div>
         )}
 
         {showCreateClinicCta ? (

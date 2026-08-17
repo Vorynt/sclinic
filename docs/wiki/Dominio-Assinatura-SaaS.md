@@ -9,7 +9,7 @@
 - [Planos](#planos-seed)
 - [Entitlement vs over_limit](#entitlement-vs-over_limit)
 - [Zonas de acesso](#zonas-de-acesso-adr-003-amend)
-- [Regularização](#regularização)
+- [Regularização e nova assinatura](#regularização-e-nova-assinatura)
 - [Troca de plano](#troca-de-plano-customer-portal)
 - [Exclusão de clínica](#exclusão-de-clínica)
 - [UI](#ui)
@@ -53,11 +53,19 @@ Metering `users`: memberships com `status=active` e `deletedAt` nulo. Suspensos 
 | Billing self-service | Owner autenticado mesmo sem entitlement | `/account/subscription` |
 | Tenant teardown | `requireOwnedClinicTeardown` | Excluir clínica (cancela Stripe na hora) |
 
-## Regularização
+## Regularização e nova assinatura
 
-1. Owner bloqueado → CTA em `/select-clinic` → `/account/subscription`
+**Regularizar** (`unpaid` / `incomplete`): ainda há uma cobrança em aberto.
+
+1. Owner bloqueado → CTA **Regularizar assinatura** em `/select-clinic` → `/account/subscription`
 2. Com `gatewayCustomerId` → Stripe Billing Portal
 3. Sem customer → Checkout (após escolher plano); cancela sub órfã no Stripe antes
+
+**Assinar novamente** (`canceled`, período pago já acabou): não há assinatura para regularizar.
+
+1. Owner bloqueado → CTA **Assinar novamente** em `/select-clinic` → `/account/subscription`
+2. Escolhe plano em `/onboarding/plan?intent=reactivate` → Stripe Checkout (reusa customer; **sem trial**)
+3. Webhook reativa entitlement e o espelho `clinics.subscriptionStatus`
 
 ## Troca de plano (Customer Portal)
 
@@ -71,12 +79,12 @@ Pré-requisito: prices do Portal precisam existir em `plans.stripe_price_id` (`n
 
 ## Exclusão de clínica
 
-- Disponível no danger zone (assinatura viva) e em `/select-clinic` (assinatura bloqueada)
+- Disponível no danger zone (assinatura viva), em `/select-clinic` (assinatura bloqueada) e em `/account/clinics` (dono)
 - Cancela Stripe imediatamente (MVP 1:1) + soft-delete do tenant
 
 ## UI
 
-`/onboarding/plan`, `/account/subscription` (alert de plano atualizado pós-Portal), `/settings/usage` (owner), `PlanOverLimitBanner`, select-clinic (regularizar / excluir).
+`/onboarding/plan`, `/account/subscription` (alert de plano atualizado pós-Portal; **Assinar novamente** quando `canceled`), `/settings/usage` (owner), `PlanOverLimitBanner`, select-clinic (regularizar / assinar novamente / excluir).
 
 Queries client: `mySubscription` e `clinicPlanQuota` usam `staleTime` (60s / 30s) e herdam `refetchOnWindowFocus: false` global — retorno do Portal continua com polling local em `/account/subscription`.
 

@@ -55,7 +55,7 @@
 Auth (login, signup, verify, reset, change-password), convites equipe/profissional, select-clinic, membership suspended, onboarding plan→clinic→hours. Owner pode optar por perfil clínico no create da clínica (ADR-007).
 
 ### E2 — SaaS
-Planos, Checkout, Customer Portal, webhook, entitlement gate, over_limit, regularização Portal-first, delete com cancel Stripe.
+Planos, Checkout, Customer Portal, webhook, entitlement gate, over_limit, regularização Portal-first (`unpaid`/`incomplete`), assinar novamente (`canceled` → Checkout), delete com cancel Stripe.
 
 ### E3 — Cadastros
 CRUD pacientes (CPF único/clínica), convite e perfil de profissionais com quota. Owner pode criar o próprio perfil clínico sem invite (ADR-007).

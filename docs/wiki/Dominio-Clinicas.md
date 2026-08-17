@@ -16,6 +16,7 @@ CRUD da clínica, horários semanais, criação para owner (com attach de plano)
 - Switcher + select-clinic (membership suspended ≠ assinatura bloqueada)
 - `subscriptionStatus` denormalizado (espelho da assinatura do owner)
 - Exclusão com assinatura bloqueada (select-clinic) cancela Stripe imediatamente (ADR-003 amend)
+- Exclusão também em `/account/clinics` (mesmo teardown do dono)
 
 ## Regras
 

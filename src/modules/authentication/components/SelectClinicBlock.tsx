@@ -87,8 +87,8 @@ function blockedDescription(
   }
   if (status === "canceled") {
     return isOwner
-      ? `A assinatura da clínica ${clinic} foi cancelada. Reative para voltar a usar, ou exclua a clínica.`
-      : `A assinatura da clínica ${clinic} foi cancelada. Peça ao proprietário para reativar, ou escolha outra clínica.`
+      ? `A assinatura da clínica ${clinic} foi encerrada. Assine novamente para voltar a usar, ou exclua a clínica.`
+      : `A assinatura da clínica ${clinic} foi encerrada. Peça ao proprietário para assinar novamente, ou escolha outra clínica.`
   }
   return isOwner
     ? `A clínica ${clinic} está sem acesso ativo pela assinatura. Regularize para voltar a usar o sistema.`
@@ -188,7 +188,9 @@ export function SelectClinicBlock({
           <Button asChild size="lg" className="w-full">
             <Link href={routes.accountSubscription}>
               <CreditCardIcon data-icon="inline-start" />
-              Regularizar assinatura
+              {blockedClinic.subscriptionStatus === "canceled"
+                ? "Assinar novamente"
+                : "Regularizar assinatura"}
             </Link>
           </Button>
           <Button

@@ -128,7 +128,8 @@ function SubscriptionSummary({
 
   const canOpenPortal = Boolean(subscription.gatewayCustomerId);
   const isLiving = isLivingSubscriptionStatus(subscription.status);
-  const needsRegularize = !isLiving;
+  const needsResubscribe = subscription.status === "canceled";
+  const needsRegularize = !isLiving && !needsResubscribe;
   const accessUntil = formatDate(subscription.currentPeriodEnd);
   const isPending = portal.isPending || regularize.isPending;
 
@@ -205,8 +206,8 @@ function SubscriptionSummary({
           <WarningCircleIcon />
           <AlertTitle>Assinatura cancelada</AlertTitle>
           <AlertDescription>
-            Sua assinatura foi encerrada. Reative o pagamento para voltar a usar
-            a clínica.
+            Sua assinatura foi encerrada. Escolha um plano para assinar
+            novamente.
           </AlertDescription>
         </Alert>
       ) : null}
@@ -264,31 +265,42 @@ function SubscriptionSummary({
       </div>
 
       <div className="flex flex-col gap-2">
-        <Button
-          type="button"
-          size="lg"
-          disabled={(!canOpenPortal && !needsRegularize) || isPending}
-          onClick={onManage}>
-          {isPending ? (
-            <>
-              <Spinner data-icon="inline-start" />
-              Abrindo…
-            </>
-          ) : (
-            <>
+        {needsResubscribe ? (
+          <Button asChild size="lg">
+            <Link href={`${routes.onboardingPlan}?intent=reactivate`}>
               <CreditCardIcon data-icon="inline-start" />
-              {needsRegularize
-                ? "Regularizar assinatura"
-                : "Gerenciar assinatura"}
-            </>
-          )}
-        </Button>
+              Assinar novamente
+            </Link>
+          </Button>
+        ) : (
+          <Button
+            type="button"
+            size="lg"
+            disabled={(!canOpenPortal && !needsRegularize) || isPending}
+            onClick={onManage}>
+            {isPending ? (
+              <>
+                <Spinner data-icon="inline-start" />
+                Abrindo…
+              </>
+            ) : (
+              <>
+                <CreditCardIcon data-icon="inline-start" />
+                {needsRegularize
+                  ? "Regularizar assinatura"
+                  : "Gerenciar assinatura"}
+              </>
+            )}
+          </Button>
+        )}
         <p className="text-xs text-muted-foreground">
-          {needsRegularize
-            ? "Cartão e faturas abrem em uma página segura de pagamento."
-            : "Cartão, faturas, cancelamento e troca de plano abrem em uma página segura de pagamento. Para reativar a renovação, use o mesmo botão."}
+          {needsResubscribe
+            ? "Escolha um plano para assinar novamente. O período de teste não se aplica à reativação."
+            : needsRegularize
+              ? "Cartão e faturas abrem em uma página segura de pagamento."
+              : "Cartão, faturas, cancelamento e troca de plano abrem em uma página segura de pagamento. Para reativar a renovação, use o mesmo botão."}
         </p>
-        {!canOpenPortal && !needsRegularize ? (
+        {!canOpenPortal && !needsRegularize && !needsResubscribe ? (
           <p className="text-xs text-muted-foreground">
             Disponível após a primeira assinatura com pagamento online.
           </p>

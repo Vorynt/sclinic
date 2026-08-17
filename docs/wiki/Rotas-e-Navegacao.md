@@ -28,7 +28,7 @@ Soft nav Termos/Privacidade → modal `@modal/(.)…`.
 
 ### Account
 
-`/account/overview` · `profile` · `security` · `subscription`
+`/account/overview` · `clinics` · `profile` · `security` · `subscription`
 
 ### Print
 

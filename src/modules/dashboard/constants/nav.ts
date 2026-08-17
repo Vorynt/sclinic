@@ -159,6 +159,14 @@ const PAGE_META: Record<string, PageMeta> = {
       { label: "Visão geral" },
     ],
   },
+  [routes.accountClinics]: {
+    title: "Clínicas",
+    breadcrumbs: [
+      { label: "Início", href: routes.home },
+      { label: "Minha conta", href: routes.accountOverview },
+      { label: "Clínicas" },
+    ],
+  },
   [routes.accountProfile]: {
     title: "Dados pessoais",
     breadcrumbs: [

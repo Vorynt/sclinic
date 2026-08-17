@@ -1,4 +1,6 @@
 import type { MembershipStatus, UserStatus } from "@/shared/auth"
+import { isClinicEntitledStatus } from "@/modules/billing/constants/subscription"
+import type { ClinicSubscriptionStatus } from "@/modules/clinics/types/clinic"
 import type {
   AccountMembershipSummary,
   AccountOverview,
@@ -52,7 +54,9 @@ export function toAccountMembershipSummary(row: {
   status: unknown
   isDefault: boolean
   isCurrent: boolean
+  clinicSubscriptionStatus: ClinicSubscriptionStatus | null
 }): AccountMembershipSummary {
+  const clinicSubscriptionStatus = row.clinicSubscriptionStatus
   return {
     clinicId: row.clinicId,
     clinicName: row.clinicName?.trim() || "Clínica",
@@ -61,6 +65,8 @@ export function toAccountMembershipSummary(row: {
     status: toMembershipStatus(row.status),
     isDefault: row.isDefault,
     isCurrent: row.isCurrent,
+    clinicSubscriptionStatus,
+    isEntitled: isClinicEntitledStatus(clinicSubscriptionStatus ?? "none"),
   }
 }
 

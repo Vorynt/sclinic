@@ -15,6 +15,11 @@ export const ACCOUNT_NAV_ITEMS: AccountNavItem[] = [
     description: "Resumo da conta e clínicas vinculadas",
   },
   {
+    title: "Clínicas",
+    href: routes.accountClinics,
+    description: "Clínicas que você possui ou participa",
+  },
+  {
     title: "Assinatura",
     href: routes.accountSubscription,
     description: "Plano e pagamento",

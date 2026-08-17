@@ -59,6 +59,7 @@ export const routes = {
   },
   account: "/account",
   accountOverview: "/account/overview",
+  accountClinics: "/account/clinics",
   accountProfile: "/account/profile",
   accountSecurity: "/account/security",
   accountSubscription: "/account/subscription",

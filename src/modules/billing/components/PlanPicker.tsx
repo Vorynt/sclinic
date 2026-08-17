@@ -17,10 +17,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { routes } from "@/config/routes";
 import { cn } from "@/lib/utils";
 import { usePlans } from "@/modules/billing/hooks/use-plans";
-import {
-  useCreateCheckoutSession,
-  useCreateRegularizeSession,
-} from "@/modules/billing/hooks/use-subscription-mutations";
+import { useCreateCheckoutSession } from "@/modules/billing/hooks/use-subscription-mutations";
 import type { Plan } from "@/modules/billing/types/billing";
 import type { AppError } from "@/shared/errors";
 import { CheckCircleIcon } from "@phosphor-icons/react";
@@ -65,20 +62,11 @@ export function PlanPicker() {
     },
   });
 
-  const regularize = useCreateRegularizeSession({
-    onSuccess: (data) => {
-      window.location.assign(data.url);
-    },
-    onError: (error: AppError) => {
-      toast.error(error.message);
-    },
-  });
-
   const intent = searchParams.get("intent");
 
   const selectedPlan = plans?.find((plan) => plan.id === selectedPlanId);
   const useStripeCheckout = Boolean(selectedPlan?.stripePriceId);
-  const isPending = checkout.isPending || regularize.isPending;
+  const isPending = checkout.isPending;
 
   const onContinue = () => {
     if (!selectedPlanId || !selectedPlan) return;
@@ -90,15 +78,6 @@ export function PlanPicker() {
         : currentIntent
           ? `${routes.onboardingPlan}?intent=${encodeURIComponent(currentIntent)}`
           : routes.onboardingPlan;
-
-    if (currentIntent === "reactivate" && useStripeCheckout) {
-      regularize.mutate({
-        planId: selectedPlanId,
-        successPath,
-        cancelPath,
-      });
-      return;
-    }
 
     if (useStripeCheckout) {
       checkout.mutate({
@@ -140,8 +119,8 @@ export function PlanPicker() {
         <p className="text-sm text-muted-foreground">
           {intent === "reactivate"
             ? useStripeCheckout
-              ? "Você será direcionado a uma página segura para reativar a assinatura e voltar a usar sua clínica."
-              : "Selecione o plano para reativar a assinatura da sua clínica."
+              ? "Você será direcionado a uma página segura para assinar novamente e voltar a usar sua clínica."
+              : "Selecione o plano para assinar novamente e voltar a usar sua clínica."
             : useStripeCheckout
               ? "7 dias grátis na primeira assinatura. O cartão é cadastrado agora; a cobrança começa só após o teste. Em seguida você cadastra a clínica."
               : "Selecione o plano da sua conta para continuar."}

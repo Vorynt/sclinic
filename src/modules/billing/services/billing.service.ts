@@ -10,6 +10,7 @@ import {
   isClinicEntitledStatus,
   isLivingSubscriptionStatus,
   shouldOfferSubscriptionTrial,
+  shouldOpenBillingPortalForRegularize,
   SUBSCRIPTION_TRIAL_DAYS,
 } from "@/modules/billing/constants/subscription";
 import { planQuotaRepository } from "@/modules/billing/repositories/plan-quota.repository";
@@ -276,8 +277,9 @@ export const billingService = {
   },
 
   /**
-   * Portal-first regularization: open Billing Portal when a Stripe customer
-   * already exists; otherwise start Checkout for a new subscription.
+   * Regularize an existing unpaid/incomplete subscription via Portal when a
+   * Stripe customer exists. Canceled subscriptions have nothing to regularize
+   * — they go to Checkout (new subscription, no trial).
    */
   async createRegularizeSession(input: {
     userId: string;
@@ -288,7 +290,30 @@ export const billingService = {
     cancelPath?: string;
   }): Promise<{ url: string }> {
     const existing = await subscriptionRepository.findByUserId(input.userId);
-    if (existing?.gatewayCustomerId && isStripeEnabled()) {
+
+    if (existing?.status === "canceled") {
+      if (!input.planId) {
+        throw new AppError(ErrorCode.VALIDATION_FAILED, {
+          message: "Selecione um plano para assinar novamente.",
+        });
+      }
+
+      return this.createCheckoutSession({
+        userId: input.userId,
+        email: input.email,
+        name: input.name,
+        planId: input.planId,
+        successPath: input.successPath ?? routes.home,
+        cancelPath:
+          input.cancelPath ?? `${routes.onboardingPlan}?intent=reactivate`,
+      });
+    }
+
+    if (
+      existing?.gatewayCustomerId &&
+      isStripeEnabled() &&
+      shouldOpenBillingPortalForRegularize(existing.status)
+    ) {
       return this.createBillingPortalSession({ userId: input.userId });
     }
 

@@ -79,4 +79,18 @@ export const sessionRepository = {
         .where(eq(session.activeClinicId, clinicId))
     })
   },
+
+  async clearActiveClinicIdForUserAndClinic(
+    userId: string,
+    clinicId: string,
+  ): Promise<void> {
+    return withDbError(async () => {
+      await db
+        .update(session)
+        .set({ activeClinicId: null })
+        .where(
+          and(eq(session.userId, userId), eq(session.activeClinicId, clinicId)),
+        )
+    })
+  },
 }

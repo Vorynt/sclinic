@@ -31,7 +31,8 @@ Para regras detalhadas, abra a página **Domínio-*** correspondente. Prioridade
 | Horários da clínica | Done | onboarding/hours, settings |
 | Switcher multi-clínica | Done | membership active/suspended |
 | Tela membership inactive | Done | `/membership-inactive` |
-| Select-clinic / subscription blocked | Done | ADR-003; regularizar + excluir |
+| Select-clinic / subscription blocked | Done | ADR-003; regularizar (`unpaid`) ou assinar novamente (`canceled`) + excluir |
+| Conta: clínicas vinculadas | Done | `/account/clinics`; acessar / sair / excluir |
 
 ### E2 — SaaS
 
@@ -41,7 +42,7 @@ Para regras detalhadas, abra a página **Domínio-*** correspondente. Prioridade
 | Checkout Stripe | Done | PlanPicker; trial 7d na 1ª assinatura |
 | Customer Portal | Done | `/account/subscription` (também sem entitlement) |
 | Sync de troca de plano (Portal) | Done | webhook prioriza `price.id`; alert em `/account/subscription` |
-| Regularização Portal-first | Done | unpaid/canceled → Portal |
+| Regularização vs nova assinatura | Done | unpaid/incomplete → Portal; canceled → Checkout |
 | Delete clinic cancela Stripe | Done | MVP 1:1; teardown sem entitlement |
 | Webhook sync | Done | `/api/stripe/webhook` |
 | Entitlement `trialing\|active\|past_due` | Done | requireClinic |

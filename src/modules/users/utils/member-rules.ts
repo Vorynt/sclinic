@@ -35,3 +35,11 @@ export function assertCanManageMember(params: {
     })
   }
 }
+
+export function assertCanLeaveOwnClinic(params: { roleKey: string }): void {
+  if (params.roleKey === USERS_CONSTANTS.OWNER_ROLE_KEY) {
+    throw new AppError(ErrorCode.FORBIDDEN, {
+      message: "O proprietário não pode sair da clínica. Exclua a clínica em vez de sair.",
+    })
+  }
+}

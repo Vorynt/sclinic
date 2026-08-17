@@ -45,6 +45,7 @@ export const accountRepository = {
           roleKey: roles.key,
           status: clinicMemberships.status,
           isDefault: clinicMemberships.isDefault,
+          clinicSubscriptionStatus: clinics.subscriptionStatus,
         })
         .from(clinicMemberships)
         .innerJoin(roles, eq(roles.id, clinicMemberships.roleId))
@@ -71,6 +72,7 @@ export const accountRepository = {
             isCurrent: Boolean(
               activeClinicId && row.clinicId === activeClinicId,
             ),
+            clinicSubscriptionStatus: row.clinicSubscriptionStatus ?? null,
           }),
         ),
       })

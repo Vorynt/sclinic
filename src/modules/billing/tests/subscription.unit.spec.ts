@@ -11,6 +11,7 @@ import {
   isLivingSubscriptionStatus,
   LIVING_SUBSCRIPTION_STATUSES,
   shouldOfferSubscriptionTrial,
+  shouldOpenBillingPortalForRegularize,
   SUBSCRIPTION_TRIAL_DAYS,
 } from "@/modules/billing/constants/subscription"
 import { toSubscription } from "@/modules/billing/mappers/billing.mapper"
@@ -70,6 +71,23 @@ describe("isClinicEntitledStatus", () => {
     expect(isClinicEntitledStatus("incomplete")).toBe(false)
     expect(isClinicEntitledStatus("canceled")).toBe(false)
     expect(isClinicEntitledStatus("unpaid")).toBe(false)
+  })
+})
+
+describe("shouldOpenBillingPortalForRegularize", () => {
+  it("opens Portal for unpaid and incomplete", () => {
+    expect(shouldOpenBillingPortalForRegularize("unpaid")).toBe(true)
+    expect(shouldOpenBillingPortalForRegularize("incomplete")).toBe(true)
+  })
+
+  it("does not open Portal for canceled — that path is Checkout", () => {
+    expect(shouldOpenBillingPortalForRegularize("canceled")).toBe(false)
+  })
+
+  it("does not open Portal for living statuses", () => {
+    expect(shouldOpenBillingPortalForRegularize("trialing")).toBe(false)
+    expect(shouldOpenBillingPortalForRegularize("active")).toBe(false)
+    expect(shouldOpenBillingPortalForRegularize("past_due")).toBe(false)
   })
 })
 

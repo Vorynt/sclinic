@@ -254,10 +254,11 @@ Convenção de ID: `RF-<DOMÍNIO>-NNN`.
 | RF-USR-004 | Suspender membro | Permanece na lista; **não** ocupa cota | Gestores | Done |
 | RF-USR-005 | Reativar membro | — | Gestores | Done |
 | RF-USR-006 | Soft-remove | `removed` + `deletedAt`; some da listagem | Gestores | Done |
-| RF-USR-007 | Conta pessoal | `/account` overview, profile, security | Todas | Done |
-| RF-USR-008 | Conta subscription | `/account/subscription` (Portal) | P1 | Done |
+| RF-USR-007 | Conta pessoal | `/account` overview, clinics, profile, security | Todas | Done |
+| RF-USR-008 | Conta subscription | `/account/subscription` (Portal; assinar novamente se `canceled`) | P1 | Done |
+| RF-USR-009 | Clínicas da conta | `/account/clinics`: acessar, sair (membro) ou excluir (dono) | Todas | Done |
 
-**Regras:** não alterar owner nem a si; roles de invite ≠ `owner`/`clinician`/`nurse`.
+**Regras:** não alterar owner nem a si; roles de invite ≠ `owner`/`clinician`/`nurse`; owner não sai da clínica (exclui); membro sai com soft-remove.
 
 ### 4.4 Pacientes — `RF-PAC`
 
@@ -361,7 +362,7 @@ Convenção de ID: `RF-<DOMÍNIO>-NNN`.
 | RF-SAAS-009 | Downgrade livre | Sem apagar dados | P1 | Done |
 | RF-SAAS-010 | N clínicas owned | 1:N por assinatura | — | Later |
 | RF-SAAS-011 | Cota storage | `assertPlanCapacity(..., "storage")` | — | Planned |
-| RF-SAAS-012 | Regularização Portal-first | unpaid/canceled → Portal; Checkout só sem customer | P1 | Done |
+| RF-SAAS-012 | Regularização vs nova assinatura | `unpaid`/`incomplete` → Portal; `canceled` → Checkout (assinar novamente, sem trial) | P1 | Done |
 | RF-SAAS-013 | Delete + cancel Stripe | Teardown sem entitlement; cancel imediato (1:1) | P1 | Done |
 
 ### 4.11 Auditoria — `RF-AUD`

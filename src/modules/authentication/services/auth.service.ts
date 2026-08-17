@@ -532,6 +532,20 @@ export const authService = {
     await sessionRepository.clearActiveClinicIdForClinic(clinicId);
   },
 
+  /**
+   * Public contract for account self-service: clear this user's sessions
+   * pointing at a clinic they just left (does not revoke other members).
+   */
+  async clearActiveClinicForUser(
+    userId: string,
+    clinicId: string,
+  ): Promise<void> {
+    await sessionRepository.clearActiveClinicIdForUserAndClinic(
+      userId,
+      clinicId,
+    );
+  },
+
   async requestPasswordReset(
     data: RequestPasswordResetDto,
     ctx: AuthRequestContext,

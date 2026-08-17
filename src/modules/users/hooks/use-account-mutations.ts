@@ -5,6 +5,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { authQueryKeys } from "@/modules/authentication/queries/auth.query"
 import { accountMutations } from "@/modules/users/mutations/account.mutation"
 import { accountQueryKeys } from "@/modules/users/queries/account.query"
+import type { LeaveOwnClinicResult } from "@/modules/users/dto/leave-own-clinic.dto"
 import type { AccountProfile } from "@/modules/users/types/account"
 import {
   AppError,
@@ -36,6 +37,25 @@ export function useUpdateAccountProfileMutation({
     onSuccess: async (data) => {
       await queryClient.invalidateQueries({ queryKey: accountQueryKeys.all })
       await queryClient.invalidateQueries({ queryKey: authQueryKeys.session })
+      onSuccess?.(data)
+    },
+    onError: (error) => {
+      onError?.(toAppError(error))
+    },
+  })
+}
+
+export function useLeaveOwnClinicMutation({
+  onSuccess,
+  onError,
+}: MutationCallbacks<LeaveOwnClinicResult> = {}) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    ...accountMutations.leaveClinic(),
+    onSuccess: async (data) => {
+      await queryClient.invalidateQueries({ queryKey: accountQueryKeys.all })
+      await queryClient.invalidateQueries({ queryKey: authQueryKeys.all })
       onSuccess?.(data)
     },
     onError: (error) => {

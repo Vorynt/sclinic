@@ -1,4 +1,5 @@
 import type { MembershipStatus, UserStatus } from "@/shared/auth"
+import type { ClinicSubscriptionStatus } from "@/modules/clinics/types/clinic"
 
 export type AccountMembershipSummary = {
   clinicId: string
@@ -8,6 +9,8 @@ export type AccountMembershipSummary = {
   status: MembershipStatus
   isDefault: boolean
   isCurrent: boolean
+  clinicSubscriptionStatus: ClinicSubscriptionStatus | null
+  isEntitled: boolean
 }
 
 export type AccountOverview = {

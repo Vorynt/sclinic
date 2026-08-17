@@ -16,6 +16,7 @@ import {
 import { DEFAULT_LIST_PAGE_SIZE } from "@/shared/validators"
 import {
   assertAssignableRoleKey,
+  assertCanLeaveOwnClinic,
   assertCanManageMember,
   isAssignableRoleKey,
 } from "@/modules/users/utils/member-rules"
@@ -98,6 +99,26 @@ describe("users member rules", () => {
               targetUserId: "b",
               targetRoleKey: "clinician",
             })).not.toThrow()
+  })
+
+  it("blocks the owner from leaving their clinic", () => {
+    try {
+      assertCanLeaveOwnClinic({ roleKey: "owner" })
+      throw new Error("expected to throw")
+    } catch (error) {
+      if (error instanceof Error && error.message === "expected to throw") {
+        throw error
+      }
+      expect(
+        ((error: unknown) =>
+                error instanceof AppError && error.code === ErrorCode.FORBIDDEN)(error),
+      ).toBe(true)
+    }
+  })
+
+  it("allows a non-owner member to leave", () => {
+    expect(() => assertCanLeaveOwnClinic({ roleKey: "admin" })).not.toThrow()
+    expect(() => assertCanLeaveOwnClinic({ roleKey: "clinician" })).not.toThrow()
   })
 })
 
