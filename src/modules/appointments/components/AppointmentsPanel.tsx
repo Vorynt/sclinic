@@ -197,7 +197,11 @@ export function AppointmentsPanel() {
       />
 
       {isCalendarLoading ? (
-        <AppointmentsCalendarSkeleton />
+        <AppointmentsCalendarSkeleton
+          mode={mode}
+          isMobile={isMobile}
+          anchor={anchor}
+        />
       ) : isCalendarError ? (
         <QueryErrorState
           description="Não foi possível carregar os agendamentos."

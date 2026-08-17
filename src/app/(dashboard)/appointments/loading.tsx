@@ -1,5 +1,5 @@
-import { AppointmentsPageSkeleton } from "@/modules/appointments/components/AppointmentsPageSkeleton"
+import { AppointmentsRouteSkeleton } from "@/modules/appointments/components/AppointmentsRouteSkeleton"
 
 export default function Loading() {
-  return <AppointmentsPageSkeleton />
+  return <AppointmentsRouteSkeleton />
 }
