@@ -1,11 +1,11 @@
-import type { Metadata } from "next"
+import type { Metadata } from "next";
 
-import { ClinicServicesPanel } from "@/modules/billing/components/ClinicServicesPanel"
-import { SettingsPageHeader } from "@/modules/settings/components/SettingsPageHeader"
+import { ClinicServicesPanel } from "@/modules/billing/components/ClinicServicesPanel";
+import { SettingsPageHeader } from "@/modules/settings/components/SettingsPageHeader";
 
 export const metadata: Metadata = {
-  title: "Serviços · Configurações · sclinic",
-}
+  title: "Serviços · Configurações",
+};
 
 export default function SettingsServicesPage() {
   return (
@@ -16,5 +16,5 @@ export default function SettingsServicesPage() {
       />
       <ClinicServicesPanel />
     </div>
-  )
+  );
 }

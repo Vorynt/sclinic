@@ -1,11 +1,11 @@
-import type { Metadata } from "next"
+import type { Metadata } from "next";
 
-import { AccountSubscriptionPanel } from "@/modules/billing/components/AccountSubscriptionPanel"
-import { AccountPageHeader } from "@/modules/users/components/AccountPageHeader"
+import { AccountSubscriptionPanel } from "@/modules/billing/components/AccountSubscriptionPanel";
+import { AccountPageHeader } from "@/modules/users/components/AccountPageHeader";
 
 export const metadata: Metadata = {
-  title: "Assinatura · Minha conta · sclinic",
-}
+  title: "Assinatura · Minha conta",
+};
 
 export default function AccountSubscriptionPage() {
   return (
@@ -16,5 +16,5 @@ export default function AccountSubscriptionPage() {
       />
       <AccountSubscriptionPanel />
     </div>
-  )
+  );
 }

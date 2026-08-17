@@ -7,7 +7,7 @@ import { SettingsNav } from "@/modules/settings/components/SettingsNav";
 import { PermissionProvider } from "@/providers/PermissionProvider";
 
 export const metadata: Metadata = {
-  title: "Configurações · sclinic",
+  title: "Configurações",
 };
 
 type SettingsLayoutProps = {

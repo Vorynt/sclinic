@@ -4,7 +4,7 @@ import { AuditLogsPanel } from "@/modules/audit/components/AuditLogsPanel";
 import { SettingsPageHeader } from "@/modules/settings/components/SettingsPageHeader";
 
 export const metadata: Metadata = {
-  title: "Auditoria · Configurações · sclinic",
+  title: "Auditoria · Configurações",
 };
 
 export default function SettingsAuditPage() {

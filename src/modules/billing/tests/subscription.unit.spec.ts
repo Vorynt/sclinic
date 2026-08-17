@@ -38,6 +38,10 @@ describe("PLAN_CATALOG", () => {
     expect(planSlugFromName("Essencial")).toBe("essencial")
     expect(planNameFromSlug("unknown")).toBe(null)
   })
+
+  it("has launch pricing in BRL cents", () => {
+    expect(PLAN_CATALOG.map((p) => p.priceCents)).toEqual([4990, 9990, 14990])
+  })
 })
 
 describe("isLivingSubscriptionStatus", () => {

@@ -33,7 +33,13 @@
 
 ## Planos (seed)
 
-Essencial (3u/2p), Profissional (10/8), Enterprise (50/40) — validar no seed do ambiente.
+| Plano | Preço mensal | Cotas |
+|-------|--------------|-------|
+| Essencial | R$ 49,90 | 3 usuários / 2 profissionais |
+| Profissional | R$ 99,90 | 10 usuários / 8 profissionais |
+| Enterprise | R$ 149,90 | 50 usuários / 40 profissionais |
+
+Fonte canônica: `src/modules/billing/constants/catalog.ts`. Após alterar preços, rodar `npm run stripe:sync-plans` (Stripe Prices são imutáveis — o script rotaciona o `lookup_key` e o `default_price`).
 
 ## Entitlement vs over_limit
 

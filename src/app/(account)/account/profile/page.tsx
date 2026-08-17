@@ -1,11 +1,11 @@
-import type { Metadata } from "next"
+import type { Metadata } from "next";
 
-import { AccountPageHeader } from "@/modules/users/components/AccountPageHeader"
-import { AccountProfilePanel } from "@/modules/users/components/AccountProfilePanel"
+import { AccountPageHeader } from "@/modules/users/components/AccountPageHeader";
+import { AccountProfilePanel } from "@/modules/users/components/AccountProfilePanel";
 
 export const metadata: Metadata = {
-  title: "Dados pessoais · Minha conta · sclinic",
-}
+  title: "Dados pessoais · Minha conta",
+};
 
 export default function AccountProfilePage() {
   return (
@@ -16,5 +16,5 @@ export default function AccountProfilePage() {
       />
       <AccountProfilePanel />
     </div>
-  )
+  );
 }

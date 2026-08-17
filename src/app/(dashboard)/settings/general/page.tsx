@@ -1,11 +1,11 @@
-import type { Metadata } from "next"
+import type { Metadata } from "next";
 
-import { ClinicGeneralSettingsPanel } from "@/modules/clinics/components/ClinicGeneralSettingsPanel"
-import { SettingsPageHeader } from "@/modules/settings/components/SettingsPageHeader"
+import { ClinicGeneralSettingsPanel } from "@/modules/clinics/components/ClinicGeneralSettingsPanel";
+import { SettingsPageHeader } from "@/modules/settings/components/SettingsPageHeader";
 
 export const metadata: Metadata = {
-  title: "Geral · Configurações · sclinic",
-}
+  title: "Geral · Configurações",
+};
 
 export default function SettingsGeneralPage() {
   return (
@@ -16,5 +16,5 @@ export default function SettingsGeneralPage() {
       />
       <ClinicGeneralSettingsPanel />
     </div>
-  )
+  );
 }

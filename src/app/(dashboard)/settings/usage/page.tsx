@@ -1,13 +1,13 @@
-import type { Metadata } from "next"
+import type { Metadata } from "next";
 
-import { ForbiddenBlock } from "@/components/status/ForbiddenBlock"
-import { ClinicPlanUsagePanel } from "@/modules/billing/components/ClinicPlanUsagePanel"
-import { SettingsPageHeader } from "@/modules/settings/components/SettingsPageHeader"
-import { OwnerProvider } from "@/providers/OwnerProvider"
+import { ForbiddenBlock } from "@/components/status/ForbiddenBlock";
+import { ClinicPlanUsagePanel } from "@/modules/billing/components/ClinicPlanUsagePanel";
+import { SettingsPageHeader } from "@/modules/settings/components/SettingsPageHeader";
+import { OwnerProvider } from "@/providers/OwnerProvider";
 
 export const metadata: Metadata = {
-  title: "Uso do plano · Configurações · sclinic",
-}
+  title: "Uso do plano · Configurações",
+};
 
 export default function SettingsUsagePage() {
   return (
@@ -17,8 +17,7 @@ export default function SettingsUsagePage() {
           title="Acesso restrito"
           description="Apenas o proprietário da clínica pode ver o uso dos recursos do plano."
         />
-      }
-    >
+      }>
       <div className="flex flex-col gap-6">
         <SettingsPageHeader
           title="Uso do plano"
@@ -27,5 +26,5 @@ export default function SettingsUsagePage() {
         <ClinicPlanUsagePanel />
       </div>
     </OwnerProvider>
-  )
+  );
 }

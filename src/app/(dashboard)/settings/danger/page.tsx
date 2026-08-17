@@ -1,11 +1,11 @@
-import type { Metadata } from "next"
+import type { Metadata } from "next";
 
-import { ClinicDangerSettingsPanel } from "@/modules/clinics/components/ClinicDangerSettingsPanel"
-import { SettingsPageHeader } from "@/modules/settings/components/SettingsPageHeader"
+import { ClinicDangerSettingsPanel } from "@/modules/clinics/components/ClinicDangerSettingsPanel";
+import { SettingsPageHeader } from "@/modules/settings/components/SettingsPageHeader";
 
 export const metadata: Metadata = {
-  title: "Zona de perigo · Configurações · sclinic",
-}
+  title: "Zona de perigo · Configurações",
+};
 
 export default function SettingsDangerPage() {
   return (
@@ -16,5 +16,5 @@ export default function SettingsDangerPage() {
       />
       <ClinicDangerSettingsPanel />
     </div>
-  )
+  );
 }

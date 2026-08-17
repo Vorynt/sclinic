@@ -1,11 +1,11 @@
-import type { Metadata } from "next"
+import type { Metadata } from "next";
 
-import { AccountClinicsPanel } from "@/modules/users/components/AccountClinicsPanel"
-import { AccountPageHeader } from "@/modules/users/components/AccountPageHeader"
+import { AccountClinicsPanel } from "@/modules/users/components/AccountClinicsPanel";
+import { AccountPageHeader } from "@/modules/users/components/AccountPageHeader";
 
 export const metadata: Metadata = {
-  title: "Clínicas · Minha conta · sclinic",
-}
+  title: "Clínicas · Minha conta",
+};
 
 export default function AccountClinicsPage() {
   return (
@@ -16,5 +16,5 @@ export default function AccountClinicsPage() {
       />
       <AccountClinicsPanel />
     </div>
-  )
+  );
 }

@@ -49,19 +49,39 @@ async function findOrCreateProduct(
   })
 }
 
-async function findOrCreatePrice(
+async function ensureCatalogPrice(
   stripe: Stripe,
-  productId: string,
+  product: Stripe.Product,
   entry: (typeof PLAN_CATALOG)[number],
 ): Promise<Stripe.Price> {
   const listed = await stripe.prices.list({
     lookup_keys: [entry.lookupKey],
     limit: 1,
   })
-  if (listed.data[0]) return listed.data[0]
+  const byLookup = listed.data[0]
 
-  return stripe.prices.create({
-    product: productId,
+  if (byLookup?.unit_amount === entry.priceCents && byLookup.active) {
+    const defaultPriceId =
+      typeof product.default_price === "string"
+        ? product.default_price
+        : product.default_price?.id
+    if (defaultPriceId !== byLookup.id) {
+      await stripe.products.update(product.id, {
+        default_price: byLookup.id,
+      })
+    }
+    return byLookup
+  }
+
+  if (byLookup) {
+    await stripe.prices.update(byLookup.id, { lookup_key: "" })
+    console.log(
+      `Rotated lookup_key off stale price ${byLookup.id} (${byLookup.unit_amount} → ${entry.priceCents})`,
+    )
+  }
+
+  const newPrice = await stripe.prices.create({
+    product: product.id,
     unit_amount: entry.priceCents,
     currency: entry.currency.toLowerCase(),
     recurring: { interval: "month" },
@@ -71,6 +91,16 @@ async function findOrCreatePrice(
       sclinic_app: "sclinic",
     },
   })
+
+  await stripe.products.update(product.id, {
+    default_price: newPrice.id,
+  })
+
+  console.log(
+    `Created catalog price ${newPrice.id} → ${entry.priceCents} ${entry.currency}`,
+  )
+
+  return newPrice
 }
 
 async function upsertLocalPlan(
@@ -130,28 +160,7 @@ async function sync() {
 
   for (const entry of PLAN_CATALOG) {
     const product = await findOrCreateProduct(stripe, entry)
-
-    // Prefer Product.default_price when active (Dashboard price changes land here).
-    const defaultPriceId =
-      typeof product.default_price === "string"
-        ? product.default_price
-        : product.default_price?.id
-
-    let catalogPrice: Stripe.Price | null = null
-    if (defaultPriceId) {
-      const defaultPrice = await stripe.prices.retrieve(defaultPriceId)
-      if (defaultPrice.active) {
-        catalogPrice = defaultPrice
-      }
-    }
-
-    if (!catalogPrice) {
-      catalogPrice = await findOrCreatePrice(stripe, product.id, entry)
-      await stripe.products.update(product.id, {
-        default_price: catalogPrice.id,
-      })
-    }
-
+    const catalogPrice = await ensureCatalogPrice(stripe, product, entry)
     await upsertLocalPlan(entry, catalogPrice)
   }
 

@@ -1,11 +1,11 @@
-import type { Metadata } from "next"
+import type { Metadata } from "next";
 
-import { ClinicHoursSettingsPanel } from "@/modules/clinics/components/ClinicHoursSettingsPanel"
-import { SettingsPageHeader } from "@/modules/settings/components/SettingsPageHeader"
+import { ClinicHoursSettingsPanel } from "@/modules/clinics/components/ClinicHoursSettingsPanel";
+import { SettingsPageHeader } from "@/modules/settings/components/SettingsPageHeader";
 
 export const metadata: Metadata = {
-  title: "Horários · Configurações · sclinic",
-}
+  title: "Horários · Configurações",
+};
 
 export default function SettingsHoursPage() {
   return (
@@ -16,5 +16,5 @@ export default function SettingsHoursPage() {
       />
       <ClinicHoursSettingsPanel />
     </div>
-  )
+  );
 }

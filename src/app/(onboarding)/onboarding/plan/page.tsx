@@ -9,7 +9,7 @@ import { getAuthRequestContext } from "@/modules/authentication/utils/request-co
 import { PlanPicker } from "@/modules/billing/components/PlanPicker";
 
 export const metadata: Metadata = {
-  title: "Escolher plano · sclinic",
+  title: "Escolher plano",
 };
 
 type OnboardingPlanPageProps = {
@@ -53,8 +53,7 @@ export default async function OnboardingPlanPage({
         <div className="flex w-full items-center justify-center py-12">
           <Spinner />
         </div>
-      }
-    >
+      }>
       <PlanPicker />
     </Suspense>
   );

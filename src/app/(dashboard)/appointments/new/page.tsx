@@ -8,7 +8,7 @@ import { AppointmentNewPanel } from "@/modules/appointments/components/Appointme
 import { PermissionProvider } from "@/providers/PermissionProvider";
 
 export const metadata: Metadata = {
-  title: "Novo agendamento · sclinic",
+  title: "Novo agendamento",
 };
 
 function AppointmentNewPageSkeleton() {

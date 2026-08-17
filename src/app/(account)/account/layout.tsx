@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import { AccountNav } from "@/modules/users/components/AccountNav";
 
 export const metadata: Metadata = {
-  title: "Minha conta · sclinic",
+  title: "Minha conta",
 };
 
 type AccountLayoutProps = {

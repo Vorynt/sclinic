@@ -1,11 +1,11 @@
-import type { Metadata } from "next"
+import type { Metadata } from "next";
 
-import { AccountPageHeader } from "@/modules/users/components/AccountPageHeader"
-import { AccountSecurityPanel } from "@/modules/users/components/AccountSecurityPanel"
+import { AccountPageHeader } from "@/modules/users/components/AccountPageHeader";
+import { AccountSecurityPanel } from "@/modules/users/components/AccountSecurityPanel";
 
 export const metadata: Metadata = {
-  title: "Segurança · Minha conta · sclinic",
-}
+  title: "Segurança · Minha conta",
+};
 
 export default function AccountSecurityPage() {
   return (
@@ -16,5 +16,5 @@ export default function AccountSecurityPage() {
       />
       <AccountSecurityPanel />
     </div>
-  )
+  );
 }

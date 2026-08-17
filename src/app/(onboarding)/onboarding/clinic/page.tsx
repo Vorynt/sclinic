@@ -7,7 +7,7 @@ import { getAuthRequestContext } from "@/modules/authentication/utils/request-co
 import { CreateClinicForm } from "@/modules/clinics/components/CreateClinicForm";
 
 export const metadata: Metadata = {
-  title: "Criar clínica · sclinic",
+  title: "Criar clínica",
 };
 
 type OnboardingClinicPageProps = {

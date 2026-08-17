@@ -4,7 +4,7 @@ import { PrescriptionLayoutSettingsPanel } from "@/modules/medical-records/compo
 import { SettingsPageHeader } from "@/modules/settings/components/SettingsPageHeader";
 
 export const metadata: Metadata = {
-  title: "Receitas · Configurações · sclinic",
+  title: "Receitas · Configurações",
 };
 
 export default function SettingsPrescriptionsPage() {

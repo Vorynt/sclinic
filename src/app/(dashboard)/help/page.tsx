@@ -5,7 +5,7 @@ import { HelpCenter } from "@/modules/help/components/HelpCenter";
 import { HelpPageSkeleton } from "@/modules/help/components/HelpPageSkeleton";
 
 export const metadata: Metadata = {
-  title: "Ajuda · sclinic",
+  title: "Ajuda",
 };
 
 export default function HelpPage() {

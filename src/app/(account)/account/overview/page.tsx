@@ -1,11 +1,11 @@
-import type { Metadata } from "next"
+import type { Metadata } from "next";
 
-import { AccountOverviewPanel } from "@/modules/users/components/AccountOverviewPanel"
-import { AccountPageHeader } from "@/modules/users/components/AccountPageHeader"
+import { AccountOverviewPanel } from "@/modules/users/components/AccountOverviewPanel";
+import { AccountPageHeader } from "@/modules/users/components/AccountPageHeader";
 
 export const metadata: Metadata = {
-  title: "Visão geral · Minha conta · sclinic",
-}
+  title: "Visão geral · Minha conta",
+};
 
 export default function AccountOverviewPage() {
   return (
@@ -16,5 +16,5 @@ export default function AccountOverviewPage() {
       />
       <AccountOverviewPanel />
     </div>
-  )
+  );
 }
