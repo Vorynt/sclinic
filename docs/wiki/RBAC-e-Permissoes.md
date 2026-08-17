@@ -37,7 +37,8 @@ Fontes: `src/config/permissions.ts`, `src/db/seed/rbac.ts` (`npm run db:seed:rba
 | Self-schedule | clinician/nurse só a si. |
 | Horário do profissional | o próprio profissional edita a grade semanal; quem tem `professionals.manage` pode ajustar em nome de qualquer um (override operacional). Demais papéis só enxergam a **disponibilidade efetiva** na agenda (slots), não a configuração da grade. |
 | Bloqueios (`schedule_blocks`) | clinician/nurse só criam/removem o próprio; bloqueio **clinic-wide** (`professionalId` null) só recepção/gestão. Remoção na UI pelo card do bloqueio. |
-| Iniciar atendimento | owner, admin, clinician, nurse (recepcionista **não**). |
+| Iniciar / concluir atendimento | só o profissional responsável pelo agendamento (`owner`/`admin`/`clinician`/`nurse` com perfil clínico próprio). Recepcionista e gestor **não**. |
+| Abrir / ver atendimento | exige `records.read` (drawer e rota `/attendance`). Recepcionista e financeiro **não** veem o botão nem entram no workspace. Gestor lê o prontuário, mas não inicia. |
 | Equipe | não alterar owner nem a si; soft-remove → `removed` + `deletedAt` (some da listagem); suspender ≠ remover. |
 | Uso do plano | `/settings/usage` só owner. |
 | `collect` ≠ `view` | cobrar na agenda sem acessar `/billing`. |

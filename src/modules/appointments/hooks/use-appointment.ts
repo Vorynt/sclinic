@@ -10,3 +10,9 @@ export function useAppointmentQuery(id?: string) {
     enabled: Boolean(id),
   })
 }
+
+export function useOwnProfessionalIdQuery() {
+  return useQuery({
+    ...appointmentsQueries.ownProfessionalId(),
+  })
+}

@@ -5,12 +5,19 @@ import {
   canConfirmAppointment,
   canMarkAppointmentNoShow,
   canOpenAttendance,
+  canPerformThisAttendance,
   canResumeAttendance,
   canRoleStartAttendance,
+  canShowAttendanceAction,
   canStartAttendance,
+  canViewAttendance,
+  COMPLETE_ATTENDANCE_DENIED_TOOLTIP,
+  getAttendanceActionDeniedTooltip,
+  getAttendanceActionLabel,
   getProfessionalCalendarColor,
   isAppointmentConfirmableInBatch,
   isAppointmentScheduleEditable,
+  isAssignedProfessional,
   isSelfScheduleOnlyRole,
 } from "@/modules/appointments/constants/appointments"
 import { toAppointment } from "@/modules/appointments/mappers/appointment.mapper"
@@ -494,6 +501,85 @@ describe("appointment status transition helpers", () => {
     expect(canRoleStartAttendance(null)).toBe(false)
   })
 
+  it("treats assigned professional as matching own clinical profile", () => {
+    expect(
+      isAssignedProfessional({
+        appointmentProfessionalId: VALID_UUID,
+        ownProfessionalId: VALID_UUID,
+      }),
+    ).toBe(true)
+    expect(
+      isAssignedProfessional({
+        appointmentProfessionalId: VALID_UUID,
+        ownProfessionalId: OTHER_UUID,
+      }),
+    ).toBe(false)
+    expect(
+      isAssignedProfessional({
+        appointmentProfessionalId: VALID_UUID,
+        ownProfessionalId: null,
+      }),
+    ).toBe(false)
+    expect(
+      isAssignedProfessional({
+        appointmentProfessionalId: null,
+        ownProfessionalId: VALID_UUID,
+      }),
+    ).toBe(false)
+  })
+
+  it("allows performing attendance only for the assigned professional", () => {
+    expect(
+      canPerformThisAttendance({
+        roleKey: "clinician",
+        appointmentProfessionalId: VALID_UUID,
+        ownProfessionalId: VALID_UUID,
+      }),
+    ).toBe(true)
+    expect(
+      canPerformThisAttendance({
+        roleKey: "owner",
+        appointmentProfessionalId: VALID_UUID,
+        ownProfessionalId: VALID_UUID,
+      }),
+    ).toBe(true)
+    expect(
+      canPerformThisAttendance({
+        roleKey: "admin",
+        appointmentProfessionalId: VALID_UUID,
+        ownProfessionalId: VALID_UUID,
+      }),
+    ).toBe(true)
+    expect(
+      canPerformThisAttendance({
+        roleKey: "owner",
+        appointmentProfessionalId: VALID_UUID,
+        ownProfessionalId: OTHER_UUID,
+      }),
+    ).toBe(false)
+    expect(
+      canPerformThisAttendance({
+        roleKey: "admin",
+        appointmentProfessionalId: VALID_UUID,
+        ownProfessionalId: null,
+      }),
+    ).toBe(false)
+    expect(
+      canPerformThisAttendance({
+        roleKey: "manager",
+        appointmentProfessionalId: VALID_UUID,
+        ownProfessionalId: VALID_UUID,
+      }),
+    ).toBe(false)
+    expect(
+      canPerformThisAttendance({
+        roleKey: "clinician",
+        appointmentProfessionalId: OTHER_UUID,
+        ownProfessionalId: VALID_UUID,
+      }),
+    ).toBe(false)
+  })
+
   it("allows resume only while checked_in", () => {
     expect(canResumeAttendance("checked_in")).toBe(true)
     expect(canResumeAttendance("scheduled")).toBe(false)
@@ -505,6 +591,86 @@ describe("appointment status transition helpers", () => {
     expect(canOpenAttendance("completed")).toBe(true)
     expect(canOpenAttendance("canceled")).toBe(false)
     expect(canOpenAttendance("no_show")).toBe(false)
+  })
+
+  it("allows viewing attendance only while in progress or completed", () => {
+    expect(canViewAttendance("checked_in")).toBe(true)
+    expect(canViewAttendance("completed")).toBe(true)
+    expect(canViewAttendance("scheduled")).toBe(false)
+    expect(canViewAttendance("confirmed")).toBe(false)
+  })
+
+  it("hides open/view attendance without records.read", () => {
+    expect(
+      canShowAttendanceAction({
+        status: "checked_in",
+        canStartThis: false,
+        canReadRecords: false,
+      }),
+    ).toBe(false)
+    expect(
+      canShowAttendanceAction({
+        status: "completed",
+        canStartThis: false,
+        canReadRecords: false,
+      }),
+    ).toBe(false)
+    expect(
+      canShowAttendanceAction({
+        status: "completed",
+        canStartThis: false,
+        canReadRecords: true,
+      }),
+    ).toBe(true)
+    expect(
+      canShowAttendanceAction({
+        status: "scheduled",
+        canStartThis: true,
+        canReadRecords: false,
+      }),
+    ).toBe(true)
+  })
+
+  it("hides start on someone else's scheduled visit but keeps view when in progress", () => {
+    expect(
+      canShowAttendanceAction({
+        status: "scheduled",
+        canStartThis: false,
+        canReadRecords: true,
+      }),
+    ).toBe(false)
+    expect(
+      canShowAttendanceAction({
+        status: "checked_in",
+        canStartThis: false,
+        canReadRecords: true,
+      }),
+    ).toBe(true)
+  })
+
+  it("labels the attendance action by status", () => {
+    expect(getAttendanceActionLabel("scheduled")).toBe("Iniciar atendimento")
+    expect(getAttendanceActionLabel("confirmed")).toBe("Iniciar atendimento")
+    expect(getAttendanceActionLabel("checked_in")).toBe("Abrir atendimento")
+    expect(getAttendanceActionLabel("completed")).toBe("Ver atendimento")
+  })
+
+  it("explains denied start vs view in the tooltip", () => {
+    expect(getAttendanceActionDeniedTooltip("scheduled")).toBe(
+      "Você não pode iniciar este atendimento.",
+    )
+    expect(getAttendanceActionDeniedTooltip("confirmed")).toBe(
+      "Você não pode iniciar este atendimento.",
+    )
+    expect(getAttendanceActionDeniedTooltip("checked_in")).toBe(
+      "Você não pode ver este atendimento.",
+    )
+    expect(getAttendanceActionDeniedTooltip("completed")).toBe(
+      "Você não pode ver este atendimento.",
+    )
+    expect(COMPLETE_ATTENDANCE_DENIED_TOOLTIP).toBe(
+      "Você não pode concluir este atendimento.",
+    )
   })
 
   it("allows complete only from checked_in", () => {

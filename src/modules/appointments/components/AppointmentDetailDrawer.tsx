@@ -4,6 +4,7 @@ import {
   ArrowsClockwiseIcon,
   CheckIcon,
   DotsThreeIcon,
+  LockSimpleIcon,
   PencilSimpleIcon,
   StethoscopeIcon,
   UserMinusIcon,
@@ -43,6 +44,7 @@ import {
 } from "@/components/ui/sheet";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
+import { Permission } from "@/config/permissions";
 import { AppointmentDetailsForm } from "@/modules/appointments/components/AppointmentDetailsForm";
 import { AppointmentRescheduleForm } from "@/modules/appointments/components/AppointmentRescheduleForm";
 import {
@@ -51,11 +53,15 @@ import {
   APPOINTMENT_TYPE_LABELS,
   canConfirmAppointment,
   canMarkAppointmentNoShow,
-  canResumeAttendance,
-  canRoleStartAttendance,
+  canOpenAttendance,
+  canPerformThisAttendance,
+  canShowAttendanceAction,
   canStartAttendance,
+  getAttendanceActionDeniedTooltip,
+  getAttendanceActionLabel,
   isAppointmentScheduleEditable,
 } from "@/modules/appointments/constants/appointments";
+import { useOwnProfessionalIdQuery } from "@/modules/appointments/hooks/use-appointment";
 import {
   useCancelAppointmentMutation,
   useUpdateAppointmentStatusMutation,
@@ -69,6 +75,7 @@ import { buildAttendanceHref } from "@/modules/appointments/utils/agenda-href";
 import { useAuthSession } from "@/modules/authentication/hooks/use-auth";
 import { AppointmentChargeSummary } from "@/modules/billing/components/AppointmentChargeSummary";
 import { PatientCompactSummary } from "@/modules/patients/components/PatientCompactSummary";
+import { useAuth } from "@/providers/AuthProvider";
 import { useAttendanceUiStore } from "@/stores/attendance.store";
 
 type DrawerMode = "view" | "reschedule" | "edit-details";
@@ -126,6 +133,8 @@ function AppointmentDetailContent({
   const router = useRouter();
   const { mode: agendaMode, date: agendaDate } = useCalendarQueryParams();
   const sessionQuery = useAuthSession();
+  const ownProfessionalIdQuery = useOwnProfessionalIdQuery();
+  const { can } = useAuth();
   const beginPreparingAttendance = useAttendanceUiStore(
     (state) => state.beginPreparingAttendance,
   );
@@ -135,9 +144,12 @@ function AppointmentDetailContent({
   const [mode, setMode] = useState<DrawerMode>("view");
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
-  const canStartByRole = canRoleStartAttendance(
-    sessionQuery.data?.membership?.roleKey,
-  );
+  const canStartThis = canPerformThisAttendance({
+    roleKey: sessionQuery.data?.membership?.roleKey,
+    appointmentProfessionalId: appointment.professionalId,
+    ownProfessionalId: ownProfessionalIdQuery.data ?? null,
+  });
+  const canReadRecords = can(Permission.RECORDS_READ);
 
   const cancelAppointment = useCancelAppointmentMutation({
     onSuccess: () => {
@@ -181,16 +193,19 @@ function AppointmentDetailContent({
   const showConfirm = canConfirmAppointment(appointment.status);
   const showNoShow = canMarkAppointmentNoShow(appointment.status);
   const needsCheckIn = canStartAttendance(appointment.status);
-  const showStartAttendance = needsCheckIn && canStartByRole;
-  const showResumeOrView =
-    canResumeAttendance(appointment.status) ||
-    appointment.status === "completed";
-  const showAttendance = showStartAttendance || showResumeOrView;
-  const attendanceLabel = canResumeAttendance(appointment.status)
-    ? "Abrir atendimento"
-    : appointment.status === "completed"
-      ? "Ver atendimento"
-      : "Iniciar atendimento";
+  const showAttendanceSlot = canOpenAttendance(appointment.status);
+  const isAttendancePermissionPending =
+    sessionQuery.isPending || ownProfessionalIdQuery.isPending;
+  const canUseAttendanceAction = canShowAttendanceAction({
+    status: appointment.status,
+    canStartThis,
+    canReadRecords,
+  });
+  const attendanceLocked =
+    showAttendanceSlot &&
+    !isAttendancePermissionPending &&
+    !canUseAttendanceAction;
+  const attendanceLabel = getAttendanceActionLabel(appointment.status);
   const showActionGroup = showConfirm || showNoShow || canEditSchedule;
   const isStatusPending = updateStatus.isPending;
 
@@ -205,7 +220,7 @@ function AppointmentDetailContent({
   }
 
   function handleAttendanceClick() {
-    if (needsCheckIn) {
+    if (needsCheckIn && canStartThis) {
       beginPreparingAttendance();
       updateStatus.mutate({
         id: appointment.id,
@@ -312,17 +327,28 @@ function AppointmentDetailContent({
               </div>
             </dl>
 
-            {showAttendance || showActionGroup ? (
+            {showAttendanceSlot || showActionGroup ? (
               <div className="flex items-center gap-2">
-                {showAttendance ? (
+                {showAttendanceSlot ? (
                   <Button
                     type="button"
-                    // className="min-w-0 flex-1"
-                    disabled={isStatusPending}
+                    disabled={
+                      isStatusPending ||
+                      isAttendancePermissionPending ||
+                      attendanceLocked
+                    }
+                    className="disabled:bg-muted-foreground dark:disabled:bg-muted"
+                    tooltip={
+                      attendanceLocked
+                        ? getAttendanceActionDeniedTooltip(appointment.status)
+                        : undefined
+                    }
                     onClick={handleAttendanceClick}>
                     {isStatusPending &&
                     updateStatus.variables?.status === "checked_in" ? (
                       <Spinner />
+                    ) : isAttendancePermissionPending || attendanceLocked ? (
+                      <LockSimpleIcon />
                     ) : (
                       <StethoscopeIcon />
                     )}

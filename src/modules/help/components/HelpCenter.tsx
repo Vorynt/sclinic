@@ -1,16 +1,17 @@
 "use client";
 
-import { CompassIcon, QuestionIcon } from "@phosphor-icons/react";
+import { CompassIcon } from "@phosphor-icons/react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   useDeferredValue,
   useEffect,
+  useMemo,
   useRef,
   useState,
   useTransition,
 } from "react";
 
-import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/layout/PageHeader";
 import { HelpCategoryFilter } from "@/modules/help/components/HelpCategoryFilter";
 import { HelpFaqList } from "@/modules/help/components/HelpFaqList";
 import { HelpSearch } from "@/modules/help/components/HelpSearch";
@@ -24,6 +25,7 @@ import {
 } from "@/modules/help/utils/search-faq";
 import { useAuth } from "@/providers/AuthProvider";
 import { useProductTourUiStore } from "@/stores/product-tour.store";
+import type { PageAction } from "@/types/page-action";
 
 function parseCategory(value: string | null): HelpCategoryId | "all" {
   if (!value || value === "all") return "all";
@@ -89,6 +91,18 @@ export function HelpCenter() {
     (c) => c.id === effectiveCategoryId,
   );
 
+  const pageActions = useMemo<PageAction[]>(
+    () => [
+      {
+        id: "replay-product-tour",
+        label: "Ver tour do sistema",
+        icon: CompassIcon,
+        onClick: () => requestReplay(),
+      },
+    ],
+    [requestReplay],
+  );
+
   useEffect(() => {
     const next = buildHelpSearchParams(
       query,
@@ -116,35 +130,14 @@ export function HelpCenter() {
   ]);
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
-      <header className="flex flex-col gap-3">
-        <div className="flex items-start gap-3">
-          <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-            <QuestionIcon className="size-5" weight="duotone" />
-          </span>
-          <div className="min-w-0">
-            <h1 className="text-xl font-semibold tracking-tight text-foreground">
-              Como podemos ajudar?
-            </h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Respostas para o seu papel na clínica. Escolha um assunto ou
-              digite o que você procura.
-            </p>
-          </div>
-        </div>
+    <div className="flex flex-col gap-6">
+      <PageHeader
+        title="Ajuda"
+        description="Respostas para o seu papel na clínica. Escolha um assunto ou digite o que você procura."
+        actions={pageActions}
+      />
 
-        <HelpSearch value={query} onChange={setQuery} />
-
-        <Button
-          type="button"
-          variant="outline"
-          className="w-fit"
-          onClick={() => requestReplay()}
-        >
-          <CompassIcon className="size-4" weight="bold" aria-hidden />
-          Ver tour do sistema
-        </Button>
-      </header>
+      <HelpSearch value={query} onChange={setQuery} />
 
       <HelpCategoryFilter
         active={effectiveCategoryId}

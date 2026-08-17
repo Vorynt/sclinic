@@ -1,10 +1,11 @@
-"use client"
+"use client";
 
-import { format } from "date-fns"
-import { ptBR } from "date-fns/locale"
-import { useRouter } from "next/navigation"
-import { useState } from "react"
-import { toast } from "sonner"
+import { LockSimpleIcon } from "@phosphor-icons/react";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { toast } from "sonner";
 
 import {
   AlertDialog,
@@ -15,52 +16,69 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+} from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   APPOINTMENT_STATUS_LABELS,
   APPOINTMENT_TYPE_LABELS,
   canCompleteAttendance,
-} from "@/modules/appointments/constants/appointments"
-import { useAgendaReturnHref } from "@/modules/appointments/hooks/use-agenda-return-href"
-import { useUpdateAppointmentStatusMutation } from "@/modules/appointments/hooks/use-appointment-mutations"
+  canPerformThisAttendance,
+  COMPLETE_ATTENDANCE_DENIED_TOOLTIP,
+} from "@/modules/appointments/constants/appointments";
+import { useAgendaReturnHref } from "@/modules/appointments/hooks/use-agenda-return-href";
+import { useOwnProfessionalIdQuery } from "@/modules/appointments/hooks/use-appointment";
+import { useUpdateAppointmentStatusMutation } from "@/modules/appointments/hooks/use-appointment-mutations";
 import type {
   Appointment,
   AppointmentStatus,
-} from "@/modules/appointments/types/appointment"
-import { PatientClinicalAlertBadges } from "@/modules/medical-records/components/PatientClinicalAlertBadges"
+} from "@/modules/appointments/types/appointment";
+import { useAuthSession } from "@/modules/authentication/hooks/use-auth";
+import { PatientClinicalAlertBadges } from "@/modules/medical-records/components/PatientClinicalAlertBadges";
 
 type AttendanceHeaderProps = {
-  appointment: Appointment
-}
+  appointment: Appointment;
+};
 
 function statusBadgeVariant(
   status: AppointmentStatus,
 ): "secondary" | "outline" | "destructive" {
-  if (status === "canceled" || status === "no_show") return "destructive"
-  if (status === "completed") return "secondary"
-  if (status === "checked_in") return "outline"
-  return "outline"
+  if (status === "canceled" || status === "no_show") return "destructive";
+  if (status === "completed") return "secondary";
+  if (status === "checked_in") return "outline";
+  return "outline";
 }
 
 export function AttendanceHeader({ appointment }: AttendanceHeaderProps) {
-  const router = useRouter()
-  const agendaHref = useAgendaReturnHref()
+  const router = useRouter();
+  const agendaHref = useAgendaReturnHref();
+  const sessionQuery = useAuthSession();
+  const ownProfessionalIdQuery = useOwnProfessionalIdQuery();
 
-  const [completeOpen, setCompleteOpen] = useState(false)
-  const [afterCompleteOpen, setAfterCompleteOpen] = useState(false)
+  const [completeOpen, setCompleteOpen] = useState(false);
+  const [afterCompleteOpen, setAfterCompleteOpen] = useState(false);
 
   const completeAttendance = useUpdateAppointmentStatusMutation({
     onSuccess: () => {
-      toast.success("Atendimento concluído")
-      setCompleteOpen(false)
-      setAfterCompleteOpen(true)
+      toast.success("Atendimento concluído");
+      setCompleteOpen(false);
+      setAfterCompleteOpen(true);
     },
     onError: (error) => toast.error(error.message),
-  })
+  });
 
-  const canComplete = canCompleteAttendance(appointment.status)
+  const isCompletePermissionPending =
+    sessionQuery.isPending || ownProfessionalIdQuery.isPending;
+  const canCompleteStatus = canCompleteAttendance(appointment.status);
+  const canComplete =
+    canCompleteStatus &&
+    canPerformThisAttendance({
+      roleKey: sessionQuery.data?.membership?.roleKey,
+      appointmentProfessionalId: appointment.professionalId,
+      ownProfessionalId: ownProfessionalIdQuery.data ?? null,
+    });
+  const completeLocked =
+    canCompleteStatus && !isCompletePermissionPending && !canComplete;
 
   return (
     <>
@@ -92,8 +110,22 @@ export function AttendanceHeader({ appointment }: AttendanceHeaderProps) {
           </p>
         </div>
 
-        {canComplete ? (
-          <Button type="button" onClick={() => setCompleteOpen(true)}>
+        {canCompleteStatus ? (
+          <Button
+            type="button"
+            disabled={
+              completeAttendance.isPending ||
+              isCompletePermissionPending ||
+              completeLocked
+            }
+            className="disabled:bg-muted"
+            tooltip={
+              completeLocked ? COMPLETE_ATTENDANCE_DENIED_TOOLTIP : undefined
+            }
+            onClick={() => setCompleteOpen(true)}>
+            {isCompletePermissionPending || completeLocked ? (
+              <LockSimpleIcon />
+            ) : null}
             Concluir atendimento
           </Button>
         ) : null}
@@ -115,13 +147,12 @@ export function AttendanceHeader({ appointment }: AttendanceHeaderProps) {
             <AlertDialogAction
               disabled={completeAttendance.isPending}
               onClick={(event) => {
-                event.preventDefault()
+                event.preventDefault();
                 completeAttendance.mutate({
                   id: appointment.id,
                   status: "completed",
-                })
-              }}
-            >
+                });
+              }}>
               Concluir
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -145,5 +176,5 @@ export function AttendanceHeader({ appointment }: AttendanceHeaderProps) {
         </AlertDialogContent>
       </AlertDialog>
     </>
-  )
+  );
 }

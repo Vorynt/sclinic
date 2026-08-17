@@ -85,13 +85,45 @@ export function canResumeAttendance(status: AppointmentStatus): boolean {
   return status === "checked_in";
 }
 
-/** Drawer / agenda can open the attendance workspace. */
+/** Resume in progress or open a completed visit (read-only). */
+export function canViewAttendance(status: AppointmentStatus): boolean {
+  return canResumeAttendance(status) || status === "completed";
+}
+
+/** Status allows the attendance workspace (start, resume, or completed). */
 export function canOpenAttendance(status: AppointmentStatus): boolean {
-  return (
-    canStartAttendance(status) ||
-    canResumeAttendance(status) ||
-    status === "completed"
-  );
+  return canStartAttendance(status) || canViewAttendance(status);
+}
+
+export function getAttendanceActionLabel(status: AppointmentStatus): string {
+  if (canResumeAttendance(status)) return "Abrir atendimento";
+  if (status === "completed") return "Ver atendimento";
+  return "Iniciar atendimento";
+}
+
+export function getAttendanceActionDeniedTooltip(
+  status: AppointmentStatus,
+): string {
+  if (canStartAttendance(status)) {
+    return "Você não pode iniciar este atendimento.";
+  }
+  return "Você não pode ver este atendimento.";
+}
+
+export const COMPLETE_ATTENDANCE_DENIED_TOOLTIP =
+  "Você não pode concluir este atendimento.";
+
+/**
+ * Drawer CTA: start (assigned clinician) or open/view (requires records.read).
+ * Receptionist/financial never see Abrir/Ver atendimento.
+ */
+export function canShowAttendanceAction(input: {
+  status: AppointmentStatus;
+  canStartThis: boolean;
+  canReadRecords: boolean;
+}): boolean {
+  if (canStartAttendance(input.status) && input.canStartThis) return true;
+  return input.canReadRecords && canViewAttendance(input.status);
 }
 
 /** Complete finishes an in-progress attendance. */
@@ -115,8 +147,9 @@ export function isSelfScheduleOnlyRole(
 }
 
 /**
- * Roles allowed to start attendance (move appointment into checked_in).
- * Healthcare professionals plus clinic owner/admin.
+ * Roles allowed to start or complete attendance.
+ * Healthcare professionals plus clinic owner/admin — only on visits assigned
+ * to their own clinical profile (`canPerformThisAttendance`).
  */
 export const CAN_START_ATTENDANCE_ROLE_KEYS = [
   "owner",
@@ -131,6 +164,32 @@ export function canRoleStartAttendance(
   return (
     roleKey != null &&
     (CAN_START_ATTENDANCE_ROLE_KEYS as readonly string[]).includes(roleKey)
+  );
+}
+
+/** True when the actor's clinical profile is the appointment assignee. */
+export function isAssignedProfessional(params: {
+  appointmentProfessionalId: string | null | undefined;
+  ownProfessionalId: string | null | undefined;
+}): boolean {
+  return (
+    params.ownProfessionalId != null &&
+    params.appointmentProfessionalId === params.ownProfessionalId
+  );
+}
+
+/**
+ * Start or complete this visit: allowed role and assigned professional.
+ * Owner/admin without a clinical profile, or looking at someone else's
+ * appointment, cannot perform the clinical act.
+ */
+export function canPerformThisAttendance(params: {
+  roleKey: string | null | undefined;
+  appointmentProfessionalId: string | null | undefined;
+  ownProfessionalId: string | null | undefined;
+}): boolean {
+  return (
+    canRoleStartAttendance(params.roleKey) && isAssignedProfessional(params)
   );
 }
 

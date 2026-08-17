@@ -4,7 +4,7 @@
 
 ## Board operacional
 
-Visível na home do **receptionist** (`ReceptionOpsBoard`).
+Visível na home do **receptionist** (`ReceptionOpsBoard`). Layout da home: saudação com **Novo paciente** / **Novo agendamento** (header no desktop, FAB no mobile); contagem no header de cada coluna do board; `WaitlistPanel` abaixo. Sem cards de KPI nem seção de ações rápidas.
 
 | Coluna | Regra |
 |--------|--------|
@@ -34,7 +34,7 @@ Fora do board: canceled, no_show, completed sem charge ou paid.
 
 ## Agendamento rápido (UI)
 
-- Ação **Novo agendamento** na home da recepção abre o modal quick (paciente/horário/serviço).
+- Ação **Novo agendamento** na home da recepção (header / FAB) abre o modal quick (paciente/horário/serviço).
 - Para tipo, modalidade, motivo e cobrança avançada: **Mais opções** → `/appointments/new`.
 
 ## Fluxo canônico

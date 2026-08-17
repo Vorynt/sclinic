@@ -46,11 +46,12 @@ export const HELP_FAQ_RECEPTIONIST: HelpFaqItem[] = [
   {
     id: "quick-actions-home",
     categoryId: "getting-started",
-    question: "O que são as ações rápidas no início?",
+    question: "Como cadastro um paciente ou marco uma consulta pelo início?",
     answer: [
-      "Atalhos para abrir o formulário de novo agendamento, novo paciente ou a agenda completa — sem precisar caçar no menu.",
+      "No desktop, os botões Novo paciente e Novo agendamento ficam ao lado da saudação. No celular, o mesmo par aparece no botão flutuante do canto.",
+      "A agenda completa continua no menu Agendamentos.",
     ],
-    keywords: ["atalho", "ações rápidas", "novo"],
+    keywords: ["atalho", "ações rápidas", "novo", "FAB"],
     relatedRoutes: [{ label: "Início", href: routes.home }],
   },
 
@@ -146,9 +147,16 @@ export const HELP_FAQ_RECEPTIONIST: HelpFaqItem[] = [
     question: "Por que não consigo iniciar o atendimento?",
     answer: [
       "Iniciar atendimento é do profissional clínico. Seu papel é organizar a fila e o pagamento.",
+      "Você também não vê Abrir nem Ver atendimento no detalhe da consulta — o prontuário fica com quem atende e com a gestão.",
       "Quando o profissional de saúde inicia e conclui, a consulta pode aparecer em Aguardando pagamento no quadro.",
     ],
-    keywords: ["iniciar", "atendimento", "bloqueado", "em atendimento"],
+    keywords: [
+      "iniciar",
+      "atendimento",
+      "bloqueado",
+      "em atendimento",
+      "ver atendimento",
+    ],
     relatedRoutes: [
       { label: "Início", href: routes.home },
       { label: "Agenda", href: routes.appointments },

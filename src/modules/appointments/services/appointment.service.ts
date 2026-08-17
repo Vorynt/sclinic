@@ -14,6 +14,7 @@ import {
   canCompleteAttendance,
   canConfirmAppointment,
   canMarkAppointmentNoShow,
+  canPerformThisAttendance,
   canRoleStartAttendance,
   canStartAttendance,
   isAppointmentConfirmableInBatch,
@@ -52,14 +53,19 @@ const APPOINTMENTS_ANY_PERMISSION = [
   Permission.APPOINTMENTS_DELETE,
 ] as const
 
+async function findOwnProfessionalIdOrNull(
+  auth: AuthContextWithClinic,
+): Promise<string | null> {
+  return appointmentRepository.findActiveProfessionalIdByUserId(
+    auth.user.id,
+    auth.clinicId,
+  )
+}
+
 async function resolveOwnProfessionalId(
   auth: AuthContextWithClinic,
 ): Promise<string> {
-  const ownProfessionalId =
-    await appointmentRepository.findActiveProfessionalIdByUserId(
-      auth.user.id,
-      auth.clinicId,
-    )
+  const ownProfessionalId = await findOwnProfessionalIdOrNull(auth)
   if (!ownProfessionalId) {
     throw new AppError(ErrorCode.FORBIDDEN, {
       message: "Seu perfil profissional não está vinculado a esta clínica.",
@@ -75,6 +81,37 @@ function assertOwnsAppointment(
   if (appointment.professionalId !== professionalId) {
     throw new AppError(ErrorCode.NOT_FOUND, {
       message: "Agendamento não encontrado.",
+    })
+  }
+}
+
+function assertCanPerformThisAttendance(
+  appointment: Appointment,
+  auth: AuthContextWithClinic,
+  ownProfessionalId: string | null,
+  action: "start" | "complete",
+): void {
+  if (!canRoleStartAttendance(auth.membership.roleKey)) {
+    throw new AppError(ErrorCode.FORBIDDEN, {
+      message:
+        action === "start"
+          ? "Apenas profissionais de saúde, administradores e proprietários podem iniciar atendimentos."
+          : "Apenas o profissional responsável pode concluir este atendimento.",
+    })
+  }
+
+  if (
+    !canPerformThisAttendance({
+      roleKey: auth.membership.roleKey,
+      appointmentProfessionalId: appointment.professionalId,
+      ownProfessionalId,
+    })
+  ) {
+    throw new AppError(ErrorCode.FORBIDDEN, {
+      message:
+        action === "start"
+          ? "Só o profissional responsável por este agendamento pode iniciar o atendimento."
+          : "Só o profissional responsável por este agendamento pode concluir o atendimento.",
     })
   }
 }
@@ -225,6 +262,20 @@ export const appointmentService = {
       excludeAppointmentId: filters.excludeAppointmentId,
       limit: filters.limit,
     })
+  },
+
+  /**
+   * Active clinical profile of the current user in this clinic, if any.
+   * Owner/admin may have none (ADR-007); clinician/nurse always need one.
+   */
+  async getOwnProfessionalId(
+    ctx: AuthRequestContext,
+  ): Promise<string | null> {
+    const auth = await requireAnyPermission(
+      ctx,
+      ...APPOINTMENTS_ANY_PERMISSION,
+    )
+    return findOwnProfessionalIdOrNull(auth)
   },
 
   /**
@@ -600,12 +651,13 @@ export const appointmentService = {
           })
         }
       } else if (data.status === "checked_in") {
-        if (!canRoleStartAttendance(auth.membership.roleKey)) {
-          throw new AppError(ErrorCode.FORBIDDEN, {
-            message:
-              "Apenas profissionais de saúde, administradores e proprietários podem iniciar atendimentos.",
-          })
-        }
+        const ownProfessionalId = await findOwnProfessionalIdOrNull(auth)
+        assertCanPerformThisAttendance(
+          existing,
+          auth,
+          ownProfessionalId,
+          "start",
+        )
         if (!canStartAttendance(existing.status)) {
           throw new AppError(ErrorCode.CONFLICT, {
             message:
@@ -615,6 +667,13 @@ export const appointmentService = {
           })
         }
       } else if (data.status === "completed") {
+        const ownProfessionalId = await findOwnProfessionalIdOrNull(auth)
+        assertCanPerformThisAttendance(
+          existing,
+          auth,
+          ownProfessionalId,
+          "complete",
+        )
         if (!canCompleteAttendance(existing.status)) {
           throw new AppError(ErrorCode.CONFLICT, {
             message:

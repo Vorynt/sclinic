@@ -1,163 +1,68 @@
 "use client"
 
-import {
-  CalendarBlankIcon,
-  CalendarPlusIcon,
-  ClockIcon,
-  CurrencyCircleDollarIcon,
-  QuestionIcon,
-  StethoscopeIcon,
-  UserPlusIcon,
-} from "@phosphor-icons/react"
-import { endOfDay, format, startOfDay } from "date-fns"
-import { ptBR } from "date-fns/locale"
+import { CalendarPlusIcon, UserPlusIcon } from "@phosphor-icons/react"
 import { useMemo, useState } from "react"
 
-import { Skeleton } from "@/components/ui/skeleton"
-import { Permission } from "@/config/permissions"
-import { routes } from "@/config/routes"
+import { Button } from "@/components/ui/button"
+import { useRegisterPageActions } from "@/hooks/use-register-page-actions"
 import { AppointmentFormDialog } from "@/modules/appointments/components/AppointmentFormDialog"
 import { WaitlistPanel } from "@/modules/appointments/components/WaitlistPanel"
-import { useAppointmentsQuery } from "@/modules/appointments/hooks/use-appointments"
-import { useActiveChargesByAppointmentsQuery } from "@/modules/billing/hooks/use-charges"
-import type { Charge } from "@/modules/billing/types/charge"
 import { ReceptionOpsBoard } from "@/modules/dashboard/components/home/ReceptionOpsBoard"
 import { HomeGreeting } from "@/modules/dashboard/components/home/shared/HomeGreeting"
-import { HomeQuickActions } from "@/modules/dashboard/components/home/shared/HomeQuickActions"
-import { HomeSection } from "@/modules/dashboard/components/home/shared/HomeSection"
-import { HomeStatCards } from "@/modules/dashboard/components/home/shared/HomeStatCards"
-import { countReceptionBoardColumns } from "@/modules/dashboard/utils/reception-board"
 import { PatientFormDialog } from "@/modules/patients/components/PatientFormDialog"
-import { useAuth } from "@/providers/AuthProvider"
-
-function ReceptionDayKpis() {
-  const { canAny, isLoading: authLoading } = useAuth()
-  const canSeeCharges = canAny(
-    Permission.FINANCIAL_VIEW,
-    Permission.FINANCIAL_COLLECT,
-    Permission.FINANCIAL_MANAGE,
-  )
-
-  const range = useMemo(() => {
-    const now = new Date()
-    return { from: startOfDay(now), to: endOfDay(now) }
-  }, [])
-
-  const appointmentsQuery = useAppointmentsQuery(range)
-  const appointments = appointmentsQuery.data ?? []
-  const appointmentIds = useMemo(
-    () => appointments.map((item) => item.id),
-    [appointments],
-  )
-
-  const chargesQuery = useActiveChargesByAppointmentsQuery(
-    appointmentIds,
-    !authLoading && canSeeCharges && appointmentIds.length > 0,
-  )
-
-  const chargeByAppointmentId = useMemo(() => {
-    const map = new Map<string, Charge>()
-    for (const charge of chargesQuery.data ?? []) {
-      map.set(charge.appointmentId, charge)
-    }
-    return map
-  }, [chargesQuery.data])
-
-  const counts = useMemo(() => {
-    return countReceptionBoardColumns(
-      appointments.map((appointment) => ({
-        appointment,
-        charge: chargeByAppointmentId.get(appointment.id) ?? null,
-      })),
-    )
-  }, [appointments, chargeByAppointmentId])
-
-  const isLoading =
-    appointmentsQuery.isLoading ||
-    (canSeeCharges && appointmentIds.length > 0 && chargesQuery.isLoading)
-
-  return (
-    <HomeSection
-      title="Resumo do balcão"
-      description={format(range.from, "EEEE, dd 'de' MMMM", { locale: ptBR })}
-    >
-      {isLoading ? (
-        <div className="grid gap-3 sm:grid-cols-3">
-          <Skeleton className="h-24 w-full" />
-          <Skeleton className="h-24 w-full" />
-          <Skeleton className="h-24 w-full" />
-        </div>
-      ) : (
-        <HomeStatCards
-          items={[
-            {
-              label: "Próximos",
-              value: String(counts.upcoming),
-              hint: "Aguardando chegada",
-              icon: ClockIcon,
-              accent: "info",
-            },
-            {
-              label: "Em atendimento",
-              value: String(counts.in_progress),
-              hint: "Check-in feito",
-              icon: StethoscopeIcon,
-              accent: "success",
-            },
-            {
-              label: "Aguardando pagamento",
-              value: String(counts.awaiting_payment),
-              hint: "Cobrança pendente",
-              icon: CurrencyCircleDollarIcon,
-              accent: "warning",
-            },
-          ]}
-        />
-      )}
-    </HomeSection>
-  )
-}
+import type { PageAction } from "@/types/page-action"
 
 export function ReceptionistHome() {
   const [appointmentDialogOpen, setAppointmentDialogOpen] = useState(false)
   const [patientDialogOpen, setPatientDialogOpen] = useState(false)
 
+  const pageActions = useMemo<PageAction[]>(
+    () => [
+      {
+        id: "new-patient",
+        label: "Novo paciente",
+        icon: UserPlusIcon,
+        onClick: () => setPatientDialogOpen(true),
+        priority: "secondary",
+      },
+      {
+        id: "new-appointment",
+        label: "Novo agendamento",
+        icon: CalendarPlusIcon,
+        onClick: () => setAppointmentDialogOpen(true),
+        priority: "primary",
+      },
+    ],
+    [],
+  )
+
+  useRegisterPageActions(pageActions)
+
   return (
-    <div className="flex flex-col gap-8">
-      <HomeGreeting subtitle="Receba pacientes, acompanhe o dia e registre pagamentos no balcão." />
+    <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0 flex-1">
+          <HomeGreeting subtitle="Receba pacientes, acompanhe o dia e registre pagamentos no balcão." />
+        </div>
+        <div className="hidden shrink-0 flex-wrap items-center gap-2 md:flex">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setPatientDialogOpen(true)}
+          >
+            <UserPlusIcon data-icon="inline-start" />
+            Novo paciente
+          </Button>
+          <Button
+            type="button"
+            onClick={() => setAppointmentDialogOpen(true)}
+          >
+            <CalendarPlusIcon data-icon="inline-start" />
+            Novo agendamento
+          </Button>
+        </div>
+      </div>
 
-      <HomeSection title="Ações rápidas">
-        <HomeQuickActions
-          actions={[
-            {
-              label: "Novo agendamento",
-              icon: CalendarPlusIcon,
-              onClick: () => setAppointmentDialogOpen(true),
-              primary: true,
-            },
-            {
-              label: "Novo paciente",
-              icon: UserPlusIcon,
-              onClick: () => setPatientDialogOpen(true),
-              primary: false,
-            },
-            {
-              label: "Abrir agenda",
-              href: routes.appointments,
-              icon: CalendarBlankIcon,
-              primary: false,
-            },
-            {
-              label: "Ajuda",
-              href: routes.help,
-              icon: QuestionIcon,
-              primary: false,
-            },
-          ]}
-        />
-      </HomeSection>
-
-      <ReceptionDayKpis />
       <ReceptionOpsBoard />
       <WaitlistPanel />
 

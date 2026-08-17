@@ -295,7 +295,7 @@ Convenção de ID: `RF-<DOMÍNIO>-NNN`.
 | RF-AGE-004 | Transições de status | Ver §5 | Clínico / recepção | Done |
 | RF-AGE-005 | Cancelamento | Cascata: cancela charge `pending` | Quem cancela | Done |
 | RF-AGE-006 | Workspace attendance | Notas/vitais/receitas; leitura em `completed` | P3, P4, P10 | Done |
-| RF-AGE-007 | Iniciar atendimento | Só owner, admin, clinician, nurse | Clínicos | Done |
+| RF-AGE-007 | Iniciar / concluir atendimento | Só o profissional assignee (owner/admin/clinician/nurse com perfil clínico próprio); demais com `records.read` só visualizam | Clínicos | Done |
 | RF-AGE-008 | Valor → charge | `amountCents` + collect (legado) | Caixa | Done |
 | RF-AGE-009 | Self-schedule | Doctor/nurse só a si | P3, P4 | Done |
 | RF-AGE-010 | Serviço no agendamento | `serviceId` obrigatório; desconto %; cortesia/retorno | Caixa | Done |

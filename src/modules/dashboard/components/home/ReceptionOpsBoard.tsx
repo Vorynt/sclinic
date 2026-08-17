@@ -130,11 +130,11 @@ type BoardColumnProps = {
 
 const COLUMN_ACCENT: Record<
   BoardColumnAccent,
-  { bar: string; badge: "info" | "success" | "warning" }
+  { bar: string; count: string }
 > = {
-  info: { bar: "bg-primary", badge: "info" },
-  success: { bar: "bg-chart-2", badge: "success" },
-  warning: { bar: "bg-chart-1", badge: "warning" },
+  info: { bar: "bg-primary", count: "text-primary" },
+  success: { bar: "bg-chart-2", count: "text-chart-4 dark:text-chart-2" },
+  warning: { bar: "bg-chart-1", count: "text-chart-3" },
 }
 
 function BoardColumn({
@@ -153,17 +153,25 @@ function BoardColumn({
 
   return (
     <div className="flex min-w-0 flex-col gap-2">
-      <div className="flex min-w-0 items-center gap-2">
-        <span
-          aria-hidden
-          className={cn("size-1.5 shrink-0 rounded-full", tone.bar)}
-        />
-        <h3 className="truncate text-sm font-medium text-foreground">
-          {title}
-        </h3>
-        <Badge variant={tone.badge} className="shrink-0">
+      <div className="flex min-w-0 items-baseline justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-2">
+          <span
+            aria-hidden
+            className={cn("size-1.5 shrink-0 rounded-full", tone.bar)}
+          />
+          <h3 className="truncate text-sm font-medium text-foreground">
+            {title}
+          </h3>
+        </div>
+        <p
+          className={cn(
+            "shrink-0 font-heading text-2xl font-semibold tabular-nums leading-none",
+            tone.count,
+          )}
+          aria-label={`${items.length} ${title}`}
+        >
           {items.length}
-        </Badge>
+        </p>
       </div>
       {items.length === 0 ? (
         <Empty className="rounded-xl border border-dashed border-border/80 bg-muted/30 py-8">

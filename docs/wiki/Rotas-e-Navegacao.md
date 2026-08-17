@@ -42,6 +42,7 @@ Soft nav Termos/Privacidade → modal `@modal/(.)…`.
 
 - Proxy: cookie ausente → `/login?next=…`; cookie presente não tira o usuário de auth entry. Login / sign-up / forgot-password / two-factor: se a sessão for real, `getPostAuthRedirect`.
 - Dashboard / attendance / account: e-mail verificado, senha ok, membership, entitlement.
+- Attendance workspace: `records.read` e `appointments.create|update`.
 - Settings: `settings.manage`; subtítulos `audit.read` / owner-only usage.
 - Patient clinical tabs: `records.read`.
 - `/help`: FAQ curado por papel (módulo `help`); item Ajuda no overflow da nav, habilitado para todos.

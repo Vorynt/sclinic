@@ -87,7 +87,8 @@ export function AttendanceShellHeader() {
           <AlertDialogHeader>
             <AlertDialogTitle>Voltar à agenda?</AlertDialogTitle>
             <AlertDialogDescription>
-              O atendimento continuará em andamento até que você o conclua.
+              O atendimento continuará em andamento até que o profissional
+              responsável o conclua.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

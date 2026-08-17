@@ -51,15 +51,21 @@ checked_in → completed
 qualquer ≠ canceled → canceled (action dedicada)
 ```
 
-### Quem inicia atendimento
+### Quem inicia / conclui atendimento
 
-Só `owner`, `admin`, `clinician`, `nurse`. Recepcionista **não** inicia.
+Só o profissional **responsável** pelo horário (`appointment.professionalId`), e apenas papéis `owner`, `admin`, `clinician`, `nurse`. Owner/admin sem perfil clínico, ou olhando a agenda de outra pessoa, só visualizam (com `records.read`). Recepcionista **não** inicia. Gestor lê o prontuário, mas não inicia nem conclui.
+
+Cobertura: remarcar o profissional no agendamento; o substituto inicia.
+
+### Quem abre / vê o workspace
+
+Exige `records.read`. No drawer, **Abrir atendimento** / **Ver atendimento** só aparecem com essa permissão (gestor incluso; recepcionista e financeiro não). A rota `/appointments/[id]/attendance` também exige `records.read` + `appointments.create|update`.
 
 ### Editabilidade
 
 - Remarcável: `scheduled|confirmed|checked_in`
 - Terminal: `completed|canceled|no_show`
-- Attendance aberto também em `completed` (leitura)
+- Attendance aberto também em `completed` (leitura, com `records.read`)
 
 ## Validações
 

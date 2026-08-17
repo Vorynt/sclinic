@@ -218,8 +218,8 @@ export const HELP_FAQ_ADMIN: HelpFaqItem[] = [
     categoryId: "appointments",
     question: "Como começo ou acompanho um atendimento?",
     answer: [
-      "Na agenda, abra a consulta e inicie o atendimento (status Em atendimento).",
-      "Aí dá para registrar notas, vitais e receitas. A recepção não inicia o atendimento clínico — quem atende é o profissional (ou você, se for o caso).",
+      "Na agenda, abra a consulta. Você só inicia e conclui o atendimento das consultas do seu perfil clínico (iniciar muda o status para Em atendimento).",
+      "Nas dos outros profissionais, acompanhe e abra o atendimento depois que ele começar. A recepção não inicia o atendimento clínico. Para cobrir alguém, remarque o profissional no agendamento.",
     ],
     keywords: ["iniciar atendimento", "atender"],
     relatedRoutes: [{ label: "Agenda", href: routes.appointments }],

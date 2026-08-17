@@ -44,7 +44,7 @@ Primária = `priority: "primary"` ou, se omitido, a **última** ação da lista.
 | **owner** | Plano, cotas (users/profissionais), pacientes, agendamentos do mês, a receber / recebido | Roadmap “Primeiros passos” (até concluir) | Assinatura, Uso do plano, Equipe, Agenda, Ajuda |
 | **admin** | Hoje, convites pendentes, equipe ativa, pacientes + fluxo do dia | Preview agenda | Equipe, Profissionais, Pacientes, Agenda |
 | **manager** | Ocupação do dia (aguardando / em atendimento / concluídos) | Preview agenda | Pacientes, Profissionais, Agenda |
-| **receptionist** | Contagens das 3 colunas do balcão | `ReceptionOpsBoard` (SSE) | Novo agendamento/paciente, Agenda |
+| **receptionist** | Contagens no header das 3 colunas do board (sem cards de resumo) | `ReceptionOpsBoard` (SSE) + lista de espera | Novo agendamento/paciente (header / FAB) |
 | **clinician** | Contagens da **própria** agenda (self-filter no service) | Preview da própria agenda | Minha agenda, Pacientes |
 | **nurse** | Fila clínica (ênfase em check-in) | Preview da própria agenda | Pacientes, Agenda |
 | **financial** | A receber / recebido no mês | Cobranças pendentes (top 5) | Faturamento, Pacientes |

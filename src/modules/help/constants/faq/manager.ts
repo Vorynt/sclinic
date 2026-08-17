@@ -147,7 +147,7 @@ export const HELP_FAQ_MANAGER: HelpFaqItem[] = [
     categoryId: "appointments",
     question: "Quem inicia o atendimento?",
     answer: [
-      "O profissional de saúde inicia na agenda. Você acompanha o status, mas o prontuário em escrita é dele.",
+      "O profissional responsável pelo horário inicia e conclui. Você acompanha o status e pode abrir o atendimento em leitura; o prontuário em escrita é dele.",
     ],
     keywords: ["iniciar", "atendimento", "quem"],
     relatedRoutes: [{ label: "Agenda", href: routes.appointments }],

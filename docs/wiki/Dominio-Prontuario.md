@@ -12,7 +12,7 @@
 
 ## Responsabilidade
 
-Não há rota top-level: vive no attendance e no detalhe do paciente.
+Não há rota top-level: vive no attendance e no detalhe do paciente. Workspace e seções clínicas exigem `records.read` — recepcionista não entra.
 
 ## Clinical notes
 

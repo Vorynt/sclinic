@@ -18,7 +18,7 @@ export function HelpSearch({ value, onChange }: HelpSearchProps) {
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder="Ex.: marcar consulta, convidar equipe, receita…"
-        className="h-11 pl-9 bg-background"
+        className="max-w-sm pl-9 bg-background"
         aria-label="Buscar na ajuda"
       />
     </div>

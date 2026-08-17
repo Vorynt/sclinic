@@ -3,6 +3,7 @@ import { queryOptions } from "@tanstack/react-query"
 import { countAppointmentsAction } from "@/modules/appointments/actions/count-appointments"
 import { getAppointmentAction } from "@/modules/appointments/actions/get-appointment"
 import { getCalendarClinicHoursAction } from "@/modules/appointments/actions/get-calendar-clinic-hours"
+import { getOwnProfessionalIdAction } from "@/modules/appointments/actions/get-own-professional-id"
 import { listAppointmentsAction } from "@/modules/appointments/actions/list-appointments"
 import { listPatientAppointmentsAction } from "@/modules/appointments/actions/list-patient-appointments"
 import { unwrapActionResult } from "@/shared/errors"
@@ -62,6 +63,8 @@ export const appointmentsQueryKeys = {
   detail: (id: string) => [...appointmentsQueryKeys.details(), id] as const,
   calendarHours: () =>
     [...appointmentsQueryKeys.all, "calendar-hours"] as const,
+  ownProfessionalId: () =>
+    [...appointmentsQueryKeys.all, "own-professional-id"] as const,
 }
 
 export const appointmentsQueries = {
@@ -97,5 +100,12 @@ export const appointmentsQueries = {
       queryKey: appointmentsQueryKeys.calendarHours(),
       queryFn: async () =>
         unwrapActionResult(await getCalendarClinicHoursAction()),
+    }),
+
+  ownProfessionalId: () =>
+    queryOptions({
+      queryKey: appointmentsQueryKeys.ownProfessionalId(),
+      queryFn: async () =>
+        unwrapActionResult(await getOwnProfessionalIdAction()),
     }),
 }

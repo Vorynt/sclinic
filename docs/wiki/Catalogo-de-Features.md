@@ -73,7 +73,7 @@ Para regras detalhadas, abra a página **Domínio-*** correspondente. Prioridade
 | Criar/remarcar/cancelar | Done | appointments |
 | Agendamento rápido (modal) + completo (`/appointments/new`) | Done | `AppointmentForm` `quick`/`full`; `buildAppointmentNewHref` |
 | Status: scheduled→…→completed | Done | appointment.service |
-| Iniciar atendimento (role gate) | Done | checked_in |
+| Iniciar / concluir atendimento (assignee + role gate) | Done | checked_in / completed |
 | Workspace attendance | Done | `(attendance)` |
 | Self-schedule clinician/nurse | Done | constants |
 | Disponibilidade vs clinic hours | Done | availability service |

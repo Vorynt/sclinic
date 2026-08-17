@@ -20,9 +20,9 @@ Sem LLM — o conteúdo vive em `constants/faq/<papel>.ts` e deve ser atualizado
 | Deep link `?q=&category=&article=` | Done | `HelpCenter` |
 | Filtro esconde assuntos sem artigos no papel | Done | `HelpCategoryFilter` |
 | Item Ajuda no overflow da nav (sem permissão extra) | Done | `nav.ts` `enabled: true` |
-| Atalho Ajuda nas homes por papel | Done | `*Home.tsx` |
+| Atalho Ajuda nas homes por papel | Done | `*Home.tsx` (recepção: CTAs de paciente/agenda no header/FAB; Ajuda só no overflow) |
 | Tour guiado no 1º acesso ao dashboard | Done | `ProductTourHost` + `driver.js`; passos filtrados pela nav visível |
-| Replay do tour | Done | CTA “Ver tour do sistema” em `HelpCenter` |
+| Replay do tour | Done | Ação do `PageHeader` (“Ver tour do sistema”); no mobile, FAB do AppShell |
 
 ## Regras
 

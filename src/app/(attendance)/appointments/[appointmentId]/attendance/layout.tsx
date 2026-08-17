@@ -23,16 +23,21 @@ export default async function AttendanceLayout({
 
   return (
     <PermissionProvider
-      permissions={[
-        Permission.APPOINTMENTS_CREATE,
-        Permission.APPOINTMENTS_UPDATE,
-      ]}
-      mode="any"
+      permission={Permission.RECORDS_READ}
       fallback={<ForbiddenBlock />}
     >
-      <AttendanceWorkspace appointmentId={appointmentId}>
-        {children}
-      </AttendanceWorkspace>
+      <PermissionProvider
+        permissions={[
+          Permission.APPOINTMENTS_CREATE,
+          Permission.APPOINTMENTS_UPDATE,
+        ]}
+        mode="any"
+        fallback={<ForbiddenBlock />}
+      >
+        <AttendanceWorkspace appointmentId={appointmentId}>
+          {children}
+        </AttendanceWorkspace>
+      </PermissionProvider>
     </PermissionProvider>
   )
 }

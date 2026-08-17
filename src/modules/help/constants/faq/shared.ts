@@ -20,7 +20,7 @@ export const SHARED_PRODUCT_TOUR: HelpFaqItem = {
   question: "Como vejo o tour das telas de novo?",
   answer: [
     "No primeiro acesso, o sclinic oferece um tour rápido mostrando onde ficam as telas na barra de navegação. Você pode ver ou pular.",
-    "Para ver de novo, toque em Ver tour do sistema no topo desta ajuda.",
+    "Para ver de novo, toque em Ver tour do sistema nesta página de ajuda.",
   ],
   keywords: ["tour", "tutorial", "guia", "primeiro acesso", "onde fica"],
   relatedRoutes: [{ label: "Abrir ajuda", href: routes.help }],

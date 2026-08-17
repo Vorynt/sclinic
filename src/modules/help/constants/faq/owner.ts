@@ -283,8 +283,8 @@ export const HELP_FAQ_OWNER: HelpFaqItem[] = [
     categoryId: "appointments",
     question: "Como começo o atendimento?",
     answer: [
-      "Na agenda, abra a consulta e inicie o atendimento. Isso muda o status para Em atendimento.",
-      "Aí você pode registrar anotações, sinais vitais e receitas na mesma tela.",
+      "Na agenda, abra a consulta. Você só inicia e conclui o atendimento das consultas atribuídas ao seu perfil clínico — iniciar muda o status para Em atendimento.",
+      "Nas consultas de outros profissionais, você acompanha e pode abrir o atendimento depois que ele começar. Para cobrir alguém, remarque o profissional no agendamento.",
     ],
     keywords: [
       "iniciar atendimento",
