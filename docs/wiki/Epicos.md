@@ -28,7 +28,7 @@
 
 | ID | Épico | Status | ADRs | Módulos |
 |----|-------|--------|------|---------|
-| **E13** | Documentos clínicos além da receita | Partial (kind + declaração Done) | 005, 010 | medical-records |
+| **E13** | Documentos clínicos além da receita | Partial (H1 Done: 4 kinds) | 005, 010, 014 | medical-records |
 | **E15** | Agenda avançada | Partial (H2 Done; recorrência/sala H3) | 011 | appointments, professionals |
 | **E16** | Recepção operacional (lote / balcão) | Partial (H2 Done; extensões H3) | 006, 011 | appointments, dashboard |
 
@@ -88,7 +88,7 @@ Deferred.
 Broker realtime multi-instância; N clínicas owned por assinatura.
 
 ### E13 — Documentos clínicos (H1)
-`kind` + `metadata` em `prescriptions` (ADR-010). **Done:** declaração de comparecimento. **Next:** atestado, solicitação de exames. Assinatura eletrônica (consentimento/LGPD) no H3.
+`kind` + `metadata` em `prescriptions` (ADR-010). **Done:** receita, declaração de comparecimento, atestado médico, solicitação de exames (4 kinds; system layouts). **H2:** atestado de acompanhamento, relatório/encaminhamento. **Later:** anexos/GED (ADR-014), assinatura eletrônica (H3).
 
 ### E14 — CRM e retenção (H1→H3)
 Overview consolidado do paciente (H1); pacientes inativos + campanhas leves (H3). Sem WhatsApp no primeiro corte.

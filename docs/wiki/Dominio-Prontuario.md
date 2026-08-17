@@ -41,8 +41,11 @@ Não há rota top-level: vive no attendance e no detalhe do paciente. Workspace 
 
 - 0..N por appointment; tipados por `kind` (ADR-010)
 - Kinds: `prescription` \| `attendance_declaration` \| `medical_certificate` \| `exam_request`
-- **Shipado:** receita + declaração de comparecimento (`notes` opcional em `metadata`; corpo gerado no service; system layout próprio)
-- **Enum pronto, UI depois:** atestado, solicitação de exames
+- **Shipado:** receita, declaração de comparecimento, atestado médico e solicitação de exames
+- **Declaração:** `notes` opcional em `metadata`; corpo gerado no service; system layout próprio
+- **Atestado:** `daysOff` (obrig.), `cid` e `notes` opcionais; corpo gerado; system layout
+- **Solicitação de exames:** `exams[]` (lista, mín. 1) + `notes` (indicação clínica opcional); corpo gerado; system layout
+- **H2 (avaliar depois):** atestado de acompanhamento, relatório/encaminhamento — novos `kind`s + metadata
 - Print: HTML + `@media print` (sem PDF); rota `/prescriptions/:id/print`
 - Templates de timbrado (ADR-008): até **3** por clínica — só para `kind = prescription`
 - UI attendance: seção **Documentos** (`/attendance/documents`); legado `/prescriptions` redireciona

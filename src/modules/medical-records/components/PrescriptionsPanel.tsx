@@ -6,24 +6,30 @@ import { toast } from "sonner"
 
 import { QueryErrorState } from "@/components/status/QueryErrorState"
 import { Button } from "@/components/ui/button"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import { Spinner } from "@/components/ui/spinner"
 import { routes } from "@/config/routes"
 import { AttendanceDeclarationFormDialog } from "@/modules/medical-records/components/AttendanceDeclarationFormDialog"
+import { ExamRequestFormDialog } from "@/modules/medical-records/components/ExamRequestFormDialog"
+import { MedicalCertificateFormDialog } from "@/modules/medical-records/components/MedicalCertificateFormDialog"
+import {
+  NewClinicalDocumentDialog,
+  type NewClinicalDocumentKind,
+} from "@/modules/medical-records/components/NewClinicalDocumentDialog"
 import { PrescriptionFormDialog } from "@/modules/medical-records/components/PrescriptionFormDialog"
 import { PrescriptionListItem } from "@/modules/medical-records/components/PrescriptionListItem"
 import {
   useCreateAttendanceDeclarationMutation,
+  useCreateExamRequestMutation,
+  useCreateMedicalCertificateMutation,
   useCreatePrescriptionMutation,
   useDeletePrescriptionDraftMutation,
   useSaveAndIssueAttendanceDeclarationMutation,
+  useSaveAndIssueExamRequestMutation,
+  useSaveAndIssueMedicalCertificateMutation,
   useSaveAndIssuePrescriptionMutation,
   useUpdateAttendanceDeclarationDraftMutation,
+  useUpdateExamRequestDraftMutation,
+  useUpdateMedicalCertificateDraftMutation,
   useUpdatePrescriptionDraftMutation,
 } from "@/modules/medical-records/hooks/use-prescription-mutations"
 import { useAppointmentPrescriptionsQuery } from "@/modules/medical-records/hooks/use-prescriptions"
@@ -73,12 +79,13 @@ type PrescriptionsPanelContentProps = {
   data: PrescriptionsForAppointment
 }
 
-type DialogMode = "prescription" | "attendance_declaration" | null
+type DialogMode = NewClinicalDocumentKind | null
 
 function PrescriptionsPanelContent({
   appointmentId,
   data,
 }: PrescriptionsPanelContentProps) {
+  const [pickerOpen, setPickerOpen] = useState(false)
   const [dialogMode, setDialogMode] = useState<DialogMode>(null)
   const [editing, setEditing] = useState<Prescription | null>(null)
 
@@ -140,6 +147,64 @@ function PrescriptionsPanelContent({
     onError: (error) => toast.error(error.message),
   })
 
+  const createCertificate = useCreateMedicalCertificateMutation({
+    onSuccess: () => {
+      toast.success("Rascunho salvo")
+      closeDialogs()
+    },
+    onError: (error) => toast.error(error.message),
+  })
+
+  const updateCertificate = useUpdateMedicalCertificateDraftMutation({
+    onSuccess: () => {
+      toast.success("Rascunho atualizado")
+      closeDialogs()
+    },
+    onError: (error) => toast.error(error.message),
+  })
+
+  const saveAndIssueCertificate = useSaveAndIssueMedicalCertificateMutation({
+    onSuccess: (prescription) => {
+      toast.success("Atestado emitido")
+      closeDialogs()
+      window.open(
+        routes.prescriptionPrint(prescription.id),
+        "_blank",
+        "noopener,noreferrer",
+      )
+    },
+    onError: (error) => toast.error(error.message),
+  })
+
+  const createExamRequest = useCreateExamRequestMutation({
+    onSuccess: () => {
+      toast.success("Rascunho salvo")
+      closeDialogs()
+    },
+    onError: (error) => toast.error(error.message),
+  })
+
+  const updateExamRequest = useUpdateExamRequestDraftMutation({
+    onSuccess: () => {
+      toast.success("Rascunho atualizado")
+      closeDialogs()
+    },
+    onError: (error) => toast.error(error.message),
+  })
+
+  const saveAndIssueExamRequest = useSaveAndIssueExamRequestMutation({
+    onSuccess: (prescription) => {
+      toast.success("Solicitação emitida")
+      closeDialogs()
+      window.open(
+        routes.prescriptionPrint(prescription.id),
+        "_blank",
+        "noopener,noreferrer",
+      )
+    },
+    onError: (error) => toast.error(error.message),
+  })
+
   const removeDraft = useDeletePrescriptionDraftMutation({
     onSuccess: () => toast.success("Rascunho excluído"),
     onError: (error) => toast.error(error.message),
@@ -152,23 +217,30 @@ function PrescriptionsPanelContent({
     setEditing(null)
   }
 
-  function openCreatePrescription() {
-    setEditing(null)
-    setDialogMode("prescription")
+  function openCreatePicker() {
+    setPickerOpen(true)
   }
 
-  function openCreateDeclaration() {
+  function openCreateKind(kind: NewClinicalDocumentKind) {
     setEditing(null)
-    setDialogMode("attendance_declaration")
+    setDialogMode(kind)
   }
 
   function openEdit(prescription: Prescription) {
     setEditing(prescription)
-    setDialogMode(
-      prescription.kind === "attendance_declaration"
-        ? "attendance_declaration"
-        : "prescription",
-    )
+    if (prescription.kind === "attendance_declaration") {
+      setDialogMode("attendance_declaration")
+      return
+    }
+    if (prescription.kind === "medical_certificate") {
+      setDialogMode("medical_certificate")
+      return
+    }
+    if (prescription.kind === "exam_request") {
+      setDialogMode("exam_request")
+      return
+    }
+    setDialogMode("prescription")
   }
 
   function handleSavePrescriptionDraft(input: {
@@ -211,6 +283,52 @@ function PrescriptionsPanelContent({
     })
   }
 
+  function handleSaveCertificateDraft(input: {
+    daysOff: number
+    cid: string | null
+    notes: string | null
+  }) {
+    if (editing) {
+      updateCertificate.mutate({ id: editing.id, ...input })
+      return
+    }
+    createCertificate.mutate({ appointmentId, ...input })
+  }
+
+  function handleIssueCertificate(input: {
+    daysOff: number
+    cid: string | null
+    notes: string | null
+  }) {
+    saveAndIssueCertificate.mutate({
+      appointmentId,
+      id: editing?.id,
+      ...input,
+    })
+  }
+
+  function handleSaveExamRequestDraft(input: {
+    examsText: string
+    notes: string | null
+  }) {
+    if (editing) {
+      updateExamRequest.mutate({ id: editing.id, ...input })
+      return
+    }
+    createExamRequest.mutate({ appointmentId, ...input })
+  }
+
+  function handleIssueExamRequest(input: {
+    examsText: string
+    notes: string | null
+  }) {
+    saveAndIssueExamRequest.mutate({
+      appointmentId,
+      id: editing?.id,
+      ...input,
+    })
+  }
+
   return (
     <div className="flex flex-col gap-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -223,22 +341,10 @@ function PrescriptionsPanelContent({
           </p>
         </div>
         {editable ? (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button type="button" size="sm">
-                <PlusIcon />
-                Novo documento
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onSelect={openCreatePrescription}>
-                Receita
-              </DropdownMenuItem>
-              <DropdownMenuItem onSelect={openCreateDeclaration}>
-                Declaração de comparecimento
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <Button type="button" size="sm" onClick={openCreatePicker}>
+            <PlusIcon />
+            Novo documento
+          </Button>
         ) : null}
       </div>
 
@@ -255,24 +361,15 @@ function PrescriptionsPanelContent({
             Nenhum documento neste atendimento.
           </p>
           {editable ? (
-            <div className="mt-4 flex flex-wrap justify-center gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={openCreatePrescription}
-              >
-                <PlusIcon />
-                Nova receita
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={openCreateDeclaration}
-              >
-                <PlusIcon />
-                Declaração de comparecimento
-              </Button>
-            </div>
+            <Button
+              type="button"
+              variant="outline"
+              className="mt-4"
+              onClick={openCreatePicker}
+            >
+              <PlusIcon />
+              Novo documento
+            </Button>
           ) : null}
         </div>
       ) : (
@@ -291,6 +388,12 @@ function PrescriptionsPanelContent({
           ))}
         </ul>
       )}
+
+      <NewClinicalDocumentDialog
+        open={pickerOpen}
+        onOpenChange={setPickerOpen}
+        onSelect={openCreateKind}
+      />
 
       <PrescriptionFormDialog
         open={dialogMode === "prescription"}
@@ -320,6 +423,32 @@ function PrescriptionsPanelContent({
         isIssuing={saveAndIssueDeclaration.isPending}
         onSaveDraft={handleSaveDeclarationDraft}
         onIssue={handleIssueDeclaration}
+      />
+
+      <MedicalCertificateFormDialog
+        open={dialogMode === "medical_certificate"}
+        onOpenChange={(open) => {
+          if (!open) closeDialogs()
+        }}
+        prescription={
+          editing?.kind === "medical_certificate" ? editing : null
+        }
+        isSaving={createCertificate.isPending || updateCertificate.isPending}
+        isIssuing={saveAndIssueCertificate.isPending}
+        onSaveDraft={handleSaveCertificateDraft}
+        onIssue={handleIssueCertificate}
+      />
+
+      <ExamRequestFormDialog
+        open={dialogMode === "exam_request"}
+        onOpenChange={(open) => {
+          if (!open) closeDialogs()
+        }}
+        prescription={editing?.kind === "exam_request" ? editing : null}
+        isSaving={createExamRequest.isPending || updateExamRequest.isPending}
+        isIssuing={saveAndIssueExamRequest.isPending}
+        onSaveDraft={handleSaveExamRequestDraft}
+        onIssue={handleIssueExamRequest}
       />
     </div>
   )

@@ -1,5 +1,14 @@
+import type { z } from "zod"
+
+import {
+  createExamRequestSchema,
+  saveAndIssueExamRequestSchema,
+  updateExamRequestDraftSchema,
+} from "@/modules/medical-records/schemas/prescription.schema"
 import type {
   CreateAttendanceDeclarationInput,
+  CreateExamRequestInput,
+  CreateMedicalCertificateInput,
   CreatePrescriptionInput,
   CreatePrescriptionLayoutInput,
   DeletePrescriptionDraftInput,
@@ -10,8 +19,12 @@ import type {
   ListAppointmentPrescriptionsInput,
   ListPatientPrescriptionsInput,
   SaveAndIssueAttendanceDeclarationInput,
+  SaveAndIssueExamRequestInput,
+  SaveAndIssueMedicalCertificateInput,
   SetDefaultPrescriptionLayoutInput,
   UpdateAttendanceDeclarationDraftInput,
+  UpdateExamRequestDraftInput,
+  UpdateMedicalCertificateDraftInput,
   UpdatePrescriptionDraftInput,
   UpdatePrescriptionLayoutInput,
 } from "@/modules/medical-records/schemas/prescription.schema"
@@ -22,6 +35,21 @@ export type UpdateAttendanceDeclarationDraftDto =
   UpdateAttendanceDeclarationDraftInput
 export type SaveAndIssueAttendanceDeclarationDto =
   SaveAndIssueAttendanceDeclarationInput
+export type CreateMedicalCertificateDto = CreateMedicalCertificateInput
+export type UpdateMedicalCertificateDraftDto =
+  UpdateMedicalCertificateDraftInput
+export type SaveAndIssueMedicalCertificateDto =
+  SaveAndIssueMedicalCertificateInput
+export type CreateExamRequestDto = CreateExamRequestInput
+export type UpdateExamRequestDraftDto = UpdateExamRequestDraftInput
+export type SaveAndIssueExamRequestDto = SaveAndIssueExamRequestInput
+export type CreateExamRequestClientDto = z.input<typeof createExamRequestSchema>
+export type UpdateExamRequestDraftClientDto = z.input<
+  typeof updateExamRequestDraftSchema
+>
+export type SaveAndIssueExamRequestClientDto = z.input<
+  typeof saveAndIssueExamRequestSchema
+>
 export type UpdatePrescriptionDraftDto = UpdatePrescriptionDraftInput
 export type IssuePrescriptionDto = IssuePrescriptionInput
 export type DeletePrescriptionDraftDto = DeletePrescriptionDraftInput

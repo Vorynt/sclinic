@@ -16,6 +16,8 @@ export type ClinicalDocumentKind = (typeof CLINICAL_DOCUMENT_KINDS)[number]
 export const IMPLEMENTED_CLINICAL_DOCUMENT_KINDS = [
   "prescription",
   "attendance_declaration",
+  "medical_certificate",
+  "exam_request",
 ] as const satisfies readonly ClinicalDocumentKind[]
 
 export const CLINICAL_DOCUMENT_KIND_LABELS: Record<ClinicalDocumentKind, string> =

@@ -59,12 +59,20 @@ Fecha o gap mais citado após agenda: **documentos emitíveis** e **ficha do pac
 | # | Item | Épico | Módulo | Notas |
 |---|------|-------|--------|-------|
 | 1 | Declaração de comparecimento | E13 | medical-records | **Done** (ADR-010) — draft→issued→print |
-| 2 | Atestado médico | E13 | medical-records | Paciente, dias, CID opcional, observações; mesmo ciclo draft/issued |
-| 3 | Solicitação de exames | E13 | medical-records | Template + corpo; sair do campo livre só na nota |
+| 2 | Atestado médico | E13 | medical-records | **Done** (ADR-010) — dias, CID/obs. opcionais; draft→issued→print |
+| 3 | Solicitação de exames | E13 | medical-records | **Done** (ADR-010) — lista de exames + indicação clínica; system layout |
 | 4 | Tipos de documento clínico (`kind`) | E13 | medical-records | **Done** (ADR-010) — enum + metadata |
 | 5 | Overview do paciente consolidado | E14 | patients (+ composição) | Última/próxima consulta, alertas, financeiro resumido, notas admin numa tela |
 
-**Critério de pronto H1:** no atendimento, emitir ≥3 tipos de documento; na ficha, ver contexto operacional sem caçar abas.
+**Critério de pronto H1 (documentos):** ✅ atendimento emite 4 tipos (`prescription`, `attendance_declaration`, `medical_certificate`, `exam_request`). Pendente: overview consolidado do paciente (item 5).
+
+### H2 — Documentos complementares (avaliação)
+
+| # | Item | Épico | Módulo | Notas |
+|---|------|-------|--------|-------|
+| 1 | Atestado de acompanhamento | E13 | medical-records | Novo `kind` ou variante de metadata; após feedback H1 |
+| 2 | Relatório / encaminhamento médico | E13 | medical-records | Corpo estruturado; convênios e especialistas |
+| 3 | Atestado de saúde (aptidão) | E13 | medical-records | Checklist escolar/esportiva |
 
 ### H2 — Agenda avançada + recepção operacional + financeiro leve
 

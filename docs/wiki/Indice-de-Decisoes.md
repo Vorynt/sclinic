@@ -15,7 +15,8 @@ Decisões canônicas: **ADRs** em `docs/adr/`. Notas curtas de implementação: 
 | [007](https://github.com/ViniciusSantos31/sclinic/blob/main/docs/adr/007-owner-clinical-profile.md) | Perfil clínico do owner | Accepted | solo; membership owner + professionals |
 | [008](https://github.com/ViniciusSantos31/sclinic/blob/main/docs/adr/008-prescription-template-designer.md) | Designer de templates de receita | Accepted | DocumentModel + até 3 templates |
 | [009](https://github.com/ViniciusSantos31/sclinic/blob/main/docs/adr/009-clinic-services-catalog.md) | Catálogo de serviços da clínica | Accepted | preço fixo; desconto %; cortesia/retorno |
-| [010](https://github.com/ViniciusSantos31/sclinic/blob/main/docs/adr/010-clinical-document-kinds.md) | Documentos clínicos tipados (`kind`) | Accepted | declaração; atestado/exames no enum |
+| [010](https://github.com/ViniciusSantos31/sclinic/blob/main/docs/adr/010-clinical-document-kinds.md) | Documentos clínicos tipados (`kind`) | Accepted | 4 kinds emitíveis; system layouts por kind |
+| [014](https://github.com/ViniciusSantos31/sclinic/blob/main/docs/adr/014-clinical-attachments-ged.md) | Anexos clínicos (GED) — trilha separada | Accepted (direção) | upload/storage Later; ≠ documentos emitidos |
 | [011](https://github.com/ViniciusSantos31/sclinic/blob/main/docs/adr/011-advanced-scheduling.md) | Agenda avançada (E15) | Accepted | blocks; horário profissional; waitlist; modalidade |
 | [012](https://github.com/ViniciusSantos31/sclinic/blob/main/docs/adr/012-multi-profession-clinician.md) | Multi-profissão (`clinician` × `profession_type`) | Accepted | role genérico; tipo no perfil; sem role por profissão |
 | [013](https://github.com/ViniciusSantos31/sclinic/blob/main/docs/adr/013-jest.md) | Jest como runner (unit / API / interface) | Accepted | `next/jest`; migração de `node:test` concluída |

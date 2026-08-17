@@ -102,8 +102,8 @@ Para regras detalhadas, abra a página **Domínio-*** correspondente. Prioridade
 | Tipos avançados de receita / PDF | Planned/Later | ADR-005 |
 | `kind` unificado de documentos clínicos | Done | ADR-010 |
 | Declaração de comparecimento | Done | ADR-010; attendance Documentos |
-| Atestado médico | Planned | Roadmap H1 · E13 |
-| Solicitação de exames (documento) | Planned | Roadmap H1 · E13 |
+| Atestado médico | Done | ADR-010; `daysOff`, CID/obs. opcionais; system layout |
+| Solicitação de exames (documento) | Done | ADR-010; lista de exames + indicação clínica |
 | Templates / packs por especialidade | Later | Roadmap H3 · E19 |
 
 ### E6 — Recebíveis
@@ -159,7 +159,9 @@ Para regras detalhadas, abra a página **Domínio-*** correspondente. Prioridade
 |---------|--------|------|
 | `kind` + `metadata` em prescriptions | Done | ADR-010 |
 | Declaração de comparecimento | Done | attendance Documentos |
-| Atestado / solicitação de exames | Planned | Roadmap H1 |
+| Atestado médico | Done | `MedicalCertificateFormDialog`; metadata `daysOff`/`cid`/`notes` |
+| Solicitação de exames | Done | `ExamRequestFormDialog`; metadata `exams[]`/`notes` |
+| Anexos clínicos (upload/GED) | Later | ADR-014; trilha storage separada de documentos emitidos |
 | Assinatura eletrônica (consentimento/LGPD) | Planned | Roadmap H3 |
 
 ### E14 — CRM e retenção

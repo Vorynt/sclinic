@@ -161,6 +161,114 @@ export function useSaveAndIssueAttendanceDeclarationMutation({
   })
 }
 
+export function useCreateMedicalCertificateMutation({
+  onSuccess,
+  onError,
+}: MutationCallbacks<Prescription> = {}) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    ...prescriptionsMutations.createMedicalCertificate(),
+    onSuccess: async (data) => {
+      await invalidatePrescriptionQueries(queryClient)
+      onSuccess?.(data)
+    },
+    onError: (error) => {
+      onError?.(toAppError(error))
+    },
+  })
+}
+
+export function useUpdateMedicalCertificateDraftMutation({
+  onSuccess,
+  onError,
+}: MutationCallbacks<Prescription> = {}) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    ...prescriptionsMutations.updateMedicalCertificateDraft(),
+    onSuccess: async (data) => {
+      await invalidatePrescriptionQueries(queryClient)
+      onSuccess?.(data)
+    },
+    onError: (error) => {
+      onError?.(toAppError(error))
+    },
+  })
+}
+
+export function useSaveAndIssueMedicalCertificateMutation({
+  onSuccess,
+  onError,
+}: MutationCallbacks<Prescription> = {}) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    ...prescriptionsMutations.saveAndIssueMedicalCertificate(),
+    onSuccess: async (data) => {
+      await invalidatePrescriptionQueries(queryClient)
+      onSuccess?.(data)
+    },
+    onError: (error) => {
+      onError?.(toAppError(error))
+    },
+  })
+}
+
+export function useCreateExamRequestMutation({
+  onSuccess,
+  onError,
+}: MutationCallbacks<Prescription> = {}) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    ...prescriptionsMutations.createExamRequest(),
+    onSuccess: async (data) => {
+      await invalidatePrescriptionQueries(queryClient)
+      onSuccess?.(data)
+    },
+    onError: (error) => {
+      onError?.(toAppError(error))
+    },
+  })
+}
+
+export function useUpdateExamRequestDraftMutation({
+  onSuccess,
+  onError,
+}: MutationCallbacks<Prescription> = {}) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    ...prescriptionsMutations.updateExamRequestDraft(),
+    onSuccess: async (data) => {
+      await invalidatePrescriptionQueries(queryClient)
+      onSuccess?.(data)
+    },
+    onError: (error) => {
+      onError?.(toAppError(error))
+    },
+  })
+}
+
+export function useSaveAndIssueExamRequestMutation({
+  onSuccess,
+  onError,
+}: MutationCallbacks<Prescription> = {}) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    ...prescriptionsMutations.saveAndIssueExamRequest(),
+    onSuccess: async (data) => {
+      await invalidatePrescriptionQueries(queryClient)
+      onSuccess?.(data)
+    },
+    onError: (error) => {
+      onError?.(toAppError(error))
+    },
+  })
+}
+
 export function useDeletePrescriptionDraftMutation({
   onSuccess,
   onError,

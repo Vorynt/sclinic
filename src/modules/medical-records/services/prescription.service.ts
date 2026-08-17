@@ -9,6 +9,8 @@ import { auditActorFromAuth } from "@/modules/audit/utils/audit-actor"
 import { requirePermission } from "@/modules/authentication/permissions/guards"
 import { clinicService } from "@/modules/clinics/services/clinic.service"
 import { DEFAULT_ATTENDANCE_DECLARATION_LAYOUT_HTML } from "@/modules/medical-records/constants/attendance-declaration-layout-default"
+import { DEFAULT_EXAM_REQUEST_LAYOUT_HTML } from "@/modules/medical-records/constants/exam-request-layout-default"
+import { DEFAULT_MEDICAL_CERTIFICATE_LAYOUT_HTML } from "@/modules/medical-records/constants/medical-certificate-layout-default"
 import {
   usesClinicPrescriptionLayouts,
   type ClinicalDocumentKind,
@@ -16,6 +18,8 @@ import {
 import { canEditPrescription } from "@/modules/medical-records/constants/prescriptions"
 import type {
   CreateAttendanceDeclarationDto,
+  CreateExamRequestDto,
+  CreateMedicalCertificateDto,
   CreatePrescriptionDto,
   DeletePrescriptionDraftDto,
   GetPrescriptionDto,
@@ -23,10 +27,16 @@ import type {
   ListAppointmentPrescriptionsDto,
   ListPatientPrescriptionsDto,
   UpdateAttendanceDeclarationDraftDto,
+  UpdateExamRequestDraftDto,
+  UpdateMedicalCertificateDraftDto,
   UpdatePrescriptionDraftDto,
 } from "@/modules/medical-records/dto/prescription.dto"
 import { prescriptionRepository } from "@/modules/medical-records/repositories/prescription.repository"
-import { attendanceDeclarationMetadataSchema } from "@/modules/medical-records/schemas/prescription.schema"
+import {
+  attendanceDeclarationMetadataSchema,
+  examRequestMetadataSchema,
+  medicalCertificateMetadataSchema,
+} from "@/modules/medical-records/schemas/prescription.schema"
 import { prescriptionLayoutService } from "@/modules/medical-records/services/prescription-layout.service"
 import type {
   Prescription,
@@ -34,6 +44,8 @@ import type {
   PrescriptionsForAppointment,
 } from "@/modules/medical-records/types/prescription"
 import { buildAttendanceDeclarationBody } from "@/modules/medical-records/utils/attendance-declaration-body"
+import { buildExamRequestBody } from "@/modules/medical-records/utils/exam-request-body"
+import { buildMedicalCertificateBody } from "@/modules/medical-records/utils/medical-certificate-body"
 import {
   toClinicSnapshot,
   toPatientSnapshot,
@@ -68,14 +80,41 @@ function attendanceDeclarationSystemLayout(): PrescriptionLayoutSource {
   }
 }
 
+function medicalCertificateSystemLayout(): PrescriptionLayoutSource {
+  return {
+    html: DEFAULT_MEDICAL_CERTIFICATE_LAYOUT_HTML,
+    version: null,
+    source: "system_default",
+    layout: null,
+  }
+}
+
+function examRequestSystemLayout(): PrescriptionLayoutSource {
+  return {
+    html: DEFAULT_EXAM_REQUEST_LAYOUT_HTML,
+    version: null,
+    source: "system_default",
+    layout: null,
+  }
+}
+
+const SYSTEM_LAYOUT_BY_KIND: Partial<
+  Record<ClinicalDocumentKind, () => PrescriptionLayoutSource>
+> = {
+  attendance_declaration: attendanceDeclarationSystemLayout,
+  medical_certificate: medicalCertificateSystemLayout,
+  exam_request: examRequestSystemLayout,
+}
+
 async function resolveLayoutForKind(params: {
   kind: ClinicalDocumentKind
   layoutId: string | null
   ctx: AuthRequestContext
 }): Promise<PrescriptionLayoutSource> {
   if (!usesClinicPrescriptionLayouts(params.kind)) {
-    if (params.kind === "attendance_declaration") {
-      return attendanceDeclarationSystemLayout()
+    const resolveSystemLayout = SYSTEM_LAYOUT_BY_KIND[params.kind]
+    if (resolveSystemLayout) {
+      return resolveSystemLayout()
     }
     throw new AppError(ErrorCode.VALIDATION_FAILED, {
       message: "Tipo de documento ainda não suportado.",
@@ -430,6 +469,338 @@ export const prescriptionService = {
       professionalName: appointment.professionalName,
       clinicName: clinic.name,
       notes,
+    })
+
+    try {
+      const prescription = await prescriptionRepository.updateDraft({
+        id: existing.id,
+        clinicId: auth.clinicId,
+        professionalId: appointment.professionalId,
+        metadata,
+        body: sanitizePrescriptionHtml(body),
+        plainText,
+        updatedBy: auth.user.id,
+      })
+
+      recordAudit({
+        ...actor,
+        action: AUDIT_ACTIONS.PRESCRIPTION_UPDATE,
+        status: "success",
+        entityType: AUDIT_ENTITY_TYPES.PRESCRIPTION,
+        entityId: prescription.id,
+        changes: {
+          before: prescriptionAuditSnapshot(existing),
+          after: prescriptionAuditSnapshot(prescription),
+        },
+      })
+
+      return prescription
+    } catch (error) {
+      recordAudit({
+        ...actor,
+        action: AUDIT_ACTIONS.PRESCRIPTION_UPDATE,
+        status: "error",
+        entityType: AUDIT_ENTITY_TYPES.PRESCRIPTION,
+        entityId: existing.id,
+        changes: { before: prescriptionAuditSnapshot(existing) },
+        ...auditErrorFields(error),
+      })
+      throw error
+    }
+  },
+
+  async createMedicalCertificate(
+    data: CreateMedicalCertificateDto,
+    ctx: AuthRequestContext,
+  ): Promise<Prescription> {
+    const auth = await requirePermission(ctx, Permission.RECORDS_WRITE)
+    const actor = auditActorFromAuth(auth)
+    const appointment = await appointmentService.getById(
+      data.appointmentId,
+      ctx,
+    )
+
+    if (!canEditPrescription(appointment.status)) {
+      throw new AppError(ErrorCode.CONFLICT, {
+        message:
+          "Só é possível criar documentos enquanto o atendimento está em andamento.",
+      })
+    }
+
+    const cid = data.cid?.trim() || null
+    const notes = data.notes?.trim() || null
+    const metadata = medicalCertificateMetadataSchema.parse({
+      daysOff: data.daysOff,
+      cid,
+      notes,
+    })
+    const patient = await patientService.getById(appointment.patientId, ctx)
+    const patientSnapshot = toPatientSnapshot(patient)
+    const { body, plainText } = buildMedicalCertificateBody({
+      patientName: patient.name,
+      patientDocument: patientSnapshot.document,
+      daysOff: metadata.daysOff,
+      cid: metadata.cid,
+      notes: metadata.notes,
+    })
+
+    try {
+      const prescription = await prescriptionRepository.create({
+        clinicId: auth.clinicId,
+        patientId: appointment.patientId,
+        appointmentId: appointment.id,
+        professionalId: appointment.professionalId,
+        kind: "medical_certificate",
+        metadata,
+        layoutId: null,
+        body: sanitizePrescriptionHtml(body),
+        plainText,
+        createdBy: auth.user.id,
+      })
+
+      recordAudit({
+        ...actor,
+        action: AUDIT_ACTIONS.PRESCRIPTION_CREATE,
+        status: "success",
+        entityType: AUDIT_ENTITY_TYPES.PRESCRIPTION,
+        entityId: prescription.id,
+        changes: { after: prescriptionAuditSnapshot(prescription) },
+      })
+
+      return prescription
+    } catch (error) {
+      recordAudit({
+        ...actor,
+        action: AUDIT_ACTIONS.PRESCRIPTION_CREATE,
+        status: "error",
+        entityType: AUDIT_ENTITY_TYPES.PRESCRIPTION,
+        changes: {
+          after: {
+            appointmentId: appointment.id,
+            kind: "medical_certificate",
+          },
+        },
+        ...auditErrorFields(error),
+      })
+      throw error
+    }
+  },
+
+  async updateMedicalCertificateDraft(
+    data: UpdateMedicalCertificateDraftDto,
+    ctx: AuthRequestContext,
+  ): Promise<Prescription> {
+    const auth = await requirePermission(ctx, Permission.RECORDS_WRITE)
+    const actor = auditActorFromAuth(auth)
+    const existing = await prescriptionRepository.findById(
+      data.id,
+      auth.clinicId,
+    )
+    if (!existing) {
+      throw new AppError(ErrorCode.NOT_FOUND, {
+        message: "Documento não encontrado.",
+      })
+    }
+    if (existing.kind !== "medical_certificate") {
+      throw new AppError(ErrorCode.VALIDATION_FAILED, {
+        message: "Este documento não é um atestado médico.",
+      })
+    }
+    if (existing.status !== "draft") {
+      throw new AppError(ErrorCode.CONFLICT, {
+        message: "Documentos emitidos não podem ser editados.",
+      })
+    }
+
+    const appointment = await appointmentService.getById(
+      existing.appointmentId,
+      ctx,
+    )
+    if (!canEditPrescription(appointment.status)) {
+      throw new AppError(ErrorCode.CONFLICT, {
+        message:
+          "Só é possível editar documentos enquanto o atendimento está em andamento.",
+      })
+    }
+
+    const cid = data.cid?.trim() || null
+    const notes = data.notes?.trim() || null
+    const metadata = medicalCertificateMetadataSchema.parse({
+      daysOff: data.daysOff,
+      cid,
+      notes,
+    })
+    const patient = await patientService.getById(appointment.patientId, ctx)
+    const patientSnapshot = toPatientSnapshot(patient)
+    const { body, plainText } = buildMedicalCertificateBody({
+      patientName: patient.name,
+      patientDocument: patientSnapshot.document,
+      daysOff: metadata.daysOff,
+      cid: metadata.cid,
+      notes: metadata.notes,
+    })
+
+    try {
+      const prescription = await prescriptionRepository.updateDraft({
+        id: existing.id,
+        clinicId: auth.clinicId,
+        professionalId: appointment.professionalId,
+        metadata,
+        body: sanitizePrescriptionHtml(body),
+        plainText,
+        updatedBy: auth.user.id,
+      })
+
+      recordAudit({
+        ...actor,
+        action: AUDIT_ACTIONS.PRESCRIPTION_UPDATE,
+        status: "success",
+        entityType: AUDIT_ENTITY_TYPES.PRESCRIPTION,
+        entityId: prescription.id,
+        changes: {
+          before: prescriptionAuditSnapshot(existing),
+          after: prescriptionAuditSnapshot(prescription),
+        },
+      })
+
+      return prescription
+    } catch (error) {
+      recordAudit({
+        ...actor,
+        action: AUDIT_ACTIONS.PRESCRIPTION_UPDATE,
+        status: "error",
+        entityType: AUDIT_ENTITY_TYPES.PRESCRIPTION,
+        entityId: existing.id,
+        changes: { before: prescriptionAuditSnapshot(existing) },
+        ...auditErrorFields(error),
+      })
+      throw error
+    }
+  },
+
+  async createExamRequest(
+    data: CreateExamRequestDto,
+    ctx: AuthRequestContext,
+  ): Promise<Prescription> {
+    const auth = await requirePermission(ctx, Permission.RECORDS_WRITE)
+    const actor = auditActorFromAuth(auth)
+    const appointment = await appointmentService.getById(
+      data.appointmentId,
+      ctx,
+    )
+
+    if (!canEditPrescription(appointment.status)) {
+      throw new AppError(ErrorCode.CONFLICT, {
+        message:
+          "Só é possível criar documentos enquanto o atendimento está em andamento.",
+      })
+    }
+
+    const notes = data.notes?.trim() || null
+    const metadata = examRequestMetadataSchema.parse({
+      exams: data.exams,
+      notes,
+    })
+    const patient = await patientService.getById(appointment.patientId, ctx)
+    const patientSnapshot = toPatientSnapshot(patient)
+    const { body, plainText } = buildExamRequestBody({
+      patientName: patient.name,
+      patientDocument: patientSnapshot.document,
+      exams: metadata.exams,
+      notes: metadata.notes,
+    })
+
+    try {
+      const prescription = await prescriptionRepository.create({
+        clinicId: auth.clinicId,
+        patientId: appointment.patientId,
+        appointmentId: appointment.id,
+        professionalId: appointment.professionalId,
+        kind: "exam_request",
+        metadata,
+        layoutId: null,
+        body: sanitizePrescriptionHtml(body),
+        plainText,
+        createdBy: auth.user.id,
+      })
+
+      recordAudit({
+        ...actor,
+        action: AUDIT_ACTIONS.PRESCRIPTION_CREATE,
+        status: "success",
+        entityType: AUDIT_ENTITY_TYPES.PRESCRIPTION,
+        entityId: prescription.id,
+        changes: { after: prescriptionAuditSnapshot(prescription) },
+      })
+
+      return prescription
+    } catch (error) {
+      recordAudit({
+        ...actor,
+        action: AUDIT_ACTIONS.PRESCRIPTION_CREATE,
+        status: "error",
+        entityType: AUDIT_ENTITY_TYPES.PRESCRIPTION,
+        changes: {
+          after: {
+            appointmentId: appointment.id,
+            kind: "exam_request",
+          },
+        },
+        ...auditErrorFields(error),
+      })
+      throw error
+    }
+  },
+
+  async updateExamRequestDraft(
+    data: UpdateExamRequestDraftDto,
+    ctx: AuthRequestContext,
+  ): Promise<Prescription> {
+    const auth = await requirePermission(ctx, Permission.RECORDS_WRITE)
+    const actor = auditActorFromAuth(auth)
+    const existing = await prescriptionRepository.findById(
+      data.id,
+      auth.clinicId,
+    )
+    if (!existing) {
+      throw new AppError(ErrorCode.NOT_FOUND, {
+        message: "Documento não encontrado.",
+      })
+    }
+    if (existing.kind !== "exam_request") {
+      throw new AppError(ErrorCode.VALIDATION_FAILED, {
+        message: "Este documento não é uma solicitação de exames.",
+      })
+    }
+    if (existing.status !== "draft") {
+      throw new AppError(ErrorCode.CONFLICT, {
+        message: "Documentos emitidos não podem ser editados.",
+      })
+    }
+
+    const appointment = await appointmentService.getById(
+      existing.appointmentId,
+      ctx,
+    )
+    if (!canEditPrescription(appointment.status)) {
+      throw new AppError(ErrorCode.CONFLICT, {
+        message:
+          "Só é possível editar documentos enquanto o atendimento está em andamento.",
+      })
+    }
+
+    const notes = data.notes?.trim() || null
+    const metadata = examRequestMetadataSchema.parse({
+      exams: data.exams,
+      notes,
+    })
+    const patient = await patientService.getById(appointment.patientId, ctx)
+    const patientSnapshot = toPatientSnapshot(patient)
+    const { body, plainText } = buildExamRequestBody({
+      patientName: patient.name,
+      patientDocument: patientSnapshot.document,
+      exams: metadata.exams,
+      notes: metadata.notes,
     })
 
     try {
