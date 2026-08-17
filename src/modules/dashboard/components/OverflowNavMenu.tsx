@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 import {
   hasOverflowNav,
   isNavActive,
+  NAV_TOUR_TARGET,
   type ShellNav,
 } from "@/modules/dashboard/constants/nav";
 
@@ -43,6 +44,7 @@ export function OverflowNavMenu({ nav, className }: OverflowNavMenuProps) {
           type="button"
           variant="ghost"
           size="sm"
+          data-tour={NAV_TOUR_TARGET.overflow}
           className={cn(
             "h-9 gap-1.5 px-3 text-muted-foreground",
             overflowActive && "bg-accent text-accent-foreground",

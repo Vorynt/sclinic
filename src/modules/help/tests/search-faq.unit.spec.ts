@@ -96,6 +96,14 @@ describe("help FAQ by role", () => {
     }
   })
 
+  it("includes the product tour article for every role", () => {
+    for (const role of HELP_ROLE_KEYS) {
+      expect(
+        HELP_FAQ_BY_ROLE[role].some((item) => item.id === "product-tour"),
+      ).toBeTruthy()
+    }
+  })
+
   it("receptionist FAQ covers counter payment without clinical write focus", () => {
     const items = getHelpFaqForRole("receptionist")
     expect(items.some((item) => item.id === "collect-payment")).toBeTruthy()

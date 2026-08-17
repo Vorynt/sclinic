@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { OverflowNavMenu } from "@/modules/dashboard/components/OverflowNavMenu";
 import {
   isNavActive,
+  NAV_TOUR_TARGET_BY_HREF,
   type ShellNav,
 } from "@/modules/dashboard/constants/nav";
 
@@ -34,6 +35,7 @@ export function AppTopNav({ nav, className }: AppTopNavProps) {
           <Link
             key={item.href}
             href={item.href}
+            data-tour={NAV_TOUR_TARGET_BY_HREF[item.href]}
             className={cn(
               "inline-flex h-9 items-center gap-1.5 rounded-md px-3 text-sm font-medium transition-colors",
               active

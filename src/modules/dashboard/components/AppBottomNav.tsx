@@ -10,6 +10,8 @@ import { MoreNavSheet } from "@/modules/dashboard/components/MoreNavSheet";
 import {
   hasOverflowNav,
   isNavActive,
+  NAV_TOUR_TARGET,
+  NAV_TOUR_TARGET_BY_HREF,
   type ShellNav,
 } from "@/modules/dashboard/constants/nav";
 
@@ -46,6 +48,7 @@ export function AppBottomNav({ nav }: AppBottomNavProps) {
               <li key={item.href} className="min-w-0">
                 <Link
                   href={item.href}
+                  data-tour={NAV_TOUR_TARGET_BY_HREF[item.href]}
                   className={cn(
                     "flex h-full flex-col items-center justify-center gap-0.5 px-1 text-[11px] font-medium",
                     active
@@ -68,6 +71,7 @@ export function AppBottomNav({ nav }: AppBottomNavProps) {
               <button
                 type="button"
                 onClick={() => setMoreOpen(true)}
+                data-tour={NAV_TOUR_TARGET.overflow}
                 className={cn(
                   "flex h-full w-full flex-col items-center justify-center gap-0.5 px-1 text-[11px] font-medium",
                   overflowActive || moreOpen

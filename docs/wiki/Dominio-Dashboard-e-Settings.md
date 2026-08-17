@@ -81,7 +81,7 @@ Shell fino em `/settings/*`; domínio real em clinics / audit / medical-records 
 
 ## Ajuda
 
-Central de FAQ em `/help` (módulo `help`) — conteúdo **por papel**; ver [Dominio-Ajuda](Dominio-Ajuda). Item Ajuda no overflow da nav + atalho Ajuda nas homes de todos os papéis.
+Central de FAQ em `/help` (módulo `help`) — conteúdo **por papel**; ver [Dominio-Ajuda](Dominio-Ajuda). Item Ajuda no overflow da nav + atalho Ajuda nas homes de todos os papéis. Tour guiado no primeiro acesso ao `AppShell` (âncoras `data-tour` na chrome; passos filtrados pela nav visível).
 
 ## Decisões relacionadas
 

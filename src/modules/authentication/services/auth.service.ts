@@ -56,6 +56,7 @@ type BaUserLike = {
   status?: unknown;
   mustChangePassword?: boolean | null;
   twoFactorEnabled?: boolean | null;
+  productTourCompleted?: boolean | null;
 };
 
 async function resolvePermissions(
@@ -133,6 +134,7 @@ function mapBaUser(baUser: BaUserLike): AuthUser {
     status: toUserStatus(baUser.status),
     mustChangePassword: Boolean(baUser.mustChangePassword),
     twoFactorEnabled: Boolean(baUser.twoFactorEnabled),
+    productTourCompleted: Boolean(baUser.productTourCompleted),
   });
 }
 
@@ -851,5 +853,18 @@ export const authService = {
     } catch (error) {
       mapBetterAuthError(error);
     }
+  },
+
+  async completeProductTour(ctx: AuthRequestContext): Promise<AuthContext> {
+    const authContext = await this.requireSession(ctx);
+    if (authContext.user.productTourCompleted) {
+      return authContext;
+    }
+
+    await userRepository.setProductTourCompleted(authContext.user.id);
+    return {
+      ...authContext,
+      user: { ...authContext.user, productTourCompleted: true },
+    };
   },
 };

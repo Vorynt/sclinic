@@ -24,7 +24,7 @@ import {
   useSwitchClinicMutation,
 } from "@/modules/authentication/hooks/use-auth";
 import { useClinic } from "@/modules/clinics/hooks/use-clinic";
-import { canAccessPath } from "@/modules/dashboard/constants/nav";
+import { canAccessPath, NAV_TOUR_TARGET } from "@/modules/dashboard/constants/nav";
 import { useAuth } from "@/providers/AuthProvider";
 import { useAuthUiStore } from "@/stores/auth.store";
 
@@ -106,6 +106,7 @@ export function ClinicIndicator() {
   if (!canSwitch) {
     return (
       <div
+        data-tour={NAV_TOUR_TARGET.clinic}
         className="flex max-w-44 items-center gap-2 sm:max-w-52"
         title={`${label} · ${roleLabel}`}>
         {content}
@@ -117,6 +118,7 @@ export function ClinicIndicator() {
     <DropdownMenu open={switcherOpen} onOpenChange={setSwitcherOpen}>
       <DropdownMenuTrigger
         aria-label="Selecionar clínica"
+        data-tour={NAV_TOUR_TARGET.clinic}
         className="group/clinic-indicator-trigger flex max-w-44 items-center gap-2 sm:max-w-52  px-1.5 py-1 rounded-md transition-colors">
         {content}
       </DropdownMenuTrigger>

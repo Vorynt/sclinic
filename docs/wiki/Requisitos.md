@@ -168,7 +168,8 @@ Personas de produto alinhadas aos papéis RBAC (`roleKey`). Cada persona descrev
 2. `/onboarding/plan` → Checkout Stripe.  
 3. `/onboarding/clinic` (+ opcional `alsoPractices` → perfil clínico).  
 4. `/onboarding/hours` → `/home`.  
-5. Na `/home`, roadmap “Primeiros passos” até poder agendar: profissional → serviço → paciente → primeiro agendamento (missões obrigatórias sem pular; card some ao concluir tudo).  
+5. No primeiro acesso ao dashboard, modal opcional de tour das telas (todos os papéis; pular ou concluir persiste em `user.product_tour_completed`). Replay em `/help`.  
+6. Na `/home`, roadmap “Primeiros passos” até poder agendar: profissional → serviço → paciente → primeiro agendamento (missões obrigatórias sem pular; card some ao concluir tudo).  
 
 Diagrama: [Diagramas §2](Diagramas).
 
@@ -386,6 +387,7 @@ Convenção de ID: `RF-<DOMÍNIO>-NNN`.
 | RF-HELP-002 | Categorias + busca | Sem acento; esconde vazios | Done |
 | RF-HELP-003 | Deep link | `?q=&category=&article=` | Done |
 | RF-HELP-004 | Sem LLM | Conteúdo curado | Done |
+| RF-HELP-005 | Tour guiado no 1º acesso | Modal opt-in + spotlight na nav visível (todos os papéis); persistido em `user.product_tour_completed`; replay em `/help` | Done |
 
 ### 4.13 Marketing — `RF-MKT`
 

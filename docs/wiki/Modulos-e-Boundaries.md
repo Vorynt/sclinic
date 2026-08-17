@@ -16,7 +16,7 @@
 | [`settings`](Dominio-Dashboard-e-Settings) | Nav/shell de configurações | Done (fino) |
 | [`audit`](Dominio-Auditoria) | Leitura + emissão via events | Done |
 | [`marketing`](Dominio-Marketing) | Landing | Done |
-| [`help`](Dominio-Ajuda) | Central de ajuda (FAQ curado) | Done |
+| [`help`](Dominio-Ajuda) | Central de ajuda (FAQ curado) + tour guiado | Done |
 | `inventory` | Reservado | Deferred |
 
 ## Boundaries de import

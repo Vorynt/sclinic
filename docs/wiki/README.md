@@ -8,7 +8,7 @@ Esta pasta é a **fonte da verdade** da GitHub Wiki do sclinic — handbook para
 npm run docs:wiki:sync
 ```
 
-Requisitos: Wiki habilitada no GitHub + primeira página criada + SSH (`git@github.com:ViniciusSantos31/sclinic.wiki.git`).
+Requisitos: Wiki habilitada no GitHub + primeira página criada + SSH (`git@github.com:Vorynt/sclinic.wiki.git`).
 
 ## Manutenção
 

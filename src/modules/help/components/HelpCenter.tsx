@@ -1,6 +1,6 @@
 "use client";
 
-import { QuestionIcon } from "@phosphor-icons/react";
+import { CompassIcon, QuestionIcon } from "@phosphor-icons/react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   useDeferredValue,
@@ -10,6 +10,7 @@ import {
   useTransition,
 } from "react";
 
+import { Button } from "@/components/ui/button";
 import { HelpCategoryFilter } from "@/modules/help/components/HelpCategoryFilter";
 import { HelpFaqList } from "@/modules/help/components/HelpFaqList";
 import { HelpSearch } from "@/modules/help/components/HelpSearch";
@@ -22,6 +23,7 @@ import {
   isHelpCategoryId,
 } from "@/modules/help/utils/search-faq";
 import { useAuth } from "@/providers/AuthProvider";
+import { useProductTourUiStore } from "@/stores/product-tour.store";
 
 function parseCategory(value: string | null): HelpCategoryId | "all" {
   if (!value || value === "all") return "all";
@@ -45,6 +47,7 @@ const EMPTY_OPEN_IDS: string[] = [];
 
 export function HelpCenter() {
   const { auth } = useAuth();
+  const requestReplay = useProductTourUiStore((s) => s.requestReplay);
   const roleKey = auth?.membership?.roleKey;
   const faqItems = getHelpFaqForRole(roleKey);
 
@@ -131,6 +134,16 @@ export function HelpCenter() {
         </div>
 
         <HelpSearch value={query} onChange={setQuery} />
+
+        <Button
+          type="button"
+          variant="outline"
+          className="w-fit"
+          onClick={() => requestReplay()}
+        >
+          <CompassIcon className="size-4" weight="bold" aria-hidden />
+          Ver tour do sistema
+        </Button>
       </header>
 
       <HelpCategoryFilter

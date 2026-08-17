@@ -45,6 +45,7 @@ export function toAuthUser(row: {
   status: unknown
   mustChangePassword?: boolean | null
   twoFactorEnabled?: boolean | null
+  productTourCompleted?: boolean | null
 }): AuthUser {
   return {
     id: row.id,
@@ -56,6 +57,7 @@ export function toAuthUser(row: {
     status: toUserStatus(row.status),
     mustChangePassword: Boolean(row.mustChangePassword),
     twoFactorEnabled: Boolean(row.twoFactorEnabled),
+    productTourCompleted: Boolean(row.productTourCompleted),
   }
 }
 

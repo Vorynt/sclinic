@@ -10,6 +10,7 @@ import { PlanOverLimitBanner } from "@/modules/billing/components/PlanOverLimitB
 import { AppBottomNav } from "@/modules/dashboard/components/AppBottomNav";
 import { AppHeader } from "@/modules/dashboard/components/AppHeader";
 import { getVisibleShellNav } from "@/modules/dashboard/constants/nav";
+import { ProductTourHost } from "@/modules/help/components/ProductTourHost";
 import { useAuth } from "@/providers/AuthProvider";
 import { useAuthUiStore } from "@/stores/auth.store";
 import { usePageActionsStore } from "@/stores/page-actions.store";
@@ -48,6 +49,7 @@ export function AppShell({ children }: AppShellProps) {
       <AppBottomNav nav={nav} />
       <PageActionsFab />
       <TwoFactorNudgeDialog />
+      <ProductTourHost />
 
       {isSwitchingClinic ? (
         <LoadingScreen

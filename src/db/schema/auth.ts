@@ -15,7 +15,8 @@ import { primaryTextId, timestamps } from "./helpers"
  * Better Auth core tables (singular names — BA default).
  * Configure adapter with schema mapping or modelName if you rename.
  *
- * Domain extensions on `user`: phone, status, lastLoginAt, mustChangePassword.
+ * Domain extensions on `user`: phone, status, lastLoginAt, mustChangePassword,
+ * productTourCompleted.
  * Password lives on `account.password` (credential provider), not on user.
  */
 export const user = pgTable("user", {
@@ -31,6 +32,10 @@ export const user = pgTable("user", {
   mustChangePassword: boolean("must_change_password").default(false).notNull(),
   /** Better Auth two-factor plugin — true only after TOTP verification. */
   twoFactorEnabled: boolean("two_factor_enabled").default(false).notNull(),
+  /** First-login product tour dismissed or finished. */
+  productTourCompleted: boolean("product_tour_completed")
+    .default(false)
+    .notNull(),
   ...timestamps,
 })
 

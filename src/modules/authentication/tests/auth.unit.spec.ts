@@ -10,6 +10,7 @@ import {
   verifyTotpSchema,
 } from "@/modules/authentication/schemas/auth.schema"
 import {
+  toAuthUser,
   toPermissionKeys,
   toUserStatus,
 } from "@/modules/authentication/mappers/auth.mapper"
@@ -160,6 +161,32 @@ describe("auth mappers", () => {
       Permission.SETTINGS_MANAGE,
     ])
   })
+
+  it("maps productTourCompleted from the user row", () => {
+    expect(
+      toAuthUser({
+        id: "1",
+        name: "Ana",
+        email: "ana@clinic.com",
+        emailVerified: true,
+        image: null,
+        phone: null,
+        status: "active",
+        productTourCompleted: true,
+      }).productTourCompleted,
+    ).toBe(true)
+    expect(
+      toAuthUser({
+        id: "1",
+        name: "Ana",
+        email: "ana@clinic.com",
+        emailVerified: true,
+        image: null,
+        phone: null,
+        status: "active",
+      }).productTourCompleted,
+    ).toBe(false)
+  })
 })
 
 describe("assertUserCanAuthenticate", () => {
@@ -172,6 +199,7 @@ describe("assertUserCanAuthenticate", () => {
     phone: null,
     mustChangePassword: false,
     twoFactorEnabled: false,
+    productTourCompleted: false,
   }
 
   it("allows active users", () => {
@@ -221,6 +249,7 @@ describe("getPostAuthRedirect", () => {
       status: "active",
       mustChangePassword: false,
       twoFactorEnabled: false,
+      productTourCompleted: false,
     },
     session: {
       id: "s1",

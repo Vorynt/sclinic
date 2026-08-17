@@ -139,6 +139,7 @@ Para regras detalhadas, abra a página **Domínio-*** correspondente. Prioridade
 | Settings geral/hours/danger | Done | settings + clinics |
 | Uso do plano (owner) | Done | `/settings/usage` |
 | Help `/help` | Done | módulo `help`; FAQ por papel; nav + atalho nas homes |
+| Tour guiado de novo usuário | Done | modal opt-in no 1º acesso ao dashboard; spotlight na nav; replay em `/help` |
 | Roadmap primeiros passos (owner home) | Done | `OwnerSetupRoadmap`; profissional → serviço → paciente → 1º agendamento |
 
 ### E9 — Marketing

@@ -1,4 +1,5 @@
 import { routes } from "@/config/routes"
+import { SHARED_PRODUCT_TOUR } from "@/modules/help/constants/faq/shared"
 import type { HelpFaqItem } from "@/modules/help/types/help"
 
 /**
@@ -25,6 +26,7 @@ export const HELP_FAQ_OWNER: HelpFaqItem[] = [
     answer: [
       "No começo, o sclinic pede três coisas: escolher um plano, cadastrar a clínica e informar os horários de funcionamento.",
       "Na tela inicial aparece um guia de primeiros passos: cadastre um profissional, um serviço e um paciente — aí a agenda libera. Depois marque a primeira consulta. As missões obrigatórias não podem ser puladas; quando tudo estiver pronto, o guia some.",
+      "No primeiro acesso também aparece um tour opcional das telas (onde fica cada módulo). Você pode pular e ver depois em Ajuda.",
     ],
     steps: [
       "Escolha o plano, cadastre a clínica e informe os horários.",
@@ -34,7 +36,7 @@ export const HELP_FAQ_OWNER: HelpFaqItem[] = [
       "Em Pacientes, cadastre a primeira pessoa.",
       "Em Agendamentos, marque a primeira consulta — o guia some quando isso estiver feito.",
     ],
-    keywords: ["primeiro dia", "começar", "nova conta", "o que fazer", "missão", "roadmap"],
+    keywords: ["primeiro dia", "começar", "nova conta", "o que fazer", "missão", "roadmap", "tour"],
     relatedRoutes: [
       { label: "Início", href: routes.home },
       { label: "Profissionais", href: routes.professionals },
@@ -48,12 +50,13 @@ export const HELP_FAQ_OWNER: HelpFaqItem[] = [
     categoryId: "getting-started",
     question: "Como volto nesta ajuda depois?",
     answer: [
-      "No menu à esquerda, no final, toque em Ajuda (ícone de interrogação).",
-      "Você pode pesquisar pelo que precisa ou escolher um assunto acima.",
+      "No computador, abra Mais no topo e toque em Ajuda (ícone de interrogação). No celular, o mesmo atalho fica em Mais, na barra de baixo.",
+      "Você pode pesquisar pelo que precisa, escolher um assunto ou ver de novo o tour do sistema.",
     ],
-    keywords: ["ajuda", "encontrar", "menu", "voltar"],
+    keywords: ["ajuda", "encontrar", "menu", "voltar", "mais"],
     relatedRoutes: [{ label: "Abrir ajuda", href: routes.help }],
   },
+  SHARED_PRODUCT_TOUR,
 
   // ─── Clínica ─────────────────────────────────────────────────────────────
   {

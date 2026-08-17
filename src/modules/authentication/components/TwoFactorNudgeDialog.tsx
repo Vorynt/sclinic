@@ -14,14 +14,18 @@ import {
 } from "@/components/ui/dialog"
 import { routes } from "@/config/routes"
 import { useAuthUiStore } from "@/stores/auth.store"
+import { useProductTourUiStore } from "@/stores/product-tour.store"
 
 export function TwoFactorNudgeDialog() {
   const router = useRouter()
   const pathname = usePathname()
   const pending = useAuthUiStore((s) => s.pendingTwoFactorNudge)
   const dismiss = useAuthUiStore((s) => s.dismissTwoFactorNudge)
+  const tourBlocking = useProductTourUiStore(
+    (s) => s.isPromptOpen || s.isTourActive,
+  )
 
-  const open = pending && pathname !== routes.accountSecurity
+  const open = pending && pathname !== routes.accountSecurity && !tourBlocking
 
   return (
     <Dialog

@@ -2,6 +2,7 @@ import { routes } from "@/config/routes"
 import {
   SHARED_ACCOUNT_FAQ,
   SHARED_APPOINTMENT_STATUSES,
+  SHARED_PRODUCT_TOUR,
   SHARED_WHERE_IS_HELP,
 } from "@/modules/help/constants/faq/shared"
 import type { HelpFaqItem } from "@/modules/help/types/help"
@@ -52,6 +53,7 @@ export const HELP_FAQ_CLINICIAN: HelpFaqItem[] = [
     ],
   },
   SHARED_WHERE_IS_HELP,
+  SHARED_PRODUCT_TOUR,
 
   {
     id: "create-patient",

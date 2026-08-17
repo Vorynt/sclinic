@@ -44,7 +44,7 @@ Horizontes de entrega (orientação, não compromisso de data):
 7. Loop balcão: charge + board recepção + SSE
 8. Catálogo de serviços + desconto % + cortesia/retorno (ADR-009)
 9. Auditoria + settings + landing
-10. Central de ajuda `/help` (FAQ curado por papel)
+10. Central de ajuda `/help` (FAQ curado por papel) + tour guiado no 1º acesso
 
 ---
 

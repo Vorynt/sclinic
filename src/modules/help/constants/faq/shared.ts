@@ -7,10 +7,22 @@ export const SHARED_WHERE_IS_HELP: HelpFaqItem = {
   categoryId: "getting-started",
   question: "Como volto nesta ajuda depois?",
   answer: [
-    "No menu à esquerda, no final, toque em Ajuda (ícone de interrogação).",
-    "Você pode pesquisar pelo que precisa ou escolher um assunto acima.",
+    "No computador, abra Mais no topo e toque em Ajuda (ícone de interrogação). No celular, o mesmo atalho fica em Mais, na barra de baixo.",
+    "Você pode pesquisar pelo que precisa, escolher um assunto ou ver de novo o tour do sistema.",
   ],
-  keywords: ["ajuda", "encontrar", "menu", "voltar"],
+  keywords: ["ajuda", "encontrar", "menu", "voltar", "mais"],
+  relatedRoutes: [{ label: "Abrir ajuda", href: routes.help }],
+}
+
+export const SHARED_PRODUCT_TOUR: HelpFaqItem = {
+  id: "product-tour",
+  categoryId: "getting-started",
+  question: "Como vejo o tour das telas de novo?",
+  answer: [
+    "No primeiro acesso, o sclinic oferece um tour rápido mostrando onde ficam as telas na barra de navegação. Você pode ver ou pular.",
+    "Para ver de novo, toque em Ver tour do sistema no topo desta ajuda.",
+  ],
+  keywords: ["tour", "tutorial", "guia", "primeiro acesso", "onde fica"],
   relatedRoutes: [{ label: "Abrir ajuda", href: routes.help }],
 }
 

@@ -1,0 +1,100 @@
+.sclinic-product-tour.driver-popover {
+  font-family: inherit;
+  background-color: var(--popover);
+  color: var(--popover-foreground);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 10px 30px oklch(0.15 0.02 245 / 28%);
+}
+
+.sclinic-product-tour.driver-popover .driver-popover-title {
+  color: var(--popover-foreground);
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.sclinic-product-tour.driver-popover .driver-popover-description {
+  color: var(--muted-foreground);
+}
+
+.sclinic-product-tour.driver-popover .driver-popover-progress-text {
+  color: var(--muted-foreground);
+}
+
+.sclinic-product-tour.driver-popover .driver-popover-close-btn {
+  color: var(--muted-foreground);
+}
+
+.sclinic-product-tour.driver-popover .driver-popover-close-btn:hover,
+.sclinic-product-tour.driver-popover .driver-popover-close-btn:focus {
+  color: var(--foreground);
+}
+
+.sclinic-product-tour.driver-popover .driver-popover-footer-btn {
+  border-radius: calc(var(--radius) * 0.8);
+  padding: 0.35rem 0.7rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-shadow: none;
+}
+
+.sclinic-product-tour.driver-popover .driver-popover-prev-btn,
+.sclinic-product-tour.driver-popover .driver-popover-prev-btn:hover,
+.sclinic-product-tour.driver-popover .driver-popover-prev-btn:focus {
+  background-color: transparent;
+  color: var(--muted-foreground);
+  border: 0;
+}
+
+.sclinic-product-tour.driver-popover .driver-popover-prev-btn:hover,
+.sclinic-product-tour.driver-popover .driver-popover-prev-btn:focus {
+  background-color: var(--accent);
+  color: var(--accent-foreground);
+}
+
+.sclinic-product-tour.driver-popover .driver-popover-next-btn,
+.sclinic-product-tour.driver-popover .driver-popover-done-btn,
+.sclinic-product-tour.driver-popover .driver-popover-next-btn:hover,
+.sclinic-product-tour.driver-popover .driver-popover-next-btn:focus,
+.sclinic-product-tour.driver-popover .driver-popover-done-btn:hover,
+.sclinic-product-tour.driver-popover .driver-popover-done-btn:focus {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+  border: 0;
+}
+
+.sclinic-product-tour.driver-popover .driver-popover-next-btn:hover,
+.sclinic-product-tour.driver-popover .driver-popover-next-btn:focus,
+.sclinic-product-tour.driver-popover .driver-popover-done-btn:hover,
+.sclinic-product-tour.driver-popover .driver-popover-done-btn:focus {
+  background-color: color-mix(in oklch, var(--primary) 80%, var(--popover));
+  color: var(--primary-foreground);
+}
+
+.sclinic-product-tour.driver-popover .driver-popover-arrow-side-left {
+  border-top-color: transparent;
+  border-bottom-color: transparent;
+  border-right-color: transparent;
+  border-left-color: var(--popover);
+}
+
+.sclinic-product-tour.driver-popover .driver-popover-arrow-side-right {
+  border-top-color: transparent;
+  border-bottom-color: transparent;
+  border-left-color: transparent;
+  border-right-color: var(--popover);
+}
+
+.sclinic-product-tour.driver-popover .driver-popover-arrow-side-top {
+  border-bottom-color: transparent;
+  border-left-color: transparent;
+  border-right-color: transparent;
+  border-top-color: var(--popover);
+}
+
+.sclinic-product-tour.driver-popover .driver-popover-arrow-side-bottom {
+  border-top-color: transparent;
+  border-left-color: transparent;
+  border-right-color: transparent;
+  border-bottom-color: var(--popover);
+}

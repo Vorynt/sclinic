@@ -32,7 +32,7 @@ Qualquer mudança observável: feature, regra, schema, rota, RBAC, status machin
 2. Criar primeira página na UI (cria `*.wiki.git`)  
 3. `npm run docs:wiki:sync`  
 
-URL: https://github.com/ViniciusSantos31/sclinic/wiki
+URL: https://github.com/Vorynt/sclinic/wiki
 
 ## Ver também
 

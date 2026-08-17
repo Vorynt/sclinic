@@ -315,6 +315,22 @@ export function getVisibleShellNav(
   return getVisibleNavConfig(canAny);
 }
 
+/** DOM `data-tour` ids for the in-app product tour (owned by help). */
+export const NAV_TOUR_TARGET = {
+  home: "nav-home",
+  appointments: "nav-appointments",
+  patients: "nav-patients",
+  overflow: "nav-overflow",
+  clinic: "clinic-indicator",
+  account: "user-menu",
+} as const;
+
+export const NAV_TOUR_TARGET_BY_HREF: Partial<Record<string, string>> = {
+  [routes.home]: NAV_TOUR_TARGET.home,
+  [routes.appointments]: NAV_TOUR_TARGET.appointments,
+  [routes.patients]: NAV_TOUR_TARGET.patients,
+};
+
 export function isNavActive(pathname: string, href: string): boolean {
   if (href === routes.home) return pathname === href;
   return pathname === href || pathname.startsWith(`${href}/`);

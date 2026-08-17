@@ -28,6 +28,7 @@ export type AuthUser = {
   status: UserStatus
   mustChangePassword: boolean
   twoFactorEnabled: boolean
+  productTourCompleted: boolean
 }
 
 export type AuthSession = {

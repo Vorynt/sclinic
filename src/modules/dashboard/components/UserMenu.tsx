@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { routes } from "@/config/routes";
 import { useSignOutMutation } from "@/modules/authentication/hooks/use-auth";
+import { NAV_TOUR_TARGET } from "@/modules/dashboard/constants/nav";
 import { useAuth } from "@/providers/AuthProvider";
 
 const THEMES = ["light", "dark", "system"] as const;
@@ -67,6 +68,7 @@ export function UserMenu() {
           type="button"
           variant="ghost"
           size="sm"
+          data-tour={NAV_TOUR_TARGET.account}
           className="h-9 gap-2 rounded-md px-1.5 sm:px-2"
           aria-label="Menu da conta"
         >

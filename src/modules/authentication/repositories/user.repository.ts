@@ -112,6 +112,15 @@ export const userRepository = {
     })
   },
 
+  async setProductTourCompleted(id: string): Promise<void> {
+    return withDbError(async () => {
+      await db
+        .update(user)
+        .set({ productTourCompleted: true })
+        .where(eq(user.id, id))
+    })
+  },
+
   /**
    * Updates the credential account password hash (Better Auth hasher).
    * No-op if the user has no credential account.

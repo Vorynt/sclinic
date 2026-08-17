@@ -65,6 +65,7 @@ Sessão (Better Auth), redirects pós-login, guards de permissão/clínica, util
 ## Schema
 
 - `user.two_factor_enabled`
+- `user.product_tour_completed` (tour do 1º acesso; existentes = true na migration, contas novas = false)
 - Tabela `twoFactor` (secret, backup codes, lockout)
 - `session` já tem `ip_address` / `user_agent` para a lista de dispositivos
 

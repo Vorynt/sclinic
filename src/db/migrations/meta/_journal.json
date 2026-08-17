@@ -175,6 +175,13 @@
       "when": 1786651200000,
       "tag": "0024_two_factor_auth",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1786737600000,
+      "tag": "0025_product_tour_completed",
+      "breakpoints": true
     }
   ],
   "version": "7"
