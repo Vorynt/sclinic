@@ -67,7 +67,7 @@ Calendário, status machine, attendance workspace, self-schedule, disponibilidad
 Notas (editor TipTap + snippets), vitais, alertas do paciente, receitas draft→issued + print + designer de templates (blocos, até 3). Especialidades e mais tipos de documento → E13 / E19.
 
 ### E6 — Recebíveis
-Charge 1:1, markPaid/cancel, listagem `/billing`, collect vs view. Catálogo de serviços, desconto %, cortesia/retorno (ADR-009). **Done (ADR-011):** `dueAt` por cobrança + aba Inadimplentes agrupada por paciente. Gateway → E10. Comissão → extensão no [Roadmap](Roadmap).
+Charge 1:1, markPaid/cancel, listagem `/billing`, collect vs view. Catálogo de serviços em `/services`, desconto %, cortesia/retorno (ADR-009). **Done (ADR-011):** `dueAt` por cobrança + aba Inadimplentes agrupada por paciente. Gateway → E10. Comissão → extensão no [Roadmap](Roadmap).
 
 ### E7 — Recepção
 Board derivado de status+charge, SSE `clinic.ops`, desacoplar pagamento do “concluir” médico.

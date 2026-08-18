@@ -44,7 +44,7 @@ export const OWNER_SETUP_MISSIONS: readonly OwnerSetupMissionDefinition[] = [
     title: "O que a clínica oferece?",
     description:
       "Informe o que vocês fazem e quanto cobram — por exemplo, consulta ou retorno.",
-    href: routes.settingsServices,
+    href: routes.services,
     ctaLabel: "Informar o que oferecem",
     unlocksScheduling: true,
   },

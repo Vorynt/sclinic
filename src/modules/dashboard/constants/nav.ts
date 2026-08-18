@@ -6,6 +6,7 @@ import {
   HouseIcon,
   QuestionIcon,
   StethoscopeIcon,
+  TagIcon,
   UsersIcon,
   UsersThreeIcon,
 } from "@phosphor-icons/react";
@@ -109,6 +110,13 @@ export const NAV_CONFIG: NavConfig = {
           enabled: true,
         },
         {
+          title: "Serviços",
+          href: routes.services,
+          icon: TagIcon,
+          permissions: [Permission.FINANCIAL_VIEW],
+          enabled: true,
+        },
+        {
           title: "Faturamento",
           href: routes.billing,
           icon: CurrencyCircleDollarIcon,
@@ -206,14 +214,6 @@ const PAGE_META: Record<string, PageMeta> = {
       { label: "Horários" },
     ],
   },
-  [routes.settingsServices]: {
-    title: "Serviços",
-    breadcrumbs: [
-      { label: "Início", href: routes.home },
-      { label: "Configurações", href: routes.settingsGeneral },
-      { label: "Serviços" },
-    ],
-  },
   [routes.settingsUsage]: {
     title: "Uso do plano",
     breadcrumbs: [
@@ -242,6 +242,13 @@ const PAGE_META: Record<string, PageMeta> = {
     breadcrumbs: [
       { label: "Início", href: routes.home },
       { label: "Profissionais" },
+    ],
+  },
+  [routes.services]: {
+    title: "Serviços",
+    breadcrumbs: [
+      { label: "Início", href: routes.home },
+      { label: "Serviços" },
     ],
   },
   [routes.appointments]: {

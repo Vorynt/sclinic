@@ -10,7 +10,7 @@
 - markPaid / cancel
 - Listagem `/billing` (`financial.view`)
 - Métodos manuais: cash, pix_manual, card, transfer, other (+ `courtesy` para cortesia/retorno)
-- **Catálogo de serviços da clínica** (ADR-009) — CRUD em `/settings/services`; precificação automática na agenda
+- **Catálogo de serviços da clínica** (ADR-009) — CRUD em `/services`; precificação automática na agenda
 - **Visão de inadimplentes** (ADR-011) — cobranças `pending` vencidas, agrupadas por paciente
 
 ## Permissões
@@ -19,6 +19,7 @@
 |------|-----------|
 | Cobrar / liquidar / cancelar charge | `financial.collect` **ou** `manage` |
 | Ver lista `/billing` | `financial.view` |
+| Ver catálogo `/services` | `financial.view` |
 | CRUD serviços + override de valor | `financial.manage` |
 
 ## Regras

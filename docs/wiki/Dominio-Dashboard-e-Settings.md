@@ -21,7 +21,7 @@
 | Camada | Destinos | Onde aparece |
 |--------|----------|--------------|
 | Primária | Início, Agendamentos, Pacientes | Top nav (md+) e bottom tabs (mobile) |
-| Overflow (“Mais”) | Profissionais, Equipe, Faturamento | Dropdown no desktop; sheet no mobile |
+| Overflow (“Mais”) | Profissionais, Equipe, Serviços, Faturamento | Dropdown no desktop; sheet no mobile |
 | Utilitária | Configurações, Ajuda | Dentro do overflow |
 
 Itens sem permissão continuam filtrados por `getVisibleShellNav` / `canAny`. Header do shell sem título de página (já vem do `PageHeader` / `SettingsPageHeader`). Tema fica no menu da conta. Shell em `h-dvh` com main scrollável; bottom tabs **no fluxo** (não `fixed`) para não cobrir conteúdo no mobile.
@@ -47,7 +47,7 @@ Primária = `priority: "primary"` ou, se omitido, a **última** ação da lista.
 | **receptionist** | Contagens no header das 3 colunas do board (sem cards de resumo) | `ReceptionOpsBoard` (SSE) + lista de espera | Novo agendamento/paciente (header / FAB) |
 | **clinician** | Contagens da **própria** agenda (self-filter no service) | Preview da própria agenda | Minha agenda, Pacientes |
 | **nurse** | Fila clínica (ênfase em check-in) | Preview da própria agenda | Pacientes, Agenda |
-| **financial** | A receber / recebido no mês | Cobranças pendentes (top 5) | Faturamento, Pacientes |
+| **financial** | A receber / recebido no mês | Cobranças pendentes (top 5) | Faturamento, Serviços, Pacientes |
 
 Widgets compartilhados: `HomeStatCards`, `HomeDayOpsStats`, `TodaysAppointmentsPreview`, `HomePendingChargesPreview`, `OwnerSetupRoadmap` (só owner). Dados vêm dos módulos de domínio (sem service próprio em `dashboard`).
 
@@ -62,11 +62,11 @@ Tutorial pós-onboarding SaaS na `/home` do owner. Progresso **derivado** dos da
 | Cadastrar paciente | Sim | Sim | ≥1 paciente |
 | Primeiro agendamento | Sim (para sumir o card) | Não — *é* o uso da agenda | ≥1 appointment não cancelado; fica **bloqueada** até as 3 anteriores |
 
-Quando as 4 estiverem concluídas, o card some. CTAs apontam para `/professionals`, `/settings/services`, `/patients`, `/appointments`.
+Quando as 4 estiverem concluídas, o card some. CTAs apontam para `/professionals`, `/services`, `/patients`, `/appointments`.
 
 ## Settings
 
-Shell fino em `/settings/*`; domínio real em clinics / audit / medical-records / billing.
+Shell fino em `/settings/*`; domínio real em clinics / audit / medical-records.
 
 | Rota | Gate extra |
 |------|------------|
@@ -77,7 +77,7 @@ Shell fino em `/settings/*`; domínio real em clinics / audit / medical-records 
 
 `/settings/prescriptions`: designer de templates (blocos empilhados, até 3, cor de destaque) — UI em `medical-records` (ADR-008).
 
-**ADR-009:** CRUD de serviços da clínica em `/settings/services` (`financial.manage`) — domínio em `billing`.
+Catálogo de serviços (ADR-009) vive em `/services` (`financial.view` para ler; `financial.manage` para CRUD) — domínio em `billing`. `/settings/services` redireciona para `/services`.
 
 ## Ajuda
 

@@ -117,7 +117,7 @@ Para regras detalhadas, abra a página **Domínio-*** correspondente. Prioridade
 | markPaid / cancel | Done | charge.service |
 | Listagem `/billing` | Done | financial.view |
 | Métodos manuais | Done | cash, pix_manual, … |
-| Catálogo de serviços (preço fixo) | Done | ADR-009; `/settings/services` |
+| Catálogo de serviços (preço fixo) | Done | ADR-009; `/services` |
 | Desconto % na agenda / pagamento | Done | ADR-009 |
 | Cortesia / retorno (charge R$ 0 paid) | Done | ADR-009 |
 | Visão / filtro inadimplentes | Done | ADR-011; `dueAt` + aba Inadimplentes agrupada por paciente |

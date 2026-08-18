@@ -20,7 +20,7 @@ Soft nav Termos/Privacidade → modal `@modal/(.)…`.
 
 ### App
 
-`/home` · `/patients` · `/patients/[id]/*` · `/professionals` · `/appointments` · `/appointments/new` · `/billing` · `/users` · `/settings/*` · `/help`
+`/home` · `/patients` · `/patients/[id]/*` · `/professionals` · `/services` · `/appointments` · `/appointments/new` · `/billing` · `/users` · `/settings/*` · `/help`
 
 ### Attendance
 
@@ -44,6 +44,7 @@ Soft nav Termos/Privacidade → modal `@modal/(.)…`.
 - Dashboard / attendance / account: e-mail verificado, senha ok, membership, entitlement.
 - Attendance workspace: `records.read` e `appointments.create|update`.
 - Settings: `settings.manage`; subtítulos `audit.read` / owner-only usage.
+- `/services`: `financial.view` (CRUD com `financial.manage`). `/settings/services` redireciona para `/services`.
 - Patient clinical tabs: `records.read`.
 - `/help`: FAQ curado por papel (módulo `help`); item Ajuda no overflow da nav, habilitado para todos.
 

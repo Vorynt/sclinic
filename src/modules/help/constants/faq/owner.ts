@@ -32,7 +32,7 @@ export const HELP_FAQ_OWNER: HelpFaqItem[] = [
       "Escolha o plano, cadastre a clínica e informe os horários.",
       "No início, complete as missões do guia: profissional, serviço e paciente.",
       "Em Profissionais, cadastre quem atende — ou, se você também atende, crie seu próprio perfil clínico.",
-      "Em Configurações → Serviços, cadastre ao menos um serviço com preço.",
+      "Em Serviços (no menu Mais), cadastre ao menos um serviço com preço.",
       "Em Pacientes, cadastre a primeira pessoa.",
       "Em Agendamentos, marque a primeira consulta — o guia some quando isso estiver feito.",
     ],
@@ -40,7 +40,7 @@ export const HELP_FAQ_OWNER: HelpFaqItem[] = [
     relatedRoutes: [
       { label: "Início", href: routes.home },
       { label: "Profissionais", href: routes.professionals },
-      { label: "Serviços", href: routes.settingsServices },
+      { label: "Serviços", href: routes.services },
       { label: "Pacientes", href: routes.patients },
       { label: "Agenda", href: routes.appointments },
     ],
@@ -93,6 +93,25 @@ export const HELP_FAQ_OWNER: HelpFaqItem[] = [
     relatedRoutes: [
       { label: "Horários da clínica", href: routes.settingsHours },
       { label: "Ver agenda", href: routes.appointments },
+    ],
+  },
+  {
+    id: "clinic-services-catalog",
+    categoryId: "clinic",
+    question: "Como cadastro os serviços e os preços da clínica?",
+    answer: [
+      "Em Serviços (no menu Mais) você cadastra o que a clínica oferece — consulta, retorno, procedimento — com o preço de tabela.",
+      "Na agenda, o valor da cobrança sai desse catálogo. Quem tem acesso financeiro também pode abrir essa tela.",
+    ],
+    steps: [
+      "Abra Mais e entre em Serviços.",
+      "Cadastre o serviço com nome e preço.",
+      "Na agenda, escolha o serviço ao marcar a consulta.",
+    ],
+    keywords: ["serviço", "catálogo", "preço", "valor", "consulta", "tabela"],
+    relatedRoutes: [
+      { label: "Serviços", href: routes.services },
+      { label: "Agenda", href: routes.appointments },
     ],
   },
   {

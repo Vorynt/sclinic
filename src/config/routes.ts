@@ -39,6 +39,7 @@ export const routes = {
   patientDetailDocuments: (patientId: string) =>
     `/patients/${patientId}/documents`,
   professionals: "/professionals",
+  services: "/services",
   billing: "/billing",
   appointments: "/appointments",
   appointmentNew: "/appointments/new",
@@ -67,7 +68,6 @@ export const routes = {
   settingsGeneral: "/settings/general",
   settingsHours: "/settings/hours",
   settingsPrescriptions: "/settings/prescriptions",
-  settingsServices: "/settings/services",
   settingsUsage: "/settings/usage",
   settingsAudit: "/settings/audit",
   settingsDanger: "/settings/danger",

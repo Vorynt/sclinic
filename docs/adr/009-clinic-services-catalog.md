@@ -80,7 +80,7 @@ Cortesia/retorno **não** entra na coluna “Aguardando pagamento” do board (j
 
 | Superfície | Comportamento |
 |------------|---------------|
-| CRUD serviços | `financial.manage` (settings ou `/billing`) |
+| CRUD serviços | `financial.manage` (`/services`; `/settings/services` redireciona) |
 | Agenda — criar | Select serviço (obrigatório) → preço; campo desconto %; flag cortesia **ou** retorno |
 | Agenda — valor livre | Só `financial.manage` (override) |
 | Confirmação pagamento | Pode ajustar % (e override se manage) **antes** de `markPaid`; cortesia/retorno já liquidada |

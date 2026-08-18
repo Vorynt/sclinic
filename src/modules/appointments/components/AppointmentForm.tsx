@@ -766,9 +766,9 @@ export function AppointmentForm({
                   <p className="text-sm text-muted-foreground">
                     Cadastre serviços em{" "}
                     <Link
-                      href={routes.settingsServices}
+                      href={routes.services}
                       className="font-medium text-primary underline-offset-4 hover:underline">
-                      Configurações → Serviços
+                      Serviços
                     </Link>
                     .
                   </p>

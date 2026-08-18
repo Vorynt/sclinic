@@ -35,17 +35,34 @@ export const HELP_FAQ_FINANCIAL: HelpFaqItem[] = [
       "Abra o Início e confira os totais.",
       "Veja as cobranças pendentes na prévia ou em Faturamento.",
       "Marque como pago quando o paciente quitar.",
+      "Em Serviços, confira ou ajuste os preços do catálogo.",
       "Se precisar do contexto do paciente, abra Pacientes (somente consulta).",
     ],
     keywords: ["começar", "rotina", "resumo"],
     relatedRoutes: [
       { label: "Início", href: routes.home },
       { label: "Faturamento", href: routes.billing },
+      { label: "Serviços", href: routes.services },
     ],
   },
   SHARED_WHERE_IS_HELP,
   SHARED_PRODUCT_TOUR,
 
+  {
+    id: "clinic-services-catalog",
+    categoryId: "billing",
+    question: "Como cadastro ou mudo o preço de um serviço?",
+    answer: [
+      "Em Serviços (no menu Mais) você vê o catálogo da clínica e pode criar, editar ou desativar itens.",
+      "O preço da agenda sai dessa lista. Mudanças não alteram cobranças já geradas.",
+    ],
+    steps: [
+      "Abra Mais e entre em Serviços.",
+      "Cadastre ou edite o serviço com o preço de tabela.",
+    ],
+    keywords: ["serviço", "catálogo", "preço", "valor", "tabela"],
+    relatedRoutes: [{ label: "Serviços", href: routes.services }],
+  },
   {
     id: "view-patients",
     categoryId: "patients",
@@ -166,10 +183,13 @@ export const HELP_FAQ_FINANCIAL: HelpFaqItem[] = [
     categoryId: "getting-started",
     question: "Consigo mudar dados da clínica?",
     answer: [
-      "Não. Configurações e equipe são da gestão/proprietário. Sua área é Faturamento e consulta a Pacientes.",
+      "Não. Configurações e equipe são da gestão/proprietário. Sua área é Faturamento, o catálogo em Serviços e a consulta a Pacientes.",
     ],
-    keywords: ["configurações", "equipe", "permissão"],
-    relatedRoutes: [{ label: "Início", href: routes.home }],
+    keywords: ["configurações", "equipe", "permissão", "serviços"],
+    relatedRoutes: [
+      { label: "Faturamento", href: routes.billing },
+      { label: "Serviços", href: routes.services },
+    ],
   },
 
   ...SHARED_ACCOUNT_FAQ,

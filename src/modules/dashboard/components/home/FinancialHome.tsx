@@ -4,6 +4,7 @@ import {
   CheckCircleIcon,
   CurrencyCircleDollarIcon,
   QuestionIcon,
+  TagIcon,
   UsersIcon,
 } from "@phosphor-icons/react"
 import { format } from "date-fns"
@@ -77,6 +78,11 @@ export function FinancialHome() {
               label: "Faturamento",
               href: routes.billing,
               icon: CurrencyCircleDollarIcon,
+            },
+            {
+              label: "Serviços",
+              href: routes.services,
+              icon: TagIcon,
             },
             {
               label: "Pacientes",

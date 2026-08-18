@@ -20,6 +20,11 @@ describe("canAccessPath", () => {
 
   it("denies path when role lacks required permission", () => {
     expect(canAccessPath(routes.professionals, [Permission.PATIENTS_READ])).toBe(false)
+    expect(canAccessPath(routes.services, [Permission.FINANCIAL_COLLECT])).toBe(false)
+  })
+
+  it("allows services catalog with financial.view", () => {
+    expect(canAccessPath(routes.services, [Permission.FINANCIAL_VIEW])).toBe(true)
   })
 
   it("matches nested paths against the parent nav item", () => {
@@ -64,6 +69,7 @@ describe("getVisibleShellNav", () => {
     expect(overflowHrefs).toEqual([
       routes.professionals,
       routes.users,
+      routes.services,
       routes.billing,
     ])
   })
