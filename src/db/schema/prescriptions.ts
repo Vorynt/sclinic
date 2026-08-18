@@ -32,6 +32,7 @@ import { sclinicAppRole } from "./rls"
 /** Opaque JSON shape; validated in medical-records (ADR-008). */
 export type PrescriptionLayoutDocumentModel = {
   version: 1
+  accentColor?: string
   blocks: unknown[]
 }
 

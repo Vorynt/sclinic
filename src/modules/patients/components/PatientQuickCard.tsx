@@ -1,7 +1,7 @@
 "use client"
 
 import { QueryErrorState } from "@/components/status/QueryErrorState"
-import { Spinner } from "@/components/ui/spinner"
+import { Skeleton } from "@/components/ui/skeleton"
 import { usePatient } from "@/modules/patients/hooks/use-patient"
 import type { Patient } from "@/modules/patients/types/patient"
 import { getPatientAgeYears } from "@/modules/patients/utils/patient-age"
@@ -16,11 +16,7 @@ export function PatientQuickCard({ patientId }: PatientQuickCardProps) {
   const patientQuery = usePatient(patientId)
 
   if (patientQuery.isLoading) {
-    return (
-      <section className="flex justify-center rounded-md border border-border px-4 py-8">
-        <Spinner />
-      </section>
-    )
+    return <PatientQuickCardSkeleton />
   }
 
   if (patientQuery.isError || !patientQuery.data) {
@@ -115,6 +111,43 @@ function PatientQuickCardContent({ patient }: { patient: Patient }) {
           <p className="text-sm text-foreground">{patient.notes}</p>
         </div>
       ) : null}
+    </section>
+  )
+}
+
+function PatientQuickCardSkeleton() {
+  return (
+    <section
+      role="status"
+      aria-label="Carregando ficha do paciente"
+      className="flex flex-col gap-3 rounded-md border border-border px-4 py-4"
+    >
+      <div className="flex flex-col gap-1.5">
+        <Skeleton className="h-4 w-32" />
+        <Skeleton className="h-3 w-56 max-w-full" />
+      </div>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div className="flex flex-col gap-1.5 sm:col-span-2">
+          <Skeleton className="h-3 w-12" />
+          <Skeleton className="h-4 w-48" />
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <Skeleton className="h-3 w-10" />
+          <Skeleton className="h-4 w-28" />
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <Skeleton className="h-3 w-10" />
+          <Skeleton className="h-4 w-16" />
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <Skeleton className="h-3 w-16" />
+          <Skeleton className="h-4 w-28" />
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <Skeleton className="h-3 w-12" />
+          <Skeleton className="h-4 w-36" />
+        </div>
+      </div>
     </section>
   )
 }

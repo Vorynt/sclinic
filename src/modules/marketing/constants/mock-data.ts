@@ -112,18 +112,15 @@ export const MOCK_ATTENDANCE = {
     { label: "Restrição: Jejum", severity: "medium" as const },
   ],
   nav: [
-    { label: "Resumo", description: "Visão geral", active: false },
-    { label: "Sinais vitais", description: "PA, FC, IMC", active: true },
-    { label: "Anotações", description: "Notas clínicas", active: false },
+    { label: "Anotações", description: "Evolução desta consulta", active: true },
+    { label: "Vitais", description: "PA, FC, IMC", active: false },
+    { label: "Documentos", description: "Receitas e atestados", active: false },
   ],
-  vitals: {
-    bloodPressure: "128 / 82",
-    heartRate: "72",
-    temperature: "36,5",
-    weight: "68,0",
-    height: "165",
-    spo2: "98",
-    bmi: "25,0",
+  context: {
+    age: "34 anos",
+    reason: "Dor lombar há 3 semanas",
+    lastVitals: "128/82 mmHg · 72 bpm",
+    lastNote: "Retorno de fisio. Melhora parcial da dor.",
   },
 }
 

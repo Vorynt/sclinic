@@ -20,6 +20,7 @@ import {
   isAssignedProfessional,
   isSelfScheduleOnlyRole,
 } from "@/modules/appointments/constants/appointments"
+import { isAttendancePanel } from "@/modules/appointments/constants/attendance-panels"
 import { toAppointment } from "@/modules/appointments/mappers/appointment.mapper"
 import {
   cancelAppointmentSchema,
@@ -43,8 +44,10 @@ import {
 } from "@/modules/appointments/utils/calendar-clinic-hours"
 import {
   agendaLocationFromSearchParams,
+  attendancePanelFromSearchParams,
   buildAgendaHref,
   buildAttendanceHref,
+  buildAttendanceRedirectHref,
 } from "@/modules/appointments/utils/agenda-href"
 import {
   getAppointmentDurationMinutes,
@@ -1154,6 +1157,57 @@ describe("agenda href round-trip", () => {
       mode: "month",
       date: "2026-07-01",
     })
+  })
+
+  it("appends attendance panel while preserving agenda location", () => {
+    expect(
+      buildAttendanceHref(VALID_UUID, {
+        mode: "week",
+        date: "2026-07-20",
+        panel: "vitals",
+      }),
+    ).toBe(
+      `/appointments/${VALID_UUID}/attendance?mode=week&date=2026-07-20&panel=vitals`,
+    )
+  })
+
+  it("ignores invalid attendance panel", () => {
+    expect(
+      buildAttendanceHref(VALID_UUID, {
+        panel: "notes" as never,
+      }),
+    ).toBe(`/appointments/${VALID_UUID}/attendance`)
+  })
+
+  it("reads panel from search params", () => {
+    const params = new URLSearchParams("mode=day&panel=documents")
+    expect(attendancePanelFromSearchParams(params)).toBe("documents")
+    expect(isAttendancePanel("patient")).toBe(true)
+    expect(isAttendancePanel("notes")).toBe(false)
+  })
+
+  it("builds redirect href preserving agenda params and setting panel", () => {
+    expect(
+      buildAttendanceRedirectHref(
+        VALID_UUID,
+        { mode: "day", date: "2026-07-24" },
+        "documents",
+      ),
+    ).toBe(
+      `/appointments/${VALID_UUID}/attendance?mode=day&date=2026-07-24&panel=documents`,
+    )
+  })
+
+  it("drops panel on notes redirect", () => {
+    expect(
+      buildAttendanceRedirectHref(VALID_UUID, {
+        mode: "month",
+        date: "2026-07-01",
+        panel: "vitals",
+      }),
+    ).toBe(
+      `/appointments/${VALID_UUID}/attendance?mode=month&date=2026-07-01`,
+    )
   })
 })
 

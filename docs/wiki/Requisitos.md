@@ -295,7 +295,7 @@ Convenção de ID: `RF-<DOMÍNIO>-NNN`.
 | RF-AGE-003 | Tipos | consultation, follow_up, procedure, evaluation, other | — | Done |
 | RF-AGE-004 | Transições de status | Ver §5 | Clínico / recepção | Done |
 | RF-AGE-005 | Cancelamento | Cascata: cancela charge `pending` | Quem cancela | Done |
-| RF-AGE-006 | Workspace attendance | Notas/vitais/receitas; leitura em `completed` | P3, P4, P10 | Done |
+| RF-AGE-006 | Workspace attendance | Notas no centro; vitais/documentos em sheet; leitura em `completed` | P3, P4, P10 | Done |
 | RF-AGE-007 | Iniciar / concluir atendimento | Só o profissional assignee (owner/admin/clinician/nurse com perfil clínico próprio); demais com `records.read` só visualizam | Clínicos | Done |
 | RF-AGE-008 | Valor → charge | `amountCents` + collect (legado) | Caixa | Done |
 | RF-AGE-009 | Self-schedule | Doctor/nurse só a si | P3, P4 | Done |
@@ -309,14 +309,14 @@ Convenção de ID: `RF-<DOMÍNIO>-NNN`.
 | ID | Título | Descrição | Personas | Status |
 |----|--------|-----------|----------|--------|
 | RF-PRT-001 | Clinical notes | 1 nota / appointment; editável em `checked_in` | Clínicos | Done |
-| RF-PRT-002 | Templates de nota | blank, first_visit, follow_up, soap, procedure | Clínicos | Done |
+| RF-PRT-002 | Editor de anotações | TipTap livre + snippets, autosave com debounce e save manual | Clínicos | Done |
 | RF-PRT-003 | Vital signs | 1 / appointment; IMC derivado | Clínicos | Done |
 | RF-PRT-004 | Clinical alerts | Escopo paciente; kinds + severity | Clínicos | Done |
 | RF-PRT-005 | Prescriptions | 0..N / appointment; entidade própria | Clínicos | Done |
 | RF-PRT-006 | Emitir receita | `draft` → `issued` imutável + freeze | Clínicos | Done |
 | RF-PRT-007 | Print HTML | `@media print`; sem PDF | Clínicos | Done |
 | RF-PRT-008 | Templates timbrado | Até 3 / clínica; um default | P1, P6 | Done |
-| RF-PRT-009 | Designer de blocos | DocumentModel → HTML (ADR-008) | P1, P6 | Done |
+| RF-PRT-009 | Designer de blocos | DocumentModel → HTML (ADR-008); cor de destaque | P1, P6 | Done |
 | RF-PRT-010 | Tipos avançados / PDF | Extensões | — | Planned/Later |
 
 ### 4.8 Recepção e realtime — `RF-REC`

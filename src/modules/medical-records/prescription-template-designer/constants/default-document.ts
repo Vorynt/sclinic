@@ -1,7 +1,8 @@
-import type {
-  PrescriptionBlock,
-  PrescriptionBlockType,
-  PrescriptionDocumentModel,
+import {
+  DEFAULT_PRESCRIPTION_ACCENT_COLOR,
+  type PrescriptionBlock,
+  type PrescriptionBlockType,
+  type PrescriptionDocumentModel,
 } from "@/modules/medical-records/prescription-template-designer/types/document-model"
 
 /** Stable IDs for the system default so tests/snapshots stay predictable. */
@@ -54,7 +55,11 @@ export function createDefaultPrescriptionDocumentModel(): PrescriptionDocumentMo
     },
   ]
 
-  return { version: 1, blocks }
+  return {
+    version: 1,
+    accentColor: DEFAULT_PRESCRIPTION_ACCENT_COLOR,
+    blocks,
+  }
 }
 
 export const DEFAULT_PRESCRIPTION_DOCUMENT_MODEL =

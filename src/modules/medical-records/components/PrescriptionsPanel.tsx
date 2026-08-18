@@ -1,12 +1,21 @@
 "use client"
 
-import { LockIcon, PlusIcon } from "@phosphor-icons/react"
+import { FileTextIcon, LockIcon, PlusIcon } from "@phosphor-icons/react"
 import { useState } from "react"
 import { toast } from "sonner"
 
+import { ListCardSkeleton } from "@/components/data-table/ListCardSkeleton"
 import { QueryErrorState } from "@/components/status/QueryErrorState"
 import { Button } from "@/components/ui/button"
-import { Spinner } from "@/components/ui/spinner"
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty"
+import { Skeleton } from "@/components/ui/skeleton"
 import { routes } from "@/config/routes"
 import { AttendanceDeclarationFormDialog } from "@/modules/medical-records/components/AttendanceDeclarationFormDialog"
 import { ExamRequestFormDialog } from "@/modules/medical-records/components/ExamRequestFormDialog"
@@ -47,8 +56,15 @@ export function PrescriptionsPanel({ appointmentId }: PrescriptionsPanelProps) {
 
   if (query.isLoading) {
     return (
-      <div className="flex justify-center py-12">
-        <Spinner />
+      <div
+        role="status"
+        aria-label="Carregando documentos"
+        className="flex flex-col gap-4"
+      >
+        <div className="flex justify-end">
+          <Skeleton className="h-8 w-36" />
+        </div>
+        <ListCardSkeleton rows={4} />
       </div>
     )
   }
@@ -331,22 +347,14 @@ function PrescriptionsPanelContent({
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="flex flex-col gap-1">
-          <h2 className="font-heading text-lg font-semibold tracking-tight">
-            Documentos
-          </h2>
-          <p className="text-sm text-muted-foreground">
-            Receitas, declarações e outros documentos do atendimento.
-          </p>
-        </div>
-        {editable ? (
+      {editable && data.items.length > 0 ? (
+        <div className="flex justify-end">
           <Button type="button" size="sm" onClick={openCreatePicker}>
             <PlusIcon />
             Novo documento
           </Button>
-        ) : null}
-      </div>
+        </div>
+      ) : null}
 
       {!editable ? (
         <p className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -356,22 +364,27 @@ function PrescriptionsPanelContent({
       ) : null}
 
       {data.items.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-border px-4 py-10 text-center">
-          <p className="text-sm text-muted-foreground">
-            Nenhum documento neste atendimento.
-          </p>
+        <Empty className="min-h-64 border border-dashed py-10">
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <FileTextIcon weight="duotone" />
+            </EmptyMedia>
+            <EmptyTitle>Nenhum documento neste atendimento</EmptyTitle>
+            <EmptyDescription>
+              {editable
+                ? "Emita receita, atestado, declaração ou pedido de exame."
+                : "Não há documentos emitidos para esta consulta."}
+            </EmptyDescription>
+          </EmptyHeader>
           {editable ? (
-            <Button
-              type="button"
-              variant="outline"
-              className="mt-4"
-              onClick={openCreatePicker}
-            >
-              <PlusIcon />
-              Novo documento
-            </Button>
+            <EmptyContent>
+              <Button type="button" size="sm" onClick={openCreatePicker}>
+                <PlusIcon />
+                Novo documento
+              </Button>
+            </EmptyContent>
           ) : null}
-        </div>
+        </Empty>
       ) : (
         <ul className="flex flex-col gap-2">
           {data.items.map((item) => (

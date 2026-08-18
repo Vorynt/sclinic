@@ -1,6 +1,6 @@
 # Domínio — Prontuário e receitas
 
-**Módulo:** `src/modules/medical-records/` · **Épicos:** E5, E13 · **ADR-005** · **ADR-008** · **ADR-010**
+**Módulo:** `src/modules/medical-records/` · **Épicos:** E5, E13 · **ADR-005** · **ADR-008** · **ADR-010** · **ADR-015**
 
 ## Sumário
 
@@ -18,7 +18,11 @@ Não há rota top-level: vive no attendance e no detalhe do paciente. Workspace 
 
 - 1 nota por appointment (upsert)
 - Editável só com appointment `checked_in`
-- Templates: blank, first_visit, follow_up, soap, procedure
+- **TipTap-first (ADR-015):** editor rich text aberto por padrão; `content` + `plainText` são a fonte da verdade
+- Autosave com debounce (2s após a última tecla) em background; botão **Salvar anotação** permanece para persistência imediata
+- Indicador de status: “Salvando…”, “Salvo às HH:mm” ou erro; toast só no save manual e em falha
+- Modelos clínicos opcionais (SOAP, retorno, primeira consulta, procedimento) inseríveis como snippets na toolbar
+- Notas antigas com `templateId`/`formValues` permanecem legíveis via `content` compilado
 - Perms: `records.read` / `records.write`
 
 ## Vital signs
@@ -48,7 +52,8 @@ Não há rota top-level: vive no attendance e no detalhe do paciente. Workspace 
 - **H2 (avaliar depois):** atestado de acompanhamento, relatório/encaminhamento — novos `kind`s + metadata
 - Print: HTML + `@media print` (sem PDF); rota `/prescriptions/:id/print`
 - Templates de timbrado (ADR-008): até **3** por clínica — só para `kind = prescription`
-- UI attendance: seção **Documentos** (`/attendance/documents`); legado `/prescriptions` redireciona
+- Cada modelo tem **cor de destaque** (`accentColor` hex) para nome da clínica, título e linhas; default `#1e4d6b`; receitas já emitidas não mudam (`layoutHtml` congelado)
+- UI attendance: cockpit notas-no-centro; Documentos em sheet (`?panel=documents`); legado `/documents` e `/prescriptions` redirecionam
 - Paciente: histórico em `/patients/:id/documents`
 
 ## Decisões relacionadas

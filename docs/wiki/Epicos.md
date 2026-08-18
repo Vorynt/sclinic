@@ -64,7 +64,7 @@ CRUD pacientes (CPF único/clínica), convite e perfil de profissionais com quot
 Calendário, status machine, attendance workspace, self-schedule, disponibilidade por horário da clínica.
 
 ### E5 — Prontuário (MVP entregue)
-Notas (templates genéricos), vitais, alertas do paciente, receitas draft→issued + print + designer de templates (blocos, até 3). Especialidades e mais tipos de documento → E13 / E19.
+Notas (editor TipTap + snippets), vitais, alertas do paciente, receitas draft→issued + print + designer de templates (blocos, até 3). Especialidades e mais tipos de documento → E13 / E19.
 
 ### E6 — Recebíveis
 Charge 1:1, markPaid/cancel, listagem `/billing`, collect vs view. Catálogo de serviços, desconto %, cortesia/retorno (ADR-009). **Done (ADR-011):** `dueAt` por cobrança + aba Inadimplentes agrupada por paciente. Gateway → E10. Comissão → extensão no [Roadmap](Roadmap).
@@ -106,7 +106,7 @@ Formulários antes da consulta; portal do paciente (agendar, documentos, cadastr
 KPIs gerenciais; automações de retorno/falta; IA com supervisão do profissional.
 
 ### E19 — Especialidades (H3+)
-Núcleo comum + packs de templates/formulários/documentos por especialidade.
+Núcleo comum + packs de snippets TipTap e documentos por especialidade.
 
 ## Como evoluir
 

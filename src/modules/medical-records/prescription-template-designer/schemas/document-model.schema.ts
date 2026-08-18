@@ -1,6 +1,10 @@
 import { z } from "zod"
 
-import { MAX_PRESCRIPTION_TEMPLATE_BLOCKS } from "@/modules/medical-records/prescription-template-designer/types/document-model"
+import {
+  DEFAULT_PRESCRIPTION_ACCENT_COLOR,
+  MAX_PRESCRIPTION_TEMPLATE_BLOCKS,
+  PRESCRIPTION_ACCENT_COLOR_PATTERN,
+} from "@/modules/medical-records/prescription-template-designer/types/document-model"
 
 const blockAlignSchema = z.enum(["left", "center", "right"])
 
@@ -93,9 +97,18 @@ export const prescriptionBlockSchema = z.discriminatedUnion("type", [
   }),
 ])
 
+const accentColorSchema = z
+  .string()
+  .regex(
+    PRESCRIPTION_ACCENT_COLOR_PATTERN,
+    "Informe uma cor hexadecimal (ex.: #1e4d6b).",
+  )
+  .default(DEFAULT_PRESCRIPTION_ACCENT_COLOR)
+
 export const prescriptionDocumentModelSchema = z
   .object({
     version: z.literal(1),
+    accentColor: accentColorSchema,
     blocks: z
       .array(prescriptionBlockSchema)
       .min(1, "Adicione ao menos um bloco.")

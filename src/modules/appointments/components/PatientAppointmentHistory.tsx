@@ -1,11 +1,19 @@
 "use client"
 
+import { CalendarBlankIcon } from "@phosphor-icons/react"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 
+import { ListCardSkeleton } from "@/components/data-table/ListCardSkeleton"
 import { QueryErrorState } from "@/components/status/QueryErrorState"
 import { Badge } from "@/components/ui/badge"
-import { Spinner } from "@/components/ui/spinner"
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty"
 import {
   APPOINTMENT_STATUS_LABELS,
   APPOINTMENT_TYPE_LABELS,
@@ -42,11 +50,7 @@ export function PatientAppointmentHistory({
         <p className="text-xs text-muted-foreground">{description}</p>
       </div>
 
-      {historyQuery.isLoading ? (
-        <div className="flex justify-center py-6">
-          <Spinner />
-        </div>
-      ) : null}
+      {historyQuery.isLoading ? <ListCardSkeleton rows={3} /> : null}
 
       {historyQuery.isError ? (
         <QueryErrorState
@@ -62,9 +66,17 @@ export function PatientAppointmentHistory({
       !historyQuery.isError &&
       historyQuery.data &&
       historyQuery.data.length === 0 ? (
-        <p className="rounded-md border border-dashed border-border px-3 py-6 text-center text-sm text-muted-foreground">
-          Nenhuma consulta anterior.
-        </p>
+        <Empty className="border border-dashed py-8">
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <CalendarBlankIcon weight="duotone" />
+            </EmptyMedia>
+            <EmptyTitle>Nenhuma consulta anterior</EmptyTitle>
+            <EmptyDescription>
+              Atendimentos anteriores deste paciente aparecem aqui.
+            </EmptyDescription>
+          </EmptyHeader>
+        </Empty>
       ) : null}
 
       {!historyQuery.isLoading &&

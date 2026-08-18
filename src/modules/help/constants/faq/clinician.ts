@@ -116,12 +116,12 @@ export const HELP_FAQ_CLINICIAN: HelpFaqItem[] = [
     question: "Como inicio o atendimento?",
     answer: [
       "Na agenda (ou na lista do dia), abra a consulta e inicie o atendimento. O status passa para Em atendimento.",
-      "Você é levado à tela de atendimento com abas de notas, vitais e receitas.",
+      "Você é levado ao atendimento: a tela abre na evolução clínica. Vitais, documentos e o contexto do paciente ficam ao lado, sem trocar de página.",
     ],
     steps: [
       "Abra a consulta.",
       "Toque em iniciar atendimento.",
-      "Registre o que for necessário nas abas.",
+      "Registre o que for necessário. Vitais e documentos abrem ao lado da nota.",
       "Conclua quando terminar.",
     ],
     keywords: ["iniciar", "começar", "atender", "em atendimento"],
@@ -164,7 +164,8 @@ export const HELP_FAQ_CLINICIAN: HelpFaqItem[] = [
     categoryId: "records",
     question: "Onde escrevo a evolução?",
     answer: [
-      "No atendimento, aba Notas. Dá para usar modelos prontos para agilizar.",
+      "No atendimento, a evolução abre direto. Dá para usar modelos prontos para agilizar.",
+      "A anotação salva sozinha enquanto você escreve; o horário do último save aparece abaixo do editor. O botão Salvar anotação continua disponível.",
       "A anotação fica ligada àquela consulta e aparece na ficha do paciente.",
     ],
     keywords: ["nota", "evolução", "SOAP", "prontuário"],
@@ -175,7 +176,7 @@ export const HELP_FAQ_CLINICIAN: HelpFaqItem[] = [
     categoryId: "records",
     question: "Como registro pressão, peso e altura?",
     answer: [
-      "Aba Vitais no atendimento. O IMC pode ser calculado automaticamente a partir de peso e altura.",
+      "Abra Vitais no atendimento (botão no topo). O IMC pode ser calculado automaticamente a partir de peso e altura.",
     ],
     keywords: ["vitais", "pressão", "peso", "IMC"],
     relatedRoutes: [{ label: "Agenda", href: routes.appointments }],
@@ -185,11 +186,11 @@ export const HELP_FAQ_CLINICIAN: HelpFaqItem[] = [
     categoryId: "records",
     question: "Como faço e imprimo a receita?",
     answer: [
-      "Aba Receitas: crie o rascunho, revise, emita e use Imprimir (abre a versão para impressão).",
+      "Abra Documentos no atendimento: crie o rascunho, revise, emita e use Imprimir (abre a versão para impressão).",
       "Cabeçalho e rodapé da clínica são configurados pela gestão em Configurações → Receitas.",
     ],
     steps: [
-      "Abra Receitas no atendimento.",
+      "Abra Documentos no atendimento.",
       "Monte o rascunho e revise.",
       "Emita.",
       "Toque em Imprimir.",

@@ -1,7 +1,9 @@
-import type {
-  BlockAlign,
-  PrescriptionBlock,
-  PrescriptionDocumentModel,
+import {
+  DEFAULT_PRESCRIPTION_ACCENT_COLOR,
+  PRESCRIPTION_ACCENT_COLOR_PATTERN,
+  type BlockAlign,
+  type PrescriptionBlock,
+  type PrescriptionDocumentModel,
 } from "@/modules/medical-records/prescription-template-designer/types/document-model"
 
 function escapeHtml(value: string): string {
@@ -14,6 +16,14 @@ function escapeHtml(value: string): string {
 
 function alignCss(align: BlockAlign): string {
   return align
+}
+
+export function resolvePrescriptionAccentColor(
+  value: string | undefined,
+): string {
+  return value && PRESCRIPTION_ACCENT_COLOR_PATTERN.test(value)
+    ? value
+    : DEFAULT_PRESCRIPTION_ACCENT_COLOR
 }
 
 function compileBlock(block: PrescriptionBlock): string {
@@ -85,14 +95,15 @@ function compileBlock(block: PrescriptionBlock): string {
     <p class="static-text" style="text-align:${alignCss(block.props.align)}">${escapeHtml(block.props.text).replace(/\n/g, "<br />")}</p>`
     case "divider":
       return `
-    <hr class="divider" style="border:0;border-top:${block.props.thicknessPx}px solid #1e4d6b;margin:16px 0" />`
+    <hr class="divider" style="border:0;border-top:${block.props.thicknessPx}px solid var(--rx-accent);margin:16px 0" />`
     case "spacer":
       return `
     <div class="spacer" style="height:${block.props.heightMm}mm" aria-hidden="true"></div>`
   }
 }
 
-const SHEET_STYLES = `
+function sheetStyles(accentColor: string): string {
+  return `
     @page { size: A4; margin: 0; }
     * { box-sizing: border-box; }
     html, body {
@@ -112,17 +123,18 @@ const SHEET_STYLES = `
       min-height: 297mm;
       margin: 0 auto;
       padding: 18mm 20mm 20mm;
+      --rx-accent: ${accentColor};
     }
     .letterhead {
       padding-bottom: 14px;
-      border-bottom: 2px solid #1e4d6b;
+      border-bottom: 2px solid var(--rx-accent);
       margin-bottom: 22px;
     }
     .clinic-name {
       margin: 0 0 6px;
       font-size: 18pt;
       font-weight: bold;
-      color: #1e4d6b;
+      color: var(--rx-accent);
       letter-spacing: 0.02em;
     }
     .meta {
@@ -136,7 +148,7 @@ const SHEET_STYLES = `
       font-weight: bold;
       letter-spacing: 0.12em;
       text-transform: uppercase;
-      color: #1e4d6b;
+      color: var(--rx-accent);
     }
     .patient {
       margin: 0 0 22px;
@@ -176,6 +188,7 @@ const SHEET_STYLES = `
       color: #222;
     }
 `
+}
 
 /**
  * Compiles a stacked-block DocumentModel into printable letterhead HTML
@@ -184,13 +197,14 @@ const SHEET_STYLES = `
 export function compilePrescriptionTemplate(
   model: PrescriptionDocumentModel,
 ): string {
+  const accentColor = resolvePrescriptionAccentColor(model.accentColor)
   const body = model.blocks.map(compileBlock).join("\n")
   return `<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8" />
   <title>Receita</title>
-  <style>${SHEET_STYLES}
+  <style>${sheetStyles(accentColor)}
   </style>
 </head>
 <body>

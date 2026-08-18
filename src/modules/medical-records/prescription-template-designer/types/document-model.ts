@@ -62,8 +62,15 @@ export type PrescriptionBlock =
 
 export type PrescriptionBlockType = PrescriptionBlock["type"]
 
+/** Navy used historically in compiled letterhead CSS. */
+export const DEFAULT_PRESCRIPTION_ACCENT_COLOR = "#1e4d6b"
+
+export const PRESCRIPTION_ACCENT_COLOR_PATTERN = /^#[0-9A-Fa-f]{6}$/
+
 export type PrescriptionDocumentModel = {
   version: 1
+  /** Highlight color for clinic name, title, letterhead border and dividers. */
+  accentColor: string
   blocks: PrescriptionBlock[]
 }
 

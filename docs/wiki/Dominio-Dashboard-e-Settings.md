@@ -75,7 +75,7 @@ Shell fino em `/settings/*`; domínio real em clinics / audit / medical-records 
 | audit | `audit.read` |
 | danger | exclusão clínica |
 
-`/settings/prescriptions`: designer de templates (blocos empilhados, até 3) — UI em `medical-records` (ADR-008).
+`/settings/prescriptions`: designer de templates (blocos empilhados, até 3, cor de destaque) — UI em `medical-records` (ADR-008).
 
 **ADR-009:** CRUD de serviços da clínica em `/settings/services` (`financial.manage`) — domínio em `billing`.
 

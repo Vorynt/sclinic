@@ -3,42 +3,46 @@
 import { useEffect, type ReactNode } from "react"
 
 import { QueryErrorState } from "@/components/status/QueryErrorState"
-import { Spinner } from "@/components/ui/spinner"
+import { Skeleton } from "@/components/ui/skeleton"
+import { AttendanceBottomBar } from "@/modules/appointments/components/AttendanceBottomBar"
+import { AttendanceContextRail } from "@/modules/appointments/components/AttendanceContextRail"
 import { AttendanceHeader } from "@/modules/appointments/components/AttendanceHeader"
-import { AttendanceNav } from "@/modules/appointments/components/AttendanceNav"
+import { AttendancePanelSheets } from "@/modules/appointments/components/AttendancePanelSheets"
 import { useAppointmentQuery } from "@/modules/appointments/hooks/use-appointment"
+import { ClinicalNotesPanel } from "@/modules/medical-records/components/ClinicalNotesPanel"
 import { useAttendanceUiStore } from "@/stores/attendance.store"
 
 type AttendanceWorkspaceProps = {
   appointmentId: string
-  children: ReactNode
+  children?: ReactNode
 }
 
 /**
- * Clinical attendance workspace: patient context + section nav + module slot.
- * Lives under `(attendance)` with AttendanceShell (no AppShell).
- * New clinical modules plug in via attendance-nav + nested routes.
+ * Clinical attendance cockpit: notes stay mounted; vitals, documents and
+ * patient context open as sheets. Lives under `(attendance)` with AttendanceShell.
  */
 export function AttendanceWorkspace({
   appointmentId,
-  children,
 }: AttendanceWorkspaceProps) {
   const appointmentQuery = useAppointmentQuery(appointmentId)
   const endPreparingAttendance = useAttendanceUiStore(
     (state) => state.endPreparingAttendance,
   )
+  const setPanel = useAttendanceUiStore((state) => state.setPanel)
 
   useEffect(() => {
     if (appointmentQuery.isLoading) return
     endPreparingAttendance()
   }, [appointmentQuery.isLoading, endPreparingAttendance])
 
+  useEffect(() => {
+    return () => {
+      setPanel(null)
+    }
+  }, [setPanel])
+
   if (appointmentQuery.isLoading) {
-    return (
-      <div className="flex flex-1 items-center justify-center py-16">
-        <Spinner className="size-6" />
-      </div>
-    )
+    return <AttendanceWorkspaceSkeleton />
   }
 
   if (appointmentQuery.isError || !appointmentQuery.data) {
@@ -61,14 +65,48 @@ export function AttendanceWorkspace({
   const appointment = appointmentQuery.data
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-6">
+    <div className="flex min-h-0 flex-1 flex-col gap-6 pb-[calc(3.5rem+env(safe-area-inset-bottom))] lg:pb-8">
       <AttendanceHeader appointment={appointment} />
 
       <div className="grid min-h-0 flex-1 gap-8 lg:grid-cols-[16rem_minmax(0,1fr)]">
-        <aside className="min-w-0">
-          <AttendanceNav appointmentId={appointmentId} />
-        </aside>
-        <div className="min-w-0 pb-8">{children}</div>
+        <div className="hidden min-w-0 lg:block">
+          <AttendanceContextRail appointment={appointment} />
+        </div>
+        <div className="min-w-0">
+          <ClinicalNotesPanel appointmentId={appointmentId} />
+        </div>
+      </div>
+
+      <AttendancePanelSheets appointment={appointment} />
+      <AttendanceBottomBar appointment={appointment} />
+    </div>
+  )
+}
+
+function AttendanceWorkspaceSkeleton() {
+  return (
+    <div
+      role="status"
+      aria-label="Carregando atendimento"
+      className="flex min-h-0 flex-1 flex-col gap-6 pb-[calc(3.5rem+env(safe-area-inset-bottom))] lg:pb-8"
+    >
+      <div className="flex flex-col gap-3 border-b pb-4">
+        <Skeleton className="h-7 w-48" />
+        <Skeleton className="h-4 w-72 max-w-full" />
+      </div>
+      <div className="grid min-h-0 flex-1 gap-8 lg:grid-cols-[16rem_minmax(0,1fr)]">
+        <div className="hidden flex-col gap-4 lg:flex">
+          <Skeleton className="h-4 w-24" />
+          <Skeleton className="h-4 w-16" />
+          <Skeleton className="h-8 w-28" />
+          <Skeleton className="h-16 w-full" />
+          <Skeleton className="h-16 w-full" />
+        </div>
+        <div className="flex flex-col gap-4">
+          <Skeleton className="h-6 w-32" />
+          <Skeleton className="h-4 w-64 max-w-full" />
+          <Skeleton className="h-80 w-full" />
+        </div>
       </div>
     </div>
   )

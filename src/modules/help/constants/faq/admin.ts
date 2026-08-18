@@ -78,9 +78,9 @@ export const HELP_FAQ_ADMIN: HelpFaqItem[] = [
     categoryId: "clinic",
     question: "Como personalizo o visual da receita?",
     answer: [
-      "Em Configurações → Receitas você ajusta textos de cabeçalho e rodapé usados na impressão.",
+      "Em Configurações → Receitas você ajusta textos de cabeçalho e rodapé e a cor de destaque usados na impressão.",
     ],
-    keywords: ["receita", "modelo", "cabeçalho", "imprimir"],
+    keywords: ["receita", "modelo", "cabeçalho", "cor", "imprimir"],
     relatedRoutes: [
       { label: "Modelos de receita", href: routes.settingsPrescriptions },
     ],
@@ -241,7 +241,7 @@ export const HELP_FAQ_ADMIN: HelpFaqItem[] = [
     categoryId: "records",
     question: "Onde fica a evolução do paciente?",
     answer: [
-      "Durante o atendimento, na aba Notas. Também aparece depois na ficha do paciente.",
+      "Durante o atendimento a evolução abre direto. Também aparece depois na ficha do paciente. Enquanto o atendimento está em andamento, a nota salva sozinha.",
     ],
     keywords: ["nota", "evolução", "prontuário"],
     relatedRoutes: [{ label: "Agenda", href: routes.appointments }],
@@ -251,7 +251,7 @@ export const HELP_FAQ_ADMIN: HelpFaqItem[] = [
     categoryId: "records",
     question: "Como registro pressão, peso e vitais?",
     answer: [
-      "No atendimento, aba Vitais. O IMC pode ser calculado automaticamente.",
+      "No atendimento, abra Vitais. O IMC pode ser calculado automaticamente.",
     ],
     keywords: ["vitais", "pressão", "peso", "IMC"],
     relatedRoutes: [{ label: "Agenda", href: routes.appointments }],
@@ -261,7 +261,7 @@ export const HELP_FAQ_ADMIN: HelpFaqItem[] = [
     categoryId: "records",
     question: "Como emitir e imprimir receita?",
     answer: [
-      "No atendimento, abra Receitas: rascunho → emitir → Imprimir.",
+      "No atendimento, abra Documentos: rascunho → emitir → Imprimir.",
       "O visual (cabeçalho/rodapé) fica em Configurações → Receitas.",
     ],
     keywords: ["receita", "imprimir", "prescrição"],

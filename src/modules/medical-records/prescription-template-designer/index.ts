@@ -16,6 +16,8 @@ export type {
   PrescriptionDocumentModel,
 } from "@/modules/medical-records/prescription-template-designer/types/document-model"
 export {
+  DEFAULT_PRESCRIPTION_ACCENT_COLOR,
   MAX_PRESCRIPTION_TEMPLATE_BLOCKS,
   MAX_PRESCRIPTION_TEMPLATES_PER_CLINIC,
+  PRESCRIPTION_ACCENT_COLOR_PATTERN,
 } from "@/modules/medical-records/prescription-template-designer/types/document-model"

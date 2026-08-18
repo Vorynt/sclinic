@@ -312,7 +312,8 @@ export const HELP_FAQ_OWNER: HelpFaqItem[] = [
     categoryId: "records",
     question: "Onde escrevo a evolução do paciente?",
     answer: [
-      "Durante o atendimento, abra a aba Notas. Dá para usar modelos prontos para escrever mais rápido.",
+      "Durante o atendimento a evolução abre direto. Dá para usar modelos prontos para escrever mais rápido.",
+      "A anotação salva sozinha enquanto você escreve; o horário do último save aparece abaixo do editor. O botão Salvar anotação continua disponível.",
       "A anotação fica ligada àquela consulta e também aparece depois na ficha do paciente.",
     ],
     keywords: ["nota", "evolução", "anotação", "prontuário"],
@@ -323,7 +324,7 @@ export const HELP_FAQ_OWNER: HelpFaqItem[] = [
     categoryId: "records",
     question: "Como registro pressão, peso e alertas?",
     answer: [
-      "No atendimento, use a aba Vitais para pressão, peso, altura e outros sinais. O IMC pode ser calculado automaticamente.",
+      "No atendimento, abra Vitais para pressão, peso, altura e outros sinais. O IMC pode ser calculado automaticamente.",
       "Alertas importantes (como alergia) ficam na ficha do paciente, para a equipe ver com facilidade.",
     ],
     keywords: ["vitais", "pressão", "peso", "IMC", "alerta", "alergia"],
@@ -334,11 +335,11 @@ export const HELP_FAQ_OWNER: HelpFaqItem[] = [
     categoryId: "records",
     question: "Como faço e imprimo uma receita?",
     answer: [
-      "No atendimento, abra Receitas. Crie o rascunho, revise, emita e use Imprimir.",
-      "Se quiser mudar o visual da receita (cabeçalho, rodapé), vá em Configurações → Receitas.",
+      "No atendimento, abra Documentos. Crie o rascunho, revise, emita e use Imprimir.",
+      "Se quiser mudar o visual da receita (cabeçalho, rodapé, cor de destaque), vá em Configurações → Receitas.",
     ],
     steps: [
-      "No atendimento, abra Receitas.",
+      "No atendimento, abra Documentos.",
       "Crie, revise e emita.",
       "Toque em Imprimir.",
       "Se quiser, personalize o modelo em Configurações → Receitas.",
@@ -543,10 +544,10 @@ export const HELP_FAQ_OWNER: HelpFaqItem[] = [
     categoryId: "clinic",
     question: "Como personalizo o visual da receita?",
     answer: [
-      "Em Configurações → Receitas você ajusta cabeçalho, rodapé e outros textos que aparecem na impressão.",
+      "Em Configurações → Receitas você ajusta cabeçalho, rodapé, cor de destaque e outros textos que aparecem na impressão.",
       "Isso vale para as receitas emitidas pelos profissionais da clínica.",
     ],
-    keywords: ["modelo", "receita", "cabeçalho", "rodapé", "imprimir"],
+    keywords: ["modelo", "receita", "cabeçalho", "rodapé", "cor", "imprimir"],
     relatedRoutes: [
       { label: "Modelos de receita", href: routes.settingsPrescriptions },
     ],

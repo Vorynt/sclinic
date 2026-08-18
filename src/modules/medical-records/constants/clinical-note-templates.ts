@@ -112,8 +112,10 @@ function checklist(
 }
 
 /**
- * Declarative clinical form templates.
- * TipTap is compiled from field values on save — not embedded here.
+ * Declarative clinical note templates.
+ * @deprecated Form-based authoring replaced by TipTap-first (ADR-015).
+ * Templates are now exposed as optional snippets via clinical-note-snippets.ts.
+ * Kept for legacy form upsert compatibility and compile-clinical-note-form tests.
  */
 export const CLINICAL_NOTE_TEMPLATES: ClinicalNoteTemplate[] = [
   {

@@ -16,6 +16,7 @@ Decisões canônicas: **ADRs** em `docs/adr/`. Notas curtas de implementação: 
 | [008](https://github.com/ViniciusSantos31/sclinic/blob/main/docs/adr/008-prescription-template-designer.md) | Designer de templates de receita | Accepted | DocumentModel + até 3 templates |
 | [009](https://github.com/ViniciusSantos31/sclinic/blob/main/docs/adr/009-clinic-services-catalog.md) | Catálogo de serviços da clínica | Accepted | preço fixo; desconto %; cortesia/retorno |
 | [010](https://github.com/ViniciusSantos31/sclinic/blob/main/docs/adr/010-clinical-document-kinds.md) | Documentos clínicos tipados (`kind`) | Accepted | 4 kinds emitíveis; system layouts por kind |
+| [015](https://github.com/ViniciusSantos31/sclinic/blob/main/docs/adr/015-clinical-notes-tiptap-first.md) | Anotações TipTap-first | Accepted | editor livre; snippets opcionais; form legado |
 | [014](https://github.com/ViniciusSantos31/sclinic/blob/main/docs/adr/014-clinical-attachments-ged.md) | Anexos clínicos (GED) — trilha separada | Accepted (direção) | upload/storage Later; ≠ documentos emitidos |
 | [011](https://github.com/ViniciusSantos31/sclinic/blob/main/docs/adr/011-advanced-scheduling.md) | Agenda avançada (E15) | Accepted | blocks; horário profissional; waitlist; modalidade |
 | [012](https://github.com/ViniciusSantos31/sclinic/blob/main/docs/adr/012-multi-profession-clinician.md) | Multi-profissão (`clinician` × `profession_type`) | Accepted | role genérico; tipo no perfil; sem role por profissão |
@@ -33,7 +34,8 @@ Paths locais: `docs/adr/00N-*.md`.
 | Downgrade | Nunca apagar dados; bloquear creates | ADR-004 |
 | Receita | Entidade própria; snapshot na emissão | ADR-005 |
 | Documentos tipados | `kind` + `metadata` em `prescriptions`; system layout por kind (exceto receita) | ADR-010 |
-| Templates de receita | DocumentModel (blocos); ≤3 por clínica | ADR-008 |
+| Anotações clínicas | TipTap livre como padrão; snippets opcionais; form legado na API | ADR-015 |
+| Templates de receita | DocumentModel (blocos + `accentColor`); ≤3 por clínica | ADR-008 |
 | Caixa | Separado do “concluir” clínico | ADR-006 |
 | Realtime MVP | SSE in-process, extensível a broker | ADR-006 |
 | Owner atende | Perfil clínico opcional; sem dual membership | ADR-007, [Profissionais](Dominio-Profissionais) |

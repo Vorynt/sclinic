@@ -1,7 +1,8 @@
 import { compilePrescriptionTemplate } from "@/modules/medical-records/prescription-template-designer"
-import type {
-  PrescriptionBlock,
-  PrescriptionDocumentModel,
+import {
+  DEFAULT_PRESCRIPTION_ACCENT_COLOR,
+  type PrescriptionBlock,
+  type PrescriptionDocumentModel,
 } from "@/modules/medical-records/prescription-template-designer/types/document-model"
 
 /** Stable IDs for the attendance declaration system default. */
@@ -54,7 +55,11 @@ export function createDefaultAttendanceDeclarationDocumentModel(): PrescriptionD
     },
   ]
 
-  return { version: 1, blocks }
+  return {
+    version: 1,
+    accentColor: DEFAULT_PRESCRIPTION_ACCENT_COLOR,
+    blocks,
+  }
 }
 
 export const DEFAULT_ATTENDANCE_DECLARATION_DOCUMENT_MODEL =

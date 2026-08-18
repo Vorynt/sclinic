@@ -6,6 +6,7 @@
 
 - [Responsabilidade](#responsabilidade)
 - [Features](#features)
+- [Workspace de atendimento](#workspace-de-atendimento)
 - [Create — rápido vs completo](#create--rápido-vs-completo)
 - [Máquina de status](#máquina-de-status)
 - [Validações](#validações)
@@ -23,7 +24,7 @@ Calendário `/appointments`; create híbrido (rápido + completo); workspace `(a
 
 - Calendário `/appointments`
 - **Create híbrido:** agendamento rápido (modal) + completo (`/appointments/new`)
-- Workspace `(attendance)` com notas/vitais/receitas
+- Workspace `(attendance)`: cockpit notas-no-centro; vitais/documentos em sheet (`?panel=`)
 - Transições de status + cancelamento
 - Valor opcional → charge (ADR-002) — legado
 - Serviço obrigatório + desconto % / cortesia (ADR-009) — Done
@@ -41,6 +42,12 @@ Espelha o padrão `PatientForm` (`quick` / `full`):
 - Helper: `buildAppointmentNewHref` / `appointmentNewLocationFromSearchParams` (`utils/appointment-new-href.ts`).
 - Mesma action/service de create; edição continua no `AppointmentDetailDrawer` (remarcar / detalhes).
 - Waitlist promote: modal rápido com `lockedPatient`; **Mais opções** preserva `waitlistId` + paciente na URL.
+
+## Workspace de atendimento
+
+Chrome isolado (`AttendanceShell`, sem AppShell). Landing `/appointments/[id]/attendance` abre o editor de evolução. Trilho persistente (idade, motivo, último vital, última nota). Vitais, documentos, ficha/alertas e retorno abrem em sheet/dialog (`?panel=vitals|documents|patient|next`) **sem desmontar** a nota.
+
+Rotas antigas `/notes`, `/vitals`, `/documents` e `/prescriptions` redirecionam para a landing (com `panel` quando couber) e preservam `mode`/`date` da agenda.
 
 ## Máquina de status
 

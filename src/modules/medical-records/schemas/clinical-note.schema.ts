@@ -104,16 +104,25 @@ export const upsertClinicalNoteFormSchema = z
     }
   })
 
-/** Legacy TipTap-only upsert (notes without template). */
-export const upsertClinicalNoteLegacySchema = z.object({
+/** Primary upsert: TipTap content is the source of truth. */
+export const upsertClinicalNoteContentSchema = z.object({
   appointmentId: appointmentIdSchema,
   content: tipTapDocSchema,
   plainText: z.string().trim().min(1, "A anotação não pode estar vazia"),
 })
 
+/**
+ * @deprecated Legacy form-based upsert. Kept for API compatibility with notes
+ * authored before TipTap-first (ADR-015). UI no longer sends this shape.
+ */
+export const upsertClinicalNoteFormLegacySchema = upsertClinicalNoteFormSchema
+
+/** @deprecated Alias for upsertClinicalNoteContentSchema */
+export const upsertClinicalNoteLegacySchema = upsertClinicalNoteContentSchema
+
 export const upsertClinicalNoteSchema = z.union([
-  upsertClinicalNoteFormSchema,
-  upsertClinicalNoteLegacySchema,
+  upsertClinicalNoteContentSchema,
+  upsertClinicalNoteFormLegacySchema,
 ])
 
 export const listPatientClinicalNotesSchema = z.object({

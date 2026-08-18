@@ -11,12 +11,23 @@ import {
   buildTemplateValuesSchema,
   isFormUpsert,
   listPatientClinicalNotesSchema,
+  upsertClinicalNoteContentSchema,
   upsertClinicalNoteSchema,
 } from "@/modules/medical-records/schemas/clinical-note.schema"
 import {
   compileClinicalNoteForm,
   isCompiledNoteEmpty,
 } from "@/modules/medical-records/utils/compile-clinical-note-form"
+import {
+  canPersistClinicalNote,
+  fingerprintClinicalNote,
+  formatClinicalNoteSavedAt,
+  getClinicalNoteSaveStatusLabel,
+} from "@/modules/medical-records/utils/clinical-note-autosave"
+import {
+  CLINICAL_NOTE_SNIPPETS,
+  getClinicalNoteSnippet,
+} from "@/modules/medical-records/utils/clinical-note-snippets"
 import { AppError, ErrorCode } from "@/shared/errors"
 
 const VALID_UUID = "11111111-1111-4111-8111-111111111111"
@@ -104,7 +115,25 @@ describe("compileClinicalNoteForm", () => {
 })
 
 describe("upsertClinicalNoteSchema", () => {
-  it("accepts form upsert and validates required fields", () => {
+  it("accepts TipTap content upsert as primary path", () => {
+    const parsed = upsertClinicalNoteContentSchema.parse({
+      appointmentId: VALID_UUID,
+      content: VALID_DOC,
+      plainText: "Paciente evolui bem.",
+    })
+    expect(isFormUpsert(parsed)).toBe(false)
+  })
+
+  it("rejects empty TipTap content", () => {
+    const invalid = upsertClinicalNoteContentSchema.safeParse({
+      appointmentId: VALID_UUID,
+      content: VALID_DOC,
+      plainText: "",
+    })
+    expect(invalid.success).toBe(false)
+  })
+
+  it("accepts legacy form upsert for API compatibility", () => {
     const parsed = upsertClinicalNoteSchema.parse({
       appointmentId: VALID_UUID,
       templateId: "blank",
@@ -118,15 +147,6 @@ describe("upsertClinicalNoteSchema", () => {
       formValues: { body: "" },
     })
     expect(invalid.success).toBe(false)
-  })
-
-  it("accepts legacy TipTap upsert", () => {
-    const parsed = upsertClinicalNoteSchema.parse({
-      appointmentId: VALID_UUID,
-      content: VALID_DOC,
-      plainText: "Paciente evolui bem.",
-    })
-    expect(isFormUpsert(parsed)).toBe(false)
   })
 
   it("builds per-template zod values schema", () => {
@@ -175,6 +195,75 @@ describe("toClinicalNote mapper", () => {
     })
     expect(note.templateId).toBe("soap")
     expect(note.formValues?.s_chief).toBe("Dor")
+  })
+})
+
+describe("clinical note snippets", () => {
+  it("exposes TipTap snippets for each clinical model except blank", () => {
+    expect(CLINICAL_NOTE_SNIPPETS.map((snippet) => snippet.id)).toEqual([
+      "first_visit",
+      "follow_up",
+      "soap",
+      "procedure",
+    ])
+    for (const snippet of CLINICAL_NOTE_SNIPPETS) {
+      expect(snippet.content.length).toBeGreaterThan(0)
+      expect(
+        snippet.content.every(
+          (node) => node.type === "heading" || node.type === "paragraph",
+        ),
+      ).toBe(true)
+      for (const node of snippet.content) {
+        if (node.type === "paragraph") {
+          expect(node.content).toBeUndefined()
+        }
+      }
+    }
+  })
+
+  it("resolves snippets by template id", () => {
+    expect(getClinicalNoteSnippet("soap")?.label).toBe("SOAP clínico")
+    expect(getClinicalNoteSnippet("blank")).toBeNull()
+  })
+})
+
+describe("clinical note autosave helpers", () => {
+  it("fingerprints content and trimmed plain text", () => {
+    const left = fingerprintClinicalNote(VALID_DOC, "  texto  ")
+    const right = fingerprintClinicalNote(VALID_DOC, "texto")
+    expect(left).toBe(right)
+  })
+
+  it("does not persist empty or unchanged notes", () => {
+    const saved = fingerprintClinicalNote(VALID_DOC, "Paciente evolui bem.")
+    expect(canPersistClinicalNote("", saved, saved)).toBe(false)
+    expect(
+      canPersistClinicalNote("Paciente evolui bem.", saved, saved),
+    ).toBe(false)
+    expect(
+      canPersistClinicalNote(
+        "Paciente piorou.",
+        fingerprintClinicalNote(VALID_DOC, "Paciente piorou."),
+        saved,
+      ),
+    ).toBe(true)
+  })
+
+  it("formats last saved time and status labels", () => {
+    const savedAt = new Date(2026, 7, 18, 14, 32)
+    expect(formatClinicalNoteSavedAt(savedAt)).toBe("14:32")
+    expect(getClinicalNoteSaveStatusLabel("dirty", savedAt)).toBe(
+      "Salvo às 14:32",
+    )
+    expect(getClinicalNoteSaveStatusLabel("dirty", null)).toBeNull()
+    expect(getClinicalNoteSaveStatusLabel("saving", savedAt)).toBe("Salvando…")
+    expect(getClinicalNoteSaveStatusLabel("error", savedAt)).toBe(
+      "Não foi possível salvar",
+    )
+    expect(getClinicalNoteSaveStatusLabel("saved", savedAt)).toBe(
+      "Salvo às 14:32",
+    )
+    expect(getClinicalNoteSaveStatusLabel("idle", null)).toBeNull()
   })
 })
 

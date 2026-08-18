@@ -2,11 +2,13 @@
 
 import { useState } from "react";
 
+import { ColorPicker } from "@/components/ui/color-picker";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import type {
-  PrescriptionBlock,
-  PrescriptionDocumentModel,
+import {
+  DEFAULT_PRESCRIPTION_ACCENT_COLOR,
+  type PrescriptionBlock,
+  type PrescriptionDocumentModel,
 } from "@/modules/medical-records/prescription-template-designer";
 import { TemplateBlockItem } from "@/modules/medical-records/prescription-template-designer/components/TemplateBlockItem";
 import { TemplateBlockPalette } from "@/modules/medical-records/prescription-template-designer/components/TemplateBlockPalette";
@@ -49,15 +51,30 @@ export function TemplateBlockEditor({
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(360px,480px)]">
       <div className="flex flex-col gap-4">
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="template-name">Nome do modelo</Label>
-          <Input
-            id="template-name"
-            value={name}
-            onChange={(e) => onNameChange(e.target.value)}
-            placeholder="Ex.: Padrão, Controlados"
-            maxLength={80}
-          />
+        <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_16rem]">
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="template-name">Nome do modelo</Label>
+            <Input
+              id="template-name"
+              value={name}
+              onChange={(e) => onNameChange(e.target.value)}
+              placeholder="Ex.: Padrão, Controlados"
+              maxLength={80}
+            />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="template-accent">Cor de destaque</Label>
+            <ColorPicker
+              id="template-accent"
+              value={model.accentColor ?? DEFAULT_PRESCRIPTION_ACCENT_COLOR}
+              onChange={(accentColor) =>
+                onModelChange({ ...model, accentColor })
+              }
+            />
+            <p className="text-xs text-muted-foreground">
+              Nome da clínica, título e linhas.
+            </p>
+          </div>
         </div>
 
         <div className="flex flex-col gap-2">

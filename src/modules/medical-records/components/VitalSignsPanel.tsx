@@ -1,13 +1,22 @@
 "use client";
 
+import { PulseIcon } from "@phosphor-icons/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRef } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 import type { z } from "zod";
 
+import { ListCardSkeleton } from "@/components/data-table/ListCardSkeleton";
 import { QueryErrorState } from "@/components/status/QueryErrorState";
 import { Button } from "@/components/ui/button";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
 import {
   Field,
   FieldError,
@@ -15,6 +24,7 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
 import { VitalSignsHistoryPanel } from "@/modules/medical-records/components/VitalSignsHistoryPanel";
@@ -80,11 +90,7 @@ export function VitalSignsPanel({ appointmentId }: VitalSignsPanelProps) {
   );
 
   if (vitalsQuery.isLoading) {
-    return (
-      <div className="flex justify-center py-12">
-        <Spinner />
-      </div>
-    );
+    return <VitalSignsPanelSkeleton />;
   }
 
   if (vitalsQuery.isError || !vitalsQuery.data) {
@@ -178,31 +184,25 @@ function VitalSignsPanelContent({
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
-        <div className="flex flex-col gap-1">
-          <h2 className="font-heading text-lg font-semibold tracking-tight text-foreground">
-            Sinais vitais
-          </h2>
-          <p className="text-sm text-muted-foreground">
-            {editable
-              ? "Registre as medições deste atendimento."
-              : "Somente leitura — o atendimento não está em andamento."}
-          </p>
-        </div>
-      </div>
+      {!editable ? (
+        <p className="text-sm text-muted-foreground">
+          Somente leitura — o atendimento não está em andamento.
+        </p>
+      ) : null}
 
-      <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_18rem]">
+      <div className="flex flex-col gap-8">
         {showEmptyReadonly ? (
-          <div className="flex min-h-64 items-center justify-center rounded-md border border-dashed border-border px-6 py-10">
-            <div className="flex max-w-sm flex-col items-center gap-1 text-center">
-              <p className="text-sm font-medium text-foreground">
-                Nenhum sinal vital neste atendimento
-              </p>
-              <p className="text-sm text-muted-foreground">
+          <Empty className="min-h-64 border border-dashed py-10">
+            <EmptyHeader>
+              <EmptyMedia variant="icon">
+                <PulseIcon weight="duotone" />
+              </EmptyMedia>
+              <EmptyTitle>Nenhum sinal vital neste atendimento</EmptyTitle>
+              <EmptyDescription>
                 Não há medições registradas para esta consulta.
-              </p>
-            </div>
-          </div>
+              </EmptyDescription>
+            </EmptyHeader>
+          </Empty>
         ) : editable ? (
           <form
             className="flex flex-col gap-4 rounded-md border border-border px-4 py-4"
@@ -401,6 +401,35 @@ function VitalSignsPanelContent({
           onRetry={onHistoryRetry}
           isRetrying={historyRetrying}
         />
+      </div>
+    </div>
+  );
+}
+
+function VitalSignsPanelSkeleton() {
+  return (
+    <div
+      role="status"
+      aria-label="Carregando sinais vitais"
+      className="flex flex-col gap-8"
+    >
+      <div className="flex flex-col gap-4 rounded-md border border-border px-4 py-4">
+        <Skeleton className="h-4 w-32" />
+        <Skeleton className="h-8 w-full" />
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Skeleton className="h-8 w-full" />
+          <Skeleton className="h-8 w-full" />
+          <Skeleton className="h-8 w-full" />
+          <Skeleton className="h-8 w-full" />
+          <Skeleton className="h-8 w-full" />
+          <Skeleton className="h-8 w-full" />
+        </div>
+        <Skeleton className="h-8 w-36" />
+      </div>
+      <div className="flex flex-col gap-3">
+        <Skeleton className="h-4 w-48" />
+        <Skeleton className="h-3 w-64 max-w-full" />
+        <ListCardSkeleton rows={3} />
       </div>
     </div>
   );

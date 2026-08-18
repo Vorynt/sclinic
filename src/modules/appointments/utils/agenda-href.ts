@@ -1,4 +1,8 @@
 import { routes } from "@/config/routes"
+import {
+  isAttendancePanel,
+  type AttendancePanel,
+} from "@/modules/appointments/constants/attendance-panels"
 import type { CalendarViewMode } from "@/modules/appointments/utils/calendar-range"
 import { toISODate } from "@/utils/date"
 
@@ -7,6 +11,17 @@ export type AgendaLocation = {
   mode?: CalendarViewMode | null
   date?: Date | string | null
 }
+
+/** Attendance URL extras on top of the agenda round-trip params. */
+export type AttendanceHrefLocation = AgendaLocation & {
+  panel?: AttendancePanel | null
+}
+
+export type SearchParamsLike = {
+  get: (key: string) => string | null
+}
+
+export type NextSearchParams = Record<string, string | string[] | undefined>
 
 export function isCalendarViewMode(
   value: string | null | undefined,
@@ -40,16 +55,20 @@ export function buildAgendaHref(location?: AgendaLocation): string {
  */
 export function buildAttendanceHref(
   appointmentId: string,
-  agenda?: AgendaLocation,
+  location?: AttendanceHrefLocation,
 ): string {
   const search = new URLSearchParams()
 
-  if (agenda?.mode && isCalendarViewMode(agenda.mode)) {
-    search.set("mode", agenda.mode)
+  if (location?.mode && isCalendarViewMode(location.mode)) {
+    search.set("mode", location.mode)
   }
 
-  if (agenda?.date) {
-    search.set("date", toDateParam(agenda.date))
+  if (location?.date) {
+    search.set("date", toDateParam(location.date))
+  }
+
+  if (location?.panel && isAttendancePanel(location.panel)) {
+    search.set("panel", location.panel)
   }
 
   const qs = search.toString()
@@ -57,9 +76,9 @@ export function buildAttendanceHref(
   return qs ? `${base}?${qs}` : base
 }
 
-export function agendaLocationFromSearchParams(params: {
-  get: (key: string) => string | null
-}): AgendaLocation {
+export function agendaLocationFromSearchParams(
+  params: SearchParamsLike,
+): AgendaLocation {
   const mode = params.get("mode")
   const date = params.get("date")
 
@@ -67,4 +86,40 @@ export function agendaLocationFromSearchParams(params: {
     mode: isCalendarViewMode(mode) ? mode : null,
     date,
   }
+}
+
+export function attendancePanelFromSearchParams(
+  params: SearchParamsLike,
+): AttendancePanel | null {
+  const panel = params.get("panel")
+  return isAttendancePanel(panel) ? panel : null
+}
+
+export function firstSearchParam(
+  value: string | string[] | undefined,
+): string | null {
+  if (Array.isArray(value)) return value[0] ?? null
+  return value ?? null
+}
+
+export function searchParamsAdapter(
+  searchParams: NextSearchParams,
+): SearchParamsLike {
+  return {
+    get(key: string) {
+      return firstSearchParam(searchParams[key])
+    },
+  }
+}
+
+/** Landing href that keeps agenda `mode`/`date` and optionally opens a sheet. */
+export function buildAttendanceRedirectHref(
+  appointmentId: string,
+  searchParams: NextSearchParams,
+  panel?: AttendancePanel | null,
+): string {
+  return buildAttendanceHref(appointmentId, {
+    ...agendaLocationFromSearchParams(searchParamsAdapter(searchParams)),
+    panel: panel ?? null,
+  })
 }

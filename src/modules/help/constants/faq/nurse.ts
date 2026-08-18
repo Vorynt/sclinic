@@ -32,7 +32,7 @@ export const HELP_FAQ_NURSE: HelpFaqItem[] = [
     steps: [
       "Abra o Início e veja a fila clínica do dia.",
       "Entre em Agendamentos para iniciar o próximo atendimento.",
-      "Registre vitais e notas nas abas do atendimento.",
+      "Registre vitais e notas no atendimento — a evolução abre direto; vitais ficam a um toque.",
       "Conclua quando o cuidado daquele horário terminar.",
     ],
     keywords: ["começar", "primeiro dia", "fila"],
@@ -115,7 +115,7 @@ export const HELP_FAQ_NURSE: HelpFaqItem[] = [
     categoryId: "appointments",
     question: "Como inicio o atendimento?",
     answer: [
-      "Abra a consulta na agenda e inicie. O status vira Em atendimento e você acessa notas, vitais e receitas.",
+      "Abra a consulta na agenda e inicie. O status vira Em atendimento e você cai na evolução clínica; vitais e documentos abrem ao lado.",
     ],
     steps: [
       "Abra a consulta.",
@@ -152,7 +152,7 @@ export const HELP_FAQ_NURSE: HelpFaqItem[] = [
     categoryId: "records",
     question: "Como registro sinais vitais?",
     answer: [
-      "No atendimento, aba Vitais: pressão, peso, altura e demais campos. O IMC pode ser calculado sozinho.",
+      "No atendimento, abra Vitais: pressão, peso, altura e demais campos. O IMC pode ser calculado sozinho.",
     ],
     keywords: ["vitais", "pressão", "peso", "IMC", "triagem"],
     relatedRoutes: [{ label: "Agenda", href: routes.appointments }],
@@ -162,7 +162,7 @@ export const HELP_FAQ_NURSE: HelpFaqItem[] = [
     categoryId: "records",
     question: "Posso escrever evolução / notas?",
     answer: [
-      "Sim, na aba Notas do atendimento. Use modelos prontos se a clínica tiver. A nota fica na consulta e na ficha do paciente.",
+      "Sim, a evolução abre direto no atendimento. Use modelos prontos se a clínica tiver. A nota salva sozinha enquanto você escreve e também fica na ficha do paciente.",
     ],
     keywords: ["nota", "evolução", "prontuário"],
     relatedRoutes: [{ label: "Agenda", href: routes.appointments }],
@@ -172,7 +172,7 @@ export const HELP_FAQ_NURSE: HelpFaqItem[] = [
     categoryId: "records",
     question: "Consigo emitir receita?",
     answer: [
-      "Sim, na aba Receitas: rascunho, emitir e imprimir. O modelo visual (cabeçalho/rodapé) é definido pela gestão da clínica.",
+      "Sim, em Documentos: rascunho, emitir e imprimir. O modelo visual (cabeçalho/rodapé) é definido pela gestão da clínica.",
     ],
     keywords: ["receita", "prescrição", "imprimir"],
     relatedRoutes: [{ label: "Agenda", href: routes.appointments }],

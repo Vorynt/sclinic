@@ -1,12 +1,13 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { PlusIcon, TrashIcon } from "@phosphor-icons/react";
+import { PlusIcon, TrashIcon, WarningCircleIcon } from "@phosphor-icons/react";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import type { z } from "zod";
 
+import { ListCardSkeleton } from "@/components/data-table/ListCardSkeleton";
 import { QueryErrorState } from "@/components/status/QueryErrorState";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
 import {
   Field,
   FieldError,
@@ -100,11 +108,7 @@ export function PatientClinicalAlertsPanel({
         ) : null}
       </div>
 
-      {alertsQuery.isLoading ? (
-        <div className="flex justify-center py-6">
-          <Spinner />
-        </div>
-      ) : null}
+      {alertsQuery.isLoading ? <ListCardSkeleton rows={3} /> : null}
 
       {alertsQuery.isError ? (
         <QueryErrorState
@@ -120,9 +124,19 @@ export function PatientClinicalAlertsPanel({
       !alertsQuery.isError &&
       alertsQuery.data &&
       alertsQuery.data.length === 0 ? (
-        <p className="rounded-md border border-dashed border-border px-3 py-6 text-center text-sm text-muted-foreground">
-          Nenhum alerta clínico cadastrado.
-        </p>
+        <Empty className="border border-dashed py-8">
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <WarningCircleIcon weight="duotone" />
+            </EmptyMedia>
+            <EmptyTitle>Nenhum alerta clínico</EmptyTitle>
+            <EmptyDescription>
+              {canWrite
+                ? "Cadastre alergias, restrições e avisos permanentes do paciente."
+                : "Não há alergias, restrições ou avisos cadastrados."}
+            </EmptyDescription>
+          </EmptyHeader>
+        </Empty>
       ) : null}
 
       {!alertsQuery.isLoading &&

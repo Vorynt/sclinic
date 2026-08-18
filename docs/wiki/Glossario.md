@@ -15,9 +15,9 @@
 
 | Termo | Definição |
 |-------|-----------|
-| **Attendance** | Workspace de atendimento `/appointments/[id]/attendance` |
+| **Attendance** | Workspace de atendimento `/appointments/[id]/attendance` (notas no centro; `?panel=` abre vitais/documentos) |
 | **Prescription** | Receita médica (`draft` → `issued`) |
-| **Prescription template** | Modelo de timbrado da clínica (até 3); DocumentModel de blocos → HTML |
+| **Prescription template** | Modelo de timbrado da clínica (até 3); DocumentModel de blocos + cor de destaque → HTML |
 | **Board** | Painel operacional da recepção (ADR-006) |
 | **Self-schedule** | Clinician/nurse só veem/agendam a si |
 

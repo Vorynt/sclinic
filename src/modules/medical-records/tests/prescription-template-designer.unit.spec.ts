@@ -1,10 +1,12 @@
 import { describe, expect, it } from "@jest/globals"
 
 import {
+  DEFAULT_PRESCRIPTION_ACCENT_COLOR,
   DEFAULT_PRESCRIPTION_DOCUMENT_MODEL,
   compilePrescriptionTemplate,
   createBlockDefaults,
   prescriptionDocumentModelSchema,
+  type PrescriptionDocumentModel,
 } from "@/modules/medical-records/prescription-template-designer"
 import { renderPrescriptionHtml } from "@/modules/medical-records/utils/render-prescription"
 
@@ -16,7 +18,28 @@ describe("prescriptionDocumentModelSchema", () => {
       DEFAULT_PRESCRIPTION_DOCUMENT_MODEL,
     )
     expect(parsed.version).toBe(1)
+    expect(parsed.accentColor).toBe(DEFAULT_PRESCRIPTION_ACCENT_COLOR)
     expect(parsed.blocks.filter((b) => b.type === "body").length).toBe(1)
+  })
+
+  it("defaults accentColor when omitted", () => {
+    const parsed = prescriptionDocumentModelSchema.parse({
+      version: DEFAULT_PRESCRIPTION_DOCUMENT_MODEL.version,
+      blocks: DEFAULT_PRESCRIPTION_DOCUMENT_MODEL.blocks,
+    })
+    expect(parsed.accentColor).toBe(DEFAULT_PRESCRIPTION_ACCENT_COLOR)
+  })
+
+  it("rejects invalid accentColor", () => {
+    const invalid = ["#fff", "red", "#gg0000"]
+    for (const accentColor of invalid) {
+      expect(() =>
+        prescriptionDocumentModelSchema.parse({
+          ...DEFAULT_PRESCRIPTION_DOCUMENT_MODEL,
+          accentColor,
+        }),
+      ).toThrow()
+    }
   })
 
   it("rejects models without exactly one body block", () => {
@@ -40,14 +63,33 @@ describe("compilePrescriptionTemplate", () => {
     expect(html).toMatch(/\{\{body\}\}/)
     expect(html).toMatch(/Receita médica/)
     expect(html).toMatch(/\{\{issuedAt\}\}/)
+    expect(html).toMatch(/--rx-accent:\s*#1e4d6b/)
+  })
+
+  it("emits the chosen accent color as a CSS variable", () => {
+    const html = compilePrescriptionTemplate({
+      ...DEFAULT_PRESCRIPTION_DOCUMENT_MODEL,
+      accentColor: "#0a7a4a",
+    })
+    expect(html).toMatch(/--rx-accent:\s*#0a7a4a/)
+    expect(html).toMatch(/var\(--rx-accent\)/)
+    expect(html).not.toMatch(/--rx-accent:\s*#1e4d6b/)
+  })
+
+  it("falls back to the default accent when the hex is not allowlisted", () => {
+    const html = compilePrescriptionTemplate({
+      ...DEFAULT_PRESCRIPTION_DOCUMENT_MODEL,
+      accentColor: "red; } body { display:none",
+    } as PrescriptionDocumentModel)
+    expect(html).toMatch(/--rx-accent:\s*#1e4d6b/)
+    expect(html.includes("display:none")).toBe(false)
+    expect(html.includes("red;")).toBe(false)
   })
 
   it("escapes static text blocks", () => {
-    const model: {
-      version: 1
-      blocks: ReturnType<typeof createBlockDefaults>[]
-    } = {
+    const model: PrescriptionDocumentModel = {
       version: 1,
+      accentColor: DEFAULT_PRESCRIPTION_ACCENT_COLOR,
       blocks: [
         createBlockDefaults("body", VALID_UUID),
         createBlockDefaults(

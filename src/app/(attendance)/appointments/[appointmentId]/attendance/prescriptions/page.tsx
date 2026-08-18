@@ -1,15 +1,19 @@
 import { redirect } from "next/navigation"
 
-import { routes } from "@/config/routes"
+import { buildAttendanceRedirectHref } from "@/modules/appointments/utils/agenda-href"
 
 type AttendancePrescriptionsRedirectPageProps = {
   params: Promise<{ appointmentId: string }>
+  searchParams: Promise<Record<string, string | string[] | undefined>>
 }
 
-/** Legacy `/prescriptions` → `/documents` (ADR-010 product copy). */
+/** Legacy `/prescriptions` → documents sheet (ADR-010 product copy). */
 export default async function AttendancePrescriptionsRedirectPage({
   params,
+  searchParams,
 }: AttendancePrescriptionsRedirectPageProps) {
   const { appointmentId } = await params
-  redirect(routes.appointmentAttendanceDocuments(appointmentId))
+  redirect(
+    buildAttendanceRedirectHref(appointmentId, await searchParams, "documents"),
+  )
 }

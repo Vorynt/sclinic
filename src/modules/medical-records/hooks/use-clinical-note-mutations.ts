@@ -32,6 +32,7 @@ export function useUpsertClinicalNoteMutation({
 
   return useMutation({
     ...clinicalNotesMutations.upsert(),
+    scope: { id: "clinical-notes-upsert" },
     onSuccess: async (data) => {
       await queryClient.invalidateQueries({
         queryKey: clinicalNotesQueryKeys.all,

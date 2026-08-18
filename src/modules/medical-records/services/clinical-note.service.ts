@@ -115,6 +115,7 @@ export const clinicalNoteService = {
     }
 
     if (isFormUpsert(data)) {
+      // Legacy form path — UI no longer sends this; kept for API compatibility.
       const template = getClinicalNoteTemplateOrThrow(data.templateId)
       const formValues = buildTemplateValuesSchema(template).parse(
         data.formValues,
@@ -132,6 +133,8 @@ export const clinicalNoteService = {
         formValues,
       }
     } else {
+      // TipTap-first: content + plainText are the source of truth.
+      // Clears legacy templateId/formValues when re-saving an old form note.
       payload = {
         content: data.content as ClinicalNoteContent,
         plainText: data.plainText,

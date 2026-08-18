@@ -24,7 +24,7 @@ Soft nav Termos/Privacidade → modal `@modal/(.)…`.
 
 ### Attendance
 
-`/appointments/[id]/attendance/*` (`documents`; `/prescriptions` → redirect)
+`/appointments/[id]/attendance` (landing = notas). `/notes`, `/vitals`, `/documents`, `/prescriptions` → redirect (`?panel=` + `mode`/`date`)
 
 ### Account
 

@@ -1,23 +1,17 @@
-import { ForbiddenBlock } from "@/components/status/ForbiddenBlock"
-import { Permission } from "@/config/permissions"
-import { ClinicalNotesPanel } from "@/modules/medical-records/components/ClinicalNotesPanel"
-import { PermissionProvider } from "@/providers/PermissionProvider"
+import { redirect } from "next/navigation"
 
-type AttendanceNotesPageProps = {
+import { buildAttendanceRedirectHref } from "@/modules/appointments/utils/agenda-href"
+
+type AttendanceNotesRedirectPageProps = {
   params: Promise<{ appointmentId: string }>
+  searchParams: Promise<Record<string, string | string[] | undefined>>
 }
 
-export default async function AttendanceNotesPage({
+/** Legacy `/notes` → notes-first landing. */
+export default async function AttendanceNotesRedirectPage({
   params,
-}: AttendanceNotesPageProps) {
+  searchParams,
+}: AttendanceNotesRedirectPageProps) {
   const { appointmentId } = await params
-
-  return (
-    <PermissionProvider
-      permission={Permission.RECORDS_READ}
-      fallback={<ForbiddenBlock />}
-    >
-      <ClinicalNotesPanel appointmentId={appointmentId} />
-    </PermissionProvider>
-  )
+  redirect(buildAttendanceRedirectHref(appointmentId, await searchParams))
 }

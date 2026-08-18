@@ -100,7 +100,7 @@ Sem WhatsApp nesta trilha: campanhas e pré-consulta podem começar por **e-mail
 | 4 | Portal do paciente | E17 | auth + módulo portal | Agendar/reagendar, ver documentos, atualizar cadastro |
 | 5 | Assinatura eletrônica (consentimento / LGPD) | E13 | medical-records | Contratos/consentimentos; ADR próprio |
 | 6 | Indicadores gerenciais | E18 | dashboard | Ocupação, no-show por profissional, tempo médio, retenção |
-| 7 | Templates / módulos por especialidade | E5 / E19 | medical-records | Núcleo comum + packs (derm, psico, odonto…) |
+| 7 | Snippets / módulos por especialidade | E5 / E19 | medical-records | Núcleo comum + packs TipTap (derm, psico, odonto…) |
 | 8 | Horários recorrentes | E15 | appointments | Séries (ex.: semanal); cancelar ocorrência vs série |
 | 9 | Agenda por sala / equipamento | E15 | appointments | Só se ICP exigir (estética, odonto, fisio) |
 | 10 | Automações avançadas + IA clínica | E18 | medical-records / core | Pós-H3; supervisão do profissional; ADRs dedicados |

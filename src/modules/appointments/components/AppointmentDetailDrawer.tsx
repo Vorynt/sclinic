@@ -337,7 +337,6 @@ function AppointmentDetailContent({
                       isAttendancePermissionPending ||
                       attendanceLocked
                     }
-                    className="disabled:bg-muted-foreground dark:disabled:bg-muted"
                     tooltip={
                       attendanceLocked
                         ? getAttendanceActionDeniedTooltip(appointment.status)

@@ -1,17 +1,24 @@
 "use client"
 
-import { CaretDownIcon } from "@phosphor-icons/react"
+import { CaretDownIcon, NotePencilIcon } from "@phosphor-icons/react"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import { useState } from "react"
 
+import { ListCardSkeleton } from "@/components/data-table/ListCardSkeleton"
 import { QueryErrorState } from "@/components/status/QueryErrorState"
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible"
-import { Spinner } from "@/components/ui/spinner"
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty"
 import { cn } from "@/lib/utils"
 import { ClinicalNoteEditor } from "@/modules/medical-records/components/ClinicalNoteEditor"
 import type { ClinicalNote } from "@/modules/medical-records/types/clinical-note"
@@ -46,11 +53,7 @@ export function ClinicalNoteHistoryPanel({
         <p className="text-xs text-muted-foreground">{description}</p>
       </div>
 
-      {isLoading ? (
-        <div className="flex justify-center py-8">
-          <Spinner />
-        </div>
-      ) : null}
+      {isLoading ? <ListCardSkeleton rows={3} /> : null}
 
       {isError ? (
         <QueryErrorState
@@ -61,9 +64,17 @@ export function ClinicalNoteHistoryPanel({
       ) : null}
 
       {!isLoading && !isError && notes && notes.length === 0 ? (
-        <p className="rounded-md border border-dashed border-border px-3 py-6 text-sm text-muted-foreground">
-          {emptyMessage}
-        </p>
+        <Empty className="border border-dashed py-8">
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <NotePencilIcon weight="duotone" />
+            </EmptyMedia>
+            <EmptyTitle>{emptyMessage}</EmptyTitle>
+            <EmptyDescription>
+              O histórico clínico do paciente aparece aqui.
+            </EmptyDescription>
+          </EmptyHeader>
+        </Empty>
       ) : null}
 
       {!isLoading && !isError && notes && notes.length > 0 ? (

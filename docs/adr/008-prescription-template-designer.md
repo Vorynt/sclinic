@@ -32,6 +32,7 @@ Chosen option: **DocumentModel JSON de blocos empilhados + até 3 templates em `
 |------|---------|
 | Fonte da verdade | `documentModel` (jsonb); `html` é cache compilado |
 | Editor | Blocos empilhados (letterhead, title, patient, body, professional, text, divider, spacer) |
+| Cor de destaque | `accentColor` hex `#RRGGBB` no DocumentModel (default `#1e4d6b`); aplica nome da clínica, título, borda do letterhead e divisores |
 | Posição livre | Fora de escopo |
 | Cardinalidade | ≤ 3 layouts ativos por clínica; um `isDefault` |
 | Uso | Profissional escolhe `layoutId` ao criar; null → default/system |

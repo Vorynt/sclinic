@@ -21,7 +21,6 @@ type PatientOverviewPanelProps = {
 
 /**
  * Aggregates patient context for the detail overview.
- * Cross-module UI composition mirrors AttendanceOverviewPanel.
  */
 export function PatientOverviewPanel({
   patientId,

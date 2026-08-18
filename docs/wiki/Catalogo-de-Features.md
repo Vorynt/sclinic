@@ -75,7 +75,7 @@ Para regras detalhadas, abra a página **Domínio-*** correspondente. Prioridade
 | Agendamento rápido (modal) + completo (`/appointments/new`) | Done | `AppointmentForm` `quick`/`full`; `buildAppointmentNewHref` |
 | Status: scheduled→…→completed | Done | appointment.service |
 | Iniciar / concluir atendimento (assignee + role gate) | Done | checked_in / completed |
-| Workspace attendance | Done | `(attendance)` |
+| Workspace attendance | Done | cockpit notas-no-centro; `?panel=` |
 | Self-schedule clinician/nurse | Done | constants |
 | Disponibilidade vs clinic hours | Done | availability service |
 | Valor no agendamento → charge | Done | amountCents + collect |
@@ -91,17 +91,20 @@ Para regras detalhadas, abra a página **Domínio-*** correspondente. Prioridade
 | Feature | Status | Onde |
 |---------|--------|------|
 | Nota clínica 1:1 appointment | Done | medical-records |
-| Templates de nota | Done | clinical-note-templates |
+| Editor TipTap livre (anotações) | Done | ADR-015; ClinicalNoteEditor |
+| Autosave com debounce (anotações) | Done | ClinicalNotesPanel; indicador “Salvo às HH:mm” |
+| Snippets de modelo clínico | Done | ADR-015; clinical-note-snippets |
 | Sinais vitais + IMC derivado | Done | vital signs |
 | Alertas clínicos do paciente | Done | clinical alerts |
 | Receitas draft/issued | Done | ADR-005 |
 | Print HTML | Done | `(print)` |
 | Layout custom por clínica | Done | `/settings/prescriptions` |
 | Designer de templates (blocos) | Done | ADR-008 |
+| Cor de destaque no modelo de receita | Done | ADR-008; `accentColor` no DocumentModel |
 | Até 3 templates nomeados | Done | ADR-008 |
 | Tipos avançados de receita / PDF | Planned/Later | ADR-005 |
 | `kind` unificado de documentos clínicos | Done | ADR-010 |
-| Declaração de comparecimento | Done | ADR-010; attendance Documentos |
+| Declaração de comparecimento | Done | ADR-010; sheet Documentos no attendance |
 | Atestado médico | Done | ADR-010; `daysOff`, CID/obs. opcionais; system layout |
 | Solicitação de exames (documento) | Done | ADR-010; lista de exames + indicação clínica |
 | Templates / packs por especialidade | Later | Roadmap H3 · E19 |

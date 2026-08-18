@@ -1,23 +1,19 @@
-import { ForbiddenBlock } from "@/components/status/ForbiddenBlock"
-import { Permission } from "@/config/permissions"
-import { VitalSignsPanel } from "@/modules/medical-records/components/VitalSignsPanel"
-import { PermissionProvider } from "@/providers/PermissionProvider"
+import { redirect } from "next/navigation"
 
-type AttendanceVitalsPageProps = {
+import { buildAttendanceRedirectHref } from "@/modules/appointments/utils/agenda-href"
+
+type AttendanceVitalsRedirectPageProps = {
   params: Promise<{ appointmentId: string }>
+  searchParams: Promise<Record<string, string | string[] | undefined>>
 }
 
-export default async function AttendanceVitalsPage({
+/** Legacy `/vitals` → landing with vitals sheet. */
+export default async function AttendanceVitalsRedirectPage({
   params,
-}: AttendanceVitalsPageProps) {
+  searchParams,
+}: AttendanceVitalsRedirectPageProps) {
   const { appointmentId } = await params
-
-  return (
-    <PermissionProvider
-      permission={Permission.RECORDS_READ}
-      fallback={<ForbiddenBlock />}
-    >
-      <VitalSignsPanel appointmentId={appointmentId} />
-    </PermissionProvider>
+  redirect(
+    buildAttendanceRedirectHref(appointmentId, await searchParams, "vitals"),
   )
 }
