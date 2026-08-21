@@ -24,7 +24,7 @@ Fora do board: canceled, no_show, completed sem charge ou paid.
 
 - `WaitlistPanel` na home da recepção lista entradas `waiting` (paciente, profissional/serviço opcionais, observações, tempo de espera).
 - **Adicionar**: dialog com combobox de paciente (+ cadastro rápido), profissional e serviço opcionais.
-- **Promover**: abre `AppointmentFormDialog` (**agendamento rápido**) com o paciente travado; ao confirmar, roda todas as checagens normais de disponibilidade antes de criar o agendamento e marcar a entrada `promoted`. **Mais opções** leva para `/appointments/new` (form completo + cobrança) preservando `waitlistId`.
+- **Promover**: abre `AppointmentFormDialog` (**novo agendamento**) com o paciente travado; ao confirmar, roda todas as checagens normais de disponibilidade antes de criar o agendamento e marcar a entrada `promoted`. **Mais opções** leva para `/appointments/new` (motivo + cobrança) preservando `waitlistId`.
 - **Remover**: cancela a entrada (`canceled`) sem side-effects na agenda.
 
 ## Cadastro rápido de paciente (ADR-011)
@@ -34,8 +34,8 @@ Fora do board: canceled, no_show, completed sem charge ou paid.
 
 ## Agendamento rápido (UI)
 
-- Ação **Novo agendamento** na home da recepção (header / FAB) abre o modal quick (paciente/horário/serviço).
-- Para tipo, modalidade, motivo e cobrança avançada: **Mais opções** → `/appointments/new`.
+- Ação **Novo agendamento** na home da recepção (header / FAB) abre o modal quick (paciente, horário, tipo, modalidade e serviço).
+- Para motivo e cobrança: **Mais opções** → `/appointments/new`.
 
 ## Fluxo canônico
 

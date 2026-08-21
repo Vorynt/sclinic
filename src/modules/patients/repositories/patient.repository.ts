@@ -40,6 +40,7 @@ export const patientRepository = {
           birthDate: params.data.birthDate ?? null,
           emergencyContactName: params.data.emergencyContactName ?? null,
           emergencyContactPhone: params.data.emergencyContactPhone ?? null,
+          notes: params.data.notes ?? null,
           status: "active",
           createdBy: params.createdBy,
           updatedBy: params.createdBy,
@@ -122,6 +123,7 @@ export const patientRepository = {
         birthDate,
         emergencyContactName,
         emergencyContactPhone,
+        notes,
       } = params.data
 
       const [row] = await db
@@ -138,6 +140,7 @@ export const patientRepository = {
           ...(emergencyContactPhone !== undefined
             ? { emergencyContactPhone }
             : {}),
+          ...(notes !== undefined ? { notes } : {}),
           updatedBy: params.updatedBy,
         })
         .where(

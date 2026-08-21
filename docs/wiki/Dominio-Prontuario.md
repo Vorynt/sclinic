@@ -24,6 +24,7 @@ Não há rota top-level: vive no attendance e no detalhe do paciente. Workspace 
 - Modelos clínicos opcionais (SOAP, retorno, primeira consulta, procedimento) inseríveis como snippets na toolbar
 - Notas antigas com `templateId`/`formValues` permanecem legíveis via `content` compilado
 - Perms: `records.read` / `records.write`
+- Não confundir com **observações administrativas** do cadastro (`patients.notes`) — essas exigem `patients.write` e não entram no prontuário
 
 ## Vital signs
 

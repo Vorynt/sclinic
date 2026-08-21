@@ -867,14 +867,14 @@ describe("checkProfessionalAvailability", () => {
     })
   })
 
-  it("returns slot_conflict when a schedule block overlaps", async () => {
+  it("returns schedule_block when a schedule block overlaps", async () => {
     const result = await checkProfessionalAvailability(baseInput, {
       hasOverlappingActiveAppointment: async () => false,
       hasOverlappingScheduleBlock: async () => true,
       isWithinWorkingHours: withinHours,
     })
 
-    expect(result).toEqual({ available: false, reason: "slot_conflict" })
+    expect(result).toEqual({ available: false, reason: "schedule_block" })
   })
 
   it("forwards excludeAppointmentId to the overlap dependency", async () => {
@@ -947,6 +947,37 @@ describe("professionalAvailabilityService.ensureAvailable", () => {
                 return slots.length > 0
               })(error),
       ).toBe(true)
+    }
+  })
+
+  it("throws PROFESSIONAL_SCHEDULE_BLOCKED with suggested slots on a block", async () => {
+    try {
+      await professionalAvailabilityService.ensureAvailable(baseInput, {
+                hasOverlappingActiveAppointment: async () => false,
+                hasOverlappingScheduleBlock: async () => true,
+                listBusyIntervals: async () => [
+                  {
+                    startsAt: baseInput.startsAt,
+                    endsAt: baseInput.endsAt,
+                  },
+                ],
+                ...availabilityMocks,
+              })
+      throw new Error("expected to throw")
+    } catch (error) {
+      if (error instanceof Error && error.message === "expected to throw") {
+        throw error
+      }
+      expect(error).toBeInstanceOf(AppError)
+      expect((error as AppError).code).toBe(
+        ErrorCode.PROFESSIONAL_SCHEDULE_BLOCKED,
+      )
+      expect((error as AppError).message).toBe(
+        "Este horário está bloqueado na agenda.",
+      )
+      expect(readSuggestedSlotsFromMeta((error as AppError).meta).length).toBeGreaterThan(
+        0,
+      )
     }
   })
 

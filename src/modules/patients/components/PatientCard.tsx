@@ -81,14 +81,12 @@ export function PatientCard({ patient }: PatientCardProps) {
         ) : null}
       </dl>
 
-      {patient.notes ? (
-        <div className="flex flex-col gap-0.5 border-t border-border pt-3">
-          <h4 className="text-xs text-muted-foreground">
-            Observações administrativas
-          </h4>
-          <p className="text-sm text-foreground">{patient.notes}</p>
-        </div>
-      ) : null}
+      <div className="flex flex-col gap-0.5 border-t border-border pt-3">
+        <h4 className="text-xs text-muted-foreground">
+          Observações administrativas
+        </h4>
+        <p className="text-sm text-foreground">{patient.notes || "—"}</p>
+      </div>
     </section>
   )
 }

@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { addMinutes, differenceInMinutes, startOfDay } from "date-fns"
 import { useEffect, useMemo, useState } from "react"
-import { Controller, useForm } from "react-hook-form"
+import { Controller, FormProvider, useForm } from "react-hook-form"
 import { toast } from "sonner"
 import { z } from "zod"
 
@@ -214,126 +214,128 @@ export function AppointmentRescheduleForm({
     !professionalsQuery.isLoading && professionals.length === 0
 
   return (
-    <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
-      {formError ? (
-        <FormErrorAlert message={formError.message} />
-      ) : null}
+    <FormProvider {...form}>
+      <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
+        {formError ? (
+          <FormErrorAlert message={formError.message} />
+        ) : null}
 
-      <FieldGroup className="flex flex-col gap-4">
-        <Field data-invalid={Boolean(errors.professionalId) || undefined}>
-          <FieldLabel>Profissional</FieldLabel>
-          <Controller
-            name="professionalId"
-            control={control}
-            render={({ field }) => (
-              <ProfessionalCombobox
-                value={field.value}
-                onValueChange={field.onChange}
-                displayLabel={lockedProfessionalLabel}
-                disabled={
-                  isPending ||
-                  sessionQuery.isLoading ||
-                  professionalsQuery.isLoading ||
-                  isProfessionalsEmpty ||
-                  isProfessionalLocked
-                }
-                aria-invalid={Boolean(errors.professionalId) || undefined}
-              />
-            )}
-          />
-          <FieldError errors={[errors.professionalId]} />
-        </Field>
-
-        <div className="grid gap-4 sm:grid-cols-1">
-          <Field data-invalid={Boolean(errors.date) || undefined}>
-            <FieldLabel htmlFor="reschedule-date">Data</FieldLabel>
+        <FieldGroup className="flex flex-col gap-4">
+          <Field data-invalid={Boolean(errors.professionalId) || undefined}>
+            <FieldLabel>Profissional</FieldLabel>
             <Controller
-              name="date"
+              name="professionalId"
               control={control}
               render={({ field }) => (
-                <DatePicker
-                  id="reschedule-date"
+                <ProfessionalCombobox
                   value={field.value}
-                  onChange={field.onChange}
-                  onBlur={field.onBlur}
-                  disabled={isPending}
-                  startMonth={today}
-                  disabledDates={{ before: today }}
-                  aria-invalid={Boolean(errors.date) || undefined}
+                  onValueChange={field.onChange}
+                  displayLabel={lockedProfessionalLabel}
+                  disabled={
+                    isPending ||
+                    sessionQuery.isLoading ||
+                    professionalsQuery.isLoading ||
+                    isProfessionalsEmpty ||
+                    isProfessionalLocked
+                  }
+                  aria-invalid={Boolean(errors.professionalId) || undefined}
                 />
               )}
             />
-            <FieldError errors={[errors.date]} />
+            <FieldError errors={[errors.professionalId]} />
           </Field>
 
-          <Field data-invalid={Boolean(errors.startTime) || undefined}>
-            <FieldLabel htmlFor="reschedule-start-time">
-              Horário início
-            </FieldLabel>
-            <Input
-              id="reschedule-start-time"
-              type="time"
-              aria-invalid={Boolean(errors.startTime) || undefined}
-              disabled={isPending}
-              {...register("startTime")}
-            />
-            <FieldError errors={[errors.startTime]} />
-          </Field>
+          <div className="grid gap-4 sm:grid-cols-1">
+            <Field data-invalid={Boolean(errors.date) || undefined}>
+              <FieldLabel htmlFor="reschedule-date">Data</FieldLabel>
+              <Controller
+                name="date"
+                control={control}
+                render={({ field }) => (
+                  <DatePicker
+                    id="reschedule-date"
+                    value={field.value}
+                    onChange={field.onChange}
+                    onBlur={field.onBlur}
+                    disabled={isPending}
+                    startMonth={today}
+                    disabledDates={{ before: today }}
+                    aria-invalid={Boolean(errors.date) || undefined}
+                  />
+                )}
+              />
+              <FieldError errors={[errors.date]} />
+            </Field>
 
-          <Field data-invalid={Boolean(errors.durationMinutes) || undefined}>
-            <FieldLabel>Duração</FieldLabel>
-            <Controller
-              name="durationMinutes"
-              control={control}
-              render={({ field }) => (
-                <Select
-                  value={field.value}
-                  onValueChange={field.onChange}
-                  disabled={isPending}
-                >
-                  <SelectTrigger
-                    aria-invalid={
-                      Boolean(errors.durationMinutes) || undefined
-                    }
+            <Field data-invalid={Boolean(errors.startTime) || undefined}>
+              <FieldLabel htmlFor="reschedule-start-time">
+                Horário início
+              </FieldLabel>
+              <Input
+                id="reschedule-start-time"
+                type="time"
+                aria-invalid={Boolean(errors.startTime) || undefined}
+                disabled={isPending}
+                {...register("startTime")}
+              />
+              <FieldError errors={[errors.startTime]} />
+            </Field>
+
+            <Field data-invalid={Boolean(errors.durationMinutes) || undefined}>
+              <FieldLabel>Duração</FieldLabel>
+              <Controller
+                name="durationMinutes"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    value={field.value}
+                    onValueChange={field.onChange}
+                    disabled={isPending}
                   >
-                    <SelectValue placeholder="Duração" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {durationOptions.map((minutes) => (
-                      <SelectItem key={minutes} value={String(minutes)}>
-                        {minutes} min
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
+                    <SelectTrigger
+                      aria-invalid={
+                        Boolean(errors.durationMinutes) || undefined
+                      }
+                    >
+                      <SelectValue placeholder="Duração" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {durationOptions.map((minutes) => (
+                        <SelectItem key={minutes} value={String(minutes)}>
+                          {minutes} min
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+              <FieldError errors={[errors.durationMinutes]} />
+            </Field>
+          </div>
+
+          {formError ? (
+            <SuggestedAvailabilitySlots
+              slots={suggestedSlots}
+              onSelect={clearAvailabilityFeedback}
             />
-            <FieldError errors={[errors.durationMinutes]} />
-          </Field>
+          ) : null}
+        </FieldGroup>
+
+        <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onCancel}
+            disabled={isPending}
+          >
+            Voltar
+          </Button>
+          <Button type="submit" disabled={isPending}>
+            {isPending ? <Spinner /> : null}
+            Remarcar
+          </Button>
         </div>
-
-        {formError ? (
-          <SuggestedAvailabilitySlots
-            slots={suggestedSlots}
-            onSelect={clearAvailabilityFeedback}
-          />
-        ) : null}
-      </FieldGroup>
-
-      <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={onCancel}
-          disabled={isPending}
-        >
-          Voltar
-        </Button>
-        <Button type="submit" disabled={isPending}>
-          {isPending ? <Spinner /> : null}
-          Remarcar
-        </Button>
-      </div>
-    </form>
+      </form>
+    </FormProvider>
   )
 }

@@ -54,7 +54,7 @@ export function AppointmentNewPanel() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-6">
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
       <PageHeader
         title={
           location.waitlistId
@@ -63,8 +63,8 @@ export function AppointmentNewPanel() {
         }
         description={
           location.waitlistId
-            ? "Defina horário, serviço e cobrança para promover o paciente."
-            : "Preencha os detalhes do atendimento, incluindo cobrança quando necessário."
+            ? "Defina horário, serviço, motivo e cobrança para promover o paciente."
+            : "Preencha motivo e cobrança quando necessário."
         }
       />
 

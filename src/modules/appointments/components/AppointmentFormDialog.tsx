@@ -50,7 +50,7 @@ export function AppointmentFormDialog({
 }: AppointmentFormDialogProps) {
   const router = useRouter();
   const resolvedTitle =
-    title ?? (waitlistId ? "Promover da lista de espera" : "Agendamento rápido");
+    title ?? (waitlistId ? "Promover da lista de espera" : "Novo agendamento");
   const formKey = open
     ? [
         lockedPatient?.id ?? "free",
@@ -66,8 +66,8 @@ export function AppointmentFormDialog({
     (waitlistId
       ? `Promova ${lockedPatient?.name ?? "o paciente"} da lista de espera para um agendamento.`
       : lockedPatient
-        ? `Informe horário e serviço para ${lockedPatient.name}.`
-        : "Informe paciente, horário e serviço. Use Mais opções para cobrança e detalhes.");
+        ? `Informe horário, tipo e serviço para ${lockedPatient.name}.`
+        : "Informe paciente, horário, tipo e serviço. Use Mais opções para motivo e cobrança.");
 
   function handleAdvanced(draft: AppointmentNewHrefParams) {
     onOpenChange(false);
@@ -77,8 +77,9 @@ export function AppointmentFormDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="flex max-h-[min(90vh,560px)] w-full flex-col gap-0 overflow-hidden p-0 sm:max-w-md"
-        showCloseButton>
+        className="flex max-h-[min(90vh,40rem)] w-full flex-col gap-0 overflow-hidden p-0 sm:max-w-lg"
+        showCloseButton
+      >
         <DialogHeader className="shrink-0 space-y-1.5 border-b border-border px-4 py-4 pr-12 text-left">
           <DialogTitle>{resolvedTitle}</DialogTitle>
           <DialogDescription>{resolvedDescription}</DialogDescription>

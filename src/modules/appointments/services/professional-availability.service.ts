@@ -149,7 +149,7 @@ export async function checkProfessionalAvailability(
 
   const hasBlockConflict = await deps.hasOverlappingScheduleBlock(input)
   if (hasBlockConflict) {
-    return { available: false, reason: "slot_conflict" }
+    return { available: false, reason: "schedule_block" }
   }
 
   return { available: true }
@@ -207,6 +207,13 @@ function throwForUnavailable(
   if (result.reason === "outside_working_hours") {
     throw new AppError(ErrorCode.PROFESSIONAL_OUTSIDE_WORKING_HOURS, {
       message: "Horário fora do funcionamento da clínica.",
+      meta,
+    })
+  }
+
+  if (result.reason === "schedule_block") {
+    throw new AppError(ErrorCode.PROFESSIONAL_SCHEDULE_BLOCKED, {
+      message: "Este horário está bloqueado na agenda.",
       meta,
     })
   }

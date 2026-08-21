@@ -6,7 +6,6 @@ import Link from "next/link";
 import { useEffect, useId, useState } from "react";
 import { Controller, FormProvider, useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { useHookFormMask } from "use-mask-input";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
@@ -17,14 +16,15 @@ import {
   FieldError,
   FieldGroup,
   FieldLabel,
+  FieldLegend,
+  FieldSeparator,
+  FieldSet,
 } from "@/components/ui/field";
 import {
   FormErrorAlert,
   scrollFormToTop,
 } from "@/components/ui/form-error-alert";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Select,
   SelectContent,
@@ -32,12 +32,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Slider } from "@/components/ui/slider";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Permission } from "@/config/permissions";
 import { routes } from "@/config/routes";
 import { cn } from "@/lib/utils";
+import { AppointmentFormBillingFields } from "@/modules/appointments/components/AppointmentFormBillingFields";
 import { SuggestedAvailabilitySlots } from "@/modules/appointments/components/SuggestedAvailabilitySlots";
 import {
   APPOINTMENT_MODALITY_LABELS,
@@ -59,12 +60,7 @@ import type { AppointmentNewHrefParams } from "@/modules/appointments/utils/appo
 import { APPOINTMENT_DURATION_OPTIONS } from "@/modules/appointments/utils/calendar-constants";
 import { readSuggestedSlotsFromMeta } from "@/modules/appointments/utils/suggested-slots";
 import { useAuthSession } from "@/modules/authentication/hooks/use-auth";
-import { BILLING_KIND_LABELS } from "@/modules/billing/constants/charges";
 import { useActiveClinicServices } from "@/modules/billing/hooks/use-clinic-services";
-import {
-  computeChargeAmountCents,
-  type BillingKind,
-} from "@/modules/billing/utils/charge-pricing";
 import {
   formatCentsToBrl,
   isEmptyMoneyInput,
@@ -79,14 +75,11 @@ import { useProfessionalsForSchedulingQuery } from "@/modules/professionals/hook
 import { useAuth } from "@/providers/AuthProvider";
 import { ErrorCode, getClientMessage, isAppError } from "@/shared/errors";
 import { parseISODate, toISODate } from "@/utils/date";
-import { CURRENCY_MASK_OPTIONS, MASKS } from "@/utils/mask";
 
 const appointmentTypeOptions = Object.entries(APPOINTMENT_TYPE_LABELS) as [
   AppointmentType,
   string,
 ][];
-
-const DISCOUNT_PRESETS = [5, 10, 15, 20] as const;
 
 const billingKindSchema = z.enum(["standard", "courtesy", "return"]);
 
@@ -153,7 +146,7 @@ type LockedPatient = {
 };
 
 type AppointmentFormProps = {
-  /** `quick` hides type/modality/reason/financial; default `full`. */
+  /** `quick` hides reason/financial; default `full`. */
   variant?: "full" | "quick";
   /** `dialog` uses DialogFooter + scroll; `page` is for `/appointments/new`. */
   layout?: "dialog" | "page";
@@ -165,7 +158,7 @@ type AppointmentFormProps = {
   defaultPatientLabel?: string | null;
   /** Pre-select appointment type (e.g. follow_up from attendance). */
   defaultType?: AppointmentType;
-  /** When set, only these types appear in the select. */
+  /** When set, only these types appear in the chips. */
   allowedTypes?: readonly AppointmentType[];
   /** Pre-select professional when the user can choose any. */
   defaultProfessionalId?: string | null;
@@ -302,29 +295,13 @@ export function AppointmentForm({
     formState: { errors },
   } = form;
 
-  const registerWithMask = useHookFormMask(register);
-
   const professionals = professionalsQuery.data ?? [];
   const activeServices = activeServicesQuery.data ?? [];
   const selectedServiceId = watch("serviceId");
-  const selectedDiscount = watch("discountPercent");
-  const selectedBillingKind = watch("billingKind") as BillingKind;
-  const selectedOverrideBrl = watch("amountBrl") ?? "";
   const selectedService = activeServices.find(
     (service) => service.id === selectedServiceId,
   );
 
-  const previewAmountCents = selectedService
-    ? computeChargeAmountCents({
-        listAmountCents: selectedService.priceCents,
-        discountPercent: Number(selectedDiscount) || 0,
-        billingKind: selectedBillingKind,
-        amountCentsOverride:
-          canManageFinancial && !isEmptyMoneyInput(selectedOverrideBrl)
-            ? (parseBrlToCents(selectedOverrideBrl) ?? undefined)
-            : undefined,
-      })
-    : null;
   const lockedProfessionalLabel = isProfessionalLocked
     ? professionals[0]
       ? formatProfessionalSchedulingLabel({
@@ -491,6 +468,74 @@ export function AppointmentForm({
     !professionalsQuery.isLoading && !hasProfessionals;
   const isPending = createAppointment.isPending || promoteWaitlist.isPending;
 
+  const dateField = (
+    <Field data-invalid={Boolean(errors.date) || undefined}>
+      <FieldLabel htmlFor="appointment-date">Data</FieldLabel>
+      <Controller
+        name="date"
+        control={control}
+        render={({ field }) => (
+          <DatePicker
+            id="appointment-date"
+            value={field.value}
+            onChange={field.onChange}
+            onBlur={field.onBlur}
+            disabled={isPending}
+            startMonth={today}
+            disabledDates={{ before: today }}
+            aria-invalid={Boolean(errors.date) || undefined}
+          />
+        )}
+      />
+      <FieldError errors={[errors.date]} />
+    </Field>
+  );
+
+  const timeField = (
+    <Field data-invalid={Boolean(errors.startTime) || undefined}>
+      <FieldLabel htmlFor="appointment-start-time">Horário</FieldLabel>
+      <Input
+        id="appointment-start-time"
+        type="time"
+        aria-invalid={Boolean(errors.startTime) || undefined}
+        disabled={isPending}
+        {...register("startTime")}
+      />
+      <FieldError errors={[errors.startTime]} />
+    </Field>
+  );
+
+  const durationField = (
+    <Field data-invalid={Boolean(errors.durationMinutes) || undefined}>
+      <FieldLabel>Duração</FieldLabel>
+      <Controller
+        name="durationMinutes"
+        control={control}
+        render={({ field }) => (
+          <ToggleGroup
+            type="single"
+            variant="outline"
+            size="sm"
+            value={field.value}
+            disabled={isPending}
+            onValueChange={(value) => {
+              if (!value) return;
+              field.onChange(value);
+            }}
+            className="flex w-full flex-1 flex-wrap justify-start col-span-2"
+            aria-invalid={Boolean(errors.durationMinutes) || undefined}>
+            {APPOINTMENT_DURATION_OPTIONS.map((minutes) => (
+              <ToggleGroupItem key={minutes} value={String(minutes)}>
+                {minutes} min
+              </ToggleGroupItem>
+            ))}
+          </ToggleGroup>
+        )}
+      />
+      <FieldError errors={[errors.durationMinutes]} />
+    </Field>
+  );
+
   return (
     <>
       <FormProvider {...form}>
@@ -504,106 +549,144 @@ export function AppointmentForm({
           noValidate>
           <div
             className={cn(
-              "flex flex-col gap-4",
+              "flex flex-col gap-5",
               isPageLayout
                 ? "px-0 py-0"
                 : "min-h-0 flex-1 overflow-y-auto px-4 py-4",
             )}>
             {formError && <FormErrorAlert message={formError.message} />}
-            <FieldGroup className="flex flex-col gap-4">
-              <Field data-invalid={Boolean(errors.patientId) || undefined}>
-                <FieldLabel>Paciente</FieldLabel>
-                <Controller
-                  name="patientId"
-                  control={control}
-                  render={({ field }) => (
-                    <PatientCombobox
-                      value={field.value}
-                      onValueChange={(patientId, meta) => {
-                        setSelectedPatientLabel(meta?.name ?? null);
-                        field.onChange(patientId);
-                      }}
-                      displayLabel={selectedPatientLabel}
-                      onCreatePatient={
-                        isPatientLocked
-                          ? undefined
-                          : () => setPatientDialogOpen(true)
-                      }
-                      disabled={isPending || isPatientLocked}
-                      aria-invalid={Boolean(errors.patientId) || undefined}
+            <FieldGroup className="flex flex-col gap-5">
+              <FieldSet>
+                <FieldLegend>Quem</FieldLegend>
+                <div
+                  className={cn(
+                    "flex flex-col gap-4",
+                    isPageLayout && "sm:grid sm:grid-cols-2",
+                  )}>
+                  <Field data-invalid={Boolean(errors.patientId) || undefined}>
+                    <FieldLabel>Paciente</FieldLabel>
+                    <Controller
+                      name="patientId"
+                      control={control}
+                      render={({ field }) => (
+                        <PatientCombobox
+                          value={field.value}
+                          onValueChange={(patientId, meta) => {
+                            setSelectedPatientLabel(meta?.name ?? null);
+                            field.onChange(patientId);
+                          }}
+                          displayLabel={selectedPatientLabel}
+                          onCreatePatient={
+                            isPatientLocked
+                              ? undefined
+                              : () => setPatientDialogOpen(true)
+                          }
+                          disabled={isPending || isPatientLocked}
+                          aria-invalid={Boolean(errors.patientId) || undefined}
+                        />
+                      )}
                     />
-                  )}
-                />
-                <FieldError errors={[errors.patientId]} />
-              </Field>
+                    <FieldError errors={[errors.patientId]} />
+                  </Field>
 
-              <Field data-invalid={Boolean(errors.professionalId) || undefined}>
-                <FieldLabel>Profissional</FieldLabel>
-                <Controller
-                  name="professionalId"
-                  control={control}
-                  render={({ field }) => (
-                    <ProfessionalCombobox
-                      value={field.value}
-                      onValueChange={(professionalId, meta) => {
-                        setSelectedProfessionalLabel(meta?.label ?? null);
-                        field.onChange(professionalId);
-                      }}
-                      displayLabel={professionalDisplayLabel}
-                      disabled={
-                        isPending ||
-                        sessionQuery.isLoading ||
-                        professionalsQuery.isLoading ||
-                        isProfessionalsEmpty ||
-                        isProfessionalLocked
-                      }
-                      aria-invalid={Boolean(errors.professionalId) || undefined}
+                  <Field
+                    data-invalid={Boolean(errors.professionalId) || undefined}>
+                    <FieldLabel>Profissional</FieldLabel>
+                    <Controller
+                      name="professionalId"
+                      control={control}
+                      render={({ field }) => (
+                        <ProfessionalCombobox
+                          value={field.value}
+                          onValueChange={(professionalId, meta) => {
+                            setSelectedProfessionalLabel(meta?.label ?? null);
+                            field.onChange(professionalId);
+                          }}
+                          displayLabel={professionalDisplayLabel}
+                          disabled={
+                            isPending ||
+                            sessionQuery.isLoading ||
+                            professionalsQuery.isLoading ||
+                            isProfessionalsEmpty ||
+                            isProfessionalLocked
+                          }
+                          aria-invalid={
+                            Boolean(errors.professionalId) || undefined
+                          }
+                        />
+                      )}
                     />
-                  )}
-                />
-                {isProfessionalsEmpty ? (
-                  <p className="text-sm text-muted-foreground">
-                    {isProfessionalLocked ? (
-                      "Seu perfil profissional não está vinculado a esta clínica."
-                    ) : (
-                      <>
-                        <Link
-                          href={routes.professionals}
-                          className="font-medium shimmer text-primary underline-offset-4 hover:underline">
-                          Convidar profissional
-                        </Link>{" "}
-                        para a clínica.
-                      </>
-                    )}
-                  </p>
-                ) : null}
-                <FieldError errors={[errors.professionalId]} />
-              </Field>
+                    {isProfessionalsEmpty ? (
+                      <p className="text-sm text-muted-foreground">
+                        {isProfessionalLocked ? (
+                          "Seu perfil profissional não está vinculado a esta clínica."
+                        ) : (
+                          <>
+                            <Link
+                              href={routes.professionals}
+                              className="font-medium shimmer text-primary underline-offset-4 hover:underline">
+                              Convidar profissional
+                            </Link>{" "}
+                            para a clínica.
+                          </>
+                        )}
+                      </p>
+                    ) : null}
+                    <FieldError errors={[errors.professionalId]} />
+                  </Field>
+                </div>
+              </FieldSet>
 
-              {!isQuick ? (
-                <>
+              <FieldSeparator />
+
+              <FieldSet>
+                <FieldLegend>Quando</FieldLegend>
+
+                <div className="flex flex-col gap-4">
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    {dateField}
+                    {timeField}
+                  </div>
+                  <div className="min-w-0">{durationField}</div>
+                </div>
+              </FieldSet>
+
+              {formError ? (
+                <SuggestedAvailabilitySlots
+                  slots={suggestedSlots}
+                  onSelect={clearAvailabilityFeedback}
+                />
+              ) : null}
+
+              <FieldSeparator />
+
+              <FieldSet>
+                <FieldLegend>Atendimento</FieldLegend>
+                <FieldGroup>
                   <Field data-invalid={Boolean(errors.type) || undefined}>
-                    <FieldLabel>Tipo do atendimento</FieldLabel>
+                    <FieldLabel>Tipo</FieldLabel>
                     <Controller
                       name="type"
                       control={control}
                       render={({ field }) => (
-                        <Select
+                        <ToggleGroup
+                          type="single"
+                          variant="outline"
+                          size="sm"
                           value={field.value}
-                          onValueChange={field.onChange}
-                          disabled={isPending}>
-                          <SelectTrigger
-                            aria-invalid={Boolean(errors.type) || undefined}>
-                            <SelectValue placeholder="Selecione" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {typeOptions.map(([value, label]) => (
-                              <SelectItem key={value} value={value}>
-                                {label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                          disabled={isPending}
+                          onValueChange={(value) => {
+                            if (!value) return;
+                            field.onChange(value);
+                          }}
+                          className="flex w-full flex-wrap justify-start"
+                          aria-invalid={Boolean(errors.type) || undefined}>
+                          {typeOptions.map(([value, label]) => (
+                            <ToggleGroupItem key={value} value={value}>
+                              {label}
+                            </ToggleGroupItem>
+                          ))}
+                        </ToggleGroup>
                       )}
                     />
                     <FieldError errors={[errors.type]} />
@@ -615,313 +698,112 @@ export function AppointmentForm({
                       name="modality"
                       control={control}
                       render={({ field }) => (
+                        <ToggleGroup
+                          type="single"
+                          variant="outline"
+                          size="sm"
+                          value={field.value}
+                          disabled={isPending}
+                          onValueChange={(value) => {
+                            if (!value) return;
+                            field.onChange(value);
+                          }}
+                          className="flex w-full flex-wrap justify-start"
+                          aria-invalid={Boolean(errors.modality) || undefined}>
+                          {(
+                            Object.entries(APPOINTMENT_MODALITY_LABELS) as [
+                              AppointmentModality,
+                              string,
+                            ][]
+                          ).map(([value, label]) => (
+                            <ToggleGroupItem key={value} value={value}>
+                              {label}
+                            </ToggleGroupItem>
+                          ))}
+                        </ToggleGroup>
+                      )}
+                    />
+                    <FieldError errors={[errors.modality]} />
+                  </Field>
+
+                  <Field data-invalid={Boolean(errors.serviceId) || undefined}>
+                    <FieldLabel>Serviço</FieldLabel>
+                    <Controller
+                      name="serviceId"
+                      control={control}
+                      render={({ field }) => (
                         <Select
                           value={field.value}
                           onValueChange={field.onChange}
-                          disabled={isPending}>
+                          disabled={isPending || activeServicesQuery.isLoading}>
                           <SelectTrigger
                             aria-invalid={
-                              Boolean(errors.modality) || undefined
+                              Boolean(errors.serviceId) || undefined
                             }>
                             <SelectValue placeholder="Selecione" />
                           </SelectTrigger>
                           <SelectContent>
-                            {(
-                              Object.entries(APPOINTMENT_MODALITY_LABELS) as [
-                                AppointmentModality,
-                                string,
-                              ][]
-                            ).map(([value, label]) => (
-                              <SelectItem key={value} value={value}>
-                                {label}
+                            {activeServices.map((service) => (
+                              <SelectItem key={service.id} value={service.id}>
+                                {service.name} ·{" "}
+                                {formatCentsToBrl(service.priceCents)}
                               </SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
                       )}
                     />
-                    <FieldError errors={[errors.modality]} />
+                    {isServicesEmpty ? (
+                      <p className="text-sm text-muted-foreground">
+                        Cadastre serviços em{" "}
+                        <Link
+                          href={routes.services}
+                          className="font-medium text-primary underline-offset-4 hover:underline">
+                          Serviços
+                        </Link>
+                        .
+                      </p>
+                    ) : selectedService ? (
+                      <p className="text-xs text-muted-foreground">
+                        Valor do serviço:{" "}
+                        <span className="font-medium tabular-nums text-foreground">
+                          {formatCentsToBrl(selectedService.priceCents)}
+                        </span>
+                      </p>
+                    ) : null}
+                    <FieldError errors={[errors.serviceId]} />
                   </Field>
-                </>
-              ) : null}
-
-              <div className="grid gap-4 sm:grid-cols-4">
-                <Field
-                  className="sm:col-span-2"
-                  data-invalid={Boolean(errors.date) || undefined}>
-                  <FieldLabel htmlFor="appointment-date">Data</FieldLabel>
-                  <Controller
-                    name="date"
-                    control={control}
-                    render={({ field }) => (
-                      <DatePicker
-                        id="appointment-date"
-                        value={field.value}
-                        onChange={field.onChange}
-                        onBlur={field.onBlur}
-                        disabled={isPending}
-                        startMonth={today}
-                        disabledDates={{ before: today }}
-                        aria-invalid={Boolean(errors.date) || undefined}
-                      />
-                    )}
-                  />
-                  <FieldError errors={[errors.date]} />
-                </Field>
-
-                <Field data-invalid={Boolean(errors.startTime) || undefined}>
-                  <FieldLabel htmlFor="appointment-start-time">
-                    Horário
-                  </FieldLabel>
-                  <Input
-                    id="appointment-start-time"
-                    type="time"
-                    aria-invalid={Boolean(errors.startTime) || undefined}
-                    disabled={isPending}
-                    {...register("startTime")}
-                  />
-                  <FieldError errors={[errors.startTime]} />
-                </Field>
-
-                <Field
-                  data-invalid={Boolean(errors.durationMinutes) || undefined}>
-                  <FieldLabel>Duração</FieldLabel>
-                  <Controller
-                    name="durationMinutes"
-                    control={control}
-                    render={({ field }) => (
-                      <Select
-                        value={field.value}
-                        onValueChange={field.onChange}
-                        disabled={isPending}>
-                        <SelectTrigger
-                          aria-invalid={
-                            Boolean(errors.durationMinutes) || undefined
-                          }>
-                          <SelectValue placeholder="Duração" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {APPOINTMENT_DURATION_OPTIONS.map((minutes) => (
-                            <SelectItem key={minutes} value={String(minutes)}>
-                              {minutes} min
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    )}
-                  />
-                  <FieldError errors={[errors.durationMinutes]} />
-                </Field>
-              </div>
-
-              {formError && (
-                <SuggestedAvailabilitySlots
-                  slots={suggestedSlots}
-                  onSelect={clearAvailabilityFeedback}
-                />
-              )}
+                </FieldGroup>
+              </FieldSet>
 
               {!isQuick ? (
-                <Field data-invalid={Boolean(errors.reason) || undefined}>
-                  <FieldLabel htmlFor="appointment-reason">
-                    Motivo da consulta
-                  </FieldLabel>
-                  <Textarea
-                    id="appointment-reason"
-                    placeholder="Opcional — ex.: check-up, dor"
-                    aria-invalid={Boolean(errors.reason) || undefined}
-                    disabled={isPending}
-                    {...register("reason")}
-                  />
-                  <FieldError errors={[errors.reason]} />
-                </Field>
+                <>
+                  <FieldSeparator />
+                  <FieldSet>
+                    <FieldLegend>Motivo da consulta</FieldLegend>
+                    <Field data-invalid={Boolean(errors.reason) || undefined}>
+                      <Textarea
+                        id="appointment-reason"
+                        placeholder="Opcional — ex.: check-up, dor"
+                        aria-invalid={Boolean(errors.reason) || undefined}
+                        disabled={isPending}
+                        {...register("reason")}
+                      />
+                      <FieldError errors={[errors.reason]} />
+                    </Field>
+                  </FieldSet>
+                </>
               ) : null}
-
-              <Field data-invalid={Boolean(errors.serviceId) || undefined}>
-                <FieldLabel>Serviço</FieldLabel>
-                <Controller
-                  name="serviceId"
-                  control={control}
-                  render={({ field }) => (
-                    <Select
-                      value={field.value}
-                      onValueChange={field.onChange}
-                      disabled={isPending || activeServicesQuery.isLoading}>
-                      <SelectTrigger
-                        aria-invalid={Boolean(errors.serviceId) || undefined}>
-                        <SelectValue placeholder="Selecione" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {activeServices.map((service) => (
-                          <SelectItem key={service.id} value={service.id}>
-                            {service.name} ·{" "}
-                            {formatCentsToBrl(service.priceCents)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )}
-                />
-                {isServicesEmpty ? (
-                  <p className="text-sm text-muted-foreground">
-                    Cadastre serviços em{" "}
-                    <Link
-                      href={routes.services}
-                      className="font-medium text-primary underline-offset-4 hover:underline">
-                      Serviços
-                    </Link>
-                    .
-                  </p>
-                ) : selectedService ? (
-                  <p className="text-xs text-muted-foreground">
-                    Valor do serviço:{" "}
-                    <span className="font-medium tabular-nums text-foreground">
-                      {formatCentsToBrl(selectedService.priceCents)}
-                    </span>
-                  </p>
-                ) : null}
-                <FieldError errors={[errors.serviceId]} />
-              </Field>
 
               {!isQuick && canCollect ? (
                 <>
-                  <Field
-                    data-invalid={Boolean(errors.discountPercent) || undefined}>
-                    <div className="flex items-center justify-between gap-2">
-                      <FieldLabel htmlFor="appointment-discount">
-                        Desconto no valor
-                      </FieldLabel>
-                      <span className="text-sm tabular-nums text-muted-foreground">
-                        {Number(selectedDiscount) || 0}%
-                      </span>
-                    </div>
-                    <Controller
-                      name="discountPercent"
-                      control={control}
-                      render={({ field }) => {
-                        const isDiscountDisabled =
-                          isPending ||
-                          selectedBillingKind === "courtesy" ||
-                          selectedBillingKind === "return";
-                        const discountValue = Number(field.value) || 0;
-                        return (
-                          <>
-                            <Slider
-                              id="appointment-discount"
-                              min={0}
-                              max={100}
-                              step={5}
-                              value={[discountValue]}
-                              disabled={isDiscountDisabled}
-                              aria-invalid={
-                                Boolean(errors.discountPercent) || undefined
-                              }
-                              onValueChange={([value]) =>
-                                field.onChange(value ?? 0)
-                              }
-                            />
-                            <div className="flex flex-wrap gap-2">
-                              {DISCOUNT_PRESETS.map((preset) => {
-                                const isSelected = discountValue === preset;
-                                return (
-                                  <Button
-                                    key={preset}
-                                    type="button"
-                                    size="sm"
-                                    variant={isSelected ? "default" : "outline"}
-                                    disabled={isDiscountDisabled}
-                                    aria-pressed={isSelected}
-                                    onClick={() => field.onChange(preset)}>
-                                    {preset}%
-                                  </Button>
-                                );
-                              })}
-                            </div>
-                          </>
-                        );
-                      }}
-                    />
-                    <FieldError errors={[errors.discountPercent]} />
-                  </Field>
-
-                  <Field
-                    data-invalid={Boolean(errors.billingKind) || undefined}>
-                    <FieldLabel>Cobrança</FieldLabel>
-                    <Controller
-                      name="billingKind"
-                      control={control}
-                      render={({ field }) => (
-                        <RadioGroup
-                          value={field.value}
-                          onValueChange={(value) => {
-                            field.onChange(value);
-                            if (value === "courtesy" || value === "return") {
-                              setValue("discountPercent", 0);
-                            }
-                          }}
-                          disabled={isPending}
-                          className="flex flex-col gap-2">
-                          {(
-                            Object.entries(BILLING_KIND_LABELS) as [
-                              BillingKind,
-                              string,
-                            ][]
-                          ).map(([value, label]) => (
-                            <div
-                              key={value}
-                              className="flex items-center gap-2">
-                              <RadioGroupItem
-                                value={value}
-                                id={`billing-kind-${value}`}
-                              />
-                              <Label htmlFor={`billing-kind-${value}`}>
-                                {label}
-                              </Label>
-                            </div>
-                          ))}
-                        </RadioGroup>
-                      )}
-                    />
-                    <FieldError errors={[errors.billingKind]} />
-                  </Field>
-
-                  {previewAmountCents != null ? (
-                    <p className="text-sm text-muted-foreground">
-                      Valor a cobrar:{" "}
-                      <span className="font-medium tabular-nums text-foreground">
-                        {formatCentsToBrl(previewAmountCents)}
-                      </span>
-                    </p>
-                  ) : null}
-                </>
-              ) : null}
-
-              {!isQuick && canManageFinancial ? (
-                <Field data-invalid={Boolean(errors.amountBrl) || undefined}>
-                  <FieldLabel htmlFor="appointment-amount-override">
-                    Outro valor
-                  </FieldLabel>
-                  <Input
-                    id="appointment-amount-override"
-                    inputMode="decimal"
-                    placeholder="Opcional"
-                    aria-invalid={Boolean(errors.amountBrl) || undefined}
-                    disabled={
-                      isPending ||
-                      selectedBillingKind === "courtesy" ||
-                      selectedBillingKind === "return"
-                    }
-                    {...registerWithMask(
-                      "amountBrl",
-                      MASKS.currency,
-                      CURRENCY_MASK_OPTIONS,
-                    )}
+                  <FieldSeparator />
+                  <AppointmentFormBillingFields
+                    isPending={isPending}
+                    canManageFinancial={canManageFinancial}
+                    listAmountCents={selectedService?.priceCents ?? null}
                   />
-                  <p className="text-xs text-muted-foreground">
-                    Substitui o valor calculado com o desconto.
-                  </p>
-                  <FieldError errors={[errors.amountBrl]} />
-                </Field>
+                </>
               ) : null}
             </FieldGroup>
           </div>

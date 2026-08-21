@@ -266,6 +266,7 @@ Convenção de ID: `RF-<DOMÍNIO>-NNN`.
 |----|--------|-----------|----------|--------|
 | RF-PAC-001 | Lista + busca | Paginada, escopo `clinicId` | Com `patients.read` | Done |
 | RF-PAC-002 | CRUD | CPF único por clínica; name ≤ 200 | `patients.write` | Done |
+| RF-PAC-007 | Observações administrativas | `patients.notes` no cadastro; ≠ prontuário | `patients.write` | Done |
 | RF-PAC-003 | Detalhe cadastro | Abas resumo/profile | Leitores | Done |
 | RF-PAC-004 | Detalhe appointments | Histórico | Leitores | Done |
 | RF-PAC-005 | Abas clínicas | notes/vitals/prescriptions (`records.read`) | Clínicos | Done |

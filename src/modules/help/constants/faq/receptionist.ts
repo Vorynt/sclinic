@@ -1,11 +1,11 @@
-import { routes } from "@/config/routes"
+import { routes } from "@/config/routes";
 import {
   SHARED_ACCOUNT_FAQ,
   SHARED_APPOINTMENT_STATUSES,
   SHARED_PRODUCT_TOUR,
   SHARED_WHERE_IS_HELP,
-} from "@/modules/help/constants/faq/shared"
-import type { HelpFaqItem } from "@/modules/help/types/help"
+} from "@/modules/help/constants/faq/shared";
+import type { HelpFaqItem } from "@/modules/help/types/help";
 
 /**
  * FAQ para recepcionista — balcão: pacientes, agenda, cobrança; sem prontuário / settings.
@@ -72,6 +72,27 @@ export const HELP_FAQ_RECEPTIONIST: HelpFaqItem[] = [
     relatedRoutes: [{ label: "Pacientes", href: routes.patients }],
   },
   {
+    id: "patient-admin-notes",
+    categoryId: "patients",
+    question: "Onde anoto recados da recepção sobre o paciente?",
+    answer: [
+      "No cadastro do paciente, em Observações administrativas. Use para preferência de contato, avisos do balcão e similares.",
+      "Isso não é prontuário: a evolução clínica fica nas Anotações da consulta.",
+    ],
+    steps: [
+      "Abra a ficha do paciente → Cadastro → Editar cadastro.",
+      "Preencha ou apague Observações administrativas e salve.",
+    ],
+    keywords: [
+      "observações",
+      "administrativas",
+      "recado",
+      "cadastro",
+      "WhatsApp",
+    ],
+    relatedRoutes: [{ label: "Pacientes", href: routes.patients }],
+  },
+  {
     id: "find-patient",
     categoryId: "patients",
     question: "Como acho um paciente já cadastrado?",
@@ -108,13 +129,14 @@ export const HELP_FAQ_RECEPTIONIST: HelpFaqItem[] = [
     categoryId: "appointments",
     question: "Como marco uma consulta?",
     answer: [
-      "Em Agendamentos (ou Novo agendamento na home): escolha data, horário, paciente e profissional.",
-      "Se já souber o valor, informe — facilita cobrar depois.",
+      "Em Agendamentos (ou Novo agendamento na home): escolha paciente, profissional, horário, tipo e serviço.",
+      "Para motivo e cobrança, use Mais opções — abre o formulário completo.",
+      "Se o horário estiver ocupado ou bloqueado, o sistema avisa e sugere os próximos livres.",
     ],
     steps: [
       "Abra a agenda ou o atalho Novo agendamento.",
-      "Preencha paciente, profissional, horário e valor (opcional).",
-      "Salve — a consulta nasce como Agendada.",
+      "Preencha paciente, profissional, horário, tipo e serviço.",
+      "Salve — a consulta nasce como Agendada. Use Mais opções se precisar de motivo ou desconto.",
     ],
     keywords: ["marcar", "agendar", "consulta", "horário"],
     relatedRoutes: [{ label: "Agenda", href: routes.appointments }],
@@ -137,8 +159,9 @@ export const HELP_FAQ_RECEPTIONIST: HelpFaqItem[] = [
     answer: [
       "Abra a consulta na agenda. Remarque o horário, cancele ou use Faltou se a pessoa não veio.",
       "Consultas já concluídas não voltam para remarcar.",
+      "Se o novo horário estiver bloqueado na agenda, o sistema avisa e sugere os próximos horários livres.",
     ],
-    keywords: ["remarcar", "cancelar", "faltou", "reagendar"],
+    keywords: ["remarcar", "cancelar", "faltou", "reagendar", "bloqueado"],
     relatedRoutes: [{ label: "Agenda", href: routes.appointments }],
   },
   {
@@ -227,4 +250,4 @@ export const HELP_FAQ_RECEPTIONIST: HelpFaqItem[] = [
   },
 
   ...SHARED_ACCOUNT_FAQ,
-]
+];

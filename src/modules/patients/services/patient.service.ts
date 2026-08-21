@@ -39,6 +39,7 @@ function patientSnapshot(patient: Patient) {
     birthDate: patient.birthDate ?? null,
     emergencyContactName: patient.emergencyContactName ?? null,
     emergencyContactPhone: patient.emergencyContactPhone ?? null,
+    notes: patient.notes ?? null,
     status: patient.status,
   }
 }

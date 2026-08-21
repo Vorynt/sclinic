@@ -12,10 +12,14 @@ export type ProfessionalAvailabilityInput = {
 
 /**
  * Why a slot is unavailable.
- * `outside_working_hours` = outside clinic business hours today.
- * When professionals define their own schedules, that window will be a subset of clinic hours.
+ * `outside_working_hours` = outside clinic ∩ professional hours.
+ * `slot_conflict` = overlapping active appointment.
+ * `schedule_block` = punctual unavailability (professional or clinic-wide).
  */
-export type UnavailabilityReason = "slot_conflict" | "outside_working_hours"
+export type UnavailabilityReason =
+  | "slot_conflict"
+  | "schedule_block"
+  | "outside_working_hours"
 
 export type ProfessionalAvailabilityResult =
   | { available: true }

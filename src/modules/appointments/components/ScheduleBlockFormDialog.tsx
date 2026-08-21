@@ -24,7 +24,6 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Select,
   SelectContent,
@@ -33,6 +32,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { isSelfScheduleOnlyRole } from "@/modules/appointments/constants/appointments";
 import { useCreateScheduleBlockMutation } from "@/modules/appointments/hooks/use-schedule-blocks";
 import { APPOINTMENT_DURATION_OPTIONS } from "@/modules/appointments/utils/calendar-constants";
@@ -213,25 +213,21 @@ export function ScheduleBlockFormDialog({
                   control={control}
                   name="scope"
                   render={({ field }) => (
-                    <RadioGroup
+                    <ToggleGroup
+                      type="single"
+                      size="sm"
                       value={field.value}
-                      onValueChange={field.onChange}
-                      className="gap-3">
-                      <label className="flex items-center gap-2 text-sm">
-                        <RadioGroupItem
-                          value="professional"
-                          id="block-scope-pro"
-                        />
+                      variant={"outline"}
+                      onValueChange={field.onChange}>
+                      <ToggleGroupItem
+                        value="professional"
+                        id="block-scope-pro">
                         Um profissional
-                      </label>
-                      <label className="flex items-center gap-2 text-sm">
-                        <RadioGroupItem
-                          value="clinic"
-                          id="block-scope-clinic"
-                        />
+                      </ToggleGroupItem>
+                      <ToggleGroupItem value="clinic" id="block-scope-clinic">
                         Toda a clínica
-                      </label>
-                    </RadioGroup>
+                      </ToggleGroupItem>
+                    </ToggleGroup>
                   )}
                 />
               </Field>

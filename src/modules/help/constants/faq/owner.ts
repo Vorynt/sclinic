@@ -235,6 +235,7 @@ export const HELP_FAQ_OWNER: HelpFaqItem[] = [
     question: "Como cadastro um paciente?",
     answer: [
       "Abra Pacientes e use o botão para cadastrar. O CPF não pode se repetir na mesma clínica.",
+      "No cadastro você também pode registrar observações administrativas (recados da recepção). Evolução clínica fica nas anotações da consulta.",
       "Depois, ao abrir a ficha, você vê os dados, o histórico de consultas e, se tiver permissão, as anotações clínicas.",
     ],
     steps: [

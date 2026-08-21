@@ -49,6 +49,8 @@ const clientMessages: Record<string, string> = {
     "Faça login com o e-mail que recebeu o convite.",
   [ErrorCode.APPOINTMENT_SLOT_UNAVAILABLE]:
     "O profissional já possui um agendamento neste horário.",
+  [ErrorCode.PROFESSIONAL_SCHEDULE_BLOCKED]:
+    "Este horário está bloqueado na agenda.",
   [ErrorCode.PROFESSIONAL_OUTSIDE_WORKING_HOURS]:
     "Horário fora do funcionamento da clínica.",
 }

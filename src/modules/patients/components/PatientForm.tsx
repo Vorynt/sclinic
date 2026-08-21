@@ -12,6 +12,7 @@ import { DatePicker } from "@/components/ui/date-picker";
 import { DialogFooter } from "@/components/ui/dialog";
 import {
   Field,
+  FieldDescription,
   FieldError,
   FieldGroup,
   FieldLabel,
@@ -19,6 +20,7 @@ import {
 import { FormErrorAlert } from "@/components/ui/form-error-alert";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
+import { Textarea } from "@/components/ui/textarea";
 import {
   useCreatePatientMutation,
   useUpdatePatientMutation,
@@ -67,6 +69,7 @@ export function PatientForm({
       birthDate: patient?.birthDate ?? "",
       emergencyContactName: patient?.emergencyContactName ?? "",
       emergencyContactPhone: patient?.emergencyContactPhone ?? "",
+      notes: patient?.notes ?? "",
     },
   });
 
@@ -270,6 +273,23 @@ export function PatientForm({
                 <FieldError errors={[errors.emergencyContactPhone]} />
               </Field>
             </div>
+
+            <Field data-invalid={Boolean(errors.notes) || undefined}>
+              <FieldLabel htmlFor="patient-notes">
+                Observações administrativas
+              </FieldLabel>
+              <Textarea
+                id="patient-notes"
+                placeholder="Preferência de contato, avisos da recepção…"
+                aria-invalid={Boolean(errors.notes) || undefined}
+                disabled={isPending}
+                {...register("notes")}
+              />
+              <FieldDescription>
+                Recados do balcão — não substitui o prontuário.
+              </FieldDescription>
+              <FieldError errors={[errors.notes]} />
+            </Field>
           </>
         )}
       </FieldGroup>

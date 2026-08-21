@@ -36,8 +36,8 @@ Espelha o padrão `PatientForm` (`quick` / `full`):
 
 | Fluxo | UI | Campos | Entrypoints |
 |-------|-----|--------|-------------|
-| **Rápido** | `AppointmentFormDialog` → `AppointmentForm` `variant="quick"` | Paciente, profissional, data/hora/duração, serviço (tipo/modalidade/cobrança com defaults) | Clique em slot vazio; Agendar no paciente; home da recepção; promover waitlist; próximo atendimento |
-| **Completo** | `/appointments/new` → `AppointmentNewPanel` + `variant="full"` `layout="page"` | Tudo do rápido + tipo, modalidade, motivo, desconto/cobrança/override | Ação **Novo agendamento** na agenda; botão **Mais opções** no modal (leva draft via query params) |
+| **Rápido** | `AppointmentFormDialog` → `AppointmentForm` `variant="quick"` | Paciente, profissional, data/hora/duração, tipo, modalidade, serviço (cobrança e motivo com defaults) | Clique em slot vazio; Agendar no paciente; home da recepção; promover waitlist; próximo atendimento |
+| **Completo** | `/appointments/new` → `AppointmentNewPanel` + `variant="full"` `layout="page"` | Tudo do rápido + motivo, desconto/cobrança/override | Ação **Novo agendamento** na agenda; botão **Mais opções** no modal (leva draft via query params) |
 
 - Helper: `buildAppointmentNewHref` / `appointmentNewLocationFromSearchParams` (`utils/appointment-new-href.ts`).
 - Mesma action/service de create; edição continua no `AppointmentDetailDrawer` (remarcar / detalhes).
@@ -80,7 +80,8 @@ Exige `records.read`. No drawer, **Abrir atendimento** / **Ver atendimento** só
 - Tipos: consultation, follow_up, procedure, evaluation, other
 - Dentro do horário da clínica (`clinic_business_hours` + timezone da clínica)
 - Sem overlap com appointments ≠ `canceled` (inclui completed/no_show)
-- Fora do expediente ou conflito → erro com até 3 `suggestedSlots` (próximos livres nos 14 dias, passo 30 min, no fuso da clínica)
+- Sem overlap com `schedule_blocks` (profissional ∪ clínica)
+- Fora do expediente, consulta no mesmo horário ou bloqueio → erro distinto, cada um com até 3 `suggestedSlots` (próximos livres nos 14 dias, passo 30 min, no fuso da clínica)
 - Self-schedule: clinician/nurse só a si (owner com perfil clínico **não** entra em self-schedule — vê a agenda completa)
 - Assignee pode ser o owner se existir professional ativo vinculado ao seu `userId` (ADR-007)
 - `amountCents` exige `financial.collect|manage` (legado até ADR-009)
@@ -105,7 +106,7 @@ Exige `records.read`. No drawer, **Abrir atendimento** / **Ver atendimento** só
 - `schedule_blocks`: indisponibilidade pontual (férias, reunião) sem criar um appointment "falso".
 - `professionalId` **nullable** — `null` = bloqueio da clínica inteira (afeta disponibilidade de todos).
 - Aparece na agenda como `ScheduleBlockEventCard`; clique abre remoção (`ScheduleBlockDetailDialog`).
-- Impede novo agendamento no intervalo (`hasOverlappingScheduleBlock` considera blocks do profissional **∪** clinic-wide).
+- Impede novo agendamento e remarcação no intervalo (`hasOverlappingScheduleBlock` considera blocks do profissional **∪** clinic-wide). Mensagem ao usuário: “Este horário está bloqueado na agenda.”
 - **Self-schedule:** clinician/nurse só criam/removem bloqueios da própria agenda; clinic-wide fica com recepção/gestores.
 - CRUD: `ScheduleBlockFormDialog` (create) + detalhe/remoção no card.
 

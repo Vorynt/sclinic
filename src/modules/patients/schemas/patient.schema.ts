@@ -16,6 +16,15 @@ const optionalTrimmed = z
   .transform((value) => (value.length === 0 ? undefined : value))
   .optional()
 
+/** Empty string clears the field (stored as null). Not a clinical note. */
+const administrativeNotesSchema = z
+  .string()
+  .trim()
+  .max(1000, "Observações administrativas devem ter no máximo 1000 caracteres")
+  .transform((value) => (value.length === 0 ? null : value))
+  .nullable()
+  .optional()
+
 const optionalEmail = z
   .string()
   .trim()
@@ -41,6 +50,7 @@ const patientOptionalFields = {
     .transform((value) => (value.length === 0 ? undefined : value))
     .optional(),
   emergencyContactPhone: optionalTrimmed,
+  notes: administrativeNotesSchema,
 }
 
 export const createPatientSchema = z.object({
@@ -73,7 +83,8 @@ export const updatePatientSchema = z
       data.email !== undefined ||
       data.birthDate !== undefined ||
       data.emergencyContactName !== undefined ||
-      data.emergencyContactPhone !== undefined,
+      data.emergencyContactPhone !== undefined ||
+      data.notes !== undefined,
     {
       message: "Informe ao menos um campo para atualizar",
       path: ["_form"],

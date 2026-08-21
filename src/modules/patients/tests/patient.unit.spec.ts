@@ -85,6 +85,31 @@ describe("createPatientSchema", () => {
     expect(parsed.emergencyContactPhone).toBe(undefined)
   })
 
+  it("accepts administrative notes and clears blank notes to null", () => {
+    const withNotes = createPatientSchema.parse({
+      name: "Maria Silva",
+      cpf: VALID_CPF,
+      notes: " Prefere WhatsApp ",
+    })
+    expect(withNotes.notes).toBe("Prefere WhatsApp")
+
+    const cleared = createPatientSchema.parse({
+      name: "Maria Silva",
+      cpf: VALID_CPF,
+      notes: "   ",
+    })
+    expect(cleared.notes).toBe(null)
+  })
+
+  it("rejects administrative notes over 1000 characters", () => {
+    const result = createPatientSchema.safeParse({
+      name: "Maria Silva",
+      cpf: VALID_CPF,
+      notes: "a".repeat(1001),
+    })
+    expect(result.success).toBe(false)
+  })
+
   it("rejects invalid email and birthDate format", () => {
     expect(createPatientSchema.safeParse({
         name: "Maria Silva",
@@ -121,6 +146,14 @@ describe("updatePatientSchema", () => {
   it("rejects update with no fields besides id", () => {
     const result = updatePatientSchema.safeParse({ id: VALID_UUID })
     expect(result.success).toBe(false)
+  })
+
+  it("accepts clearing administrative notes with an empty string", () => {
+    const parsed = updatePatientSchema.parse({
+      id: VALID_UUID,
+      notes: "  ",
+    })
+    expect(parsed.notes).toBe(null)
   })
 
   it("validates cpf when provided", () => {

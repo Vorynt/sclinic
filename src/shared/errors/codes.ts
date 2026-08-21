@@ -45,6 +45,8 @@ export const ErrorCode = {
   // Appointments / availability
   /** Professional already has an overlapping active appointment. */
   APPOINTMENT_SLOT_UNAVAILABLE: "APPOINTMENT_SLOT_UNAVAILABLE",
+  /** Requested slot overlaps a schedule block (professional or clinic-wide). */
+  PROFESSIONAL_SCHEDULE_BLOCKED: "PROFESSIONAL_SCHEDULE_BLOCKED",
   /**
    * Requested slot is outside clinic business hours.
    * Code name kept for compatibility; message refers to the clinic.

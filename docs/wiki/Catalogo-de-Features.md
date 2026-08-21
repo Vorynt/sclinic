@@ -56,6 +56,7 @@ Para regras detalhadas, abra a página **Domínio-*** correspondente. Prioridade
 | Feature | Status | Onde |
 |---------|--------|------|
 | Lista/busca/CRUD pacientes | Done | `/patients` |
+| Observações administrativas (cadastro) | Done | `patients.notes`; `PatientForm` (variante full) |
 | Soft delete paciente (archived) | Done | patients |
 | Detalhe paciente + abas | Done | patient detail nav |
 | Overview consolidado (CRM mínimo) | Planned | Roadmap H1 · E14 |
