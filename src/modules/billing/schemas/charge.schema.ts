@@ -25,7 +25,63 @@ export const CHARGE_STATUSES = [
 
 export const BILLING_KINDS = ["standard", "courtesy", "return"] as const
 
+export const PAYMENT_METHODS = [
+  ...MANUAL_PAYMENT_METHODS,
+  "gateway",
+  "courtesy",
+] as const
+
 export const chargeIdSchema = z.string().uuid("ID inválido")
+
+const ISO_DATE_RE = /^(\d{4})-(\d{2})-(\d{2})$/
+
+function isValidIsoDate(value: string): boolean {
+  const match = ISO_DATE_RE.exec(value)
+  if (!match) return false
+  const year = Number(match[1])
+  const month = Number(match[2])
+  const day = Number(match[3])
+  const utc = new Date(Date.UTC(year, month - 1, day))
+  return (
+    utc.getUTCFullYear() === year &&
+    utc.getUTCMonth() === month - 1 &&
+    utc.getUTCDate() === day
+  )
+}
+
+const optionalIsoDate = z
+  .string()
+  .trim()
+  .refine((value) => value.length === 0 || isValidIsoDate(value), {
+    message: "Data inválida",
+  })
+  .transform((value) => (value.length === 0 ? undefined : value))
+  .optional()
+
+const chargeFilterFields = {
+  status: z.enum(CHARGE_STATUSES).optional(),
+  overdue: z.coerce.boolean().optional(),
+  from: optionalIsoDate,
+  to: optionalIsoDate,
+  periodAll: z.coerce.boolean().optional(),
+  serviceId: z.string().uuid("Serviço inválido").optional(),
+  billingKind: z.enum(BILLING_KINDS).optional(),
+  method: z.enum(PAYMENT_METHODS).optional(),
+  patientId: z.string().uuid("Paciente inválido").optional(),
+}
+
+function refineChargePeriod(
+  data: { from?: string; to?: string },
+  ctx: z.RefinementCtx,
+) {
+  if (data.from && data.to && data.from > data.to) {
+    ctx.addIssue({
+      code: "custom",
+      message: "A data inicial deve ser anterior à data final.",
+      path: ["from"],
+    })
+  }
+}
 
 export const createChargeFromAppointmentSchema = z
   .object({
@@ -85,10 +141,18 @@ export const cancelChargeSchema = z.object({
   reason: optionalTrimmed,
 })
 
-export const listChargesSchema = listQuerySchema.extend({
-  status: z.enum(CHARGE_STATUSES).optional(),
-  overdue: z.coerce.boolean().optional(),
-})
+export const billingInsightsSchema = z
+  .object({
+    q: optionalTrimmed,
+    ...chargeFilterFields,
+  })
+  .superRefine(refineChargePeriod)
+
+export const listChargesSchema = listQuerySchema
+  .extend(chargeFilterFields)
+  .superRefine(refineChargePeriod)
+
+export const exportChargesSchema = billingInsightsSchema
 
 export const getChargeByAppointmentSchema = z.object({
   appointmentId: z.string().uuid("Agendamento inválido"),
@@ -100,6 +164,8 @@ export type CreateChargeFromAppointmentInput = z.infer<
 export type MarkChargePaidInput = z.infer<typeof markChargePaidSchema>
 export type CancelChargeInput = z.infer<typeof cancelChargeSchema>
 export type ListChargesInput = z.infer<typeof listChargesSchema>
+export type BillingInsightsInput = z.infer<typeof billingInsightsSchema>
+export type ExportChargesInput = z.infer<typeof exportChargesSchema>
 export type GetChargeByAppointmentInput = z.infer<
   typeof getChargeByAppointmentSchema
 >

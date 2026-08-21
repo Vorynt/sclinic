@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import type { z } from "zod";
 
+import { AddressFields } from "@/components/AddressFields";
 import { Button } from "@/components/ui/button";
 import {
   Field,
@@ -50,8 +51,11 @@ export function ClinicGeneralForm({ clinic }: ClinicGeneralFormProps) {
 
   const {
     register,
+    control,
     handleSubmit,
     setValue,
+    setError,
+    clearErrors,
     watch,
     formState: { errors },
   } = useForm<GeneralFormValues, unknown, GeneralFormOutput>({
@@ -218,95 +222,16 @@ export function ClinicGeneralForm({ clinic }: ClinicGeneralFormProps) {
           <FieldError errors={[errors.timezone]} />
         </Field>
 
-        <Field data-invalid={Boolean(errors.addressStreet) || undefined}>
-          <FieldLabel htmlFor="settings-clinic-street">Rua</FieldLabel>
-          <Input
-            id="settings-clinic-street"
-            autoComplete="street-address"
-            aria-invalid={Boolean(errors.addressStreet) || undefined}
-            disabled={updateClinic.isPending}
-            {...register("addressStreet")}
-          />
-          <FieldError errors={[errors.addressStreet]} />
-        </Field>
-
-        <div className="grid gap-4 sm:grid-cols-3">
-          <Field data-invalid={Boolean(errors.addressNumber) || undefined}>
-            <FieldLabel htmlFor="settings-clinic-number">Número</FieldLabel>
-            <Input
-              id="settings-clinic-number"
-              aria-invalid={Boolean(errors.addressNumber) || undefined}
-              disabled={updateClinic.isPending}
-              {...register("addressNumber")}
-            />
-            <FieldError errors={[errors.addressNumber]} />
-          </Field>
-
-          <Field
-            className="sm:col-span-2"
-            data-invalid={Boolean(errors.addressComplement) || undefined}>
-            <FieldLabel htmlFor="settings-clinic-complement">
-              Complemento
-            </FieldLabel>
-            <Input
-              id="settings-clinic-complement"
-              aria-invalid={Boolean(errors.addressComplement) || undefined}
-              disabled={updateClinic.isPending}
-              {...register("addressComplement")}
-            />
-            <FieldError errors={[errors.addressComplement]} />
-          </Field>
-        </div>
-
-        <Field data-invalid={Boolean(errors.addressNeighborhood) || undefined}>
-          <FieldLabel htmlFor="settings-clinic-neighborhood">Bairro</FieldLabel>
-          <Input
-            id="settings-clinic-neighborhood"
-            aria-invalid={Boolean(errors.addressNeighborhood) || undefined}
-            disabled={updateClinic.isPending}
-            {...register("addressNeighborhood")}
-          />
-          <FieldError errors={[errors.addressNeighborhood]} />
-        </Field>
-
-        <div className="grid gap-4 sm:grid-cols-3">
-          <Field
-            className="sm:col-span-2"
-            data-invalid={Boolean(errors.addressCity) || undefined}>
-            <FieldLabel htmlFor="settings-clinic-city">Cidade</FieldLabel>
-            <Input
-              id="settings-clinic-city"
-              aria-invalid={Boolean(errors.addressCity) || undefined}
-              disabled={updateClinic.isPending}
-              {...register("addressCity")}
-            />
-            <FieldError errors={[errors.addressCity]} />
-          </Field>
-
-          <Field data-invalid={Boolean(errors.addressState) || undefined}>
-            <FieldLabel htmlFor="settings-clinic-state">UF</FieldLabel>
-            <Input
-              id="settings-clinic-state"
-              maxLength={2}
-              aria-invalid={Boolean(errors.addressState) || undefined}
-              disabled={updateClinic.isPending}
-              {...register("addressState")}
-            />
-            <FieldError errors={[errors.addressState]} />
-          </Field>
-        </div>
-
-        <Field data-invalid={Boolean(errors.addressZip) || undefined}>
-          <FieldLabel htmlFor="settings-clinic-zip">CEP</FieldLabel>
-          <Input
-            id="settings-clinic-zip"
-            autoComplete="postal-code"
-            aria-invalid={Boolean(errors.addressZip) || undefined}
-            disabled={updateClinic.isPending}
-            {...register("addressZip")}
-          />
-          <FieldError errors={[errors.addressZip]} />
-        </Field>
+        <AddressFields
+          idPrefix="settings-clinic"
+          disabled={updateClinic.isPending}
+          control={control}
+          register={register}
+          setValue={setValue}
+          setError={setError}
+          clearErrors={clearErrors}
+          errors={errors}
+        />
       </FieldGroup>
 
       <Button type="submit" className="w-fit" disabled={updateClinic.isPending}>

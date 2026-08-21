@@ -347,6 +347,8 @@ Convenção de ID: `RF-<DOMÍNIO>-NNN`.
 | RF-FAT-009 | Snapshot na charge | serviço, lista, % desconto, líquido, `billingKind` | Sistema | Done |
 | RF-FAT-010 | Cortesia / retorno | Charge R$ 0 já paid + method `courtesy` | Caixa | Done |
 | RF-FAT-011 | Override de valor | Fora da fórmula só com `financial.manage` | P5, P1 | Done |
+| RF-FAT-012 | Painel `/billing` | KPIs, gráficos e filtros (período da consulta, status, serviço, tipo, pagamento, vencidas) | P5, P1, P6 | Done |
+| RF-FAT-013 | Exportação de cobranças | CSV + impressão `/billing/print` do recorte filtrado (header com clínica, filtros e marca sclinic; dados carregados só na página de print) | P5, P1, P6 | Done |
 
 ### 4.10 Assinatura SaaS — `RF-SAAS`
 

@@ -15,6 +15,9 @@ const clientMessages: Record<string, string> = {
   [ErrorCode.DB_NOT_NULL_VIOLATION]: "Verifique os campos e tente novamente.",
   [ErrorCode.DB_QUERY_FAILED]: "Algo deu errado. Tente novamente.",
   [ErrorCode.EMAIL_SEND_FAILED]: "Não foi possível enviar o e-mail. Tente novamente.",
+  [ErrorCode.ADDRESS_NOT_FOUND]: "CEP não encontrado.",
+  [ErrorCode.ADDRESS_LOOKUP_FAILED]:
+    "Não foi possível consultar o CEP. Preencha o endereço manualmente.",
   [ErrorCode.INVALID_CREDENTIALS]: "E-mail ou senha inválidos.",
   [ErrorCode.INVALID_CURRENT_PASSWORD]: "Senha atual incorreta.",
   [ErrorCode.EMAIL_ALREADY_EXISTS]: "Já existe uma conta com este e-mail.",
@@ -53,6 +56,8 @@ const clientMessages: Record<string, string> = {
     "Este horário está bloqueado na agenda.",
   [ErrorCode.PROFESSIONAL_OUTSIDE_WORKING_HOURS]:
     "Horário fora do funcionamento da clínica.",
+  [ErrorCode.EXPORT_LIMIT_EXCEEDED]:
+    "Há muitas cobranças neste recorte. Refine os filtros para exportar.",
 }
 
 /**

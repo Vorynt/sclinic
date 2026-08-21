@@ -20,6 +20,7 @@
 | **Prescription template** | Modelo de timbrado da clínica (até 3); DocumentModel de blocos + cor de destaque → HTML |
 | **Board** | Painel operacional da recepção (ADR-006) |
 | **Observações administrativas** | Notas do cadastro do paciente (`patients.notes`); recados da recepção — não são evolução clínica |
+| **Consulta de CEP** | Lookup de endereço via facade `core/address` (ViaCEP hoje); contrato em inglês; troca de provedor só em `index.ts` |
 | **Self-schedule** | Clinician/nurse só veem/agendam a si |
 
 ## Billing

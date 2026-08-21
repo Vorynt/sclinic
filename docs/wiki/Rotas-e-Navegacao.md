@@ -32,7 +32,7 @@ Soft nav Termos/Privacidade → modal `@modal/(.)…`.
 
 ### Print
 
-`/prescriptions/[id]/print`
+`/prescriptions/[id]/print` · `/billing/print` (carrega o recorte no cliente; header com clínica, filtros e marca sclinic)
 
 ### API
 

@@ -41,6 +41,13 @@ export const patientRepository = {
           emergencyContactName: params.data.emergencyContactName ?? null,
           emergencyContactPhone: params.data.emergencyContactPhone ?? null,
           notes: params.data.notes ?? null,
+          addressStreet: params.data.addressStreet ?? null,
+          addressNumber: params.data.addressNumber ?? null,
+          addressComplement: params.data.addressComplement ?? null,
+          addressNeighborhood: params.data.addressNeighborhood ?? null,
+          addressCity: params.data.addressCity ?? null,
+          addressState: params.data.addressState ?? null,
+          addressZip: params.data.addressZip ?? null,
           status: "active",
           createdBy: params.createdBy,
           updatedBy: params.createdBy,
@@ -124,6 +131,13 @@ export const patientRepository = {
         emergencyContactName,
         emergencyContactPhone,
         notes,
+        addressStreet,
+        addressNumber,
+        addressComplement,
+        addressNeighborhood,
+        addressCity,
+        addressState,
+        addressZip,
       } = params.data
 
       const [row] = await db
@@ -141,6 +155,15 @@ export const patientRepository = {
             ? { emergencyContactPhone }
             : {}),
           ...(notes !== undefined ? { notes } : {}),
+          ...(addressStreet !== undefined ? { addressStreet } : {}),
+          ...(addressNumber !== undefined ? { addressNumber } : {}),
+          ...(addressComplement !== undefined ? { addressComplement } : {}),
+          ...(addressNeighborhood !== undefined
+            ? { addressNeighborhood }
+            : {}),
+          ...(addressCity !== undefined ? { addressCity } : {}),
+          ...(addressState !== undefined ? { addressState } : {}),
+          ...(addressZip !== undefined ? { addressZip } : {}),
           updatedBy: params.updatedBy,
         })
         .where(

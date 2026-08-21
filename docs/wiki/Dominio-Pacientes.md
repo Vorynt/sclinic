@@ -11,6 +11,7 @@ Referência canônica de estrutura de módulo.
 - Lista paginada + busca + CRUD (`/patients`)
 - Detalhe: resumo, profile, appointments, notes, vitals, prescriptions
 - Observações administrativas no cadastro (`patients.notes`) — não são prontuário
+- Endereço no cadastro **full** (não no cadastro rápido); autofill por CEP via `core/address`
 - Soft delete → `archived`
 - **Planned (H1 · E14):** overview consolidado (última/próxima consulta, financeiro resumido, alertas)
 - **Planned (H3 · E14):** pacientes inativos por última consulta + CTA
@@ -24,6 +25,8 @@ Ver [Roadmap](Roadmap).
 - Update exige ≥ 1 campo
 - Abas clínicas exigem `records.read` (não confundir com cadastro)
 - Observações administrativas (`notes`) são do cadastro (`patients.write`); evolução clínica fica no prontuário
+- Endereço é opcional; variante `quick` (nome/CPF/telefone) não inclui endereço
+- Lookup de CEP: UF em select; campos preenchidos pela API ficam somente leitura; os vazios (e número/complemento) permanecem editáveis
 - Escopo estrito por `clinicId`
 
 ## Schema (create)
@@ -34,6 +37,7 @@ Ver [Roadmap](Roadmap).
 | cpf | obrigatório, válido |
 | phone, email, birthDate | opcionais |
 | emergencyContact* | opcionais |
+| address* | opcionais (rua, número, complemento, bairro, cidade, UF, CEP); lookup por CEP no form full |
 | notes | opcional ≤ 1000; string vazia grava `null` (notas administrativas, não prontuário) |
 
 Status: `active` | `inactive` | `archived`.

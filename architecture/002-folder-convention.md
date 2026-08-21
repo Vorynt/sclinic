@@ -50,6 +50,7 @@ Apenas infra reutilizável entre módulos, **sem espelhar** pastas do topo:
 | `AppError` | `shared/errors/` |
 | Logger | `core/logger/` |
 | Email (facade + provider) | `core/email/` — trocar provedor só em `core/email/index.ts` |
+| Address lookup (CEP) | `core/address/` — trocar provedor só em `core/address/index.ts` |
 | Schema Drizzle | `db/` |
 
 ## Nomenclatura

@@ -11,6 +11,7 @@ CRUD da clínica, horários semanais, criação para owner (com attach de plano)
 - Onboarding `/onboarding/clinic` + `/onboarding/hours`
 - Opção **“Você também atende pacientes nesta clínica?”** no create (ADR-007)
 - Settings geral / hours / danger
+- Autofill de endereço por CEP (ViaCEP via `core/address`) no create e no settings geral
 - UI de horários: seletor por dia (aba da semana + editor focado) com copiar para seg–sex / semana / outro dia
 - Fonte da verdade para disponibilidade de agendamento (enquanto o profissional não define agenda própria); sugestões de horário usam o fuso da clínica
 - Switcher + select-clinic (membership suspended ≠ assinatura bloqueada)
@@ -26,6 +27,7 @@ CRUD da clínica, horários semanais, criação para owner (com attach de plano)
 - Membership `suspended` aparece disabled no switcher
 - Delete: `requireOwnedClinicTeardown` (owner, **sem** exigir entitlement) + `cancelSubscriptionForUser`
 - Horários com 2 intervalos: o segundo deve começar **depois** do fechamento do primeiro (ex.: `08:00–12:00` / `12:00–18:00` é inválido — precisa de pausa entre turnos)
+- CEP completo dispara lookup; preenche rua, bairro, cidade e UF. UF é um select. Durante a busca esses campos ficam desabilitados; depois do sucesso, só permanece editável o que a API não devolveu (ex.: CEP genérico sem logradouro). Número e complemento continuam manuais. O `complemento` do ViaCEP (faixa/lado da rua) **não** vai para `addressComplement`.
 
 ## Schema (conceitual)
 

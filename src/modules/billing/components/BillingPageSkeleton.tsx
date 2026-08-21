@@ -1,4 +1,5 @@
 import { PageHeaderSkeleton } from "@/components/status/PageHeaderSkeleton"
+import { BillingChartsSkeleton } from "@/modules/billing/components/BillingCharts"
 import { BillingSummaryCardsSkeleton } from "@/modules/billing/components/BillingSummaryCards"
 import { Skeleton } from "@/components/ui/skeleton"
 import { DEFAULT_LIST_PAGE_SIZE } from "@/shared/validators"
@@ -31,15 +32,17 @@ export function BillingPageSkeleton() {
       className="flex flex-col gap-6"
     >
       <PageHeaderSkeleton
-        hasAction={false}
+        hasAction
         titleClassName="h-7 w-40"
         descriptionClassName="h-4 w-80 max-w-full"
       />
-      <BillingSummaryCardsSkeleton />
       <div className="flex flex-col gap-3 sm:flex-row">
         <Skeleton className="h-9 w-full max-w-sm" />
         <Skeleton className="h-9 w-44" />
+        <Skeleton className="h-9 w-64" />
       </div>
+      <BillingSummaryCardsSkeleton />
+      <BillingChartsSkeleton />
       <ChargesListSkeleton rows={DEFAULT_LIST_PAGE_SIZE} />
     </div>
   )

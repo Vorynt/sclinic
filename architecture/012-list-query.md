@@ -13,9 +13,9 @@ Listagens em tabela (pacientes, profissionais, equipe, …) usam **paginação e
 | Estado URL | `useListQueryParams` em `src/hooks/use-list-query-params.ts` (`nuqs`) |
 | UI genérica | `DataTableSearch` + `DataTablePagination` + `ResponsiveDataView` / `ListCard` em `src/components/data-table/` |
 
-Módulos **estendem** `listQuerySchema` (ex.: `listPatientsSchema = listQuerySchema`) e tipam o DTO via `z.infer`.
+Módulos **estendem** `listQuerySchema` (ex.: `listPatientsSchema = listQuerySchema`) e tipam o DTO via `z.infer`. Filtros de domínio extra (status, período, etc.) entram no `.extend()` do schema do módulo e na URL via `nuqs` — exemplo: `listChargesSchema` em billing.
 
-Defaults: `page = 1`, `pageSize = 20` (máx. 100). `sortBy` / `sortDir` estão no schema para uso futuro — sem UI ainda.
+Defaults: `page = 1`, `pageSize = 10` (máx. 100). `sortBy` / `sortDir` estão no schema para uso futuro — sem UI ainda.
 
 ## Fluxo
 
@@ -39,9 +39,12 @@ Actions retornam `ApiResponse<PaginatedResult<T>>`, não `T[]`.
 
 ## Fora deste padrão
 
-- Agenda (filtro por intervalo de datas)
+- Agenda (filtro por intervalo de datas da grade, não da listagem 012)
 - Comboboxes (busca própria + `limit`, sem paginação de tabela)
-- Filtros avançados / ordenação na UI (contrato preparado; implementar depois)
+
+Filtros avançados de tabela (período, status, entidade) ficam no schema do módulo + URL (`nuqs`); billing é o exemplo canônico (`from`/`to`/`status`/`overdue`/…). Ordenação na UI ainda não.
+
+Exportação completa (CSV / impressão) **não** reusa a query paginada do painel: CSV dispara na ação do botão; impressão abre `/billing/print` e carrega o recorte só lá.
 
 ## Anti-padrões
 

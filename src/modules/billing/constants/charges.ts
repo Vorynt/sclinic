@@ -20,3 +20,5 @@ export const BILLING_KIND_LABELS = {
   courtesy: "Cortesia",
   return: "Retorno",
 } as const
+
+export const CHARGE_EXPORT_MAX_ROWS = 2000

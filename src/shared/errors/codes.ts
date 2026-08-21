@@ -6,6 +6,8 @@ export const ErrorCode = {
   DB_NOT_NULL_VIOLATION: "DB_NOT_NULL_VIOLATION",
   DB_QUERY_FAILED: "DB_QUERY_FAILED",
   EMAIL_SEND_FAILED: "EMAIL_SEND_FAILED",
+  ADDRESS_NOT_FOUND: "ADDRESS_NOT_FOUND",
+  ADDRESS_LOOKUP_FAILED: "ADDRESS_LOOKUP_FAILED",
 
   // Application / domain (service)
   NOT_FOUND: "NOT_FOUND",
@@ -52,6 +54,9 @@ export const ErrorCode = {
    * Code name kept for compatibility; message refers to the clinic.
    */
   PROFESSIONAL_OUTSIDE_WORKING_HOURS: "PROFESSIONAL_OUTSIDE_WORKING_HOURS",
+
+  /** Export/print exceeded the allowed row cap for the current filters. */
+  EXPORT_LIMIT_EXCEEDED: "EXPORT_LIMIT_EXCEEDED",
 } as const
 
 export type ErrorCode = (typeof ErrorCode)[keyof typeof ErrorCode]

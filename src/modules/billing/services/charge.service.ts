@@ -16,23 +16,39 @@ import {
 } from "@/modules/authentication/permissions/guards"
 import type { CancelChargeDto } from "@/modules/billing/dto/cancel-charge.dto"
 import type { CreateChargeFromAppointmentDto } from "@/modules/billing/dto/create-charge-from-appointment.dto"
+import type { ExportChargesDto } from "@/modules/billing/dto/export-charges.dto"
+import type { GetBillingInsightsDto } from "@/modules/billing/dto/get-billing-insights.dto"
 import type { ListChargesDto } from "@/modules/billing/dto/list-charges.dto"
 import type { MarkChargePaidDto } from "@/modules/billing/dto/mark-charge-paid.dto"
-import { chargeRepository } from "@/modules/billing/repositories/charge.repository"
+import { CHARGE_EXPORT_MAX_ROWS } from "@/modules/billing/constants/charges"
+import {
+  chargesExportFilename,
+  chargesToCsv,
+} from "@/modules/billing/mappers/charges-csv"
+import {
+  chargeRepository,
+  type ChargeQueryFilters,
+} from "@/modules/billing/repositories/charge.repository"
 import { clinicServiceRepository } from "@/modules/billing/repositories/clinic-service.repository"
 import type {
+  BillingInsights,
   BillingSummary,
   Charge,
+  ChargeExportList,
   ChargeListItem,
+  ChargesExport,
   DelinquentPatient,
 } from "@/modules/billing/types/charge"
 import { endOfClinicLocalDay } from "@/modules/billing/utils/charge-due-date"
+import { resolveChargePeriod } from "@/modules/billing/utils/charge-period"
+import { fillChargeInsightTimeBuckets } from "@/modules/billing/utils/fill-insight-time-buckets"
 import {
   assertAppointmentChargeable,
   assertChargePendingForCancel,
   assertChargePendingForPayment,
 } from "@/modules/billing/utils/charge-rules"
 import { computeChargeAmountCents } from "@/modules/billing/utils/charge-pricing"
+import { clinicRepository } from "@/modules/clinics/repositories/clinic.repository"
 import { clinicHoursService } from "@/modules/clinics/services/clinic-hours.service"
 import type { AuthRequestContext } from "@/shared/auth"
 import { AppError, ErrorCode, isTechnicalError } from "@/shared/errors"
@@ -72,6 +88,58 @@ function chargeSnapshot(charge: Charge) {
     billingKind: charge.billingKind,
     status: charge.status,
     description: charge.description,
+  }
+}
+
+type ChargeFilterInput = {
+  q?: string
+  status?: ChargeQueryFilters["status"]
+  overdue?: boolean
+  from?: string
+  to?: string
+  periodAll?: boolean
+  serviceId?: string
+  billingKind?: ChargeQueryFilters["billingKind"]
+  method?: ChargeQueryFilters["method"]
+  patientId?: string
+}
+
+async function resolveClinicChargeFilters(
+  clinicId: string,
+  filters: ChargeFilterInput,
+): Promise<
+  ChargeQueryFilters & {
+    from: string | null
+    to: string | null
+    periodAll: boolean
+    grain: BillingInsights["period"]["grain"]
+    timeZone: string
+  }
+> {
+  const { timeZone } = await clinicHoursService.getAvailabilityContext(clinicId)
+  const period = resolveChargePeriod({
+    from: filters.from,
+    to: filters.to,
+    periodAll: filters.periodAll,
+    timeZone,
+  })
+
+  return {
+    clinicId,
+    q: filters.q,
+    status: filters.status,
+    overdue: filters.overdue,
+    startsAtFrom: period.startsAtFrom,
+    startsAtTo: period.startsAtTo,
+    serviceId: filters.serviceId,
+    billingKind: filters.billingKind,
+    method: filters.method,
+    patientId: filters.patientId,
+    from: period.from,
+    to: period.to,
+    periodAll: period.periodAll,
+    grain: period.grain,
+    timeZone,
   }
 }
 
@@ -211,11 +279,9 @@ export const chargeService = {
     ctx: AuthRequestContext,
   ): Promise<PaginatedResult<ChargeListItem>> {
     const auth = await requirePermission(ctx, Permission.FINANCIAL_VIEW)
+    const resolved = await resolveClinicChargeFilters(auth.clinicId, filters)
     return chargeRepository.listByClinic({
-      clinicId: auth.clinicId,
-      q: filters.q,
-      status: filters.status,
-      overdue: filters.overdue,
+      ...resolved,
       page: filters.page,
       pageSize: filters.pageSize,
     })
@@ -226,6 +292,77 @@ export const chargeService = {
   ): Promise<DelinquentPatient[]> {
     const auth = await requirePermission(ctx, Permission.FINANCIAL_VIEW)
     return chargeRepository.listDelinquentPatients(auth.clinicId)
+  },
+
+  async getInsights(
+    filters: GetBillingInsightsDto,
+    ctx: AuthRequestContext,
+  ): Promise<BillingInsights> {
+    const auth = await requirePermission(ctx, Permission.FINANCIAL_VIEW)
+    const resolved = await resolveClinicChargeFilters(auth.clinicId, filters)
+    const insights = await chargeRepository.getInsights(resolved)
+    return {
+      ...insights,
+      byTime: fillChargeInsightTimeBuckets({
+        rows: insights.byTime,
+        from: insights.period.from,
+        to: insights.period.to,
+        grain: insights.period.grain,
+      }),
+    }
+  },
+
+  async exportCsv(
+    filters: ExportChargesDto,
+    ctx: AuthRequestContext,
+  ): Promise<ChargesExport> {
+    const auth = await requirePermission(ctx, Permission.FINANCIAL_VIEW)
+    const resolved = await resolveClinicChargeFilters(auth.clinicId, filters)
+    const { items, total } = await chargeRepository.listForExport({
+      ...resolved,
+      limit: CHARGE_EXPORT_MAX_ROWS,
+    })
+
+    if (total > CHARGE_EXPORT_MAX_ROWS) {
+      throw new AppError(ErrorCode.EXPORT_LIMIT_EXCEEDED, {
+        message: `Há mais de ${CHARGE_EXPORT_MAX_ROWS} cobranças neste recorte. Refine os filtros para exportar.`,
+      })
+    }
+
+    return {
+      filename: chargesExportFilename({
+        from: resolved.from,
+        to: resolved.to,
+        periodAll: resolved.periodAll,
+      }),
+      csv: chargesToCsv(items),
+    }
+  },
+
+  async listForExport(
+    filters: ExportChargesDto,
+    ctx: AuthRequestContext,
+  ): Promise<ChargeExportList> {
+    const auth = await requirePermission(ctx, Permission.FINANCIAL_VIEW)
+    const resolved = await resolveClinicChargeFilters(auth.clinicId, filters)
+    const [{ items, total }, clinic] = await Promise.all([
+      chargeRepository.listForExport({
+        ...resolved,
+        limit: CHARGE_EXPORT_MAX_ROWS,
+      }),
+      clinicRepository.findById(auth.clinicId),
+    ])
+
+    if (total > CHARGE_EXPORT_MAX_ROWS) {
+      throw new AppError(ErrorCode.EXPORT_LIMIT_EXCEEDED, {
+        message: `Há mais de ${CHARGE_EXPORT_MAX_ROWS} cobranças neste recorte. Refine os filtros para imprimir.`,
+      })
+    }
+
+    return {
+      clinicName: clinic?.name.trim() || "Clínica",
+      items,
+    }
   },
 
   async getById(id: string, ctx: AuthRequestContext): Promise<Charge> {

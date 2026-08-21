@@ -29,6 +29,8 @@ Page / Component
 
 Anti-padrões: Page→DB, lógica pesada em action, SQL fora de repository, `fetch` solto (usar `shared/api`).
 
+Consulta de CEP: facade em `core/address` (provedor ViaCEP hoje). Forms usam `AddressFields` + `lookupAddressAction`; trocar webservice só em `core/address/index.ts`. Contrato de domínio em inglês (`street`, `city`, `state`…).
+
 ## Organização de pastas
 
 ```
@@ -36,7 +38,7 @@ src/
   modules/<feature>/   # domínio
   app/                 # rotas
   db/                  # schema, migrations, seeds
-  core/                # session, events, realtime, …
+  core/                # session, events, realtime, email, address lookup, …
   shared/              # api, errors, validators, auth
   components/          # UI genérica (design system)
   stores/              # Zustand

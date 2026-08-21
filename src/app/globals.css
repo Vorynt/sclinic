@@ -135,6 +135,18 @@
   }
 }
 
+/* Dark canvas + color-scheme:dark leak into PDF margins as a black frame. */
+@media print {
+  html,
+  body {
+    background: #fff !important;
+    color: #000 !important;
+    color-scheme: light !important;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+}
+
 @keyframes caret-blink {
   0%,
   70%,

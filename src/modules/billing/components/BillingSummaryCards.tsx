@@ -1,127 +1,101 @@
-"use client";
+"use client"
 
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
-
-import { QueryErrorState } from "@/components/status/QueryErrorState";
+import { QueryErrorState } from "@/components/status/QueryErrorState"
 import {
   Card,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { cn } from "@/lib/utils";
-import { useBillingSummaryQuery } from "@/modules/billing/hooks/use-charges";
-import type { ChargeStatus } from "@/modules/billing/types/charge";
-import { formatCentsToBrl } from "@/modules/billing/utils/money";
-
-type StatusFilter = "all" | ChargeStatus;
+} from "@/components/ui/card"
+import { Skeleton } from "@/components/ui/skeleton"
+import { useBillingInsightsQuery } from "@/modules/billing/hooks/use-charges"
+import type { BillingInsightsInput } from "@/modules/billing/schemas/charge.schema"
+import { formatCentsToBrl } from "@/modules/billing/utils/money"
 
 type BillingSummaryCardsProps = {
-  selectedStatus: StatusFilter;
-  onStatusChange: (status: StatusFilter) => void;
-};
+  filters: BillingInsightsInput
+}
 
-type SummaryCardConfig = {
-  status: ChargeStatus;
-  label: string;
-  amountCents: number;
-  countLabel: string;
-};
+function countLabel(count: number, singular: string, plural: string) {
+  return count === 1 ? `1 ${singular}` : `${count} ${plural}`
+}
 
-export function BillingSummaryCards({
-  selectedStatus,
-  onStatusChange,
-}: BillingSummaryCardsProps) {
-  const summaryQuery = useBillingSummaryQuery();
+export function BillingSummaryCards({ filters }: BillingSummaryCardsProps) {
+  const insightsQuery = useBillingInsightsQuery(filters)
 
-  if (summaryQuery.isLoading) {
-    return <BillingSummaryCardsSkeleton />;
+  if (insightsQuery.isLoading) {
+    return <BillingSummaryCardsSkeleton />
   }
 
-  if (summaryQuery.isError || !summaryQuery.data) {
+  if (insightsQuery.isError || !insightsQuery.data) {
     return (
       <QueryErrorState
         description="Não foi possível carregar o resumo financeiro."
         onRetry={() => {
-          void summaryQuery.refetch();
+          void insightsQuery.refetch()
         }}
-        isRetrying={summaryQuery.isFetching}
+        isRetrying={insightsQuery.isFetching}
       />
-    );
+    )
   }
 
-  const summary = summaryQuery.data;
-  const referenceMonth = format(new Date(), "MMMM 'de' yyyy", {
-    locale: ptBR,
-  });
-  const cards: SummaryCardConfig[] = [
+  const { kpis } = insightsQuery.data
+  const cards = [
     {
-      status: "pending",
-      label: "A receber",
-      amountCents: summary.pendingTotalCents,
-      countLabel:
-        summary.pendingCount === 1
-          ? "1 cobrança pendente"
-          : `${summary.pendingCount} cobranças pendentes`,
+      id: "received",
+      label: "Recebido no período",
+      amountCents: kpis.receivedCents,
+      hint: countLabel(kpis.receivedCount, "pagamento", "pagamentos"),
     },
     {
-      status: "paid",
-      label: `Recebido em ${referenceMonth}`,
-      amountCents: summary.paidThisMonthCents,
-      countLabel:
-        summary.paidThisMonthCount === 1
-          ? "1 pagamento"
-          : `${summary.paidThisMonthCount} pagamentos`,
+      id: "pending",
+      label: "A receber no período",
+      amountCents: kpis.pendingCents,
+      hint: countLabel(
+        kpis.pendingCount,
+        "cobrança pendente",
+        "cobranças pendentes",
+      ),
     },
-  ];
-
-  function handleSelect(status: ChargeStatus) {
-    onStatusChange(selectedStatus === status ? "all" : status);
-  }
+    {
+      id: "overdue",
+      label: "Inadimplente no período",
+      amountCents: kpis.overdueCents,
+      hint: countLabel(
+        kpis.overdueCount,
+        "cobrança vencida",
+        "cobranças vencidas",
+      ),
+    },
+    {
+      id: "ticket",
+      label: "Ticket médio",
+      amountCents: kpis.averageTicketCents,
+      hint: "Média por pagamento recebido",
+    },
+  ]
 
   return (
-    <div className="grid gap-3 sm:grid-cols-2">
-      {cards.map((card) => {
-        const selected = selectedStatus === card.status;
-
-        return (
-          <Card
-            key={card.status}
-            size="sm"
-            role="button"
-            tabIndex={0}
-            aria-pressed={selected}
-            onClick={() => handleSelect(card.status)}
-            onKeyDown={(event) => {
-              if (event.key === "Enter" || event.key === " ") {
-                event.preventDefault();
-                handleSelect(card.status);
-              }
-            }}
-            className={cn(
-              "cursor-pointer transition-colors hover:bg-muted/40",
-              selected && "bg-muted/50 ring-2 ring-ring",
-            )}>
-            <CardHeader>
-              <CardDescription>{card.label}</CardDescription>
-              <CardTitle className="text-2xl tabular-nums tracking-tight">
-                {formatCentsToBrl(card.amountCents)}
-              </CardTitle>
-              <CardDescription>{card.countLabel}</CardDescription>
-            </CardHeader>
-          </Card>
-        );
-      })}
+    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      {cards.map((card) => (
+        <Card key={card.id} size="sm">
+          <CardHeader>
+            <CardDescription>{card.label}</CardDescription>
+            <CardTitle className="text-2xl tabular-nums tracking-tight">
+              {formatCentsToBrl(card.amountCents)}
+            </CardTitle>
+            <CardDescription>{card.hint}</CardDescription>
+          </CardHeader>
+        </Card>
+      ))}
     </div>
-  );
+  )
 }
 
 export function BillingSummaryCardsSkeleton() {
   return (
-    <div className="grid gap-3 sm:grid-cols-2">
-      {Array.from({ length: 2 }, (_, index) => (
+    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      {Array.from({ length: 4 }, (_, index) => (
         <Card key={index} size="sm">
           <CardHeader>
             <Skeleton className="h-4 w-24" />
@@ -131,5 +105,5 @@ export function BillingSummaryCardsSkeleton() {
         </Card>
       ))}
     </div>
-  );
+  )
 }

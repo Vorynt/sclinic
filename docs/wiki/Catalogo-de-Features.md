@@ -33,6 +33,7 @@ Para regras detalhadas, abra a página **Domínio-*** correspondente. Prioridade
 | Tela membership inactive | Done | `/membership-inactive` |
 | Select-clinic / subscription blocked | Done | ADR-003; regularizar (`unpaid`) ou assinar novamente (`canceled`) + excluir |
 | Conta: clínicas vinculadas | Done | `/account/clinics`; acessar / sair / excluir |
+| Consulta de CEP (autofill de endereço) | Done | `core/address` (ViaCEP); `AddressFields` em clínica e paciente |
 
 ### E2 — SaaS
 
@@ -57,6 +58,7 @@ Para regras detalhadas, abra a página **Domínio-*** correspondente. Prioridade
 |---------|--------|------|
 | Lista/busca/CRUD pacientes | Done | `/patients` |
 | Observações administrativas (cadastro) | Done | `patients.notes`; `PatientForm` (variante full) |
+| Endereço no cadastro do paciente | Done | `PatientForm` full + `PatientCard`; não entra no `quick` |
 | Soft delete paciente (archived) | Done | patients |
 | Detalhe paciente + abas | Done | patient detail nav |
 | Overview consolidado (CRM mínimo) | Planned | Roadmap H1 · E14 |
@@ -121,7 +123,9 @@ Para regras detalhadas, abra a página **Domínio-*** correspondente. Prioridade
 | Catálogo de serviços (preço fixo) | Done | ADR-009; `/services` |
 | Desconto % na agenda / pagamento | Done | ADR-009 |
 | Cortesia / retorno (charge R$ 0 paid) | Done | ADR-009 |
-| Visão / filtro inadimplentes | Done | ADR-011; `dueAt` + aba Inadimplentes agrupada por paciente |
+| Visão / filtro inadimplentes | Done | ADR-011; `dueAt` + filtro `overdue` em `/billing` |
+| Painel `/billing` (KPIs, gráficos, filtros) | Done | período = data da consulta; filtros avançados no Sheet; `financial.view` |
+| Exportação CSV / impressão | Done | `/billing/print` (dados só na página de print; header com clínica, filtros e marca sclinic); teto 2000 linhas |
 | Gateway clínico | Planned | provider fields · E10 |
 | Comissão / caixa diário | Later | Roadmap Later |
 

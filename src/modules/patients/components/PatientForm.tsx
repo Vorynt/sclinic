@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { useHookFormMask } from "use-mask-input";
 import type { z } from "zod";
 
+import { AddressFields } from "@/components/AddressFields";
 import { Button } from "@/components/ui/button";
 import { DatePicker } from "@/components/ui/date-picker";
 import { DialogFooter } from "@/components/ui/dialog";
@@ -58,6 +59,9 @@ export function PatientForm({
     register,
     control,
     handleSubmit,
+    setValue,
+    setError,
+    clearErrors,
     formState: { errors },
   } = useForm<PatientFormValues, unknown, PatientFormOutput>({
     resolver: zodResolver(createPatientSchema),
@@ -70,6 +74,13 @@ export function PatientForm({
       emergencyContactName: patient?.emergencyContactName ?? "",
       emergencyContactPhone: patient?.emergencyContactPhone ?? "",
       notes: patient?.notes ?? "",
+      addressStreet: patient?.addressStreet ?? "",
+      addressNumber: patient?.addressNumber ?? "",
+      addressComplement: patient?.addressComplement ?? "",
+      addressNeighborhood: patient?.addressNeighborhood ?? "",
+      addressCity: patient?.addressCity ?? "",
+      addressState: patient?.addressState ?? "",
+      addressZip: patient?.addressZip ?? "",
     },
   });
 
@@ -273,6 +284,17 @@ export function PatientForm({
                 <FieldError errors={[errors.emergencyContactPhone]} />
               </Field>
             </div>
+
+            <AddressFields
+              idPrefix="patient"
+              disabled={isPending}
+              control={control}
+              register={register}
+              setValue={setValue}
+              setError={setError}
+              clearErrors={clearErrors}
+              errors={errors}
+            />
 
             <Field data-invalid={Boolean(errors.notes) || undefined}>
               <FieldLabel htmlFor="patient-notes">

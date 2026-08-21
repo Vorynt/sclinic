@@ -41,6 +41,7 @@ export const routes = {
   professionals: "/professionals",
   services: "/services",
   billing: "/billing",
+  billingPrint: "/billing/print",
   appointments: "/appointments",
   appointmentNew: "/appointments/new",
   appointmentAttendance: (appointmentId: string) =>

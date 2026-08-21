@@ -32,6 +32,33 @@ const optionalEmail = z
   .transform((value) => (value && value.length > 0 ? value : undefined))
   .pipe(z.string().email("E-mail inválido").optional())
 
+function optionalString(max: number, message: string) {
+  return z
+    .string()
+    .trim()
+    .max(max, message)
+    .optional()
+    .transform((value) => (value && value.length > 0 ? value : undefined))
+}
+
+const patientAddressFields = {
+  addressStreet: optionalString(200, "Rua inválida"),
+  addressNumber: optionalString(32, "Número inválido"),
+  addressComplement: optionalString(120, "Complemento inválido"),
+  addressNeighborhood: optionalString(120, "Bairro inválido"),
+  addressCity: optionalString(120, "Cidade inválida"),
+  addressState: z
+    .string()
+    .trim()
+    .max(2, "UF inválida")
+    .optional()
+    .transform((value) => {
+      if (!value || value.length === 0) return undefined
+      return value.toUpperCase()
+    }),
+  addressZip: optionalString(16, "CEP inválido"),
+}
+
 export const patientIdSchema = z.string().uuid("ID inválido")
 
 const patientOptionalFields = {
@@ -51,6 +78,7 @@ const patientOptionalFields = {
     .optional(),
   emergencyContactPhone: optionalTrimmed,
   notes: administrativeNotesSchema,
+  ...patientAddressFields,
 }
 
 export const createPatientSchema = z.object({
@@ -84,7 +112,14 @@ export const updatePatientSchema = z
       data.birthDate !== undefined ||
       data.emergencyContactName !== undefined ||
       data.emergencyContactPhone !== undefined ||
-      data.notes !== undefined,
+      data.notes !== undefined ||
+      data.addressStreet !== undefined ||
+      data.addressNumber !== undefined ||
+      data.addressComplement !== undefined ||
+      data.addressNeighborhood !== undefined ||
+      data.addressCity !== undefined ||
+      data.addressState !== undefined ||
+      data.addressZip !== undefined,
     {
       message: "Informe ao menos um campo para atualizar",
       path: ["_form"],

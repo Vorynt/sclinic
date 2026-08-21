@@ -31,7 +31,10 @@ export function PatientFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md" showCloseButton>
+      <DialogContent
+        className={isQuick ? "sm:max-w-md" : "sm:max-w-lg"}
+        showCloseButton
+      >
         <DialogHeader>
           <DialogTitle>
             {isEditing ? "Editar paciente" : "Novo paciente"}

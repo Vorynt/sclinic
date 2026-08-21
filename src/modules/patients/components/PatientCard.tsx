@@ -3,10 +3,32 @@
 import type { Patient } from "@/modules/patients/types/patient"
 import { getPatientAgeYears } from "@/modules/patients/utils/patient-age"
 import { formatCpf } from "@/utils/cpf"
+import { formatMask } from "@/utils/mask"
 import { formatPhone } from "@/utils/phone"
 
 type PatientCardProps = {
   patient: Patient
+}
+
+function formatPatientAddress(patient: Patient): string | null {
+  const streetLine = [patient.addressStreet, patient.addressNumber]
+    .filter(Boolean)
+    .join(", ")
+  const cityLine = [patient.addressCity, patient.addressState]
+    .filter(Boolean)
+    .join(" — ")
+  const zip = patient.addressZip
+    ? formatMask(patient.addressZip, "cep")
+    : null
+  const parts = [
+    streetLine || null,
+    patient.addressComplement,
+    patient.addressNeighborhood,
+    cityLine || null,
+    zip,
+  ].filter(Boolean)
+
+  return parts.length > 0 ? parts.join(" · ") : null
 }
 
 /**
@@ -14,6 +36,7 @@ type PatientCardProps = {
  */
 export function PatientCard({ patient }: PatientCardProps) {
   const ageYears = getPatientAgeYears(patient.birthDate)
+  const address = formatPatientAddress(patient)
   const emergency =
     patient.emergencyContactName || patient.emergencyContactPhone
       ? [
@@ -77,6 +100,13 @@ export function PatientCard({ patient }: PatientCardProps) {
               Contato de emergência
             </dt>
             <dd className="text-sm text-foreground">{emergency}</dd>
+          </div>
+        ) : null}
+
+        {address ? (
+          <div className="flex flex-col gap-0.5 sm:col-span-2">
+            <dt className="text-xs text-muted-foreground">Endereço</dt>
+            <dd className="text-sm text-foreground">{address}</dd>
           </div>
         ) : null}
       </dl>

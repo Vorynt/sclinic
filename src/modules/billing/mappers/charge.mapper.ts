@@ -36,11 +36,13 @@ export function toChargeListItem(params: {
   row: ChargeRow
   patientName: string
   appointmentStartsAt: Date
+  paymentMethod?: PaymentMethod | null
 }): ChargeListItem {
   return {
     ...toCharge(params.row),
     patientName: params.patientName,
     appointmentStartsAt: params.appointmentStartsAt,
+    paymentMethod: params.paymentMethod ?? null,
   }
 }
 

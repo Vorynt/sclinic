@@ -74,6 +74,40 @@ describe("createPatientSchema", () => {
     expect(parsed.emergencyContactPhone).toBe("11988887777")
   })
 
+  it("accepts optional address fields and uppercases UF", () => {
+    const parsed = createPatientSchema.parse({
+      name: "Maria Silva",
+      cpf: VALID_CPF,
+      addressStreet: " Praça da Sé ",
+      addressNumber: "100",
+      addressComplement: "Sala 1",
+      addressNeighborhood: "Sé",
+      addressCity: "São Paulo",
+      addressState: "sp",
+      addressZip: "01001-000",
+    })
+    expect(parsed.addressStreet).toBe("Praça da Sé")
+    expect(parsed.addressNumber).toBe("100")
+    expect(parsed.addressComplement).toBe("Sala 1")
+    expect(parsed.addressNeighborhood).toBe("Sé")
+    expect(parsed.addressCity).toBe("São Paulo")
+    expect(parsed.addressState).toBe("SP")
+    expect(parsed.addressZip).toBe("01001-000")
+  })
+
+  it("drops empty address fields", () => {
+    const parsed = createPatientSchema.parse({
+      name: "Maria Silva",
+      cpf: VALID_CPF,
+      addressStreet: "  ",
+      addressZip: "",
+      addressState: "",
+    })
+    expect(parsed.addressStreet).toBe(undefined)
+    expect(parsed.addressZip).toBe(undefined)
+    expect(parsed.addressState).toBe(undefined)
+  })
+
   it("drops empty emergency contact fields", () => {
     const parsed = createPatientSchema.parse({
       name: "Maria Silva",
@@ -141,6 +175,14 @@ describe("updatePatientSchema", () => {
     })
     expect(parsed.id).toBe(VALID_UUID)
     expect(parsed.phone).toBe("11999998888")
+  })
+
+  it("accepts a partial update with only addressZip", () => {
+    const parsed = updatePatientSchema.parse({
+      id: VALID_UUID,
+      addressZip: "01310-100",
+    })
+    expect(parsed.addressZip).toBe("01310-100")
   })
 
   it("rejects update with no fields besides id", () => {
@@ -227,13 +269,13 @@ describe("toPatient mapper", () => {
       emergencyContactPhone: "11988887777",
       notes: "Paciente preferencial",
       status: "active",
-      addressStreet: null,
-      addressNumber: null,
+      addressStreet: "Praça da Sé",
+      addressNumber: "100",
       addressComplement: null,
-      addressNeighborhood: null,
-      addressCity: null,
-      addressState: null,
-      addressZip: null,
+      addressNeighborhood: "Sé",
+      addressCity: "São Paulo",
+      addressState: "SP",
+      addressZip: "01001000",
       createdAt: now,
       updatedAt: now,
       deletedAt: null,
@@ -251,6 +293,12 @@ describe("toPatient mapper", () => {
     expect(patient.emergencyContactName).toBe("João Silva")
     expect(patient.emergencyContactPhone).toBe("11988887777")
     expect(patient.notes).toBe("Paciente preferencial")
+    expect(patient.addressStreet).toBe("Praça da Sé")
+    expect(patient.addressNumber).toBe("100")
+    expect(patient.addressNeighborhood).toBe("Sé")
+    expect(patient.addressCity).toBe("São Paulo")
+    expect(patient.addressState).toBe("SP")
+    expect(patient.addressZip).toBe("01001000")
     expect(patient.status).toBe("active")
     expect(patient.createdAt).toBe(now)
   })

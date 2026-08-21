@@ -11,7 +11,7 @@ const optionalTrimmed = z
 
 /**
  * Shared list query for table pages: search + pagination.
- * Modules extend this schema for domain-specific filters later.
+ * Modules extend this schema for domain-specific filters (status, period, …).
  * `sortBy` / `sortDir` are reserved for a future sorting UI.
  */
 export const listQuerySchema = z.object({

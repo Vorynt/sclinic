@@ -12,7 +12,11 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { DataTablePagination } from "@/components/data-table/DataTablePagination";
+import { ListCard } from "@/components/data-table/ListCard";
+import { ListCardSkeleton } from "@/components/data-table/ListCardSkeleton";
+import { ResponsiveDataView } from "@/components/data-table/ResponsiveDataView";
 import { QueryErrorState } from "@/components/status/QueryErrorState";
+import { TableSkeleton } from "@/components/status/TableSkeleton";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -33,64 +37,77 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
-import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Permission } from "@/config/permissions";
 import { AppointmentPeekSheet } from "@/modules/appointments/components/AppointmentPeekSheet";
 import { MarkChargePaidDialog } from "@/modules/billing/components/MarkChargePaidDialog";
-import { CHARGE_STATUS_LABELS } from "@/modules/billing/constants/charges";
+import {
+  CHARGE_STATUS_LABELS,
+  PAYMENT_METHOD_LABELS,
+} from "@/modules/billing/constants/charges";
+import type { MarkChargePaidDto } from "@/modules/billing/dto/mark-charge-paid.dto";
 import {
   useCancelChargeMutation,
   useMarkChargePaidMutation,
 } from "@/modules/billing/hooks/use-charge-mutations";
 import { useChargesQuery } from "@/modules/billing/hooks/use-charges";
+import type { ListChargesInput } from "@/modules/billing/schemas/charge.schema";
 import type {
   ChargeListItem,
   ChargeStatus,
 } from "@/modules/billing/types/charge";
-import type { MarkChargePaidDto } from "@/modules/billing/dto/mark-charge-paid.dto";
 import { formatCentsToBrl } from "@/modules/billing/utils/money";
 import { useAuth } from "@/providers/AuthProvider";
 import { DEFAULT_LIST_PAGE_SIZE } from "@/shared/validators";
 
 type ChargesTableProps = {
-  filters: {
-    q?: string;
-    page: number;
-    pageSize: number;
-    status?: ChargeStatus;
-  };
+  filters: ListChargesInput;
   onPageChange: (page: number) => void;
 };
 
 function statusVariant(
   status: ChargeStatus,
-): "default" | "secondary" | "outline" | "destructive" | "success" | "warning" | "info" {
-  if (status === "paid") return "success"
-  if (status === "pending") return "warning"
-  if (status === "canceled" || status === "failed") return "outline"
-  return "info"
+):
+  | "default"
+  | "secondary"
+  | "outline"
+  | "destructive"
+  | "success"
+  | "warning"
+  | "info" {
+  if (status === "paid") return "success";
+  if (status === "pending") return "warning";
+  if (status === "canceled" || status === "failed") return "outline";
+  return "info";
 }
 
-function ChargesSkeleton({ rows }: { rows: number }) {
+function isOverdue(charge: ChargeListItem) {
   return (
-    <div className="flex flex-col gap-2">
-      {Array.from({ length: rows }, (_, index) => (
-        <div
-          key={index}
-          className="flex items-center gap-2.5 rounded-lg border border-border px-3 py-2.5">
-          <Skeleton className="size-8 shrink-0 rounded-md" />
-          <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-            <Skeleton className="h-3.5 w-2/5" />
-            <Skeleton className="h-3 w-1/2" />
-          </div>
-          <Skeleton className="h-4 w-16 shrink-0" />
-        </div>
-      ))}
-    </div>
+    charge.status === "pending" &&
+    charge.dueAt !== null &&
+    charge.dueAt.getTime() < Date.now()
   );
 }
 
-function ChargeCard({
+function formatAppointment(charge: ChargeListItem) {
+  return format(charge.appointmentStartsAt, "dd MMM yyyy · HH:mm", {
+    locale: ptBR,
+  });
+}
+
+function formatDue(charge: ChargeListItem) {
+  if (!charge.dueAt) return "—";
+  return format(charge.dueAt, "dd/MM/yyyy", { locale: ptBR });
+}
+
+function ChargeRowActions({
   charge,
   canCollect,
   canPeekAppointment,
@@ -106,80 +123,44 @@ function ChargeCard({
   onPeekAppointment: (appointmentId: string) => void;
 }) {
   const showCollectActions = canCollect && charge.status === "pending";
-  const showActions = canPeekAppointment || showCollectActions;
+  if (!canPeekAppointment && !showCollectActions) return null;
 
   return (
-    <div className="flex items-center gap-2.5 rounded-lg border border-border bg-card px-3 py-2.5">
-      <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground">
-        <CurrencyCircleDollarIcon
-          className="size-4"
-          weight="duotone"
-          aria-hidden
-        />
-      </span>
-
-      <div className="min-w-0 flex-1">
-        <div className="flex flex-wrap items-center gap-1.5">
-          <p className="truncate text-sm font-medium text-foreground">
-            {charge.patientName}
-          </p>
-          <Badge variant={statusVariant(charge.status)}>
-            {CHARGE_STATUS_LABELS[charge.status] ?? charge.status}
-          </Badge>
-        </div>
-
-        <p className="mt-0.5 truncate text-xs text-muted-foreground">
-          Consulta{" "}
-          {format(charge.appointmentStartsAt, "dd MMM yyyy · HH:mm", {
-            locale: ptBR,
-          })}
-          <span className="mx-1.5 text-border">·</span>
-          Criada em {format(charge.createdAt, "dd/MM/yyyy", { locale: ptBR })}
-        </p>
-      </div>
-
-      <p className="shrink-0 text-sm font-semibold tabular-nums tracking-tight text-foreground">
-        {formatCentsToBrl(charge.amountCents)}
-      </p>
-
-      {showActions ? (
-        <ButtonGroup className="shrink-0">
-          {canPeekAppointment ? (
-            <Button
-              type="button"
-              variant="secondary"
-              size="icon"
-              tooltip="Ver consulta"
-              onClick={() => onPeekAppointment(charge.appointmentId)}>
-              <EyeIcon />
-              <span className="sr-only">Ver consulta</span>
-            </Button>
-          ) : null}
-          {showCollectActions ? (
-            <>
-              <Button
-                type="button"
-                variant="secondary"
-                size="icon"
-                tooltip="Marcar pago"
-                onClick={() => onPay(charge)}>
-                <CheckCircleIcon />
-                <span className="sr-only">Marcar pago</span>
-              </Button>
-              <Button
-                type="button"
-                variant="destructive"
-                size="icon"
-                tooltip="Cancelar cobrança"
-                onClick={() => onCancel(charge)}>
-                <XCircleIcon />
-                <span className="sr-only">Cancelar cobrança</span>
-              </Button>
-            </>
-          ) : null}
-        </ButtonGroup>
+    <ButtonGroup>
+      {canPeekAppointment ? (
+        <Button
+          type="button"
+          variant="secondary"
+          size="icon"
+          tooltip="Ver consulta"
+          onClick={() => onPeekAppointment(charge.appointmentId)}>
+          <EyeIcon />
+          <span className="sr-only">Ver consulta</span>
+        </Button>
       ) : null}
-    </div>
+      {showCollectActions ? (
+        <>
+          <Button
+            type="button"
+            variant="secondary"
+            size="icon"
+            tooltip="Marcar pago"
+            onClick={() => onPay(charge)}>
+            <CheckCircleIcon />
+            <span className="sr-only">Marcar pago</span>
+          </Button>
+          <Button
+            type="button"
+            variant="destructive"
+            size="icon"
+            tooltip="Cancelar cobrança"
+            onClick={() => onCancel(charge)}>
+            <XCircleIcon />
+            <span className="sr-only">Cancelar cobrança</span>
+          </Button>
+        </>
+      ) : null}
+    </ButtonGroup>
   );
 }
 
@@ -221,64 +202,8 @@ export function ChargesTable({ filters, onPageChange }: ChargesTableProps) {
     onError: (error) => toast.error(error.message),
   });
 
-  if (chargesQuery.isLoading) {
-    return <ChargesSkeleton rows={DEFAULT_LIST_PAGE_SIZE} />;
-  }
-
-  if (chargesQuery.isError) {
-    return (
-      <QueryErrorState
-        description="Não foi possível carregar as cobranças."
-        onRetry={() => {
-          void chargesQuery.refetch();
-        }}
-        isRetrying={chargesQuery.isFetching}
-      />
-    );
-  }
-
-  const result = chargesQuery.data;
-  const items = result?.items ?? [];
-
-  if (items.length === 0) {
-    return (
-      <Empty className="border border-dashed py-10">
-        <EmptyHeader>
-          <EmptyMedia variant="icon">
-            <CurrencyCircleDollarIcon weight="duotone" />
-          </EmptyMedia>
-          <EmptyTitle>Nenhuma cobrança encontrada</EmptyTitle>
-          <EmptyDescription>
-            Crie uma cobrança ao agendar a consulta.
-          </EmptyDescription>
-        </EmptyHeader>
-      </Empty>
-    );
-  }
-
-  return (
-    <div className="flex flex-col gap-4">
-      <div className="flex flex-col gap-2">
-        {items.map((charge) => (
-          <ChargeCard
-            key={charge.id}
-            charge={charge}
-            canCollect={canCollect}
-            canPeekAppointment={canPeekAppointment}
-            onPay={setChargeToPay}
-            onCancel={setChargeToCancel}
-            onPeekAppointment={setPeekAppointmentId}
-          />
-        ))}
-      </div>
-
-      <DataTablePagination
-        page={result?.page ?? filters.page}
-        pageSize={result?.pageSize ?? filters.pageSize}
-        total={result?.total ?? 0}
-        onPageChange={onPageChange}
-      />
-
+  const dialogs = (
+    <>
       {canPeekAppointment ? (
         <AppointmentPeekSheet
           appointmentId={peekAppointmentId}
@@ -345,6 +270,175 @@ export function ChargesTable({ filters, onPageChange }: ChargesTableProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+    </>
+  );
+
+  if (chargesQuery.isLoading) {
+    return (
+      <ResponsiveDataView
+        desktop={<TableSkeleton columns={7} rows={DEFAULT_LIST_PAGE_SIZE} />}
+        mobile={<ListCardSkeleton rows={DEFAULT_LIST_PAGE_SIZE} />}
+      />
+    );
+  }
+
+  if (chargesQuery.isError) {
+    return (
+      <QueryErrorState
+        description="Não foi possível carregar as cobranças."
+        onRetry={() => {
+          void chargesQuery.refetch();
+        }}
+        isRetrying={chargesQuery.isFetching}
+      />
+    );
+  }
+
+  const result = chargesQuery.data;
+  const items = result?.items ?? [];
+
+  if (items.length === 0) {
+    return (
+      <Empty className="border border-dashed py-10">
+        <EmptyHeader>
+          <EmptyMedia variant="icon">
+            <CurrencyCircleDollarIcon weight="duotone" />
+          </EmptyMedia>
+          <EmptyTitle>Nenhuma cobrança encontrada</EmptyTitle>
+          <EmptyDescription>
+            Ajuste os filtros ou crie uma cobrança ao agendar a consulta.
+          </EmptyDescription>
+        </EmptyHeader>
+      </Empty>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-4">
+      <ResponsiveDataView
+        desktop={
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Paciente</TableHead>
+                <TableHead>Serviço</TableHead>
+                <TableHead>Consulta</TableHead>
+                <TableHead>Vencimento</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Valor</TableHead>
+                <TableHead className="text-right">Ações</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {items.map((charge) => (
+                <TableRow key={charge.id}>
+                  <TableCell className="max-w-48 font-medium">
+                    <span className="block truncate" title={charge.patientName}>
+                      {charge.patientName}
+                    </span>
+                  </TableCell>
+                  <TableCell className="max-w-40 truncate">
+                    {charge.serviceName ?? "—"}
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap text-muted-foreground">
+                    {formatAppointment(charge)}
+                  </TableCell>
+                  <TableCell
+                    className={
+                      isOverdue(charge)
+                        ? "whitespace-nowrap text-destructive"
+                        : "whitespace-nowrap text-muted-foreground"
+                    }>
+                    {formatDue(charge)}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex flex-col gap-1">
+                      <Badge variant={statusVariant(charge.status)}>
+                        {CHARGE_STATUS_LABELS[charge.status] ?? charge.status}
+                        {charge.paymentMethod ? (
+                          <span className="relative before:content-['|'] before:mr-1 before:text-muted-foreground text-xs text-muted-foreground">
+                            {PAYMENT_METHOD_LABELS[charge.paymentMethod] ??
+                              charge.paymentMethod}
+                          </span>
+                        ) : null}
+                      </Badge>
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-right font-semibold tabular-nums">
+                    {formatCentsToBrl(charge.amountCents)}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex justify-end">
+                      <ChargeRowActions
+                        charge={charge}
+                        canCollect={canCollect}
+                        canPeekAppointment={canPeekAppointment}
+                        onPay={setChargeToPay}
+                        onCancel={setChargeToCancel}
+                        onPeekAppointment={setPeekAppointmentId}
+                      />
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        }
+        mobile={
+          <div className="flex flex-col gap-2">
+            {items.map((charge) => (
+              <ListCard
+                key={charge.id}
+                collapsible
+                leading={
+                  <CurrencyCircleDollarIcon weight="duotone" aria-hidden />
+                }
+                title={charge.patientName}
+                badges={
+                  <Badge variant={statusVariant(charge.status)}>
+                    {CHARGE_STATUS_LABELS[charge.status] ?? charge.status}
+                  </Badge>
+                }
+                preview={`${charge.serviceName ?? "Serviço"} · ${formatAppointment(charge)}`}
+                trailing={
+                  <span className="text-sm font-semibold tabular-nums">
+                    {formatCentsToBrl(charge.amountCents)}
+                  </span>
+                }
+                meta={[
+                  { label: "Vencimento", value: formatDue(charge) },
+                  {
+                    label: "Pagamento",
+                    value: charge.paymentMethod
+                      ? (PAYMENT_METHOD_LABELS[charge.paymentMethod] ??
+                        charge.paymentMethod)
+                      : "—",
+                  },
+                ]}
+                actions={
+                  <ChargeRowActions
+                    charge={charge}
+                    canCollect={canCollect}
+                    canPeekAppointment={canPeekAppointment}
+                    onPay={setChargeToPay}
+                    onCancel={setChargeToCancel}
+                    onPeekAppointment={setPeekAppointmentId}
+                  />
+                }
+              />
+            ))}
+          </div>
+        }
+      />
+
+      <DataTablePagination
+        page={result?.page ?? filters.page}
+        pageSize={result?.pageSize ?? filters.pageSize}
+        total={result?.total ?? 0}
+        onPageChange={onPageChange}
+      />
+
+      {dialogs}
     </div>
   );
 }

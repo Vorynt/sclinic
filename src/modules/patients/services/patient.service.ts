@@ -40,6 +40,13 @@ function patientSnapshot(patient: Patient) {
     emergencyContactName: patient.emergencyContactName ?? null,
     emergencyContactPhone: patient.emergencyContactPhone ?? null,
     notes: patient.notes ?? null,
+    addressStreet: patient.addressStreet ?? null,
+    addressNumber: patient.addressNumber ?? null,
+    addressComplement: patient.addressComplement ?? null,
+    addressNeighborhood: patient.addressNeighborhood ?? null,
+    addressCity: patient.addressCity ?? null,
+    addressState: patient.addressState ?? null,
+    addressZip: patient.addressZip ?? null,
     status: patient.status,
   }
 }

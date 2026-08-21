@@ -37,6 +37,56 @@ export type Charge = {
 export type ChargeListItem = Charge & {
   patientName: string
   appointmentStartsAt: Date
+  paymentMethod: PaymentMethod | null
+}
+
+export type BillingInsightGrain = "day" | "week"
+
+export type BillingInsightsKpis = {
+  receivedCents: number
+  receivedCount: number
+  pendingCents: number
+  pendingCount: number
+  overdueCents: number
+  overdueCount: number
+  averageTicketCents: number
+}
+
+export type BillingInsights = {
+  period: {
+    from: string | null
+    to: string | null
+    periodAll: boolean
+    grain: BillingInsightGrain
+    timeZone: string
+  }
+  kpis: BillingInsightsKpis
+  byTime: Array<{
+    bucket: string
+    billedCents: number
+    receivedCents: number
+    count: number
+  }>
+  byStatus: Array<{
+    status: ChargeStatus
+    amountCents: number
+    count: number
+  }>
+  byMethod: Array<{
+    method: PaymentMethod
+    amountCents: number
+    count: number
+  }>
+}
+
+export type ChargesExport = {
+  filename: string
+  csv: string
+}
+
+export type ChargeExportList = {
+  clinicName: string
+  items: ChargeListItem[]
 }
 
 export type Payment = {

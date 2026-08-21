@@ -1,4 +1,16 @@
-import { and, count, desc, eq, ilike, inArray, isNull, sql, sum } from "drizzle-orm"
+import {
+  and,
+  count,
+  desc,
+  eq,
+  gte,
+  ilike,
+  inArray,
+  isNull,
+  lte,
+  sql,
+  sum,
+} from "drizzle-orm"
 
 import { db } from "@/db"
 import { appointments, charges, patients, payments } from "@/db/schema"
@@ -9,6 +21,9 @@ import {
   toPayment,
 } from "@/modules/billing/mappers/charge.mapper"
 import type {
+  BillingInsightGrain,
+  BillingInsights,
+  BillingKind,
   BillingSummary,
   Charge,
   ChargeListItem,
@@ -16,6 +31,7 @@ import type {
   DelinquentPatient,
   ManualPaymentMethod,
   Payment,
+  PaymentMethod,
 } from "@/modules/billing/types/charge"
 import {
   toPaginatedResult,
@@ -28,6 +44,79 @@ export type AppointmentChargeContext = {
   patientId: string
   status: string
   startsAt: Date
+}
+
+export type ChargeQueryFilters = {
+  clinicId: string
+  q?: string
+  status?: ChargeStatus
+  overdue?: boolean
+  startsAtFrom?: Date
+  startsAtTo?: Date
+  serviceId?: string
+  billingKind?: BillingKind
+  method?: PaymentMethod
+  patientId?: string
+}
+
+const paymentMethodSubquery = sql<PaymentMethod | null>`(
+  select ${payments.method}
+  from ${payments}
+  where ${payments.chargeId} = ${charges.id}
+    and ${payments.deletedAt} is null
+  order by ${payments.paidAt} desc
+  limit 1
+)`
+
+function chargeListWhere(params: ChargeQueryFilters) {
+  return and(
+    eq(charges.clinicId, params.clinicId),
+    isNull(charges.deletedAt),
+    params.status ? eq(charges.status, params.status) : undefined,
+    params.q ? ilike(patients.fullName, `%${params.q}%`) : undefined,
+    params.overdue
+      ? and(
+          eq(charges.status, "pending"),
+          sql`${charges.dueAt} is not null and ${charges.dueAt} < now()`,
+        )
+      : undefined,
+    params.serviceId ? eq(charges.serviceId, params.serviceId) : undefined,
+    params.billingKind
+      ? eq(charges.billingKind, params.billingKind)
+      : undefined,
+    params.patientId ? eq(charges.patientId, params.patientId) : undefined,
+    params.startsAtFrom
+      ? gte(appointments.startsAt, params.startsAtFrom)
+      : undefined,
+    params.startsAtTo
+      ? lte(appointments.startsAt, params.startsAtTo)
+      : undefined,
+    params.method
+      ? sql`exists (
+          select 1 from ${payments}
+          where ${payments.chargeId} = ${charges.id}
+            and ${payments.deletedAt} is null
+            and ${payments.method} = ${params.method}
+        )`
+      : undefined,
+  )
+}
+
+function toNumber(value: unknown): number {
+  return Number(value ?? 0)
+}
+
+/** IANA tz as a SQL literal so SELECT/GROUP BY/ORDER BY stay the same expression. */
+function sqlTimeZoneLiteral(timeZone: string) {
+  return sql.raw(`'${timeZone.replaceAll("'", "''")}'`)
+}
+
+function appointmentBucketExpr(grain: BillingInsightGrain, timeZone: string) {
+  const tz = sqlTimeZoneLiteral(timeZone)
+  if (grain === "day") {
+    return sql<string>`((${appointments.startsAt} at time zone ${tz})::date)::text`
+  }
+  return sql<string>`(date_trunc('week', ${appointments.startsAt} at time zone ${tz}))::date::text`
 }
 
 export const chargeRepository = {
@@ -222,28 +311,11 @@ export const chargeRepository = {
     })
   },
 
-  async listByClinic(params: {
-    clinicId: string
-    q?: string
-    status?: ChargeStatus
-    overdue?: boolean
-    page: number
-    pageSize: number
-  }): Promise<PaginatedResult<ChargeListItem>> {
+  async listByClinic(
+    params: ChargeQueryFilters & { page: number; pageSize: number },
+  ): Promise<PaginatedResult<ChargeListItem>> {
     return withDbError(async () => {
-      const where = and(
-        eq(charges.clinicId, params.clinicId),
-        isNull(charges.deletedAt),
-        params.status ? eq(charges.status, params.status) : undefined,
-        params.q ? ilike(patients.fullName, `%${params.q}%`) : undefined,
-        params.overdue
-          ? and(
-              eq(charges.status, "pending"),
-              sql`${charges.dueAt} IS NOT NULL AND ${charges.dueAt} < now()`,
-            )
-          : undefined,
-      )
-
+      const where = chargeListWhere(params)
       const offset = (params.page - 1) * params.pageSize
 
       const [totalRow, rows] = await Promise.all([
@@ -251,18 +323,20 @@ export const chargeRepository = {
           .select({ total: count() })
           .from(charges)
           .innerJoin(patients, eq(charges.patientId, patients.id))
+          .innerJoin(appointments, eq(charges.appointmentId, appointments.id))
           .where(where),
         db
           .select({
             charge: charges,
             patientName: patients.fullName,
             appointmentStartsAt: appointments.startsAt,
+            paymentMethod: paymentMethodSubquery,
           })
           .from(charges)
           .innerJoin(patients, eq(charges.patientId, patients.id))
           .innerJoin(appointments, eq(charges.appointmentId, appointments.id))
           .where(where)
-          .orderBy(desc(charges.createdAt))
+          .orderBy(desc(appointments.startsAt), desc(charges.createdAt))
           .limit(params.pageSize)
           .offset(offset),
       ])
@@ -273,12 +347,169 @@ export const chargeRepository = {
             row: row.charge,
             patientName: row.patientName,
             appointmentStartsAt: row.appointmentStartsAt,
+            paymentMethod: row.paymentMethod,
           }),
         ),
         total: totalRow[0]?.total ?? 0,
         page: params.page,
         pageSize: params.pageSize,
       })
+    })
+  },
+
+  async listForExport(
+    params: ChargeQueryFilters & { limit: number },
+  ): Promise<{ items: ChargeListItem[]; total: number }> {
+    return withDbError(async () => {
+      const where = chargeListWhere(params)
+
+      const [totalRow, rows] = await Promise.all([
+        db
+          .select({ total: count() })
+          .from(charges)
+          .innerJoin(patients, eq(charges.patientId, patients.id))
+          .innerJoin(appointments, eq(charges.appointmentId, appointments.id))
+          .where(where),
+        db
+          .select({
+            charge: charges,
+            patientName: patients.fullName,
+            appointmentStartsAt: appointments.startsAt,
+            paymentMethod: paymentMethodSubquery,
+          })
+          .from(charges)
+          .innerJoin(patients, eq(charges.patientId, patients.id))
+          .innerJoin(appointments, eq(charges.appointmentId, appointments.id))
+          .where(where)
+          .orderBy(desc(appointments.startsAt), desc(charges.createdAt))
+          .limit(params.limit),
+      ])
+
+      return {
+        total: totalRow[0]?.total ?? 0,
+        items: rows.map((row) =>
+          toChargeListItem({
+            row: row.charge,
+            patientName: row.patientName,
+            appointmentStartsAt: row.appointmentStartsAt,
+            paymentMethod: row.paymentMethod,
+          }),
+        ),
+      }
+    })
+  },
+
+  async getInsights(
+    params: ChargeQueryFilters & {
+      grain: BillingInsightGrain
+      timeZone: string
+      from: string | null
+      to: string | null
+      periodAll: boolean
+    },
+  ): Promise<BillingInsights> {
+    return withDbError(async () => {
+      const where = chargeListWhere(params)
+      const { grain, timeZone } = params
+      const bucketExpr = appointmentBucketExpr(grain, timeZone)
+
+      const [kpiRow, timeRows, statusRows, methodRows] = await Promise.all([
+        db
+          .select({
+            receivedCents: sql<number>`coalesce(sum(${charges.amountCents}) filter (where ${charges.status} = 'paid'), 0)`,
+            receivedCount: sql<number>`count(*) filter (where ${charges.status} = 'paid')`,
+            pendingCents: sql<number>`coalesce(sum(${charges.amountCents}) filter (where ${charges.status} = 'pending'), 0)`,
+            pendingCount: sql<number>`count(*) filter (where ${charges.status} = 'pending')`,
+            overdueCents: sql<number>`coalesce(sum(${charges.amountCents}) filter (where ${charges.status} = 'pending' and ${charges.dueAt} is not null and ${charges.dueAt} < now()), 0)`,
+            overdueCount: sql<number>`count(*) filter (where ${charges.status} = 'pending' and ${charges.dueAt} is not null and ${charges.dueAt} < now())`,
+          })
+          .from(charges)
+          .innerJoin(patients, eq(charges.patientId, patients.id))
+          .innerJoin(appointments, eq(charges.appointmentId, appointments.id))
+          .where(where)
+          .then((rows) => rows[0]),
+        db
+          .select({
+            bucket: bucketExpr,
+            billedCents: sum(charges.amountCents),
+            receivedCents: sql<number>`coalesce(sum(${charges.amountCents}) filter (where ${charges.status} = 'paid'), 0)`,
+            count: count(),
+          })
+          .from(charges)
+          .innerJoin(patients, eq(charges.patientId, patients.id))
+          .innerJoin(appointments, eq(charges.appointmentId, appointments.id))
+          .where(where)
+          .groupBy(sql.raw("1"))
+          .orderBy(sql.raw("1")),
+        db
+          .select({
+            status: charges.status,
+            amountCents: sum(charges.amountCents),
+            count: count(),
+          })
+          .from(charges)
+          .innerJoin(patients, eq(charges.patientId, patients.id))
+          .innerJoin(appointments, eq(charges.appointmentId, appointments.id))
+          .where(where)
+          .groupBy(charges.status),
+        db
+          .select({
+            method: payments.method,
+            amountCents: sum(payments.amountCents),
+            count: count(),
+          })
+          .from(charges)
+          .innerJoin(patients, eq(charges.patientId, patients.id))
+          .innerJoin(appointments, eq(charges.appointmentId, appointments.id))
+          .innerJoin(
+            payments,
+            and(
+              eq(payments.chargeId, charges.id),
+              isNull(payments.deletedAt),
+            ),
+          )
+          .where(where)
+          .groupBy(payments.method),
+      ])
+
+      const receivedCents = toNumber(kpiRow?.receivedCents)
+      const receivedCount = toNumber(kpiRow?.receivedCount)
+
+      return {
+        period: {
+          from: params.from,
+          to: params.to,
+          periodAll: params.periodAll,
+          grain,
+          timeZone,
+        },
+        kpis: {
+          receivedCents,
+          receivedCount,
+          pendingCents: toNumber(kpiRow?.pendingCents),
+          pendingCount: toNumber(kpiRow?.pendingCount),
+          overdueCents: toNumber(kpiRow?.overdueCents),
+          overdueCount: toNumber(kpiRow?.overdueCount),
+          averageTicketCents:
+            receivedCount > 0 ? Math.round(receivedCents / receivedCount) : 0,
+        },
+        byTime: timeRows.map((row) => ({
+          bucket: row.bucket,
+          billedCents: toNumber(row.billedCents),
+          receivedCents: toNumber(row.receivedCents),
+          count: row.count,
+        })),
+        byStatus: statusRows.map((row) => ({
+          status: row.status as ChargeStatus,
+          amountCents: toNumber(row.amountCents),
+          count: row.count,
+        })),
+        byMethod: methodRows.map((row) => ({
+          method: row.method as PaymentMethod,
+          amountCents: toNumber(row.amountCents),
+          count: row.count,
+        })),
+      }
     })
   },
 

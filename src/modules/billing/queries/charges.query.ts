@@ -1,11 +1,17 @@
 import { queryOptions } from "@tanstack/react-query"
 
+import { getBillingInsightsAction } from "@/modules/billing/actions/get-billing-insights"
 import { getBillingSummaryAction } from "@/modules/billing/actions/get-billing-summary"
 import { getChargeByAppointmentAction } from "@/modules/billing/actions/get-charge-by-appointment"
 import { listActiveChargesByAppointmentsAction } from "@/modules/billing/actions/list-active-charges-by-appointments"
 import { listChargesAction } from "@/modules/billing/actions/list-charges"
 import { listDelinquentPatientsAction } from "@/modules/billing/actions/list-delinquent-patients"
-import type { ListChargesInput } from "@/modules/billing/schemas/charge.schema"
+import { listExportChargesAction } from "@/modules/billing/actions/list-export-charges"
+import type {
+  BillingInsightsInput,
+  ExportChargesInput,
+  ListChargesInput,
+} from "@/modules/billing/schemas/charge.schema"
 import { unwrapActionResult } from "@/shared/errors"
 
 export const chargesQueryKeys = {
@@ -22,6 +28,10 @@ export const chargesQueryKeys = {
       [...appointmentIds].sort(),
     ] as const,
   summary: () => [...chargesQueryKeys.all, "summary"] as const,
+  insights: (filters?: Record<string, unknown>) =>
+    [...chargesQueryKeys.all, "insights", filters ?? {}] as const,
+  exportList: (filters?: Record<string, unknown>) =>
+    [...chargesQueryKeys.all, "export", filters ?? {}] as const,
   delinquents: () => [...chargesQueryKeys.all, "delinquents"] as const,
 }
 
@@ -56,6 +66,20 @@ export const chargesQueries = {
       queryKey: chargesQueryKeys.summary(),
       queryFn: async () =>
         unwrapActionResult(await getBillingSummaryAction()),
+    }),
+
+  insights: (filters?: BillingInsightsInput) =>
+    queryOptions({
+      queryKey: chargesQueryKeys.insights(filters),
+      queryFn: async () =>
+        unwrapActionResult(await getBillingInsightsAction(filters)),
+    }),
+
+  exportList: (filters?: ExportChargesInput) =>
+    queryOptions({
+      queryKey: chargesQueryKeys.exportList(filters),
+      queryFn: async () =>
+        unwrapActionResult(await listExportChargesAction(filters)),
     }),
 
   delinquents: () =>
