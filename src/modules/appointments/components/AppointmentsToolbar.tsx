@@ -1,6 +1,7 @@
 "use client";
 
-import { CaretLeftIcon, CaretRightIcon } from "@phosphor-icons/react";
+import { CaretLeftIcon, CaretRightIcon, GearIcon } from "@phosphor-icons/react";
+import Link from "next/link";
 import type { ReactNode } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -16,6 +17,8 @@ type AppointmentsToolbarProps = {
   onNext: () => void;
   onToday: () => void;
   filters?: ReactNode;
+  /** When set, shows a shortcut to clinic calendar settings. */
+  settingsHref?: string;
 };
 
 const VIEW_MODE_OPTIONS: { value: CalendarViewMode; label: string }[] = [
@@ -32,6 +35,7 @@ export function AppointmentsToolbar({
   onNext,
   onToday,
   filters,
+  settingsHref,
 }: AppointmentsToolbarProps) {
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -84,6 +88,18 @@ export function AppointmentsToolbar({
           </ButtonGroup>
         </ToggleGroup>
         {filters}
+        {settingsHref ? (
+          <Button
+            asChild
+            variant="outline"
+            size="icon-sm"
+            tooltip="Configurar agenda"
+            aria-label="Configurar agenda">
+            <Link href={settingsHref}>
+              <GearIcon />
+            </Link>
+          </Button>
+        ) : null}
       </div>
     </div>
   );

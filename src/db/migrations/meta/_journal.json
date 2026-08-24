@@ -189,6 +189,13 @@
       "when": 1786824000000,
       "tag": "0026_query_performance_indexes",
       "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "7",
+      "when": 1787582400000,
+      "tag": "0027_clinic_calendar_settings",
+      "breakpoints": true
     }
   ],
   "version": "7"

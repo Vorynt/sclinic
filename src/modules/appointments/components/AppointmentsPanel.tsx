@@ -6,6 +6,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import { PageHeader } from "@/components/layout/PageHeader";
 import { QueryErrorState } from "@/components/status/QueryErrorState";
+import { Permission } from "@/config/permissions";
 import { routes } from "@/config/routes";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { AppointmentDayView } from "@/modules/appointments/components/AppointmentDayView";
@@ -19,6 +20,7 @@ import { AppointmentMonthView } from "@/modules/appointments/components/Appointm
 import { AppointmentsCalendarSkeleton } from "@/modules/appointments/components/AppointmentsPageSkeleton";
 import { AppointmentsToolbar } from "@/modules/appointments/components/AppointmentsToolbar";
 import { AppointmentWeekView } from "@/modules/appointments/components/AppointmentWeekView";
+import { AppointmentCardExpandProvider } from "@/modules/appointments/components/appointment-card-expand-context";
 import { ScheduleBlockDetailDialog } from "@/modules/appointments/components/ScheduleBlockDetailDialog";
 import { ScheduleBlockFormDialog } from "@/modules/appointments/components/ScheduleBlockFormDialog";
 import { isSelfScheduleOnlyRole } from "@/modules/appointments/constants/appointments";
@@ -26,13 +28,22 @@ import { useCalendarRangeQuery } from "@/modules/appointments/hooks/use-appointm
 import { useCalendarQueryParams } from "@/modules/appointments/hooks/use-calendar-query-params";
 import type { Appointment } from "@/modules/appointments/types/appointment";
 import type { ScheduleBlock } from "@/modules/appointments/types/schedule-block";
+import { CALENDAR_HOUR_HEIGHT_PX } from "@/modules/appointments/utils/calendar-constants";
 import {
   getNextAnchor,
   getPeriodLabel,
   getPreviousAnchor,
   getVisibleRange,
 } from "@/modules/appointments/utils/calendar-range";
+import {
+  filterVisibleCalendarAppointments,
+  resolveCalendarCardFields,
+  resolveCalendarSettingsPreset,
+} from "@/modules/appointments/utils/calendar-settings";
 import { useAuthSession } from "@/modules/authentication/hooks/use-auth";
+import { DEFAULT_CLINIC_CALENDAR_SETTINGS } from "@/modules/clinics/constants/default-calendar-settings";
+import { useClinicCalendarSettings } from "@/modules/clinics/hooks/use-clinic-hours";
+import { useAuth } from "@/providers/AuthProvider";
 import type { PageAction } from "@/types/page-action";
 
 export function AppointmentsPanel() {
@@ -40,6 +51,9 @@ export function AppointmentsPanel() {
   const isMobile = useIsMobile();
   const appliedMobileDefault = useRef(false);
   const sessionQuery = useAuthSession();
+  const { can } = useAuth();
+  const canManageSettings = can(Permission.SETTINGS_MANAGE);
+  const settingsQuery = useClinicCalendarSettings();
   const {
     mode,
     date: anchor,
@@ -48,6 +62,14 @@ export function AppointmentsPanel() {
     setDate,
     setModeAndDate,
   } = useCalendarQueryParams();
+
+  const calendarSettings =
+    settingsQuery.data ?? DEFAULT_CLINIC_CALENDAR_SETTINGS;
+  const roleKey = sessionQuery.data?.membership?.roleKey;
+  const settingsPreset = resolveCalendarSettingsPreset(roleKey);
+  const cardFields = resolveCalendarCardFields(calendarSettings, settingsPreset);
+  const hourHeightPx = CALENDAR_HOUR_HEIGHT_PX;
+  const weekStartsOn = calendarSettings.weekStartsOn;
 
   const [detailAppointment, setDetailAppointment] =
     useState<Appointment | null>(null);
@@ -67,20 +89,35 @@ export function AppointmentsPanel() {
   });
 
   useEffect(() => {
-    if (isMobile && !hasExplicitMode && !appliedMobileDefault.current) {
-      setMode("day");
-      appliedMobileDefault.current = true;
-    }
-  }, [hasExplicitMode, isMobile, setMode]);
+    if (hasExplicitMode || appliedMobileDefault.current) return;
+    if (typeof window === "undefined") return;
+    if (!settingsQuery.isSuccess && !settingsQuery.isError) return;
 
-  const roleKey = sessionQuery.data?.membership?.roleKey;
+    const isPhone = window.innerWidth < 768;
+    const fallback = isPhone
+      ? "day"
+      : calendarSettings.defaultView[settingsPreset];
+    setMode(fallback);
+    appliedMobileDefault.current = true;
+  }, [
+    calendarSettings.defaultView,
+    hasExplicitMode,
+    setMode,
+    settingsPreset,
+    settingsQuery.isError,
+    settingsQuery.isSuccess,
+  ]);
+
   const showProfessionalFilter =
     Boolean(roleKey) && !isSelfScheduleOnlyRole(roleKey);
 
-  const range = useMemo(() => getVisibleRange(mode, anchor), [mode, anchor]);
+  const range = useMemo(
+    () => getVisibleRange(mode, anchor, { weekStartsOn }),
+    [mode, anchor, weekStartsOn],
+  );
   const periodLabel = useMemo(
-    () => getPeriodLabel(mode, anchor),
-    [mode, anchor],
+    () => getPeriodLabel(mode, anchor, { weekStartsOn }),
+    [mode, anchor, weekStartsOn],
   );
   const listFilters = useMemo(
     () => ({
@@ -100,7 +137,10 @@ export function AppointmentsPanel() {
     ...listFilters,
     includeHours: mode !== "month",
   });
-  const appointments = calendarRangeQuery.data?.appointments ?? [];
+  const appointments = filterVisibleCalendarAppointments(
+    calendarRangeQuery.data?.appointments ?? [],
+    calendarSettings.showCanceled,
+  );
   const scheduleBlocks = calendarRangeQuery.data?.scheduleBlocks ?? [];
   const weeklyHours = calendarRangeQuery.data?.weeklyHours ?? undefined;
   const isCalendarLoading = calendarRangeQuery.isLoading;
@@ -182,6 +222,9 @@ export function AppointmentsPanel() {
             showProfessionalFilter={showProfessionalFilter}
           />
         }
+        settingsHref={
+          canManageSettings ? routes.settingsCalendar : undefined
+        }
       />
 
       {isCalendarLoading ? (
@@ -201,11 +244,13 @@ export function AppointmentsPanel() {
           }
         />
       ) : (
-        <>
+        <AppointmentCardExpandProvider key={mode}>
           {mode === "month" ? (
             <AppointmentMonthView
               anchor={anchor}
               appointments={appointments}
+              weekStartsOn={weekStartsOn}
+              cardFields={cardFields}
               onSelectDay={handleSelectDay}
               onSelectAppointment={handleSelectAppointment}
             />
@@ -218,6 +263,10 @@ export function AppointmentsPanel() {
               scheduleBlocks={scheduleBlocks}
               weeklyHours={weeklyHours}
               isMobile={isMobile}
+              weekStartsOn={weekStartsOn}
+              hourHeightPx={hourHeightPx}
+              slotStepMinutes={calendarSettings.slotStepMinutes}
+              cardFields={cardFields}
               onSelectAppointment={handleSelectAppointment}
               onSelectScheduleBlock={handleSelectScheduleBlock}
               onSelectSlot={handleSelectSlot}
@@ -231,12 +280,15 @@ export function AppointmentsPanel() {
               scheduleBlocks={scheduleBlocks}
               weeklyHours={weeklyHours}
               isMobile={isMobile}
+              hourHeightPx={hourHeightPx}
+              slotStepMinutes={calendarSettings.slotStepMinutes}
+              cardFields={cardFields}
               onSelectAppointment={handleSelectAppointment}
               onSelectScheduleBlock={handleSelectScheduleBlock}
               onSelectSlot={handleSelectSlot}
             />
           ) : null}
-        </>
+        </AppointmentCardExpandProvider>
       )}
 
       <AppointmentDetailDrawer

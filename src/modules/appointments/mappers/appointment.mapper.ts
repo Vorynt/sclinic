@@ -14,6 +14,7 @@ export type AppointmentRow = {
   professionalId: string | null
   professionalName: string | null
   serviceId: string | null
+  serviceName: string | null
   startsAt: Date
   endsAt: Date
   type: string
@@ -76,6 +77,7 @@ export function toAppointment(row: AppointmentRow): Appointment {
     professionalId: row.professionalId,
     professionalName: row.professionalName,
     serviceId: row.serviceId,
+    serviceName: row.serviceName,
     startsAt: row.startsAt,
     endsAt: row.endsAt,
     type: toAppointmentType(row.type),

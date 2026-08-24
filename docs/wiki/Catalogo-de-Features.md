@@ -73,7 +73,8 @@ Para regras detalhadas, abra a página **Domínio-*** correspondente. Prioridade
 
 | Feature | Status | Onde |
 |---------|--------|------|
-| Calendário dia/semana/mês | Done | `/appointments`; filtros em drawer (profissional, modalidade, paciente) |
+| Calendário dia/semana/mês | Done | `/appointments`; filtros em drawer (profissional, modalidade, paciente); linha “agora”; settings da clínica |
+| Preferências da agenda por clínica | Done | `/settings/calendar`; campos extras do card por papel; expandir só o que não coube |
 | Criar/remarcar/cancelar | Done | appointments |
 | Agendamento rápido (modal) + completo (`/appointments/new`) | Done | `AppointmentForm` `quick`/`full`; `buildAppointmentNewHref` |
 | Status: scheduled→…→completed | Done | appointment.service |

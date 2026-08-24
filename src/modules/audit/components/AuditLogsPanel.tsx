@@ -25,6 +25,7 @@ const ENTITY_FILTERS = [
   AUDIT_ENTITY_TYPES.APPOINTMENT,
   AUDIT_ENTITY_TYPES.CLINIC,
   AUDIT_ENTITY_TYPES.CLINIC_HOURS,
+  AUDIT_ENTITY_TYPES.CLINIC_CALENDAR_SETTINGS,
   AUDIT_ENTITY_TYPES.MEMBER,
   AUDIT_ENTITY_TYPES.INVITATION,
   AUDIT_ENTITY_TYPES.CHARGE,
@@ -105,6 +106,9 @@ export function AuditLogsPanel() {
               <SelectItem value={AUDIT_ENTITY_TYPES.CLINIC}>Clínica</SelectItem>
               <SelectItem value={AUDIT_ENTITY_TYPES.CLINIC_HOURS}>
                 Horários
+              </SelectItem>
+              <SelectItem value={AUDIT_ENTITY_TYPES.CLINIC_CALENDAR_SETTINGS}>
+                Agenda
               </SelectItem>
               <SelectItem value={AUDIT_ENTITY_TYPES.MEMBER}>Membro</SelectItem>
               <SelectItem value={AUDIT_ENTITY_TYPES.INVITATION}>

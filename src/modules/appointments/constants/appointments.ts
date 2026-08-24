@@ -13,6 +13,19 @@ export const APPOINTMENT_STATUS_LABELS: Record<AppointmentStatus, string> = {
   no_show: "Faltou",
 };
 
+/** Shorter labels for calendar cards, where width is tight. */
+export const APPOINTMENT_CALENDAR_STATUS_LABELS: Record<
+  AppointmentStatus,
+  string
+> = {
+  scheduled: "Agendado",
+  confirmed: "Confirmado",
+  checked_in: "Iniciado",
+  completed: "Concluído",
+  canceled: "Cancelado",
+  no_show: "Faltou",
+};
+
 export const APPOINTMENT_TYPE_LABELS: Record<AppointmentType, string> = {
   consultation: "Consulta",
   follow_up: "Retorno",

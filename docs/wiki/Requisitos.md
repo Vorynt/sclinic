@@ -239,6 +239,7 @@ Convenção de ID: `RF-<DOMÍNIO>-NNN`.
 | RF-CLI-003 | Owner também atende | Flag `alsoPractices` → perfil clínico (ADR-007) | P10 | Done |
 | RF-CLI-004 | Settings geral | name, tradeName, document, contato, logo, timezone, endereço | P1, P6 | Done |
 | RF-CLI-005 | Settings hours | Horários semanais | P1, P6 | Done |
+| RF-CLI-010 | Settings agenda | Vista, passo do slot, início da semana, cancelados, presets de campos extras do card por papel | P6 | Done |
 | RF-CLI-006 | Danger zone | Exclusão de clínica | P1, P6 | Done |
 | RF-CLI-007 | Clinic switcher | Troca de clínica; suspended disabled | Multi-clínica | Done |
 | RF-CLI-008 | Select-clinic | Seleção com estados membership suspended / assinatura bloqueada; owner regulariza ou exclui | Membros | Done |

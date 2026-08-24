@@ -9,8 +9,8 @@ export const CALENDAR_HOUR_RANGE = { start: 7, end: 20 } as const
 
 /**
  * Pixel height of one hour row in the week/day time grids.
- * Sized so a 30-minute block (~half this value) fits the appointment card
- * content (patient + time + professional, text-xs + py-1 + border).
+ * A 30-minute block (~half this value) fits status + patient; time and
+ * extra fields appear as the slot grows.
  */
 export const CALENDAR_HOUR_HEIGHT_PX = 120
 

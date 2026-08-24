@@ -1,6 +1,7 @@
 import { describe, expect, it } from "@jest/globals"
 
 import {
+  APPOINTMENT_CALENDAR_STATUS_LABELS,
   canCompleteAttendance,
   canConfirmAppointment,
   canMarkAppointmentNoShow,
@@ -718,6 +719,7 @@ describe("toAppointment mapper", () => {
       professionalId: OTHER_UUID,
       professionalName: "Dr. João",
       serviceId: VALID_UUID,
+      serviceName: "Consulta",
       startsAt: now,
       endsAt: now,
       type: "consultation",
@@ -734,6 +736,7 @@ describe("toAppointment mapper", () => {
     expect(appointment.id).toBe(VALID_UUID)
     expect(appointment.patientName).toBe("Maria Silva")
     expect(appointment.professionalName).toBe("Dr. João")
+    expect(appointment.serviceName).toBe("Consulta")
     expect(appointment.type).toBe("consultation")
     expect(appointment.status).toBe("scheduled")
   })
@@ -748,6 +751,7 @@ describe("toAppointment mapper", () => {
       professionalId: null,
       professionalName: null,
       serviceId: null,
+      serviceName: null,
       startsAt: now,
       endsAt: now,
       type: "unknown-type",
@@ -778,6 +782,7 @@ describe("toAppointment mapper", () => {
       professionalId: OTHER_UUID,
       professionalName: "Dr. João",
       serviceId: VALID_UUID,
+      serviceName: "Consulta",
       startsAt: now,
       endsAt: now,
       type: "consultation",
@@ -792,6 +797,12 @@ describe("toAppointment mapper", () => {
 
     expect(toAppointment({ ...baseRow, modality: "online" }).modality).toBe("online")
     expect(toAppointment({ ...baseRow, modality: "something-else" }).modality).toBe("in_person")
+  })
+})
+
+describe("APPOINTMENT_CALENDAR_STATUS_LABELS", () => {
+  it("uses a short label for checked_in on the calendar", () => {
+    expect(APPOINTMENT_CALENDAR_STATUS_LABELS.checked_in).toBe("Iniciado")
   })
 })
 

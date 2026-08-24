@@ -26,6 +26,11 @@ export const SETTINGS_NAV_ITEMS: SettingsNavItem[] = [
     description: "Funcionamento semanal da clínica",
   },
   {
+    title: "Agenda",
+    href: routes.settingsCalendar,
+    description: "Grade, tela inicial e cards da agenda",
+  },
+  {
     title: "Receitas",
     href: routes.settingsPrescriptions,
     description: "Modelos de receita para impressão",

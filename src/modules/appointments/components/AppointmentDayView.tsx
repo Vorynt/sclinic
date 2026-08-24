@@ -10,7 +10,11 @@ import { AppointmentTimeGridColumn } from "@/modules/appointments/components/App
 import type { Appointment } from "@/modules/appointments/types/appointment";
 import type { ScheduleBlock } from "@/modules/appointments/types/schedule-block";
 import { resolveVisibleHourRange } from "@/modules/appointments/utils/calendar-clinic-hours";
-import { CALENDAR_HOUR_HEIGHT_PX } from "@/modules/appointments/utils/calendar-constants";
+import {
+  CALENDAR_HOUR_HEIGHT_PX,
+  CALENDAR_SLOT_STEP_MINUTES,
+} from "@/modules/appointments/utils/calendar-constants";
+import type { CalendarCardPreset } from "@/modules/clinics/types/clinic-calendar-settings";
 import type { ClinicWeeklyHours } from "@/modules/clinics/types/clinic-hours";
 
 type AppointmentDayViewProps = {
@@ -19,6 +23,9 @@ type AppointmentDayViewProps = {
   scheduleBlocks?: ScheduleBlock[];
   weeklyHours: ClinicWeeklyHours;
   isMobile: boolean;
+  hourHeightPx?: number;
+  slotStepMinutes?: number;
+  cardFields?: CalendarCardPreset;
   onSelectAppointment: (appointment: Appointment) => void;
   onSelectScheduleBlock?: (block: ScheduleBlock) => void;
   onSelectSlot: (date: Date) => void;
@@ -30,6 +37,9 @@ export function AppointmentDayView({
   scheduleBlocks = [],
   weeklyHours,
   isMobile,
+  hourHeightPx = CALENDAR_HOUR_HEIGHT_PX,
+  slotStepMinutes = CALENDAR_SLOT_STEP_MINUTES,
+  cardFields,
   onSelectAppointment,
   onSelectScheduleBlock,
   onSelectSlot,
@@ -59,7 +69,8 @@ export function AppointmentDayView({
               <AppointmentEventCard
                 key={appointment.id}
                 appointment={appointment}
-                variant="chip"
+                variant="inline"
+                cardFields={cardFields}
                 className="h-auto py-1.5 text-xs"
                 onClick={() => onSelectAppointment(appointment)}
               />
@@ -75,8 +86,7 @@ export function AppointmentDayView({
     { length: hourRange.end - hourRange.start },
     (_, index) => hourRange.start + index,
   );
-  const gridHeight =
-    (hourRange.end - hourRange.start) * CALENDAR_HOUR_HEIGHT_PX;
+  const gridHeight = (hourRange.end - hourRange.start) * hourHeightPx;
 
   return (
     <ScrollArea className="max-h-[min(70vh,calc(100dvh-14rem))] rounded-lg border md:max-h-[70vh]">
@@ -86,7 +96,7 @@ export function AppointmentDayView({
             <span
               key={hour}
               className="absolute right-2 -translate-y-1/2 text-xs text-muted-foreground"
-              style={{ top: index * CALENDAR_HOUR_HEIGHT_PX }}>
+              style={{ top: index * hourHeightPx }}>
               {String(hour).padStart(2, "0")}:00
             </span>
           ))}
@@ -96,9 +106,11 @@ export function AppointmentDayView({
           day={anchor}
           appointments={appointments}
           scheduleBlocks={scheduleBlocks}
-          hourHeightPx={CALENDAR_HOUR_HEIGHT_PX}
+          hourHeightPx={hourHeightPx}
           hourRange={hourRange}
           weeklyHours={weeklyHours}
+          cardFields={cardFields}
+          slotStepMinutes={slotStepMinutes}
           onSelectAppointment={onSelectAppointment}
           onSelectScheduleBlock={onSelectScheduleBlock}
           onSelectSlot={onSelectSlot}

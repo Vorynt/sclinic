@@ -2,7 +2,7 @@
  * Drizzle schema barrel — multi-tenant clinic SaaS.
  *
  * Order of domain files mirrors rollout:
- * auth → clinics → clinic-hours → rbac → memberships → invitations →
+ * auth → clinics → clinic-hours → clinic-calendar-settings → rbac → memberships → invitations →
  * professionals → professional-hours → billing (SaaS) → patients → clinic-services →
  * appointments → schedule-blocks → appointment-waitlist →
  * clinical-notes → patient-clinical-alerts → vital-signs → prescriptions →
@@ -18,6 +18,7 @@ export * from "./rls"
 export * from "./auth"
 export * from "./clinics"
 export * from "./clinic-hours"
+export * from "./clinic-calendar-settings"
 export * from "./rbac"
 export * from "./memberships"
 export * from "./invitations"

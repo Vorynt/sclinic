@@ -68,6 +68,7 @@ export const routes = {
   settings: "/settings",
   settingsGeneral: "/settings/general",
   settingsHours: "/settings/hours",
+  settingsCalendar: "/settings/calendar",
   settingsPrescriptions: "/settings/prescriptions",
   settingsUsage: "/settings/usage",
   settingsAudit: "/settings/audit",

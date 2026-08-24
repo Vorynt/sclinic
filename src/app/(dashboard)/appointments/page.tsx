@@ -14,7 +14,10 @@ import {
   getVisibleRange,
   type CalendarViewMode,
 } from "@/modules/appointments/utils/calendar-range"
+import { resolveCalendarSettingsPreset } from "@/modules/appointments/utils/calendar-settings"
 import { getCachedSession } from "@/modules/authentication/utils/get-cached-session"
+import { DEFAULT_CLINIC_CALENDAR_SETTINGS } from "@/modules/clinics/constants/default-calendar-settings"
+import { clinicsQueries } from "@/modules/clinics/queries/clinics.query"
 import { PermissionProvider } from "@/providers/PermissionProvider"
 import { parseISODate } from "@/utils/date"
 
@@ -26,9 +29,12 @@ type AppointmentsPageProps = {
   searchParams: Promise<{ mode?: string; date?: string }>
 }
 
-function resolveCalendarMode(value: string | undefined): CalendarViewMode {
-  if (value === "week" || value === "day") return value
-  return "month"
+function resolveCalendarMode(
+  value: string | undefined,
+  fallback: CalendarViewMode,
+): CalendarViewMode {
+  if (value === "week" || value === "day" || value === "month") return value
+  return fallback
 }
 
 export default async function AppointmentsPage({
@@ -39,11 +45,26 @@ export default async function AppointmentsPage({
   setQueryClinicId(session?.session.activeClinicId ?? null)
   const queryClient = getQueryClient()
 
-  const mode = resolveCalendarMode(params.mode)
+  await queryClient
+    .prefetchQuery(clinicsQueries.calendarSettings())
+    .catch(() => undefined)
+
+  const calendarSettings =
+    queryClient.getQueryData(clinicsQueries.calendarSettings().queryKey) ??
+    DEFAULT_CLINIC_CALENDAR_SETTINGS
+  const preset = resolveCalendarSettingsPreset(
+    session?.membership?.roleKey,
+  )
+  const mode = resolveCalendarMode(
+    params.mode,
+    calendarSettings.defaultView[preset],
+  )
   const date = params.date
     ? (parseISODate(params.date) ?? startOfDay(new Date()))
     : startOfDay(new Date())
-  const range = getVisibleRange(mode, date)
+  const range = getVisibleRange(mode, date, {
+    weekStartsOn: calendarSettings.weekStartsOn,
+  })
 
   await queryClient
     .prefetchQuery(

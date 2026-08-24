@@ -11,3 +11,7 @@ export function useActiveClinicForSettings() {
 export function useClinicHours() {
   return useQuery(clinicsQueries.hours())
 }
+
+export function useClinicCalendarSettings() {
+  return useQuery(clinicsQueries.calendarSettings())
+}

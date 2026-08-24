@@ -4,6 +4,7 @@ import { addMinutes, isSameDay, startOfDay } from "date-fns";
 
 import { cn } from "@/lib/utils";
 import { AppointmentEventCard } from "@/modules/appointments/components/AppointmentEventCard";
+import { CalendarNowLine } from "@/modules/appointments/components/CalendarNowLine";
 import { ScheduleBlockEventCard } from "@/modules/appointments/components/ScheduleBlockEventCard";
 import type { Appointment } from "@/modules/appointments/types/appointment";
 import type { ScheduleBlock } from "@/modules/appointments/types/schedule-block";
@@ -14,6 +15,7 @@ import {
 } from "@/modules/appointments/utils/calendar-clinic-hours";
 import { CALENDAR_SLOT_STEP_MINUTES } from "@/modules/appointments/utils/calendar-constants";
 import { layoutOverlappingAppointments } from "@/modules/appointments/utils/event-layout";
+import type { CalendarCardPreset } from "@/modules/clinics/types/clinic-calendar-settings";
 import type { ClinicWeeklyHours } from "@/modules/clinics/types/clinic-hours";
 
 type AppointmentTimeGridColumnProps = {
@@ -23,6 +25,8 @@ type AppointmentTimeGridColumnProps = {
   hourHeightPx: number;
   hourRange: CalendarHourRange;
   weeklyHours: ClinicWeeklyHours;
+  cardFields?: CalendarCardPreset;
+  slotStepMinutes?: number;
   onSelectAppointment: (appointment: Appointment) => void;
   onSelectScheduleBlock?: (block: ScheduleBlock) => void;
   onSelectSlot: (date: Date) => void;
@@ -36,6 +40,8 @@ export function AppointmentTimeGridColumn({
   hourHeightPx,
   hourRange,
   weeklyHours,
+  cardFields,
+  slotStepMinutes = CALENDAR_SLOT_STEP_MINUTES,
   onSelectAppointment,
   onSelectScheduleBlock,
   onSelectSlot,
@@ -64,8 +70,7 @@ export function AppointmentTimeGridColumn({
     const offsetY = event.clientY - rect.top;
     const rawMinutes = offsetY / pxPerMinute;
     const steppedMinutes =
-      Math.round(rawMinutes / CALENDAR_SLOT_STEP_MINUTES) *
-      CALENDAR_SLOT_STEP_MINUTES;
+      Math.round(rawMinutes / slotStepMinutes) * slotStepMinutes;
     const minutesFromMidnight = hourRange.start * 60 + steppedMinutes;
 
     if (!isWithinOpenClinicMinutes(weeklyHours, day, minutesFromMidnight)) {
@@ -77,12 +82,7 @@ export function AppointmentTimeGridColumn({
 
   return (
     <div
-      className={cn(
-        "relative",
-        // Dim sibling cards in this day column while one is hovered (not empty background).
-        "[&:has([data-slot=appointment-event-card]:hover)_[data-slot=appointment-event-card]:not(:hover)]:opacity-50",
-        className,
-      )}
+      className={cn("relative", className)}
       style={{ height: totalHours * hourHeightPx }}
       onClick={handleBackgroundClick}>
       {Array.from({ length: totalHours }, (_, index) => (
@@ -93,11 +93,15 @@ export function AppointmentTimeGridColumn({
         />
       ))}
 
+      <CalendarNowLine
+        day={day}
+        hourRange={hourRange}
+        hourHeightPx={hourHeightPx}
+      />
+
       {unavailableRanges.map((range) => {
-        const topPx =
-          (range.startMinutes - hourRange.start * 60) * pxPerMinute;
-        const heightPx =
-          (range.endMinutes - range.startMinutes) * pxPerMinute;
+        const topPx = (range.startMinutes - hourRange.start * 60) * pxPerMinute;
+        const heightPx = (range.endMinutes - range.startMinutes) * pxPerMinute;
 
         return (
           <div
@@ -115,10 +119,7 @@ export function AppointmentTimeGridColumn({
           block.startsAt.getTime(),
           rangeStart.getTime(),
         );
-        const clampedEnd = Math.min(
-          block.endsAt.getTime(),
-          rangeEnd.getTime(),
-        );
+        const clampedEnd = Math.min(block.endsAt.getTime(), rangeEnd.getTime());
         if (clampedEnd <= clampedStart) return null;
 
         const topPx =
@@ -162,7 +163,7 @@ export function AppointmentTimeGridColumn({
           ((clampedStart - rangeStart.getTime()) / 60_000) * pxPerMinute;
         const heightPx = Math.max(
           ((clampedEnd - clampedStart) / 60_000) * pxPerMinute,
-          18,
+          56,
         );
         const widthPercent = 100 / columnCount;
         const leftPercent = column * widthPercent;
@@ -172,6 +173,7 @@ export function AppointmentTimeGridColumn({
             key={appointment.id}
             appointment={appointment}
             variant="block"
+            cardFields={cardFields}
             style={{
               top: topPx,
               height: heightPx,

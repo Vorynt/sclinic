@@ -10,7 +10,7 @@ CRUD da clínica, horários semanais, criação para owner (com attach de plano)
 
 - Onboarding `/onboarding/clinic` + `/onboarding/hours`
 - Opção **“Você também atende pacientes nesta clínica?”** no create (ADR-007)
-- Settings geral / hours / danger
+- Settings geral / hours / calendar / danger
 - Autofill de endereço por CEP (ViaCEP via `core/address`) no create e no settings geral
 - UI de horários: seletor por dia (aba da semana + editor focado) com copiar para seg–sex / semana / outro dia
 - Fonte da verdade para disponibilidade de agendamento (enquanto o profissional não define agenda própria); sugestões de horário usam o fuso da clínica
@@ -31,7 +31,7 @@ CRUD da clínica, horários semanais, criação para owner (com attach de plano)
 
 ## Schema (conceitual)
 
-name, tradeName, document, email, phone, logo, website, timezone, endereço, subscriptionStatus; tabela `clinic_hours`.
+name, tradeName, document, email, phone, logo, website, timezone, endereço, subscriptionStatus; tabela `clinic_hours`; tabela 1:1 `clinic_calendar_settings` (JSONB de preferências da agenda, merge com defaults).
 
 Form de create também aceita campos clínicos condicionais (`alsoPractices`, tipo de atuação, nome na agenda, conselho…) — não vão para a tabela `clinics`.
 

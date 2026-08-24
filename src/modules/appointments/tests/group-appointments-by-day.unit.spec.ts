@@ -16,6 +16,7 @@ function appointment({
     professionalId: null,
     professionalName: null,
     serviceId: null,
+    serviceName: null,
     type: "consultation",
     modality: "in_person",
     status: "scheduled",

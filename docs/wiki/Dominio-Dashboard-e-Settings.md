@@ -70,12 +70,14 @@ Shell fino em `/settings/*`; domínio real em clinics / audit / medical-records.
 
 | Rota | Gate extra |
 |------|------------|
-| general, hours, prescriptions | `settings.manage` |
+| general, hours, calendar, prescriptions | `settings.manage` |
 | usage | owner |
 | audit | `audit.read` |
 | danger | exclusão clínica |
 
 `/settings/prescriptions`: designer de templates (blocos empilhados, até 3, cor de destaque) — UI em `medical-records` (ADR-008).
+
+`/settings/calendar`: grade, tela inicial e campos extras do card por papel — persistência em `clinics` (`clinic_calendar_settings`); UI em `appointments`. Quem tem `settings.manage` também chega pela engrenagem na toolbar de `/appointments`.
 
 Catálogo de serviços (ADR-009) vive em `/services` (`financial.view` para ler; `financial.manage` para CRUD) — domínio em `billing`. `/settings/services` redireciona para `/services`.
 

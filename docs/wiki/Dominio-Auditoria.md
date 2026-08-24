@@ -10,7 +10,7 @@
 
 ## O que registra
 
-Mutações instrumentadas: patient, appointment, clinic, hours, member, invitation, charge, clinical_note, vital_signs, clinical_alert, prescription, prescription_layout, professional, …
+Mutações instrumentadas: patient, appointment, clinic, hours, calendar settings, member, invitation, charge, clinical_note, vital_signs, clinical_alert, prescription, prescription_layout, professional, …
 
 Campos: ator, action, status success|error, entity, changes (sem secrets), erro tipado.
 

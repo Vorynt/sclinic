@@ -3,10 +3,12 @@ import { mutationOptions } from "@tanstack/react-query"
 import { applyDefaultClinicHoursAction } from "@/modules/clinics/actions/apply-default-clinic-hours"
 import { createClinicAction } from "@/modules/clinics/actions/create-clinic"
 import { deleteClinicAction } from "@/modules/clinics/actions/delete-clinic"
+import { updateClinicCalendarSettingsAction } from "@/modules/clinics/actions/update-clinic-calendar-settings"
 import { updateClinicAction } from "@/modules/clinics/actions/update-clinic"
 import { upsertClinicHoursAction } from "@/modules/clinics/actions/upsert-clinic-hours"
 import type { DeleteClinicDto } from "@/modules/clinics/dto/delete-clinic.dto"
 import type { UpdateClinicDto } from "@/modules/clinics/dto/update-clinic.dto"
+import type { UpsertClinicCalendarSettingsDto } from "@/modules/clinics/dto/upsert-clinic-calendar-settings.dto"
 import type { UpsertClinicHoursDto } from "@/modules/clinics/dto/upsert-clinic-hours.dto"
 import type { CreateClinicInput } from "@/modules/clinics/schemas/clinic.schema"
 import { unwrapActionResult } from "@/shared/errors"
@@ -17,6 +19,7 @@ export const clinicMutationKeys = {
   delete: ["clinics", "delete"] as const,
   upsertHours: ["clinics", "hours", "upsert"] as const,
   applyDefaultHours: ["clinics", "hours", "apply-default"] as const,
+  upsertCalendarSettings: ["clinics", "calendar-settings", "upsert"] as const,
 }
 
 export const clinicMutations = {
@@ -53,5 +56,12 @@ export const clinicMutations = {
       mutationKey: clinicMutationKeys.applyDefaultHours,
       mutationFn: async () =>
         unwrapActionResult(await applyDefaultClinicHoursAction()),
+    }),
+
+  upsertCalendarSettings: () =>
+    mutationOptions({
+      mutationKey: clinicMutationKeys.upsertCalendarSettings,
+      mutationFn: async (data: UpsertClinicCalendarSettingsDto) =>
+        unwrapActionResult(await updateClinicCalendarSettingsAction(data)),
     }),
 }

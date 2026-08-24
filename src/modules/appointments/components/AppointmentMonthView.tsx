@@ -12,15 +12,22 @@ import { ptBR } from "date-fns/locale"
 
 import { cn } from "@/lib/utils"
 import { AppointmentEventCard } from "@/modules/appointments/components/AppointmentEventCard"
-import { getVisibleRange } from "@/modules/appointments/utils/calendar-range"
+import { useExpandedAppointmentId } from "@/modules/appointments/components/appointment-card-expand-context"
+import {
+  getVisibleRange,
+  type CalendarWeekStartsOn,
+} from "@/modules/appointments/utils/calendar-range"
 import { groupAppointmentsByDay } from "@/modules/appointments/utils/group-appointments-by-day"
 import type { Appointment } from "@/modules/appointments/types/appointment"
+import type { CalendarCardPreset } from "@/modules/clinics/types/clinic-calendar-settings"
 
 const MAX_CHIPS_PER_DAY = 3
 
 type AppointmentMonthViewProps = {
   anchor: Date
   appointments: Appointment[]
+  weekStartsOn?: CalendarWeekStartsOn
+  cardFields?: CalendarCardPreset
   onSelectDay: (date: Date) => void
   onSelectAppointment: (appointment: Appointment) => void
 }
@@ -28,10 +35,13 @@ type AppointmentMonthViewProps = {
 export function AppointmentMonthView({
   anchor,
   appointments,
+  weekStartsOn,
+  cardFields,
   onSelectDay,
   onSelectAppointment,
 }: AppointmentMonthViewProps) {
-  const { from, to } = getVisibleRange("month", anchor)
+  const expandedId = useExpandedAppointmentId()
+  const { from, to } = getVisibleRange("month", anchor, { weekStartsOn })
   const days = eachDayOfInterval({ start: from, end: to })
   const weekdayLabels = days
     .slice(0, 7)
@@ -57,6 +67,9 @@ export function AppointmentMonthView({
             appointmentsByDay.get(format(day, "yyyy-MM-dd")) ?? []
           const overflowCount = dayAppointments.length - MAX_CHIPS_PER_DAY
           const isCurrentMonth = isSameMonth(day, startOfMonth(anchor))
+          const hasExpandedCard = dayAppointments.some(
+            (appointment) => appointment.id === expandedId,
+          )
 
           return (
             <div
@@ -64,6 +77,7 @@ export function AppointmentMonthView({
               className={cn(
                 "flex min-h-20 flex-col gap-0.5 bg-background p-1 sm:min-h-28 sm:p-1.5",
                 !isCurrentMonth && "bg-muted/40",
+                hasExpandedCard && "relative z-30",
               )}
             >
               <button
@@ -78,12 +92,13 @@ export function AppointmentMonthView({
                 {format(day, "d")}
               </button>
 
-              <div className="flex flex-1 flex-col gap-0.5 overflow-hidden">
+              <div className="flex flex-1 flex-col gap-0.5 overflow-visible">
                 {dayAppointments.slice(0, MAX_CHIPS_PER_DAY).map((appointment) => (
                   <AppointmentEventCard
                     key={appointment.id}
                     appointment={appointment}
                     variant="chip"
+                    cardFields={cardFields}
                     onClick={(event) => {
                       event.stopPropagation()
                       onSelectAppointment(appointment)

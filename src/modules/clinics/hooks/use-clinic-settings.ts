@@ -7,6 +7,7 @@ import { clinicMutations } from "@/modules/clinics/mutations/clinics.mutation"
 import { clinicsQueryKeys } from "@/modules/clinics/queries/clinics.query"
 import type { Clinic } from "@/modules/clinics/types/clinic"
 import type { ClinicWeeklyHours } from "@/modules/clinics/types/clinic-hours"
+import type { ClinicCalendarSettings } from "@/modules/clinics/types/clinic-calendar-settings"
 import {
   AppError,
   ErrorCode,
@@ -80,6 +81,29 @@ export function useApplyDefaultClinicHoursMutation({
       await queryClient.invalidateQueries({ queryKey: clinicsQueryKeys.hours })
       await queryClient.invalidateQueries({
         queryKey: appointmentsQueryKeys.calendarHours(),
+      })
+      await queryClient.invalidateQueries({
+        queryKey: appointmentsQueryKeys.calendarRanges(),
+      })
+      onSuccess?.(data)
+    },
+    onError: (error) => {
+      onError?.(toAppError(error))
+    },
+  })
+}
+
+export function useUpsertClinicCalendarSettingsMutation({
+  onSuccess,
+  onError,
+}: MutationCallbacks<ClinicCalendarSettings> = {}) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    ...clinicMutations.upsertCalendarSettings(),
+    onSuccess: async (data) => {
+      await queryClient.invalidateQueries({
+        queryKey: clinicsQueryKeys.calendarSettings,
       })
       await queryClient.invalidateQueries({
         queryKey: appointmentsQueryKeys.calendarRanges(),

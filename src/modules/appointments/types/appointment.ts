@@ -29,6 +29,7 @@ export type Appointment = {
   professionalId: string | null
   professionalName: string | null
   serviceId: string | null
+  serviceName: string | null
   startsAt: Date
   endsAt: Date
   type: AppointmentType

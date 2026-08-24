@@ -23,7 +23,9 @@ Calendário `/appointments`; create híbrido (rápido + completo); workspace `(a
 ## Features
 
 - Calendário `/appointments` — **um round-trip por intervalo** (`getCalendarRangeAction`: agendamentos + bloqueios + horários da clínica quando a vista não é mês)
-- Vista mês agrupa eventos por dia no client (`groupAppointmentsByDay`) em vez de filtrar cada célula
+- Preferências de agenda da clínica (`clinic_calendar_settings`) em `/settings/calendar`: grade, tela inicial por papel e campos extras do card (presets recepção/gestão vs profissionais de saúde). Quem tem `settings.manage` chega lá pelo ícone de engrenagem na toolbar da agenda.
+- Cards híbridos: faixa e superfície na cor do profissional; no calendário, `checked_in` aparece como **Iniciado**; na grade, o card sempre mostra status, paciente e horário; extras entram se a altura do bloco couber sem cortar; o caret só aparece se algum extra ficar de fora e, ao expandir, o card cresce no lugar com fundo sólido e rótulo no horário. Só um card expandido por vez.
+- Vista mês agrupa eventos por dia no client (`groupAppointmentsByDay`); cada chip é uma linha (horário + paciente) e a expansão sobrepõe a grade sem esticar as células
 - **Create híbrido:** agendamento rápido (modal) + completo (`/appointments/new`)
 - Workspace `(attendance)`: cockpit notas-no-centro; vitais/documentos em sheet (`?panel=`)
 - **Bootstrap do atendimento** (`getAttendanceBootstrapAction`): appointment + paciente + vitais atuais + histórico + última nota, e seed das query keys do rail/sheets — um loading cobre o contexto
@@ -94,7 +96,8 @@ Exige `records.read`. No drawer, **Abrir atendimento** / **Ver atendimento** só
 - Campo `modality` (`in_person` | `online`) em `appointments`, default `in_person`.
 - `createAppointmentSchema` valida o enum; `listAppointmentsSchema` aceita filtro opcional.
 - Agenda (`AppointmentsPanel`): filtros em drawer (lateral no desktop, inferior no mobile) com profissional, modalidade (tipo de agendamento) e paciente; busca nas listas; aplicar / restaurar padrões; indicador de filtro ativo e atalho Limpar fora do drawer.
-- Cada evento mostra badge Presencial/Online.
+- Cada evento mostra badge Presencial/Online quando o preset do card liga modalidade; online continua com ícone mesmo sem a flag.
+- Preferências da grade (passo 15/30, domingo/segunda, ocultar cancelados) e dois presets de campos extras do card (recepção vs profissionais) vêm de `clinic_calendar_settings`. Status, paciente e horário sempre aparecem; extras só se o bloco for alto o suficiente para não cortar. Expandir (quando há extras de fora) cresce o card no lugar, com fundo sólido e rótulo no horário. Clinician/nurse usam o preset clínico; demais papéis com agenda usam operação. `?mode=` na URL vence a vista padrão. No celular, sem modo na URL, a agenda abre no dia. Quem tem `settings.manage` vê um atalho (engrenagem) na toolbar da agenda para `/settings/calendar`.
 
 ## Horário do profissional (ADR-011)
 

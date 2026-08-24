@@ -16,6 +16,7 @@ import {
 import { db } from "@/db"
 import {
   appointments,
+  clinicServices,
   patients,
   professionalClinics,
   professionalDisplayNameSql,
@@ -39,6 +40,7 @@ const appointmentSelect = {
   professionalId: appointments.professionalId,
   professionalName: professionalDisplayNameSql,
   serviceId: appointments.serviceId,
+  serviceName: clinicServices.name,
   startsAt: appointments.startsAt,
   endsAt: appointments.endsAt,
   type: appointments.type,
@@ -58,6 +60,7 @@ function appointmentJoin() {
     .from(appointments)
     .innerJoin(patients, eq(patients.id, appointments.patientId))
     .leftJoin(professionals, eq(professionals.id, appointments.professionalId))
+    .leftJoin(clinicServices, eq(clinicServices.id, appointments.serviceId))
 }
 
 export const appointmentRepository = {

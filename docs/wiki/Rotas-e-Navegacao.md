@@ -20,7 +20,7 @@ Soft nav Termos/Privacidade → modal `@modal/(.)…`.
 
 ### App
 
-`/home` · `/patients` · `/patients/[id]/*` · `/professionals` · `/services` · `/appointments` · `/appointments/new` · `/billing` · `/users` · `/settings/*` · `/help`
+`/home` · `/patients` · `/patients/[id]/*` · `/professionals` · `/services` · `/appointments` · `/appointments/new` · `/billing` · `/users` · `/settings/*` (`general`, `hours`, `calendar`, `prescriptions`, `usage`, `audit`, `danger`) · `/help`
 
 ### Attendance
 

@@ -2,6 +2,7 @@ import { queryOptions } from "@tanstack/react-query"
 
 import { getActiveClinicForSettingsAction } from "@/modules/clinics/actions/get-active-clinic-for-settings"
 import { getClinicAction } from "@/modules/clinics/actions/get-clinic"
+import { getClinicCalendarSettingsAction } from "@/modules/clinics/actions/get-clinic-calendar-settings"
 import { getClinicHoursAction } from "@/modules/clinics/actions/get-clinic-hours"
 import { listClinicsByIdsAction } from "@/modules/clinics/actions/list-clinics-by-ids"
 import { unwrapActionResult } from "@/shared/errors"
@@ -13,6 +14,7 @@ export const clinicsQueryKeys = {
     ["clinics", "byIds", [...clinicIds].sort()] as const,
   activeSettings: ["clinics", "active-settings"] as const,
   hours: ["clinics", "hours"] as const,
+  calendarSettings: ["clinics", "calendar-settings"] as const,
 }
 
 export const clinicsQueries = {
@@ -43,5 +45,12 @@ export const clinicsQueries = {
     queryOptions({
       queryKey: clinicsQueryKeys.hours,
       queryFn: async () => unwrapActionResult(await getClinicHoursAction()),
+    }),
+
+  calendarSettings: () =>
+    queryOptions({
+      queryKey: clinicsQueryKeys.calendarSettings,
+      queryFn: async () =>
+        unwrapActionResult(await getClinicCalendarSettingsAction()),
     }),
 }

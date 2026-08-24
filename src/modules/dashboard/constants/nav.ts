@@ -214,6 +214,14 @@ const PAGE_META: Record<string, PageMeta> = {
       { label: "Horários" },
     ],
   },
+  [routes.settingsCalendar]: {
+    title: "Agenda",
+    breadcrumbs: [
+      { label: "Início", href: routes.home },
+      { label: "Configurações", href: routes.settingsGeneral },
+      { label: "Agenda" },
+    ],
+  },
   [routes.settingsUsage]: {
     title: "Uso do plano",
     breadcrumbs: [
