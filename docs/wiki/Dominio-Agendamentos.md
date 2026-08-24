@@ -22,9 +22,11 @@ Calendário `/appointments`; create híbrido (rápido + completo); workspace `(a
 
 ## Features
 
-- Calendário `/appointments`
+- Calendário `/appointments` — **um round-trip por intervalo** (`getCalendarRangeAction`: agendamentos + bloqueios + horários da clínica quando a vista não é mês)
+- Vista mês agrupa eventos por dia no client (`groupAppointmentsByDay`) em vez de filtrar cada célula
 - **Create híbrido:** agendamento rápido (modal) + completo (`/appointments/new`)
 - Workspace `(attendance)`: cockpit notas-no-centro; vitais/documentos em sheet (`?panel=`)
+- **Bootstrap do atendimento** (`getAttendanceBootstrapAction`): appointment + paciente + vitais atuais + histórico + última nota, e seed das query keys do rail/sheets — um loading cobre o contexto
 - Transições de status + cancelamento
 - Valor opcional → charge (ADR-002) — legado
 - Serviço obrigatório + desconto % / cortesia (ADR-009) — Done
@@ -45,7 +47,7 @@ Espelha o padrão `PatientForm` (`quick` / `full`):
 
 ## Workspace de atendimento
 
-Chrome isolado (`AttendanceShell`, sem AppShell). Landing `/appointments/[id]/attendance` abre o editor de evolução. Trilho persistente (idade, motivo, último vital, última nota). Vitais, documentos, ficha/alertas e retorno abrem em sheet/dialog (`?panel=vitals|documents|patient|next`) **sem desmontar** a nota.
+Chrome isolado (`AttendanceShell`, sem AppShell). Landing `/appointments/[id]/attendance` abre o editor de evolução. Trilho persistente (idade, motivo, último vital, última nota). Vitais, documentos, ficha/alertas e retorno abrem em sheet/dialog (`?panel=vitals|documents|patient|next`) **sem desmontar** a nota. O workspace espera o **bootstrap** (não só o appointment) para montar o cockpit; o prefetch RSC hidrata as mesmas keys usadas pelos hooks do rail.
 
 Rotas antigas `/notes`, `/vitals`, `/documents` e `/prescriptions` redirecionam para a landing (com `panel` quando couber) e preservam `mode`/`date` da agenda.
 

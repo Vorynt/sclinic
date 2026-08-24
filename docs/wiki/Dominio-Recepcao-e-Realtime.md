@@ -4,7 +4,7 @@
 
 ## Board operacional
 
-Visível na home do **receptionist** (`ReceptionOpsBoard`). Layout da home: saudação com **Novo paciente** / **Novo agendamento** (header no desktop, FAB no mobile); contagem no header de cada coluna do board; `WaitlistPanel` abaixo. Sem cards de KPI nem seção de ações rápidas.
+Visível na home do **receptionist** (`ReceptionOpsBoard`). Layout da home: saudação com **Novo paciente** / **Novo agendamento** (header no desktop, FAB no mobile); contagem no header de cada coluna do board; `WaitlistPanel` abaixo. Sem cards de KPI nem seção de ações rápidas. O board do dia chega em **um request** (`getReceptionDayBoardAction`: agendamentos + cobranças ativas); waitlist continua query à parte (domínio e SSE diferentes). Sem financial view/collect, as cobranças voltam vazias — as colunas não “piscam” esperando um segundo round-trip.
 
 | Coluna | Regra |
 |--------|--------|

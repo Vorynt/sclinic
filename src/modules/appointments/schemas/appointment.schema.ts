@@ -181,6 +181,27 @@ export type UpdateAppointmentStatusInput = z.infer<
 export type ListPatientAppointmentsInput = z.infer<
   typeof listPatientAppointmentsSchema
 >
+export const getCalendarRangeSchema = z
+  .object({
+    from: z.coerce.date(),
+    to: z.coerce.date(),
+    professionalIds: z
+      .array(z.string().uuid("Profissional inválido"))
+      .max(100)
+      .optional(),
+    patientIds: z
+      .array(z.string().uuid("Paciente inválido"))
+      .max(100)
+      .optional(),
+    modality: appointmentModalitySchema.optional(),
+    includeHours: z.boolean().optional(),
+  })
+  .refine((data) => data.from < data.to, {
+    message: "A data inicial deve ser anterior à data final.",
+    path: ["to"],
+  })
+
 export type ConfirmAppointmentsBatchInput = z.infer<
   typeof confirmAppointmentsBatchSchema
 >
+export type GetCalendarRangeInput = z.infer<typeof getCalendarRangeSchema>

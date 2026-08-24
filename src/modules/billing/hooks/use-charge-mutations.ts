@@ -5,6 +5,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { chargesMutations } from "@/modules/billing/mutations/charges.mutation"
 import { chargesQueryKeys } from "@/modules/billing/queries/charges.query"
 import type { Charge } from "@/modules/billing/types/charge"
+import { dashboardQueryKeys } from "@/modules/dashboard/queries/dashboard.query"
 import {
   AppError,
   ErrorCode,
@@ -33,7 +34,10 @@ export function useCreateChargeFromAppointmentMutation({
   return useMutation({
     ...chargesMutations.createFromAppointment(),
     onSuccess: async (data) => {
-      await queryClient.invalidateQueries({ queryKey: chargesQueryKeys.all })
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: chargesQueryKeys.all }),
+        queryClient.invalidateQueries({ queryKey: dashboardQueryKeys.all }),
+      ])
       onSuccess?.(data)
     },
     onError: (error) => {
@@ -51,7 +55,10 @@ export function useMarkChargePaidMutation({
   return useMutation({
     ...chargesMutations.markPaid(),
     onSuccess: async (data) => {
-      await queryClient.invalidateQueries({ queryKey: chargesQueryKeys.all })
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: chargesQueryKeys.all }),
+        queryClient.invalidateQueries({ queryKey: dashboardQueryKeys.all }),
+      ])
       onSuccess?.(data)
     },
     onError: (error) => {
@@ -69,7 +76,10 @@ export function useCancelChargeMutation({
   return useMutation({
     ...chargesMutations.cancel(),
     onSuccess: async (data) => {
-      await queryClient.invalidateQueries({ queryKey: chargesQueryKeys.all })
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: chargesQueryKeys.all }),
+        queryClient.invalidateQueries({ queryKey: dashboardQueryKeys.all }),
+      ])
       onSuccess?.(data)
     },
     onError: (error) => {

@@ -2,6 +2,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 
+import { dashboardQueryKeys } from "@/modules/dashboard/queries/dashboard.query"
 import { patientsMutations } from "@/modules/patients/mutations/patients.mutation"
 import { patientsQueryKeys } from "@/modules/patients/queries/patients.query"
 import type { Patient } from "@/modules/patients/types/patient"
@@ -33,7 +34,10 @@ export function useCreatePatientMutation({
   return useMutation({
     ...patientsMutations.create(),
     onSuccess: async (data) => {
-      await queryClient.invalidateQueries({ queryKey: patientsQueryKeys.all })
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: patientsQueryKeys.all }),
+        queryClient.invalidateQueries({ queryKey: dashboardQueryKeys.all }),
+      ])
       onSuccess?.(data)
     },
     onError: (error) => {
@@ -51,7 +55,10 @@ export function useUpdatePatientMutation({
   return useMutation({
     ...patientsMutations.update(),
     onSuccess: async (data) => {
-      await queryClient.invalidateQueries({ queryKey: patientsQueryKeys.all })
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: patientsQueryKeys.all }),
+        queryClient.invalidateQueries({ queryKey: dashboardQueryKeys.all }),
+      ])
       onSuccess?.(data)
     },
     onError: (error) => {
@@ -69,7 +76,10 @@ export function useDeletePatientMutation({
   return useMutation({
     ...patientsMutations.delete(),
     onSuccess: async (data) => {
-      await queryClient.invalidateQueries({ queryKey: patientsQueryKeys.all })
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: patientsQueryKeys.all }),
+        queryClient.invalidateQueries({ queryKey: dashboardQueryKeys.all }),
+      ])
       onSuccess?.(data)
     },
     onError: (error) => {

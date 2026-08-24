@@ -123,6 +123,9 @@ export const professionalClinics = pgTable(
       .on(t.professionalId, t.clinicId)
       .where(sql`${t.deletedAt} IS NULL`),
     index("professional_clinics_clinic_id_idx").on(t.clinicId),
+    index("professional_clinics_clinic_status_alive_idx")
+      .on(t.clinicId, t.status)
+      .where(sql`${t.deletedAt} IS NULL`),
     pgPolicy("professional_clinics_tenant_isolation", {
       as: "permissive",
       to: sclinicAppRole,

@@ -21,15 +21,14 @@ import { Permission } from "@/config/permissions";
 import { useClinicOpsRealtime } from "@/hooks/use-clinic-ops-realtime";
 import { cn } from "@/lib/utils";
 import { useConfirmAppointmentsBatchMutation } from "@/modules/appointments/hooks/use-appointment-mutations";
-import { useAppointmentsQuery } from "@/modules/appointments/hooks/use-appointments";
 import type { Appointment } from "@/modules/appointments/types/appointment";
 import { MarkChargePaidDialog } from "@/modules/billing/components/MarkChargePaidDialog";
 import type { MarkChargePaidDto } from "@/modules/billing/dto/mark-charge-paid.dto";
 import { useMarkChargePaidMutation } from "@/modules/billing/hooks/use-charge-mutations";
-import { useActiveChargesByAppointmentsQuery } from "@/modules/billing/hooks/use-charges";
 import type { Charge } from "@/modules/billing/types/charge";
 import { formatCentsToBrl } from "@/modules/billing/utils/money";
 import { HomeSection } from "@/modules/dashboard/components/home/shared/HomeSection";
+import { useReceptionDayBoardQuery } from "@/modules/dashboard/hooks/use-reception-day-board";
 import { classifyReceptionBoardColumn } from "@/modules/dashboard/utils/reception-board";
 import { useAuth } from "@/providers/AuthProvider";
 
@@ -212,11 +211,6 @@ export function ReceptionOpsBoard() {
     Permission.FINANCIAL_MANAGE,
   );
   const canManageFinancial = can(Permission.FINANCIAL_MANAGE);
-  const canSeeCharges = canAny(
-    Permission.FINANCIAL_VIEW,
-    Permission.FINANCIAL_COLLECT,
-    Permission.FINANCIAL_MANAGE,
-  );
   const canConfirm = can(Permission.APPOINTMENTS_UPDATE);
 
   const range = useMemo(() => {
@@ -224,28 +218,19 @@ export function ReceptionOpsBoard() {
     return { from: startOfDay(now), to: endOfDay(now) };
   }, []);
 
-  const appointmentsQuery = useAppointmentsQuery(range);
+  const boardQuery = useReceptionDayBoardQuery(range);
   const appointments = useMemo(
-    () => appointmentsQuery.data ?? [],
-    [appointmentsQuery.data],
-  );
-  const appointmentIds = useMemo(
-    () => appointments.map((item) => item.id),
-    [appointments],
-  );
-
-  const chargesQuery = useActiveChargesByAppointmentsQuery(
-    appointmentIds,
-    !authLoading && canSeeCharges && appointmentIds.length > 0,
+    () => boardQuery.data?.appointments ?? [],
+    [boardQuery.data],
   );
 
   const chargeByAppointmentId = useMemo(() => {
     const map = new Map<string, Charge>();
-    for (const charge of chargesQuery.data ?? []) {
+    for (const charge of boardQuery.data?.charges ?? []) {
       map.set(charge.appointmentId, charge);
     }
     return map;
-  }, [chargesQuery.data]);
+  }, [boardQuery.data]);
 
   const columns = useMemo(() => {
     const upcoming: BoardItem[] = [];
@@ -329,9 +314,7 @@ export function ReceptionOpsBoard() {
     confirmBatch.mutate({ appointmentIds: ids });
   };
 
-  const isLoading =
-    appointmentsQuery.isLoading ||
-    (canSeeCharges && appointmentIds.length > 0 && chargesQuery.isLoading);
+  const isLoading = boardQuery.isLoading || authLoading;
 
   return (
     <>

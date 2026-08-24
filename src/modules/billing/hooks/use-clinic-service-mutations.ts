@@ -5,6 +5,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { clinicServicesMutations } from "@/modules/billing/mutations/clinic-services.mutation"
 import { clinicServicesQueryKeys } from "@/modules/billing/queries/clinic-services.query"
 import type { ClinicService } from "@/modules/billing/types/clinic-service"
+import { dashboardQueryKeys } from "@/modules/dashboard/queries/dashboard.query"
 import {
   AppError,
   ErrorCode,
@@ -33,9 +34,14 @@ export function useCreateClinicServiceMutation({
   return useMutation({
     ...clinicServicesMutations.create(),
     onSuccess: async (data) => {
-      await queryClient.invalidateQueries({
-        queryKey: clinicServicesQueryKeys.all,
-      })
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: clinicServicesQueryKeys.all,
+        }),
+        queryClient.invalidateQueries({
+          queryKey: dashboardQueryKeys.all,
+        }),
+      ])
       onSuccess?.(data)
     },
     onError: (error) => {
@@ -53,9 +59,14 @@ export function useUpdateClinicServiceMutation({
   return useMutation({
     ...clinicServicesMutations.update(),
     onSuccess: async (data) => {
-      await queryClient.invalidateQueries({
-        queryKey: clinicServicesQueryKeys.all,
-      })
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: clinicServicesQueryKeys.all,
+        }),
+        queryClient.invalidateQueries({
+          queryKey: dashboardQueryKeys.all,
+        }),
+      ])
       onSuccess?.(data)
     },
     onError: (error) => {
@@ -73,9 +84,14 @@ export function useDeleteClinicServiceMutation({
   return useMutation({
     ...clinicServicesMutations.delete(),
     onSuccess: async (data) => {
-      await queryClient.invalidateQueries({
-        queryKey: clinicServicesQueryKeys.all,
-      })
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: clinicServicesQueryKeys.all,
+        }),
+        queryClient.invalidateQueries({
+          queryKey: dashboardQueryKeys.all,
+        }),
+      ])
       onSuccess?.(data)
     },
     onError: (error) => {

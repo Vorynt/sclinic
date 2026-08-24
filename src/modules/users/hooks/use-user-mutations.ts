@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { authQueryKeys } from "@/modules/authentication/queries/auth.query"
 import type { AuthContext } from "@/modules/authentication/types/auth"
 import { billingQueryKeys } from "@/modules/billing/queries/billing.query"
+import { dashboardQueryKeys } from "@/modules/dashboard/queries/dashboard.query"
 import { usersMutations } from "@/modules/users/mutations/users.mutation"
 import { usersQueryKeys } from "@/modules/users/queries/users.query"
 import type { ClinicInvitation } from "@/modules/users/types/invitation"
@@ -36,6 +37,9 @@ export function useInviteMemberMutation({
     ...usersMutations.invite(),
     onSuccess: async (data) => {
       await queryClient.invalidateQueries({ queryKey: usersQueryKeys.all })
+      await queryClient.invalidateQueries({
+        queryKey: dashboardQueryKeys.all,
+      })
       onSuccess?.(data)
     },
     onError: (error) => {
@@ -115,6 +119,9 @@ export function useUpdateMemberRoleMutation({
     ...usersMutations.updateRole(),
     onSuccess: async (data) => {
       await queryClient.invalidateQueries({ queryKey: usersQueryKeys.members() })
+      await queryClient.invalidateQueries({
+        queryKey: dashboardQueryKeys.all,
+      })
       onSuccess?.(data)
     },
     onError: (error) => {
@@ -133,6 +140,9 @@ export function useRemoveMemberMutation({
     ...usersMutations.removeMember(),
     onSuccess: async (data) => {
       await queryClient.invalidateQueries({ queryKey: usersQueryKeys.members() })
+      await queryClient.invalidateQueries({
+        queryKey: dashboardQueryKeys.all,
+      })
       await queryClient.invalidateQueries({
         queryKey: billingQueryKeys.clinicPlanQuota,
       })
@@ -154,6 +164,9 @@ export function useUpdateMemberStatusMutation({
     ...usersMutations.updateStatus(),
     onSuccess: async (data) => {
       await queryClient.invalidateQueries({ queryKey: usersQueryKeys.members() })
+      await queryClient.invalidateQueries({
+        queryKey: dashboardQueryKeys.all,
+      })
       await queryClient.invalidateQueries({
         queryKey: billingQueryKeys.clinicPlanQuota,
       })

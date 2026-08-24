@@ -19,12 +19,9 @@ import { HomeQuickActions } from "@/modules/dashboard/components/home/shared/Hom
 import { HomeSection } from "@/modules/dashboard/components/home/shared/HomeSection"
 import { HomeStatCards } from "@/modules/dashboard/components/home/shared/HomeStatCards"
 import { TodaysAppointmentsPreview } from "@/modules/dashboard/components/home/shared/TodaysAppointmentsPreview"
+import { useAdminHomeStatsQuery } from "@/modules/dashboard/hooks/use-admin-home-stats"
 import { summarizeDayOps } from "@/modules/dashboard/utils/day-ops-stats"
-import { usePatientsQuery } from "@/modules/patients/hooks/use-patients"
-import {
-  useInvitationsQuery,
-  useMembersQuery,
-} from "@/modules/users/hooks/use-users"
+import { useInvitationsQuery } from "@/modules/users/hooks/use-users"
 
 export function AdminHome() {
   const dayRange = useMemo(() => {
@@ -34,13 +31,8 @@ export function AdminHome() {
 
   const appointmentsQuery = useAppointmentsQuery(dayRange)
   const dayStats = summarizeDayOps(appointmentsQuery.data ?? [])
-  const membersQuery = useMembersQuery({ page: 1, pageSize: 100 })
+  const statsQuery = useAdminHomeStatsQuery()
   const invitationsQuery = useInvitationsQuery()
-  const patientsQuery = usePatientsQuery({ page: 1, pageSize: 1 })
-
-  const activeMembers =
-    membersQuery.data?.items.filter((member) => member.status === "active")
-      .length ?? 0
   const pendingInvites = invitationsQuery.data?.length ?? 0
 
   return (
@@ -72,15 +64,17 @@ export function AdminHome() {
             },
             {
               label: "Equipe ativa",
-              value: membersQuery.isLoading ? "…" : String(activeMembers),
+              value: statsQuery.isLoading
+                ? "…"
+                : String(statsQuery.data?.activeMembersCount ?? 0),
               hint: "Membros ativos",
               icon: UsersThreeIcon,
             },
             {
               label: "Pacientes",
-              value: patientsQuery.isLoading
+              value: statsQuery.isLoading
                 ? "…"
-                : String(patientsQuery.data?.total ?? 0),
+                : String(statsQuery.data?.patientsCount ?? 0),
               hint: "Cadastros ativos",
               icon: UsersIcon,
             },

@@ -65,6 +65,11 @@ export const patientService = {
     })
   },
 
+  async countByClinic(ctx: AuthRequestContext): Promise<number> {
+    const auth = await requirePermission(ctx, Permission.PATIENTS_READ)
+    return patientRepository.countByClinic(auth.clinicId)
+  },
+
   async getById(id: string, ctx: AuthRequestContext): Promise<Patient> {
     const auth = await requirePermission(ctx, Permission.PATIENTS_READ)
 

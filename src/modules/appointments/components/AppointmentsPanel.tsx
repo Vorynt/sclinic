@@ -22,12 +22,8 @@ import { AppointmentWeekView } from "@/modules/appointments/components/Appointme
 import { ScheduleBlockDetailDialog } from "@/modules/appointments/components/ScheduleBlockDetailDialog";
 import { ScheduleBlockFormDialog } from "@/modules/appointments/components/ScheduleBlockFormDialog";
 import { isSelfScheduleOnlyRole } from "@/modules/appointments/constants/appointments";
-import {
-  useAppointmentsQuery,
-  useCalendarClinicHoursQuery,
-} from "@/modules/appointments/hooks/use-appointments";
+import { useCalendarRangeQuery } from "@/modules/appointments/hooks/use-appointments";
 import { useCalendarQueryParams } from "@/modules/appointments/hooks/use-calendar-query-params";
-import { useScheduleBlocksQuery } from "@/modules/appointments/hooks/use-schedule-blocks";
 import type { Appointment } from "@/modules/appointments/types/appointment";
 import type { ScheduleBlock } from "@/modules/appointments/types/schedule-block";
 import {
@@ -100,23 +96,15 @@ export function AppointmentsPanel() {
     }),
     [range, filters, showProfessionalFilter],
   );
-  const appointmentsQuery = useAppointmentsQuery(listFilters);
-  const scheduleBlocksQuery = useScheduleBlocksQuery({
-    ...range,
-    professionalIds: listFilters.professionalIds,
+  const calendarRangeQuery = useCalendarRangeQuery({
+    ...listFilters,
+    includeHours: mode !== "month",
   });
-  const calendarHoursQuery = useCalendarClinicHoursQuery();
-  const appointments = appointmentsQuery.data ?? [];
-  const scheduleBlocks = scheduleBlocksQuery.data ?? [];
-  const weeklyHours = calendarHoursQuery.data;
-  const isCalendarLoading =
-    appointmentsQuery.isLoading ||
-    scheduleBlocksQuery.isLoading ||
-    (mode !== "month" && calendarHoursQuery.isLoading);
-  const isCalendarError =
-    appointmentsQuery.isError ||
-    scheduleBlocksQuery.isError ||
-    (mode !== "month" && calendarHoursQuery.isError);
+  const appointments = calendarRangeQuery.data?.appointments ?? [];
+  const scheduleBlocks = calendarRangeQuery.data?.scheduleBlocks ?? [];
+  const weeklyHours = calendarRangeQuery.data?.weeklyHours ?? undefined;
+  const isCalendarLoading = calendarRangeQuery.isLoading;
+  const isCalendarError = calendarRangeQuery.isError;
 
   function handlePrevious() {
     setDate(getPreviousAnchor(mode, anchor));
@@ -206,16 +194,10 @@ export function AppointmentsPanel() {
         <QueryErrorState
           description="Não foi possível carregar os agendamentos."
           onRetry={() => {
-            void appointmentsQuery.refetch();
-            void scheduleBlocksQuery.refetch();
-            if (mode !== "month") {
-              void calendarHoursQuery.refetch();
-            }
+            void calendarRangeQuery.refetch();
           }}
           isRetrying={
-            appointmentsQuery.isFetching ||
-            scheduleBlocksQuery.isFetching ||
-            (mode !== "month" && calendarHoursQuery.isFetching)
+            calendarRangeQuery.isFetching
           }
         />
       ) : (

@@ -25,6 +25,7 @@ import type { CancelAppointmentDto } from "@/modules/appointments/dto/cancel-app
 import type { ConfirmAppointmentsBatchDto } from "@/modules/appointments/dto/confirm-appointments-batch.dto"
 import type { CountAppointmentsDto } from "@/modules/appointments/dto/count-appointments.dto"
 import type { CreateAppointmentDto } from "@/modules/appointments/dto/create-appointment.dto"
+import type { GetCalendarRangeDto } from "@/modules/appointments/dto/get-calendar-range.dto"
 import type { ListAppointmentsDto } from "@/modules/appointments/dto/list-appointments.dto"
 import type { ListPatientAppointmentsDto } from "@/modules/appointments/dto/list-patient-appointments.dto"
 import type { RescheduleAppointmentDto } from "@/modules/appointments/dto/reschedule-appointment.dto"
@@ -32,10 +33,12 @@ import type { UpdateAppointmentDetailsDto } from "@/modules/appointments/dto/upd
 import type { UpdateAppointmentStatusDto } from "@/modules/appointments/dto/update-appointment-status.dto"
 import { appointmentRepository } from "@/modules/appointments/repositories/appointment.repository"
 import { professionalAvailabilityService } from "@/modules/appointments/services/professional-availability.service"
+import { scheduleBlockService } from "@/modules/appointments/services/schedule-block.service"
 import type {
   Appointment,
   ConfirmAppointmentsBatchResult,
 } from "@/modules/appointments/types/appointment"
+import type { CalendarRange } from "@/modules/appointments/types/calendar-range"
 import {
   type AuthContextWithClinic,
   requireAnyPermission,
@@ -290,6 +293,26 @@ export const appointmentService = {
       auth.clinicId,
     )
     return weeklyHours
+  },
+
+  async getCalendarRange(
+    filters: GetCalendarRangeDto,
+    ctx: AuthRequestContext,
+  ): Promise<CalendarRange> {
+    const [appointments, scheduleBlocks, weeklyHours] = await Promise.all([
+      this.list(filters, ctx),
+      scheduleBlockService.list(
+        {
+          from: filters.from,
+          to: filters.to,
+          professionalIds: filters.professionalIds,
+        },
+        ctx,
+      ),
+      filters.includeHours ? this.getCalendarHours(ctx) : Promise.resolve(null),
+    ])
+
+    return { appointments, scheduleBlocks, weeklyHours }
   },
 
   async create(

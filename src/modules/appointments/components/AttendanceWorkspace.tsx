@@ -8,7 +8,7 @@ import { AttendanceBottomBar } from "@/modules/appointments/components/Attendanc
 import { AttendanceContextRail } from "@/modules/appointments/components/AttendanceContextRail"
 import { AttendanceHeader } from "@/modules/appointments/components/AttendanceHeader"
 import { AttendancePanelSheets } from "@/modules/appointments/components/AttendancePanelSheets"
-import { useAppointmentQuery } from "@/modules/appointments/hooks/use-appointment"
+import { useAttendanceBootstrapQuery } from "@/modules/appointments/hooks/use-appointments"
 import { ClinicalNotesPanel } from "@/modules/medical-records/components/ClinicalNotesPanel"
 import { useAttendanceUiStore } from "@/stores/attendance.store"
 
@@ -24,16 +24,16 @@ type AttendanceWorkspaceProps = {
 export function AttendanceWorkspace({
   appointmentId,
 }: AttendanceWorkspaceProps) {
-  const appointmentQuery = useAppointmentQuery(appointmentId)
+  const bootstrapQuery = useAttendanceBootstrapQuery(appointmentId)
   const endPreparingAttendance = useAttendanceUiStore(
     (state) => state.endPreparingAttendance,
   )
   const setPanel = useAttendanceUiStore((state) => state.setPanel)
 
   useEffect(() => {
-    if (appointmentQuery.isLoading) return
+    if (bootstrapQuery.isLoading) return
     endPreparingAttendance()
-  }, [appointmentQuery.isLoading, endPreparingAttendance])
+  }, [bootstrapQuery.isLoading, endPreparingAttendance])
 
   useEffect(() => {
     return () => {
@@ -41,11 +41,11 @@ export function AttendanceWorkspace({
     }
   }, [setPanel])
 
-  if (appointmentQuery.isLoading) {
+  if (bootstrapQuery.isLoading) {
     return <AttendanceWorkspaceSkeleton />
   }
 
-  if (appointmentQuery.isError || !appointmentQuery.data) {
+  if (bootstrapQuery.isError || !bootstrapQuery.data) {
     return (
       <div className="flex flex-col gap-2 py-8">
         <h1 className="font-heading text-xl font-semibold tracking-tight">
@@ -54,15 +54,15 @@ export function AttendanceWorkspace({
         <QueryErrorState
           description="Não foi possível carregar o agendamento."
           onRetry={() => {
-            void appointmentQuery.refetch()
+            void bootstrapQuery.refetch()
           }}
-          isRetrying={appointmentQuery.isFetching}
+          isRetrying={bootstrapQuery.isFetching}
         />
       </div>
     )
   }
 
-  const appointment = appointmentQuery.data
+  const appointment = bootstrapQuery.data.appointment
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-6 pb-[calc(3.5rem+env(safe-area-inset-bottom))] lg:pb-8">

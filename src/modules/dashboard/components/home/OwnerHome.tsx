@@ -11,23 +11,20 @@ import {
   UsersIcon,
   UsersThreeIcon,
 } from "@phosphor-icons/react"
-import { addMonths, format, startOfMonth } from "date-fns"
+import { format, startOfMonth } from "date-fns"
 import { ptBR } from "date-fns/locale"
-import { useMemo } from "react"
 
 import { routes } from "@/config/routes"
-import { useBillingSummaryQuery } from "@/modules/billing/hooks/use-charges"
 import { useClinicPlanQuota } from "@/modules/billing/hooks/use-clinic-plan-quota"
 import { formatCentsToBrl } from "@/modules/billing/utils/money"
 import { useClinic } from "@/modules/clinics/hooks/use-clinic"
 import type { ClinicSubscriptionStatus } from "@/modules/clinics/types/clinic"
-import { useAppointmentsCountQuery } from "@/modules/appointments/hooks/use-appointments"
 import { OwnerSetupRoadmap } from "@/modules/dashboard/components/home/OwnerSetupRoadmap"
 import { HomeGreeting } from "@/modules/dashboard/components/home/shared/HomeGreeting"
 import { HomeQuickActions } from "@/modules/dashboard/components/home/shared/HomeQuickActions"
 import { HomeSection } from "@/modules/dashboard/components/home/shared/HomeSection"
 import { HomeStatCards } from "@/modules/dashboard/components/home/shared/HomeStatCards"
-import { usePatientsQuery } from "@/modules/patients/hooks/use-patients"
+import { useOwnerHomeStatsQuery } from "@/modules/dashboard/hooks/use-owner-home-stats"
 import { useAuth } from "@/providers/AuthProvider"
 
 const SUBSCRIPTION_LABELS: Record<ClinicSubscriptionStatus, string> = {
@@ -50,34 +47,21 @@ export function OwnerHome() {
   const clinicId = auth?.session.activeClinicId ?? auth?.membership?.clinicId
   const clinicQuery = useClinic(clinicId)
   const quotaQuery = useClinicPlanQuota()
-  const patientsQuery = usePatientsQuery({ page: 1, pageSize: 1 })
-  const billingQuery = useBillingSummaryQuery()
-
-  const monthRange = useMemo(() => {
-    const now = new Date()
-    const from = startOfMonth(now)
-    return { from, to: addMonths(from, 1) }
-  }, [])
-  const monthCountQuery = useAppointmentsCountQuery({
-    from: monthRange.from,
-    to: monthRange.to,
-    excludeCanceled: true,
-  })
+  const statsQuery = useOwnerHomeStatsQuery()
+  const stats = statsQuery.data
 
   const subscriptionStatus = clinicQuery.data?.subscriptionStatus
   const subscriptionLabel = subscriptionStatus
     ? SUBSCRIPTION_LABELS[subscriptionStatus]
     : "—"
 
-  const monthLabel = format(monthRange.from, "MMMM yyyy", { locale: ptBR })
+  const monthLabel = format(startOfMonth(new Date()), "MMMM yyyy", {
+    locale: ptBR,
+  })
   const quota = quotaQuery.data
 
   const statsLoading =
-    clinicQuery.isLoading ||
-    quotaQuery.isLoading ||
-    patientsQuery.isLoading ||
-    billingQuery.isLoading ||
-    monthCountQuery.isLoading
+    clinicQuery.isLoading || quotaQuery.isLoading || statsQuery.isLoading
 
   return (
     <div className="flex flex-col gap-8">
@@ -127,42 +111,42 @@ export function OwnerHome() {
             },
             {
               label: "Pacientes",
-              value: patientsQuery.isLoading
+              value: statsQuery.isLoading
                 ? "…"
-                : String(patientsQuery.data?.total ?? 0),
+                : String(stats?.patientsCount ?? 0),
               hint: "Cadastros ativos",
               icon: UsersIcon,
             },
             {
               label: "Agendamentos do mês",
-              value: monthCountQuery.isLoading
+              value: statsQuery.isLoading
                 ? "…"
-                : String(monthCountQuery.data ?? 0),
+                : String(stats?.monthAppointmentsCount ?? 0),
               hint: monthLabel,
               icon: CalendarBlankIcon,
             },
             {
               label: "A receber",
-              value: billingQuery.isLoading
+              value: statsQuery.isLoading
                 ? "…"
-                : billingQuery.data
-                  ? formatCentsToBrl(billingQuery.data.pendingTotalCents)
+                : stats
+                  ? formatCentsToBrl(stats.billing.pendingTotalCents)
                   : "—",
-              hint: billingQuery.data
-                ? `${billingQuery.data.pendingCount} cobrança${billingQuery.data.pendingCount === 1 ? "" : "s"}`
+              hint: stats
+                ? `${stats.billing.pendingCount} cobrança${stats.billing.pendingCount === 1 ? "" : "s"}`
                 : undefined,
               icon: CurrencyCircleDollarIcon,
               accent: "warning",
             },
             {
               label: "Recebido no mês",
-              value: billingQuery.isLoading
+              value: statsQuery.isLoading
                 ? "…"
-                : billingQuery.data
-                  ? formatCentsToBrl(billingQuery.data.paidThisMonthCents)
+                : stats
+                  ? formatCentsToBrl(stats.billing.paidThisMonthCents)
                   : "—",
-              hint: billingQuery.data
-                ? `${billingQuery.data.paidThisMonthCount} pagamento${billingQuery.data.paidThisMonthCount === 1 ? "" : "s"}`
+              hint: stats
+                ? `${stats.billing.paidThisMonthCount} pagamento${stats.billing.paidThisMonthCount === 1 ? "" : "s"}`
                 : undefined,
               icon: CheckCircleIcon,
               accent: "success",

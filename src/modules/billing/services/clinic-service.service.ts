@@ -62,6 +62,11 @@ export const clinicServiceService = {
     });
   },
 
+  async existsActive(ctx: AuthRequestContext): Promise<boolean> {
+    const auth = await requireAnyPermission(ctx, ...FINANCIAL_READ);
+    return clinicServiceRepository.existsActiveByClinic(auth.clinicId);
+  },
+
   async getById(id: string, ctx: AuthRequestContext): Promise<ClinicService> {
     const auth = await requireAnyPermission(ctx, ...FINANCIAL_READ);
 

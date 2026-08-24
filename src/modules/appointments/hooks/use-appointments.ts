@@ -6,6 +6,7 @@ import {
   appointmentsQueries,
   type AppointmentsCountFilters,
   type AppointmentsRangeFilters,
+  type CalendarRangeFilters,
   type PatientAppointmentsFilters,
 } from "@/modules/appointments/queries/appointments.query"
 
@@ -35,4 +36,15 @@ export function usePatientAppointmentsQuery(
 
 export function useCalendarClinicHoursQuery() {
   return useQuery(appointmentsQueries.calendarHours())
+}
+
+export function useCalendarRangeQuery(filters: CalendarRangeFilters) {
+  return useQuery(appointmentsQueries.calendarRange(filters))
+}
+
+export function useAttendanceBootstrapQuery(appointmentId: string) {
+  return useQuery({
+    ...appointmentsQueries.attendanceBootstrap(appointmentId),
+    enabled: Boolean(appointmentId),
+  })
 }

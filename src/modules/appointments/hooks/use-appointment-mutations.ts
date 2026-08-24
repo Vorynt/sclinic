@@ -9,6 +9,7 @@ import type {
   ConfirmAppointmentsBatchResult,
 } from "@/modules/appointments/types/appointment"
 import { chargesQueryKeys } from "@/modules/billing/queries/charges.query"
+import { dashboardQueryKeys } from "@/modules/dashboard/queries/dashboard.query"
 import {
   AppError,
   ErrorCode,
@@ -28,6 +29,25 @@ function toAppError(error: unknown): AppError {
   })
 }
 
+async function invalidateAppointmentCaches(
+  queryClient: ReturnType<typeof useQueryClient>,
+  options?: { includeCharges?: boolean },
+) {
+  await Promise.all([
+    queryClient.invalidateQueries({
+      queryKey: appointmentsQueryKeys.all,
+    }),
+    queryClient.invalidateQueries({
+      queryKey: dashboardQueryKeys.all,
+    }),
+    options?.includeCharges
+      ? queryClient.invalidateQueries({
+          queryKey: chargesQueryKeys.all,
+        })
+      : Promise.resolve(),
+  ])
+}
+
 export function useCreateAppointmentMutation({
   onSuccess,
   onError,
@@ -37,14 +57,7 @@ export function useCreateAppointmentMutation({
   return useMutation({
     ...appointmentsMutations.create(),
     onSuccess: async (data) => {
-      await Promise.all([
-        queryClient.invalidateQueries({
-          queryKey: appointmentsQueryKeys.all,
-        }),
-        queryClient.invalidateQueries({
-          queryKey: chargesQueryKeys.all,
-        }),
-      ])
+      await invalidateAppointmentCaches(queryClient, { includeCharges: true })
       onSuccess?.(data)
     },
     onError: (error) => {
@@ -62,14 +75,7 @@ export function useCancelAppointmentMutation({
   return useMutation({
     ...appointmentsMutations.cancel(),
     onSuccess: async (data) => {
-      await Promise.all([
-        queryClient.invalidateQueries({
-          queryKey: appointmentsQueryKeys.all,
-        }),
-        queryClient.invalidateQueries({
-          queryKey: chargesQueryKeys.all,
-        }),
-      ])
+      await invalidateAppointmentCaches(queryClient, { includeCharges: true })
       onSuccess?.(data)
     },
     onError: (error) => {
@@ -87,9 +93,7 @@ export function useRescheduleAppointmentMutation({
   return useMutation({
     ...appointmentsMutations.reschedule(),
     onSuccess: async (data) => {
-      await queryClient.invalidateQueries({
-        queryKey: appointmentsQueryKeys.all,
-      })
+      await invalidateAppointmentCaches(queryClient)
       onSuccess?.(data)
     },
     onError: (error) => {
@@ -107,9 +111,7 @@ export function useUpdateAppointmentDetailsMutation({
   return useMutation({
     ...appointmentsMutations.updateDetails(),
     onSuccess: async (data) => {
-      await queryClient.invalidateQueries({
-        queryKey: appointmentsQueryKeys.all,
-      })
+      await invalidateAppointmentCaches(queryClient)
       onSuccess?.(data)
     },
     onError: (error) => {
@@ -127,9 +129,7 @@ export function useUpdateAppointmentStatusMutation({
   return useMutation({
     ...appointmentsMutations.updateStatus(),
     onSuccess: async (data) => {
-      await queryClient.invalidateQueries({
-        queryKey: appointmentsQueryKeys.all,
-      })
+      await invalidateAppointmentCaches(queryClient)
       onSuccess?.(data)
     },
     onError: (error) => {
@@ -147,9 +147,7 @@ export function useConfirmAppointmentsBatchMutation({
   return useMutation({
     ...appointmentsMutations.confirmBatch(),
     onSuccess: async (data) => {
-      await queryClient.invalidateQueries({
-        queryKey: appointmentsQueryKeys.all,
-      })
+      await invalidateAppointmentCaches(queryClient)
       onSuccess?.(data)
     },
     onError: (error) => {

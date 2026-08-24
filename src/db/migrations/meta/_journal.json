@@ -182,6 +182,13 @@
       "when": 1786737600000,
       "tag": "0025_product_tour_completed",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1786824000000,
+      "tag": "0026_query_performance_indexes",
+      "breakpoints": true
     }
   ],
   "version": "7"

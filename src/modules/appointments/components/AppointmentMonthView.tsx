@@ -1,9 +1,9 @@
 "use client"
 
+import { useMemo } from "react"
 import {
   eachDayOfInterval,
   format,
-  isSameDay,
   isSameMonth,
   isToday,
   startOfMonth,
@@ -13,6 +13,7 @@ import { ptBR } from "date-fns/locale"
 import { cn } from "@/lib/utils"
 import { AppointmentEventCard } from "@/modules/appointments/components/AppointmentEventCard"
 import { getVisibleRange } from "@/modules/appointments/utils/calendar-range"
+import { groupAppointmentsByDay } from "@/modules/appointments/utils/group-appointments-by-day"
 import type { Appointment } from "@/modules/appointments/types/appointment"
 
 const MAX_CHIPS_PER_DAY = 3
@@ -35,6 +36,10 @@ export function AppointmentMonthView({
   const weekdayLabels = days
     .slice(0, 7)
     .map((day) => format(day, "EEEEEE", { locale: ptBR }))
+  const appointmentsByDay = useMemo(
+    () => groupAppointmentsByDay(appointments),
+    [appointments],
+  )
 
   return (
     <div className="flex flex-col gap-1">
@@ -48,9 +53,8 @@ export function AppointmentMonthView({
 
       <div className="grid grid-cols-7 gap-px overflow-hidden rounded-lg border bg-border">
         {days.map((day) => {
-          const dayAppointments = appointments
-            .filter((appointment) => isSameDay(appointment.startsAt, day))
-            .sort((a, b) => a.startsAt.getTime() - b.startsAt.getTime())
+          const dayAppointments =
+            appointmentsByDay.get(format(day, "yyyy-MM-dd")) ?? []
           const overflowCount = dayAppointments.length - MAX_CHIPS_PER_DAY
           const isCurrentMonth = isSameMonth(day, startOfMonth(anchor))
 

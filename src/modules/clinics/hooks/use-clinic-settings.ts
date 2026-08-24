@@ -57,6 +57,9 @@ export function useUpsertClinicHoursMutation({
       await queryClient.invalidateQueries({
         queryKey: appointmentsQueryKeys.calendarHours(),
       })
+      await queryClient.invalidateQueries({
+        queryKey: appointmentsQueryKeys.calendarRanges(),
+      })
       onSuccess?.(data)
     },
     onError: (error) => {
@@ -77,6 +80,9 @@ export function useApplyDefaultClinicHoursMutation({
       await queryClient.invalidateQueries({ queryKey: clinicsQueryKeys.hours })
       await queryClient.invalidateQueries({
         queryKey: appointmentsQueryKeys.calendarHours(),
+      })
+      await queryClient.invalidateQueries({
+        queryKey: appointmentsQueryKeys.calendarRanges(),
       })
       onSuccess?.(data)
     },

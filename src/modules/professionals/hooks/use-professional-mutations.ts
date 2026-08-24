@@ -2,6 +2,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 
+import { dashboardQueryKeys } from "@/modules/dashboard/queries/dashboard.query"
 import { professionalsMutations } from "@/modules/professionals/mutations/professionals.mutation"
 import { professionalsQueryKeys } from "@/modules/professionals/queries/professionals.query"
 import type {
@@ -36,9 +37,14 @@ export function useCreateProfessionalMutation({
   return useMutation({
     ...professionalsMutations.create(),
     onSuccess: async (data) => {
-      await queryClient.invalidateQueries({
-        queryKey: professionalsQueryKeys.all,
-      })
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: professionalsQueryKeys.all,
+        }),
+        queryClient.invalidateQueries({
+          queryKey: dashboardQueryKeys.all,
+        }),
+      ])
       onSuccess?.(data)
     },
     onError: (error) => {
@@ -56,9 +62,14 @@ export function useCreateOwnerClinicalProfileMutation({
   return useMutation({
     ...professionalsMutations.createOwnerClinicalProfile(),
     onSuccess: async (data) => {
-      await queryClient.invalidateQueries({
-        queryKey: professionalsQueryKeys.all,
-      })
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: professionalsQueryKeys.all,
+        }),
+        queryClient.invalidateQueries({
+          queryKey: dashboardQueryKeys.all,
+        }),
+      ])
       onSuccess?.(data)
     },
     onError: (error) => {
@@ -76,9 +87,14 @@ export function useUpdateProfessionalMutation({
   return useMutation({
     ...professionalsMutations.update(),
     onSuccess: async (data) => {
-      await queryClient.invalidateQueries({
-        queryKey: professionalsQueryKeys.all,
-      })
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: professionalsQueryKeys.all,
+        }),
+        queryClient.invalidateQueries({
+          queryKey: dashboardQueryKeys.all,
+        }),
+      ])
       onSuccess?.(data)
     },
     onError: (error) => {
@@ -96,9 +112,14 @@ export function useSetProfessionalStatusMutation({
   return useMutation({
     ...professionalsMutations.setStatus(),
     onSuccess: async (data) => {
-      await queryClient.invalidateQueries({
-        queryKey: professionalsQueryKeys.all,
-      })
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: professionalsQueryKeys.all,
+        }),
+        queryClient.invalidateQueries({
+          queryKey: dashboardQueryKeys.all,
+        }),
+      ])
       onSuccess?.(data)
     },
     onError: (error) => {
@@ -116,9 +137,14 @@ export function useDeleteProfessionalMutation({
   return useMutation({
     ...professionalsMutations.delete(),
     onSuccess: async (data) => {
-      await queryClient.invalidateQueries({
-        queryKey: professionalsQueryKeys.all,
-      })
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: professionalsQueryKeys.all,
+        }),
+        queryClient.invalidateQueries({
+          queryKey: dashboardQueryKeys.all,
+        }),
+      ])
       onSuccess?.(data)
     },
     onError: (error) => {
@@ -136,9 +162,14 @@ export function useUpdateProfessionalInviteProfileMutation({
   return useMutation({
     ...professionalsMutations.updateInviteProfile(),
     onSuccess: async (data) => {
-      await queryClient.invalidateQueries({
-        queryKey: professionalsQueryKeys.all,
-      })
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: professionalsQueryKeys.all,
+        }),
+        queryClient.invalidateQueries({
+          queryKey: dashboardQueryKeys.all,
+        }),
+      ])
       onSuccess?.(data)
     },
     onError: (error) => {
@@ -156,9 +187,14 @@ export function useAcceptProfessionalInviteMutation({
   return useMutation({
     ...professionalsMutations.acceptInvite(),
     onSuccess: async (data) => {
-      await queryClient.invalidateQueries({
-        queryKey: professionalsQueryKeys.all,
-      })
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: professionalsQueryKeys.all,
+        }),
+        queryClient.invalidateQueries({
+          queryKey: dashboardQueryKeys.all,
+        }),
+      ])
       onSuccess?.(data)
     },
     onError: (error) => {

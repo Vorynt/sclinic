@@ -97,6 +97,17 @@ export const patientRepository = {
     })
   },
 
+  async countByClinic(clinicId: string): Promise<number> {
+    return withDbError(async () => {
+      const [row] = await db
+        .select({ total: count() })
+        .from(patients)
+        .where(and(eq(patients.clinicId, clinicId), isNull(patients.deletedAt)))
+
+      return row?.total ?? 0
+    })
+  },
+
   async findById(id: string, clinicId: string): Promise<Patient | null> {
     return withDbError(async () => {
       const [row] = await db

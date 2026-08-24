@@ -117,6 +117,24 @@ export const clinicServiceRepository = {
     })
   },
 
+  async existsActiveByClinic(clinicId: string): Promise<boolean> {
+    return withDbError(async () => {
+      const [row] = await db
+        .select({ id: clinicServices.id })
+        .from(clinicServices)
+        .where(
+          and(
+            eq(clinicServices.clinicId, clinicId),
+            eq(clinicServices.isActive, true),
+            isNull(clinicServices.deletedAt),
+          ),
+        )
+        .limit(1)
+
+      return Boolean(row)
+    })
+  },
+
   async create(params: {
     clinicId: string
     createdBy: string

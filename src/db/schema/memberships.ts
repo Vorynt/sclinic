@@ -58,6 +58,9 @@ export const clinicMemberships = pgTable(
     index("clinic_memberships_clinic_id_idx").on(t.clinicId),
     index("clinic_memberships_user_id_idx").on(t.userId),
     index("clinic_memberships_role_id_idx").on(t.roleId),
+    index("clinic_memberships_clinic_status_alive_idx")
+      .on(t.clinicId, t.status)
+      .where(sql`${t.deletedAt} IS NULL`),
     pgPolicy("clinic_memberships_tenant_isolation", {
       as: "permissive",
       to: sclinicAppRole,

@@ -74,6 +74,23 @@ export const memberRepository = {
     });
   },
 
+  async countActiveByClinic(clinicId: string): Promise<number> {
+    return withDbError(async () => {
+      const [row] = await db
+        .select({ total: count() })
+        .from(clinicMemberships)
+        .where(
+          and(
+            eq(clinicMemberships.clinicId, clinicId),
+            eq(clinicMemberships.status, "active"),
+            isNull(clinicMemberships.deletedAt),
+          ),
+        );
+
+      return row?.total ?? 0;
+    });
+  },
+
   async findById(
     membershipId: string,
     clinicId: string,

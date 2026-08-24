@@ -49,7 +49,7 @@ Primária = `priority: "primary"` ou, se omitido, a **última** ação da lista.
 | **nurse** | Fila clínica (ênfase em check-in) | Preview da própria agenda | Pacientes, Agenda |
 | **financial** | A receber / recebido no mês | Cobranças pendentes (top 5) | Faturamento, Serviços, Pacientes |
 
-Widgets compartilhados: `HomeStatCards`, `HomeDayOpsStats`, `TodaysAppointmentsPreview`, `HomePendingChargesPreview`, `OwnerSetupRoadmap` (só owner). Dados vêm dos módulos de domínio (sem service próprio em `dashboard`).
+Widgets compartilhados: `HomeStatCards`, `HomeDayOpsStats`, `TodaysAppointmentsPreview`, `HomePendingChargesPreview`, `OwnerSetupRoadmap` (só owner). A home **compõe** dados no `dashboardService` (`getOwnerHomeStats`, `getAdminHomeStats`, `getReceptionDayBoard`) chamando **services públicos** dos módulos — counts reais, sem listar 100 membros ou `pageSize: 1` só para ler `total`. Cota do plano continua no shell (`useClinicPlanQuota`); a home do owner não refetch de cota. As páginas `/home`, `/appointments` e o layout de atendimento fazem `prefetchQuery` + `HydrationBoundary` (com `setQueryClinicId` antes, porque o hash da query inclui a clínica).
 
 ### Roadmap de setup do owner (`OwnerSetupRoadmap`)
 

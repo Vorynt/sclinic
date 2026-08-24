@@ -190,6 +190,29 @@ export const professionalService = {
     })
   },
 
+  async existsForScheduling(ctx: AuthRequestContext): Promise<boolean> {
+    const auth = await requireAnyPermission(
+      ctx,
+      Permission.APPOINTMENTS_CREATE,
+      Permission.APPOINTMENTS_UPDATE,
+      Permission.PROFESSIONALS_MANAGE,
+    )
+
+    if (
+      (PROFESSIONAL_ROLE_KEYS as readonly string[]).includes(
+        auth.membership.roleKey,
+      )
+    ) {
+      const mine = await professionalRepository.findActiveForSchedulingByUserId(
+        auth.user.id,
+        auth.clinicId,
+      )
+      return Boolean(mine)
+    }
+
+    return professionalRepository.existsActiveForScheduling(auth.clinicId)
+  },
+
   async getById(
     id: string,
     ctx: AuthRequestContext,

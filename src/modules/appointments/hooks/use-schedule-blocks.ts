@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 
 import { scheduleBlocksMutations } from "@/modules/appointments/mutations/schedule-blocks.mutation"
+import { appointmentsQueryKeys } from "@/modules/appointments/queries/appointments.query"
 import {
   scheduleBlocksQueries,
   scheduleBlocksQueryKeys,
@@ -41,9 +42,14 @@ export function useCreateScheduleBlockMutation({
   return useMutation({
     ...scheduleBlocksMutations.create(),
     onSuccess: async (data) => {
-      await queryClient.invalidateQueries({
-        queryKey: scheduleBlocksQueryKeys.all,
-      })
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: scheduleBlocksQueryKeys.all,
+        }),
+        queryClient.invalidateQueries({
+          queryKey: appointmentsQueryKeys.calendarRanges(),
+        }),
+      ])
       onSuccess?.(data)
     },
     onError: (error) => {
@@ -61,9 +67,14 @@ export function useDeleteScheduleBlockMutation({
   return useMutation({
     ...scheduleBlocksMutations.delete(),
     onSuccess: async (data) => {
-      await queryClient.invalidateQueries({
-        queryKey: scheduleBlocksQueryKeys.all,
-      })
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: scheduleBlocksQueryKeys.all,
+        }),
+        queryClient.invalidateQueries({
+          queryKey: appointmentsQueryKeys.calendarRanges(),
+        }),
+      ])
       onSuccess?.(data)
     },
     onError: (error) => {

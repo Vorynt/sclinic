@@ -1,3 +1,4 @@
+import { sql } from "drizzle-orm"
 import {
   index,
   pgPolicy,
@@ -57,6 +58,9 @@ export const appointments = pgTable(
   },
   (t) => [
     index("appointments_clinic_starts_at_idx").on(t.clinicId, t.startsAt),
+    index("appointments_clinic_range_alive_idx")
+      .on(t.clinicId, t.startsAt, t.endsAt)
+      .where(sql`${t.deletedAt} IS NULL`),
     index("appointments_clinic_professional_starts_idx").on(
       t.clinicId,
       t.professionalId,

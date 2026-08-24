@@ -58,6 +58,11 @@ export const memberService = {
     })
   },
 
+  async countActive(ctx: AuthRequestContext): Promise<number> {
+    const auth = await requireTeamAccess(ctx)
+    return memberRepository.countActiveByClinic(auth.clinicId)
+  },
+
   async updateRole(
     data: UpdateMemberRoleDto,
     ctx: AuthRequestContext,
