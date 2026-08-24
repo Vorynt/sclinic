@@ -12,7 +12,7 @@ const meta = {
     docs: {
       description: {
         component:
-          "Alerta de erro de formulário com descrição legível. Ao montar, rola até o alerta para ficar visível em containers com scroll.",
+          "Alerta de erro de formulário com descrição legível.",
       },
     },
   },

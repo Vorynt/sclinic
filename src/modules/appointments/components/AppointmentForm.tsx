@@ -548,6 +548,7 @@ export function AppointmentForm({
           )}
           noValidate>
           <div
+            data-form-scroll={isPageLayout ? undefined : ""}
             className={cn(
               "flex flex-col gap-5",
               isPageLayout

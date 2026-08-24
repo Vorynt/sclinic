@@ -1,7 +1,6 @@
 "use client";
 
 import { WarningCircleIcon } from "@phosphor-icons/react";
-import { useEffect, useRef } from "react";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { cn } from "@/lib/utils";
@@ -26,27 +25,67 @@ function toReadableMessage(message: string): string {
 }
 
 function FormErrorAlert({ message, className }: FormErrorAlertProps) {
-  const ref = useRef<HTMLDivElement>(null);
   const readableMessage = toReadableMessage(message);
 
-  useEffect(() => {
-    ref.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-  }, [readableMessage]);
-
   return (
-    <div ref={ref}>
-      <Alert variant="destructive" className={cn(className)}>
-        <WarningCircleIcon className="size-5" />
-        <AlertTitle>Não foi possível continuar</AlertTitle>
-        <AlertDescription>{readableMessage}</AlertDescription>
-      </Alert>
-    </div>
+    <Alert variant="destructive" className={cn(className)}>
+      <WarningCircleIcon className="size-5" />
+      <AlertTitle>Não foi possível continuar</AlertTitle>
+      <AlertDescription>{readableMessage}</AlertDescription>
+    </Alert>
   );
 }
 
-/** Scrolls a form (or any container) to the top so form-level errors are visible. */
+function isOverflowScrollable(overflowY: string): boolean {
+  return overflowY === "auto" || overflowY === "scroll";
+}
+
+function canScroll(element: HTMLElement): boolean {
+  const { overflowY } = getComputedStyle(element);
+  return (
+    isOverflowScrollable(overflowY) &&
+    element.scrollHeight > element.clientHeight
+  );
+}
+
+function findScrollableAncestor(
+  element: HTMLElement | null,
+): HTMLElement | null {
+  let current = element;
+  while (current) {
+    if (canScroll(current)) return current;
+    current = current.parentElement;
+  }
+  return null;
+}
+
+/**
+ * Scrolls a form (or any container) to the top so form-level errors are visible.
+ * Does not use scrollIntoView — that scrolls overflow:hidden ancestors and
+ * breaks dialog chrome (header clipped, gap below footer).
+ */
 function scrollFormToTop(element: HTMLElement | null) {
-  element?.scrollIntoView({ behavior: "smooth", block: "start" });
+  if (!element) return;
+
+  const designated = element.querySelector<HTMLElement>("[data-form-scroll]");
+  if (designated) {
+    designated.scrollTo({ top: 0, behavior: "smooth" });
+    return;
+  }
+
+  if (canScroll(element)) {
+    element.scrollTo({ top: 0, behavior: "smooth" });
+    return;
+  }
+
+  const ancestor = findScrollableAncestor(element.parentElement);
+  if (ancestor) {
+    ancestor.scrollTo({ top: 0, behavior: "smooth" });
+    return;
+  }
+
+  const top = element.getBoundingClientRect().top + window.scrollY;
+  window.scrollTo({ top: Math.max(0, top - 16), behavior: "smooth" });
 }
 
 export { FormErrorAlert, scrollFormToTop };

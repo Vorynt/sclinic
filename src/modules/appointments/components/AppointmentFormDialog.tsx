@@ -77,7 +77,7 @@ export function AppointmentFormDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="flex max-h-[min(90vh,40rem)] w-full flex-col gap-0 overflow-hidden p-0 sm:max-w-lg"
+        className="flex max-h-[min(90vh,40rem)] w-full flex-col gap-0 overflow-clip p-0 sm:max-w-lg"
         showCloseButton
       >
         <DialogHeader className="shrink-0 space-y-1.5 border-b border-border px-4 py-4 pr-12 text-left">
