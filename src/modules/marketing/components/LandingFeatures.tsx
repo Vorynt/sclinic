@@ -1,29 +1,38 @@
-import type { Icon } from "@phosphor-icons/react";
+import type { Icon } from "@phosphor-icons/react"
 import {
   CalendarBlankIcon,
   CurrencyCircleDollarIcon,
   StethoscopeIcon,
   UsersIcon,
-} from "@phosphor-icons/react/dist/ssr";
+} from "@phosphor-icons/react/dist/ssr"
 
-import { LANDING_COPY } from "@/modules/marketing/constants/landing-copy";
+import { cn } from "@/lib/utils"
+import { FeatureCard } from "@/modules/marketing/components/motion/FeatureCard"
+import {
+  Reveal,
+  RevealStagger,
+} from "@/modules/marketing/components/motion/Reveal"
+import { LANDING_COPY } from "@/modules/marketing/constants/landing-copy"
 
 const FEATURE_ICONS: Record<string, Icon> = {
   agenda: CalendarBlankIcon,
   patients: UsersIcon,
   attendance: StethoscopeIcon,
   billing: CurrencyCircleDollarIcon,
-};
+}
+
+const FEATURE_SPAN: Record<string, string> = {
+  agenda: "lg:col-span-2",
+  billing: "lg:col-span-2",
+}
 
 export function LandingFeatures() {
-  const { features } = LANDING_COPY;
+  const { features } = LANDING_COPY
 
   return (
-    <section
-      id={features.id}
-      className="scroll-mt-20 border-t border-border/60 bg-[linear-gradient(180deg,color-mix(in_oklch,var(--primary)_5%,var(--background)),var(--background)_48%)] py-20 sm:py-28">
+    <section id={features.id} className="scroll-mt-20 py-20 sm:py-28">
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-        <div className="max-w-2xl">
+        <Reveal className="max-w-2xl">
           <p className="text-sm font-medium tracking-[0.14em] text-primary uppercase">
             {features.eyebrow}
           </p>
@@ -33,57 +42,57 @@ export function LandingFeatures() {
           <p className="mt-4 text-base leading-relaxed text-muted-foreground">
             {features.supporting}
           </p>
-        </div>
+        </Reveal>
 
-        <div className="mt-14 grid gap-4 sm:grid-cols-2 lg:gap-5">
+        <RevealStagger className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-5">
           {features.items.map((item, index) => {
-            const Icon = FEATURE_ICONS[item.id] ?? CalendarBlankIcon;
+            const Icon = FEATURE_ICONS[item.id] ?? CalendarBlankIcon
+            const featured = item.id === "agenda" || item.id === "billing"
 
             return (
-              <article
+              <FeatureCard
                 key={item.id}
-                className={
-                  "group relative flex flex-col gap-5 overflow-hidden rounded-2xl border border-border/70 bg-background/80 p-7 backdrop-blur-sm sm:p-8"
-                }>
+                className={cn(
+                  "group relative flex min-h-56 flex-col justify-between gap-6 overflow-hidden rounded-2xl border border-border/70 bg-background p-7 shadow-[0_1px_0_color-mix(in_oklch,var(--foreground)_4%,transparent)] sm:p-8",
+                  FEATURE_SPAN[item.id],
+                )}
+              >
+                <span
+                  aria-hidden="true"
+                  className="absolute inset-y-0 left-0 w-0 bg-primary transition-[width] duration-300 group-hover:w-0.5"
+                />
                 <div
                   aria-hidden="true"
-                  className="pointer-events-none absolute -top-16 -right-12 size-40 rounded-full bg-primary/8 blur-3xl transition-opacity duration-500 group-hover:opacity-100 sm:opacity-70"
+                  className="pointer-events-none absolute -top-20 -right-16 size-44 rounded-full bg-primary/0 blur-3xl transition-colors duration-500 group-hover:bg-primary/10"
                 />
 
-                <div className="relative flex min-w-0 flex-1 flex-col gap-4">
-                  <div className="flex items-center justify-between gap-4">
-                    <span className="flex size-11 items-center justify-center rounded-xl border border-border/60 bg-background/90 text-primary shadow-sm">
-                      <Icon
-                        className="size-5"
-                        weight="duotone"
-                        aria-hidden="true"
-                      />
-                    </span>
-                    <span className="rounded-full border border-primary/20 bg-primary/8 px-2.5 py-1 text-[0.7rem] font-medium tracking-wide text-primary uppercase">
-                      {item.highlight}
-                    </span>
-                  </div>
-                  <div>
+                <div className="relative flex items-start justify-between gap-4">
+                  <span className="flex size-11 items-center justify-center rounded-xl border border-border/60 bg-background text-primary shadow-sm transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:border-primary/25">
+                    <Icon className="size-5" weight="duotone" aria-hidden="true" />
+                  </span>
+                  <span className="rounded-full border border-primary/20 bg-primary/8 px-2.5 py-1 text-[0.7rem] font-medium tracking-wide text-primary uppercase">
+                    {item.highlight}
+                  </span>
+                </div>
+
+                <div className="relative flex items-end justify-between gap-6">
+                  <div className={cn("min-w-0", featured && "max-w-md")}>
                     <h3 className="font-heading text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
                       {item.title}
                     </h3>
-                    <p
-                      className={
-                        "mt-3 max-w-sm text-sm leading-relaxed text-muted-foreground sm:text-base"
-                      }>
+                    <p className="mt-3 text-sm leading-relaxed text-muted-foreground sm:text-base">
                       {item.description}
                     </p>
                   </div>
+                  <span className="hidden font-heading text-5xl font-semibold tabular-nums text-primary/10 transition-colors duration-300 group-hover:text-primary/25 sm:block sm:text-6xl">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
                 </div>
-
-                <span className="relative font-heading text-5xl font-semibold tabular-nums text-primary/10 transition-colors duration-300 group-hover:text-primary/20 sm:text-6xl">
-                  {String(index + 1).padStart(2, "0")}
-                </span>
-              </article>
-            );
+              </FeatureCard>
+            )
           })}
-        </div>
+        </RevealStagger>
       </div>
     </section>
-  );
+  )
 }

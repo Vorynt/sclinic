@@ -1,6 +1,7 @@
 import {
+  BuildingsIcon,
   CalendarBlankIcon,
-  CurrencyCircleDollarIcon,
+  DotsThreeOutlineIcon,
   HouseIcon,
   UsersIcon,
 } from "@phosphor-icons/react/dist/ssr"
@@ -10,20 +11,22 @@ import { cn } from "@/lib/utils"
 import {
   MOCK_CLINIC_NAME,
   MOCK_NAV_ITEMS,
+  MOCK_OVERFLOW_LABEL,
+  MOCK_ROLE_LABEL,
+  MOCK_USER_INITIALS,
+  type MockNavLabel,
 } from "@/modules/marketing/constants/mock-data"
 
-const NAV_ICONS = [
-  HouseIcon,
-  UsersIcon,
-  CalendarBlankIcon,
-  CurrencyCircleDollarIcon,
-] as const
+const NAV_ICONS = {
+  Início: HouseIcon,
+  Agendamentos: CalendarBlankIcon,
+  Pacientes: UsersIcon,
+} as const
 
 type MockAppChromeProps = {
   children: ReactNode
-  /** Highlighted nav label (matches MOCK_NAV_ITEMS). */
-  activeNav?: string
-  toolbar?: ReactNode
+  /** Highlighted nav label (matches MOCK_NAV_ITEMS or Faturamento via Mais). */
+  activeNav?: MockNavLabel
   className?: string
   /** Compact chrome for denser showcase frames. */
   compact?: boolean
@@ -31,69 +34,92 @@ type MockAppChromeProps = {
 
 export function MockAppChrome({
   children,
-  activeNav = "Agenda",
-  toolbar,
+  activeNav = "Agendamentos",
   className,
   compact = false,
 }: MockAppChromeProps) {
+  const overflowActive = activeNav === "Faturamento"
+
   return (
     <div
       aria-hidden="true"
       inert
       className={cn(
-        "pointer-events-none flex overflow-hidden rounded-xl border border-border/80 bg-background shadow-[0_24px_64px_-28px_color-mix(in_oklch,var(--foreground)_28%,transparent),0_0_0_1px_color-mix(in_oklch,var(--border)_80%,transparent)]",
+        "pointer-events-none flex flex-col overflow-hidden rounded-xl border border-border/80 bg-background shadow-[0_24px_64px_-28px_color-mix(in_oklch,var(--foreground)_28%,transparent),0_0_0_1px_color-mix(in_oklch,var(--border)_80%,transparent)]",
         className,
-      )}>
-      <aside
-        className={cn(
-          "hidden shrink-0 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground sm:flex",
-          compact ? "w-44" : "w-52",
-        )}>
-        <div className="flex items-center gap-2.5 border-b border-sidebar-border px-3 py-3">
-          <span className="flex size-7 shrink-0 items-center justify-center rounded-md bg-sidebar-primary text-[0.65rem] font-semibold text-sidebar-primary-foreground">
-            CH
+      )}
+    >
+      <header className="shrink-0 border-b border-border/70 bg-background/80 backdrop-blur-xl">
+        <div
+          className={cn(
+            "flex items-center gap-2",
+            compact ? "h-11 px-2.5" : "h-12 px-3",
+          )}
+        >
+          <div className="flex min-w-0 max-w-40 items-center gap-2 sm:max-w-48">
+            <span className="flex size-7 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground">
+              <BuildingsIcon className="size-3.5" weight="bold" />
+            </span>
+            <span className="grid min-w-0 flex-1 text-left leading-tight">
+              <span className="truncate text-xs font-medium sm:text-sm">
+                {MOCK_CLINIC_NAME}
+              </span>
+              <span className="hidden truncate text-[0.65rem] text-muted-foreground sm:block">
+                {MOCK_ROLE_LABEL}
+              </span>
+            </span>
+          </div>
+
+          <span
+            className="hidden h-5 w-px shrink-0 bg-border/80 sm:block"
+            aria-hidden="true"
+          />
+
+          <nav className="hidden min-w-0 flex-1 items-center gap-0.5 sm:flex">
+            {MOCK_NAV_ITEMS.map((item) => {
+              const Icon = NAV_ICONS[item.label]
+              const isActive = item.label === activeNav
+              return (
+                <span
+                  key={item.id}
+                  className={cn(
+                    "inline-flex h-8 items-center gap-1.5 rounded-md px-2.5 text-xs font-medium",
+                    isActive
+                      ? "bg-accent text-accent-foreground"
+                      : "text-muted-foreground",
+                  )}
+                >
+                  <Icon className="size-3.5 shrink-0" />
+                  <span className="truncate">{item.label}</span>
+                </span>
+              )
+            })}
+            <span
+              className={cn(
+                "inline-flex h-8 items-center gap-1.5 rounded-md px-2.5 text-xs font-medium",
+                overflowActive
+                  ? "bg-accent text-accent-foreground"
+                  : "text-muted-foreground",
+              )}
+            >
+              <DotsThreeOutlineIcon className="size-3.5" weight="bold" />
+              <span>{MOCK_OVERFLOW_LABEL}</span>
+            </span>
+          </nav>
+
+          <span className="ml-auto flex size-6 shrink-0 items-center justify-center rounded-full bg-muted text-[0.6rem] font-medium text-foreground">
+            {MOCK_USER_INITIALS}
           </span>
-          <div className="min-w-0">
-            <p className="truncate text-xs font-medium">{MOCK_CLINIC_NAME}</p>
-            <p className="truncate text-[0.65rem] text-muted-foreground">
-              Operação
-            </p>
-          </div>
         </div>
+      </header>
 
-        <nav className="flex flex-col gap-0.5 p-2">
-          <p className="px-2 py-1.5 text-[0.65rem] font-medium tracking-wide text-muted-foreground uppercase">
-            Operação
-          </p>
-          {MOCK_NAV_ITEMS.map((item, index) => {
-            const Icon = NAV_ICONS[index] ?? HouseIcon
-            const isActive = item.label === activeNav
-            return (
-              <div
-                key={item.label}
-                className={cn(
-                  "flex items-center gap-2 rounded-md px-2 py-1.5 text-xs",
-                  isActive
-                    ? "bg-sidebar-accent font-medium text-sidebar-accent-foreground"
-                    : "text-sidebar-foreground/80",
-                )}>
-                <Icon className="size-3.5 shrink-0" weight="duotone" />
-                <span>{item.label}</span>
-              </div>
-            )
-          })}
-        </nav>
-      </aside>
-
-      <div className="flex min-w-0 flex-1 flex-col bg-background">
-        {toolbar ? (
-          <div className="flex items-center gap-2 border-b border-border/70 px-3 py-2.5 sm:px-4">
-            {toolbar}
-          </div>
-        ) : null}
-        <div className={cn("min-w-0 flex-1", compact ? "p-2.5" : "p-3 sm:p-4")}>
-          {children}
-        </div>
+      <div
+        className={cn(
+          "min-w-0 flex-1 dark:bg-app-wash",
+          compact ? "p-2.5" : "p-3 sm:p-4",
+        )}
+      >
+        {children}
       </div>
     </div>
   )

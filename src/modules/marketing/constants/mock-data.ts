@@ -8,13 +8,22 @@ export const MOCK_PROFESSIONAL_COLORS = [
 ] as const
 
 export const MOCK_NAV_ITEMS = [
-  { label: "Início", active: false },
-  { label: "Pacientes", active: false },
-  { label: "Agenda", active: true },
-  { label: "Faturamento", active: false },
+  { id: "home", label: "Início" },
+  { id: "appointments", label: "Agendamentos" },
+  { id: "patients", label: "Pacientes" },
 ] as const
 
+export const MOCK_OVERFLOW_LABEL = "Mais"
+
 export const MOCK_CLINIC_NAME = "Clínica Horizonte"
+
+export const MOCK_ROLE_LABEL = "Recepção"
+
+export const MOCK_USER_INITIALS = "MC"
+
+export type MockNavLabel =
+  | (typeof MOCK_NAV_ITEMS)[number]["label"]
+  | "Faturamento"
 
 export type MockAgendaEvent = {
   id: string
@@ -111,10 +120,10 @@ export const MOCK_ATTENDANCE = {
     { label: "Alergia: Dipirona", severity: "high" as const },
     { label: "Restrição: Jejum", severity: "medium" as const },
   ],
-  nav: [
-    { label: "Anotações", description: "Evolução desta consulta", active: true },
-    { label: "Vitais", description: "PA, FC, IMC", active: false },
-    { label: "Documentos", description: "Receitas e atestados", active: false },
+  actions: [
+    { label: "Vitais" },
+    { label: "Documentos" },
+    { label: "Retorno" },
   ],
   context: {
     age: "34 anos",
@@ -168,9 +177,26 @@ export const MOCK_BILLING_CHARGES = [
 ] as const
 
 export const MOCK_BILLING_SUMMARY = [
-  { label: "Recebido no mês", value: "R$ 12.450" },
-  { label: "Pendentes", value: "R$ 1.820" },
-  { label: "Consultas cobradas", value: "47" },
+  {
+    label: "Recebido no período",
+    value: "R$ 12.450",
+    hint: "38 pagamentos",
+  },
+  {
+    label: "A receber no período",
+    value: "R$ 1.820",
+    hint: "6 cobranças pendentes",
+  },
+  {
+    label: "Inadimplente no período",
+    value: "R$ 640",
+    hint: "2 cobranças vencidas",
+  },
+  {
+    label: "Ticket médio",
+    value: "R$ 280",
+    hint: "Média por pagamento recebido",
+  },
 ] as const
 
 export const MOCK_PATIENTS = [

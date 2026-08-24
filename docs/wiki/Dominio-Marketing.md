@@ -4,7 +4,7 @@
 
 ## Responsabilidade
 
-Landing pública `/` para captação: nav, hero (CTA teste grátis), faixa de confiança, benefícios, funcionalidades de destaque, showcase com mocks do produto, CTA final e footer.
+Landing pública `/` para captação: nav (pill da seção ativa + barra de progresso de scroll), hero em split (copy + mock com tilt; sinais de confiança no próprio hero), benefícios em timeline com progresso no scroll, funcionalidades em bento, showcase com tour sticky/clicável, CTA editorial e footer.
 
 Hub e páginas legais públicas (rascunhos com placeholders da empresa; revisão jurídica obrigatória):
 
@@ -26,18 +26,18 @@ Soft navigation (ex.: links no sign-up) abre Termos/Privacidade em modal via Par
 - Sem backend de domínio
 - CTAs → sign-up (teste grátis) / login
 - Copy em `constants/landing-copy.ts`
-- Mocks em `components/mocks/` (agenda, pacientes, atendimento, faturamento)
+- Mocks em `components/mocks/` espelham o chrome atual (top nav do AppShell; atendimento no AttendanceShell quieto — sem sidebar)
+- Animações da landing: Motion (`motion/react`) com `prefers-reduced-motion` (Reveal, tilt 3D do mock no hero, timeline de benefícios, hover lift, tour sticky no showcase desktop)
 
 ## Seções (conversão)
 
 | Seção | Objetivo |
 |-------|----------|
-| Hero | Marca + proposta de valor + teste grátis |
-| Trust | Sinais (LGPD, papéis, multi-profissional) |
-| Benefícios | Tempo, organização, segurança, equipe |
-| Funcionalidades | Agenda, pacientes, atendimento, faturamento |
-| Showcase | UI real do produto via mocks |
-| CTA | Conversão final para sign-up |
+| Hero | Split: proposta de valor + CTAs + pills de confiança; mock da agenda à direita (desktop) |
+| Benefícios | Tempo, organização, segurança, equipe (timeline com linha de progresso) |
+| Funcionalidades | Agenda, pacientes, atendimento, faturamento (bento assimétrico) |
+| Showcase | UI atual do produto via mocks (tour sticky + steps clicáveis no desktop) |
+| CTA | Conversão final para sign-up (bloco editorial em duas colunas) |
 | Footer | Copyright + coluna Documentos (hub + lista dos 9 docs) |
 
 Não validar mocks do showcase como dados reais do produto.

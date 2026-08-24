@@ -1,5 +1,7 @@
 import { CaretLeftIcon, CaretRightIcon } from "@phosphor-icons/react/dist/ssr"
 
+import { Button } from "@/components/ui/button"
+import { ButtonGroup } from "@/components/ui/button-group"
 import { cn } from "@/lib/utils"
 import {
   MOCK_AGENDA_EVENTS,
@@ -8,7 +10,7 @@ import {
   mockEventColor,
 } from "@/modules/marketing/constants/mock-data"
 
-const HOUR_HEIGHT_PX = 52
+const HOUR_HEIGHT_PX = 48
 const GRID_START_HOUR = 8
 
 type MockWeekAgendaProps = {
@@ -19,26 +21,54 @@ export function MockWeekAgenda({ className }: MockWeekAgendaProps) {
   const gridHeight = MOCK_HOUR_MARKS.length * HOUR_HEIGHT_PX
 
   return (
-    <div className={cn("flex flex-col gap-2", className)}>
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex items-center gap-1">
-          <span className="flex size-7 items-center justify-center rounded-md border border-border text-muted-foreground">
-            <CaretLeftIcon className="size-3.5" />
-          </span>
-          <span className="flex size-7 items-center justify-center rounded-md border border-border text-muted-foreground">
-            <CaretRightIcon className="size-3.5" />
-          </span>
-          <span className="ml-1 font-heading text-sm font-medium text-foreground">
+    <div className={cn("flex flex-col gap-3", className)}>
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-2">
+          <ButtonGroup>
+            <Button
+              type="button"
+              variant="outline"
+              size="icon-sm"
+              tabIndex={-1}
+              aria-label="Período anterior"
+            >
+              <CaretLeftIcon />
+            </Button>
+            <Button type="button" variant="outline" size="sm" tabIndex={-1}>
+              Hoje
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="icon-sm"
+              tabIndex={-1}
+              aria-label="Próximo período"
+            >
+              <CaretRightIcon />
+            </Button>
+          </ButtonGroup>
+          <span className="font-heading text-sm font-medium capitalize text-foreground">
             21 – 25 jul 2026
           </span>
         </div>
-        <div className="flex overflow-hidden rounded-md border border-border text-[0.7rem]">
-          <span className="bg-muted px-2.5 py-1 text-muted-foreground">Mês</span>
-          <span className="bg-primary px-2.5 py-1 font-medium text-primary-foreground">
+
+        <ButtonGroup>
+          <Button type="button" variant="outline" size="sm" tabIndex={-1}>
+            Mês
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            tabIndex={-1}
+            className="bg-accent text-accent-foreground"
+          >
             Semana
-          </span>
-          <span className="bg-muted px-2.5 py-1 text-muted-foreground">Dia</span>
-        </div>
+          </Button>
+          <Button type="button" variant="outline" size="sm" tabIndex={-1}>
+            Dia
+          </Button>
+        </ButtonGroup>
       </div>
 
       <div className="overflow-hidden rounded-lg border border-border">
@@ -47,7 +77,8 @@ export function MockWeekAgenda({ className }: MockWeekAgendaProps) {
           {MOCK_WEEK_DAYS.map((day) => (
             <div
               key={day.label}
-              className="flex flex-col items-center gap-0.5 border-b border-r border-border bg-background py-1.5 last:border-r-0">
+              className="flex flex-col items-center gap-0.5 border-b border-r border-border bg-background py-1.5 last:border-r-0"
+            >
               <span className="text-[0.6rem] font-medium text-muted-foreground uppercase">
                 {day.label}
               </span>
@@ -57,18 +88,23 @@ export function MockWeekAgenda({ className }: MockWeekAgendaProps) {
                   day.isToday
                     ? "bg-primary text-primary-foreground"
                     : "text-foreground",
-                )}>
+                )}
+              >
                 {day.day}
               </span>
             </div>
           ))}
 
-          <div className="relative border-r border-border" style={{ height: gridHeight }}>
+          <div
+            className="relative border-r border-border"
+            style={{ height: gridHeight }}
+          >
             {MOCK_HOUR_MARKS.map((hour, index) => (
               <span
                 key={hour}
                 className="absolute right-1 -translate-y-1/2 text-[0.6rem] text-muted-foreground"
-                style={{ top: index * HOUR_HEIGHT_PX }}>
+                style={{ top: index * HOUR_HEIGHT_PX }}
+              >
                 {String(hour).padStart(2, "0")}h
               </span>
             ))}
@@ -78,7 +114,8 @@ export function MockWeekAgenda({ className }: MockWeekAgendaProps) {
             <div
               key={`col-${day.label}`}
               className="relative border-r border-border last:border-r-0"
-              style={{ height: gridHeight }}>
+              style={{ height: gridHeight }}
+            >
               {MOCK_HOUR_MARKS.map((_, index) => (
                 <div
                   key={index}
@@ -103,14 +140,15 @@ export function MockWeekAgenda({ className }: MockWeekAgendaProps) {
                   return (
                     <div
                       key={event.id}
-                      className="absolute inset-x-0.5 z-10 flex flex-col overflow-hidden rounded-md border px-1.5 py-1 shadow-sm"
+                      className="absolute inset-x-0.5 z-10 flex flex-col overflow-hidden rounded-md border px-1.5 py-1 text-foreground shadow-sm dark:text-background"
                       style={{
                         top,
                         height,
                         color: `color-mix(in srgb, ${color} 25%, black)`,
                         backgroundColor: `color-mix(in srgb, ${color} 100%, transparent)`,
                         borderColor: `color-mix(in srgb, ${color} 100%, transparent)`,
-                      }}>
+                      }}
+                    >
                       <span className="truncate text-[0.65rem] font-semibold leading-tight">
                         {event.patientName}
                       </span>
