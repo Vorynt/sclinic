@@ -53,6 +53,7 @@ export function AppointmentsPanel() {
   const sessionQuery = useAuthSession();
   const { can } = useAuth();
   const canManageSettings = can(Permission.SETTINGS_MANAGE);
+  const canCreate = can(Permission.APPOINTMENTS_CREATE);
   const settingsQuery = useClinicCalendarSettings();
   const {
     mode,
@@ -176,28 +177,31 @@ export function AppointmentsPanel() {
   }
 
   const pageActions = useMemo<PageAction[]>(
-    () => [
-      {
-        id: "block-slot",
-        label: "Bloquear horário",
-        icon: ProhibitInsetIcon,
-        priority: "secondary",
-        onClick: () => {
-          setBlockDefaultStartsAt(undefined);
-          setBlockDialogOpen(true);
-        },
-      },
-      {
-        id: "new-appointment",
-        label: "Novo agendamento",
-        icon: CalendarPlusIcon,
-        priority: "primary",
-        onClick: () => {
-          router.push(routes.appointmentNew);
-        },
-      },
-    ],
-    [router],
+    () =>
+      canCreate
+        ? [
+            {
+              id: "block-slot",
+              label: "Bloquear horário",
+              icon: ProhibitInsetIcon,
+              priority: "secondary",
+              onClick: () => {
+                setBlockDefaultStartsAt(undefined);
+                setBlockDialogOpen(true);
+              },
+            },
+            {
+              id: "new-appointment",
+              label: "Novo agendamento",
+              icon: CalendarPlusIcon,
+              priority: "primary",
+              onClick: () => {
+                router.push(routes.appointmentNew);
+              },
+            },
+          ]
+        : [],
+    [canCreate, router],
   );
 
   return (
@@ -269,7 +273,7 @@ export function AppointmentsPanel() {
               cardFields={cardFields}
               onSelectAppointment={handleSelectAppointment}
               onSelectScheduleBlock={handleSelectScheduleBlock}
-              onSelectSlot={handleSelectSlot}
+              onSelectSlot={canCreate ? handleSelectSlot : undefined}
             />
           ) : null}
 
@@ -285,7 +289,7 @@ export function AppointmentsPanel() {
               cardFields={cardFields}
               onSelectAppointment={handleSelectAppointment}
               onSelectScheduleBlock={handleSelectScheduleBlock}
-              onSelectSlot={handleSelectSlot}
+              onSelectSlot={canCreate ? handleSelectSlot : undefined}
             />
           ) : null}
         </AppointmentCardExpandProvider>
@@ -308,22 +312,26 @@ export function AppointmentsPanel() {
         }}
       />
 
-      <AppointmentFormDialog
-        open={formDialogOpen}
-        onOpenChange={setFormDialogOpen}
-        defaultStartsAt={formDefaultStartsAt}
-      />
+      {canCreate ? (
+        <>
+          <AppointmentFormDialog
+            open={formDialogOpen}
+            onOpenChange={setFormDialogOpen}
+            defaultStartsAt={formDefaultStartsAt}
+          />
 
-      <ScheduleBlockFormDialog
-        open={blockDialogOpen}
-        onOpenChange={setBlockDialogOpen}
-        defaultStartsAt={blockDefaultStartsAt}
-        defaultProfessionalId={
-          filters.professionalIds.length === 1
-            ? filters.professionalIds[0]
-            : null
-        }
-      />
+          <ScheduleBlockFormDialog
+            open={blockDialogOpen}
+            onOpenChange={setBlockDialogOpen}
+            defaultStartsAt={blockDefaultStartsAt}
+            defaultProfessionalId={
+              filters.professionalIds.length === 1
+                ? filters.professionalIds[0]
+                : null
+            }
+          />
+        </>
+      ) : null}
     </div>
   );
 }

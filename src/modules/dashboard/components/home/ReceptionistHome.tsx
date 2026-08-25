@@ -4,37 +4,45 @@ import { CalendarPlusIcon, UserPlusIcon } from "@phosphor-icons/react"
 import { useMemo, useState } from "react"
 
 import { Button } from "@/components/ui/button"
+import { Permission } from "@/config/permissions"
 import { useRegisterPageActions } from "@/hooks/use-register-page-actions"
 import { AppointmentFormDialog } from "@/modules/appointments/components/AppointmentFormDialog"
 import { WaitlistPanel } from "@/modules/appointments/components/WaitlistPanel"
 import { ReceptionOpsBoard } from "@/modules/dashboard/components/home/ReceptionOpsBoard"
 import { HomeGreeting } from "@/modules/dashboard/components/home/shared/HomeGreeting"
 import { PatientFormDialog } from "@/modules/patients/components/PatientFormDialog"
+import { useAuth } from "@/providers/AuthProvider"
 import type { PageAction } from "@/types/page-action"
 
 export function ReceptionistHome() {
+  const { can } = useAuth()
+  const canWritePatients = can(Permission.PATIENTS_WRITE)
+  const canCreateAppointments = can(Permission.APPOINTMENTS_CREATE)
   const [appointmentDialogOpen, setAppointmentDialogOpen] = useState(false)
   const [patientDialogOpen, setPatientDialogOpen] = useState(false)
 
-  const pageActions = useMemo<PageAction[]>(
-    () => [
-      {
+  const pageActions = useMemo<PageAction[]>(() => {
+    const actions: PageAction[] = []
+    if (canWritePatients) {
+      actions.push({
         id: "new-patient",
         label: "Novo paciente",
         icon: UserPlusIcon,
         onClick: () => setPatientDialogOpen(true),
         priority: "secondary",
-      },
-      {
+      })
+    }
+    if (canCreateAppointments) {
+      actions.push({
         id: "new-appointment",
         label: "Novo agendamento",
         icon: CalendarPlusIcon,
         onClick: () => setAppointmentDialogOpen(true),
         priority: "primary",
-      },
-    ],
-    [],
-  )
+      })
+    }
+    return actions
+  }, [canWritePatients, canCreateAppointments])
 
   useRegisterPageActions(pageActions)
 
@@ -45,36 +53,44 @@ export function ReceptionistHome() {
           <HomeGreeting subtitle="Receba pacientes, acompanhe o dia e registre pagamentos no balcão." />
         </div>
         <div className="hidden shrink-0 flex-wrap items-center gap-2 md:flex">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => setPatientDialogOpen(true)}
-          >
-            <UserPlusIcon data-icon="inline-start" />
-            Novo paciente
-          </Button>
-          <Button
-            type="button"
-            onClick={() => setAppointmentDialogOpen(true)}
-          >
-            <CalendarPlusIcon data-icon="inline-start" />
-            Novo agendamento
-          </Button>
+          {canWritePatients ? (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setPatientDialogOpen(true)}
+            >
+              <UserPlusIcon data-icon="inline-start" />
+              Novo paciente
+            </Button>
+          ) : null}
+          {canCreateAppointments ? (
+            <Button
+              type="button"
+              onClick={() => setAppointmentDialogOpen(true)}
+            >
+              <CalendarPlusIcon data-icon="inline-start" />
+              Novo agendamento
+            </Button>
+          ) : null}
         </div>
       </div>
 
       <ReceptionOpsBoard />
       <WaitlistPanel />
 
-      <AppointmentFormDialog
-        open={appointmentDialogOpen}
-        onOpenChange={setAppointmentDialogOpen}
-      />
-      <PatientFormDialog
-        open={patientDialogOpen}
-        onOpenChange={setPatientDialogOpen}
-        variant="quick"
-      />
+      {canCreateAppointments ? (
+        <AppointmentFormDialog
+          open={appointmentDialogOpen}
+          onOpenChange={setAppointmentDialogOpen}
+        />
+      ) : null}
+      {canWritePatients ? (
+        <PatientFormDialog
+          open={patientDialogOpen}
+          onOpenChange={setPatientDialogOpen}
+          variant="quick"
+        />
+      ) : null}
     </div>
   )
 }

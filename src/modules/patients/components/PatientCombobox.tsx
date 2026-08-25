@@ -18,9 +18,11 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Spinner } from "@/components/ui/spinner";
+import { Permission } from "@/config/permissions";
 import { cn } from "@/lib/utils";
 import { usePatientsQuery } from "@/modules/patients/hooks/use-patients";
 import type { Patient } from "@/modules/patients/types/patient";
+import { useAuth } from "@/providers/AuthProvider";
 import { formatCpf } from "@/utils/cpf";
 
 const MIN_SEARCH_CHARS = 3;
@@ -45,6 +47,9 @@ export function PatientCombobox({
   "aria-invalid": ariaInvalid,
   className,
 }: PatientComboboxProps) {
+  const { can } = useAuth();
+  const canCreatePatient =
+    Boolean(onCreatePatient) && can(Permission.PATIENTS_WRITE);
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -126,7 +131,7 @@ export function PatientCombobox({
             {!canSearch ? (
               <div className="flex flex-col items-center gap-2 px-2 py-6 text-sm text-muted-foreground">
                 <span>Digite ao menos 3 caracteres para buscar.</span>
-                {onCreatePatient ? (
+                {canCreatePatient ? (
                   <Button
                     type="button"
                     variant="outline"
@@ -146,7 +151,7 @@ export function PatientCombobox({
                 <CommandEmpty>
                   <div className="flex flex-col items-center gap-2 px-2">
                     <span>Nenhum paciente encontrado.</span>
-                    {onCreatePatient ? (
+                    {canCreatePatient ? (
                       <Button
                         type="button"
                         variant="outline"
@@ -182,7 +187,7 @@ export function PatientCombobox({
               </>
             )}
           </CommandList>
-          {onCreatePatient && patients.length > 0 ? (
+          {canCreatePatient && patients.length > 0 ? (
             <div className="border-t p-1">
               <Button
                 type="button"

@@ -14,11 +14,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { Permission } from "@/config/permissions"
 import { useDeleteScheduleBlockMutation } from "@/modules/appointments/hooks/use-schedule-blocks"
 import {
   isClinicWideScheduleBlock,
   type ScheduleBlock,
 } from "@/modules/appointments/types/schedule-block"
+import { useAuth } from "@/providers/AuthProvider"
 import { isAppError } from "@/shared/errors"
 
 type ScheduleBlockDetailDialogProps = {
@@ -32,6 +34,11 @@ export function ScheduleBlockDetailDialog({
   open,
   onOpenChange,
 }: ScheduleBlockDetailDialogProps) {
+  const { canAny } = useAuth()
+  const canRemove = canAny(
+    Permission.APPOINTMENTS_CREATE,
+    Permission.APPOINTMENTS_DELETE,
+  )
   const deleteMutation = useDeleteScheduleBlockMutation({
     onSuccess: () => {
       toast.success("Bloqueio removido.")
@@ -79,16 +86,18 @@ export function ScheduleBlockDetailDialog({
           <AlertDialogCancel disabled={deleteMutation.isPending}>
             Fechar
           </AlertDialogCancel>
-          <AlertDialogAction
-            variant="destructive"
-            disabled={deleteMutation.isPending}
-            onClick={(event) => {
-              event.preventDefault()
-              deleteMutation.mutate({ id: block.id })
-            }}
-          >
-            {deleteMutation.isPending ? "Removendo…" : "Remover bloqueio"}
-          </AlertDialogAction>
+          {canRemove ? (
+            <AlertDialogAction
+              variant="destructive"
+              disabled={deleteMutation.isPending}
+              onClick={(event) => {
+                event.preventDefault()
+                deleteMutation.mutate({ id: block.id })
+              }}
+            >
+              {deleteMutation.isPending ? "Removendo…" : "Remover bloqueio"}
+            </AlertDialogAction>
+          ) : null}
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

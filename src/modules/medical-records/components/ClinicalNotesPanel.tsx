@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/empty";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Spinner } from "@/components/ui/spinner";
+import { Permission } from "@/config/permissions";
 import { cn } from "@/lib/utils";
 import {
   ClinicalNoteEditor,
@@ -25,6 +26,7 @@ import { useClinicalNoteAutosave } from "@/modules/medical-records/hooks/use-cli
 import { useClinicalNoteForAppointmentQuery } from "@/modules/medical-records/hooks/use-clinical-notes";
 import type { ClinicalNoteForAppointment } from "@/modules/medical-records/types/clinical-note";
 import { getClinicalNoteSaveStatusLabel } from "@/modules/medical-records/utils/clinical-note-autosave";
+import { useAuth } from "@/providers/AuthProvider";
 
 type ClinicalNotesPanelProps = {
   appointmentId: string;
@@ -76,6 +78,8 @@ function ClinicalNotesPanelContent({
   appointmentId,
   data,
 }: ClinicalNotesPanelContentProps) {
+  const { can } = useAuth();
+  const editable = data.editable && can(Permission.RECORDS_WRITE);
   const note = data.note;
   const [content, setContent] = useState<JSONContent>(
     () => (note?.content as JSONContent | undefined) ?? EMPTY_DOC,
@@ -87,7 +91,7 @@ function ClinicalNotesPanelContent({
     appointmentId,
     content,
     plainText,
-    enabled: data.editable,
+    enabled: editable,
     initialContent: editorInitialContent,
     initialPlainText: note?.plainText ?? "",
     initialSavedAt: note?.updatedAt ?? null,
@@ -97,7 +101,6 @@ function ClinicalNotesPanelContent({
     onError: (error) => toast.error(error.message),
   });
 
-  const editable = data.editable;
   const hasNote = Boolean(note?.plainText.trim());
   const showEmptyReadonly = !editable && !hasNote;
   const saveStatusLabel = getClinicalNoteSaveStatusLabel(
@@ -115,7 +118,7 @@ function ClinicalNotesPanelContent({
           <p className="text-sm text-muted-foreground">
             {editable
               ? "Escreva livremente ou insira um modelo clínico na barra de ferramentas. A anotação é salva automaticamente."
-              : "Somente leitura — o atendimento não está em andamento."}
+              : "Somente leitura — você não pode editar esta anotação."}
           </p>
         </div>
       </div>

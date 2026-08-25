@@ -413,11 +413,7 @@ export const appointmentService = {
     data: CancelAppointmentDto,
     ctx: AuthRequestContext,
   ): Promise<Appointment> {
-    const auth = await requireAnyPermission(
-      ctx,
-      Permission.APPOINTMENTS_UPDATE,
-      Permission.APPOINTMENTS_DELETE,
-    )
+    const auth = await requirePermission(ctx, Permission.APPOINTMENTS_DELETE)
     const actor = auditActorFromAuth(auth)
 
     const existing = await appointmentRepository.findById(

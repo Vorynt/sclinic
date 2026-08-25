@@ -5,10 +5,12 @@ import { useMemo, useState } from "react"
 
 import { DataTableSearch } from "@/components/data-table/DataTableSearch"
 import { PageHeader } from "@/components/layout/PageHeader"
+import { Permission } from "@/config/permissions"
 import { useListQueryParams } from "@/hooks/use-list-query-params"
 import { PatientFormDialog } from "@/modules/patients/components/PatientFormDialog"
 import { PatientsTable } from "@/modules/patients/components/PatientsTable"
 import type { Patient } from "@/modules/patients/types/patient"
+import { useAuth } from "@/providers/AuthProvider"
 import type { PageAction } from "@/types/page-action"
 
 type PatientsPanelProps = {
@@ -16,6 +18,8 @@ type PatientsPanelProps = {
 }
 
 export function PatientsPanel({ onSchedulePatient }: PatientsPanelProps) {
+  const { can } = useAuth()
+  const canWrite = can(Permission.PATIENTS_WRITE)
   const { q, page, pageSize, setQ, setPage } = useListQueryParams()
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingPatient, setEditingPatient] = useState<Patient | null>(null)
@@ -26,18 +30,21 @@ export function PatientsPanel({ onSchedulePatient }: PatientsPanelProps) {
   }
 
   const pageActions = useMemo<PageAction[]>(
-    () => [
-      {
-        id: "new-patient",
-        label: "Novo paciente",
-        icon: PlusIcon,
-        onClick: () => {
-          setEditingPatient(null)
-          setDialogOpen(true)
-        },
-      },
-    ],
-    [],
+    () =>
+      canWrite
+        ? [
+            {
+              id: "new-patient",
+              label: "Novo paciente",
+              icon: PlusIcon,
+              onClick: () => {
+                setEditingPatient(null)
+                setDialogOpen(true)
+              },
+            },
+          ]
+        : [],
+    [canWrite],
   )
 
   return (
@@ -57,18 +64,20 @@ export function PatientsPanel({ onSchedulePatient }: PatientsPanelProps) {
       <PatientsTable
         filters={{ q, page, pageSize }}
         onPageChange={setPage}
-        onEdit={handleEditPatient}
+        onEdit={canWrite ? handleEditPatient : undefined}
         onSchedule={onSchedulePatient}
       />
 
-      <PatientFormDialog
-        patient={editingPatient}
-        open={dialogOpen}
-        onOpenChange={(open) => {
-          setDialogOpen(open)
-          if (!open) setEditingPatient(null)
-        }}
-      />
+      {canWrite ? (
+        <PatientFormDialog
+          patient={editingPatient}
+          open={dialogOpen}
+          onOpenChange={(open) => {
+            setDialogOpen(open)
+            if (!open) setEditingPatient(null)
+          }}
+        />
+      ) : null}
     </div>
   )
 }

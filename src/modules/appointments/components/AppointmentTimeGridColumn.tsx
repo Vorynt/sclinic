@@ -29,7 +29,7 @@ type AppointmentTimeGridColumnProps = {
   slotStepMinutes?: number;
   onSelectAppointment: (appointment: Appointment) => void;
   onSelectScheduleBlock?: (block: ScheduleBlock) => void;
-  onSelectSlot: (date: Date) => void;
+  onSelectSlot?: (date: Date) => void;
   className?: string;
 };
 
@@ -66,6 +66,7 @@ export function AppointmentTimeGridColumn({
   );
 
   function handleBackgroundClick(event: React.MouseEvent<HTMLDivElement>) {
+    if (!onSelectSlot) return
     const rect = event.currentTarget.getBoundingClientRect();
     const offsetY = event.clientY - rect.top;
     const rawMinutes = offsetY / pxPerMinute;
@@ -82,9 +83,9 @@ export function AppointmentTimeGridColumn({
 
   return (
     <div
-      className={cn("relative", className)}
+      className={cn("relative", onSelectSlot && "cursor-pointer", className)}
       style={{ height: totalHours * hourHeightPx }}
-      onClick={handleBackgroundClick}>
+      onClick={onSelectSlot ? handleBackgroundClick : undefined}>
       {Array.from({ length: totalHours }, (_, index) => (
         <div
           key={index}

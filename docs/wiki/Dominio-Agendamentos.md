@@ -74,7 +74,8 @@ Exige `records.read`. No drawer, **Abrir atendimento** / **Ver atendimento** só
 
 ### Editabilidade
 
-- Remarcável: `scheduled|confirmed|checked_in`
+- Remarcável: `scheduled|confirmed|checked_in` (exige `appointments.update`)
+- Cancelar: action dedicada, exige `appointments.delete` (UI e service)
 - Terminal: `completed|canceled|no_show`
 - Attendance aberto também em `completed` (leitura, com `records.read`)
 

@@ -52,12 +52,19 @@ describe("getVisibleShellNav", () => {
         Permission.PROFESSIONALS_MANAGE,
       ]),
     )
-    expect(nav.primary.map((item) => item.href)).toEqual([routes.home, routes.appointments, routes.patients])
+    expect(nav.primary.map((item) => item.href)).toEqual([
+      routes.home,
+      routes.appointments,
+      routes.patients,
+    ])
+    expect(hasOverflowNav(nav)).toBe(true)
   })
 
   it("puts management modules in overflow groups", () => {
     const nav = getVisibleShellNav(
       makeCanAny([
+        Permission.APPOINTMENTS_CREATE,
+        Permission.PATIENTS_READ,
         Permission.PROFESSIONALS_MANAGE,
         Permission.MEMBERS_INVITE,
         Permission.FINANCIAL_VIEW,
@@ -74,16 +81,60 @@ describe("getVisibleShellNav", () => {
     ])
   })
 
-  it("hides overflow items without permission", () => {
-    const nav = getVisibleShellNav(makeCanAny([Permission.PATIENTS_READ]))
-    expect(nav.primary.some((i) => i.href === routes.patients)).toBe(true)
-    expect(nav.groups.length).toBe(0)
-    expect(hasOverflowNav(nav)).toBe(true) // Ajuda has no permission gate
+  it("fills the 3rd primary slot from overflow when agenda is hidden", () => {
+    const nav = getVisibleShellNav(
+      makeCanAny([Permission.PATIENTS_READ, Permission.FINANCIAL_VIEW]),
+    )
+    expect(nav.primary.map((item) => item.href)).toEqual([
+      routes.home,
+      routes.patients,
+      routes.services,
+    ])
+    expect(nav.groups.flatMap((g) => g.items.map((item) => item.href))).toEqual([
+      routes.billing,
+    ])
+    expect(nav.secondary.map((item) => item.href)).toEqual([routes.help])
+    expect(hasOverflowNav(nav)).toBe(true)
   })
 
-  it("marks Ajuda as always visible in secondary", () => {
+  it("promotes a single leftover overflow item into primary", () => {
+    const nav = getVisibleShellNav(
+      makeCanAny([
+        Permission.APPOINTMENTS_CREATE,
+        Permission.PATIENTS_READ,
+      ]),
+    )
+    expect(nav.primary.map((item) => item.href)).toEqual([
+      routes.home,
+      routes.appointments,
+      routes.patients,
+      routes.help,
+    ])
+    expect(nav.groups).toEqual([])
+    expect(nav.secondary).toEqual([])
+    expect(hasOverflowNav(nav)).toBe(false)
+  })
+
+  it("promotes Ajuda into the 3rd slot when only patients is visible", () => {
+    const nav = getVisibleShellNav(makeCanAny([Permission.PATIENTS_READ]))
+    expect(nav.primary.map((item) => item.href)).toEqual([
+      routes.home,
+      routes.patients,
+      routes.help,
+    ])
+    expect(nav.groups).toEqual([])
+    expect(nav.secondary).toEqual([])
+    expect(hasOverflowNav(nav)).toBe(false)
+  })
+
+  it("keeps Início and Ajuda when nothing else is permitted", () => {
     const nav = getVisibleShellNav(() => false)
-    expect(nav.secondary.some((item) => item.href === routes.help)).toBe(true)
+    expect(nav.primary.map((item) => item.href)).toEqual([
+      routes.home,
+      routes.help,
+    ])
+    expect(nav.secondary).toEqual([])
+    expect(hasOverflowNav(nav)).toBe(false)
   })
 })
 

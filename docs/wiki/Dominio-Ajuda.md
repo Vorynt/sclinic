@@ -19,7 +19,7 @@ Sem LLM — o conteúdo vive em `constants/faq/<papel>.ts` e deve ser atualizado
 | Atalhos para telas reais | Done | `relatedRoutes` |
 | Deep link `?q=&category=&article=` | Done | `HelpCenter` |
 | Filtro esconde assuntos sem artigos no papel | Done | `HelpCategoryFilter` |
-| Item Ajuda no overflow da nav (sem permissão extra) | Done | `nav.ts` `enabled: true` |
+| Item Ajuda na nav (sem permissão extra) | Done | `nav.ts` `enabled: true`; overflow só se “Mais” tiver 2+ destinos; senão sobe para a primária |
 | Atalho Ajuda nas homes por papel | Done | `*Home.tsx` (recepção: CTAs de paciente/agenda no header/FAB; Ajuda só no overflow) |
 | Tour guiado no 1º acesso ao dashboard | Done | `ProductTourHost` + `driver.js`; passos filtrados pela nav visível |
 | Replay do tour | Done | Ação do `PageHeader` (“Ver tour do sistema”); no mobile, FAB do AppShell |
@@ -32,7 +32,7 @@ Sem LLM — o conteúdo vive em `constants/faq/<papel>.ts` e deve ser atualizado
 - Papel desconhecido → fallback no FAQ do `owner`.
 - Não importa internals de outros módulos; rotas via `@/config/routes`. Persistência do tour via `authService.completeProductTour` (campo em `user`).
 - Tour só no `AppShell` (não no onboarding SaaS nem no attendance). Modal **Ver tutorial** / **Agora não**. Pular, fechar no meio ou concluir marca `productTourCompleted` — não insiste. Usuários já existentes na migration nascem com o flag ligado.
-- Passos destacam a chrome (Início, Agenda, Pacientes, Mais, clínica, menu da conta), sem navegar entre páginas. Overflow descreve os destinos visíveis daquele papel.
+- Passos destacam a chrome (até 3 destinos primários permitidos, Mais se houver overflow, clínica, menu da conta), sem navegar entre páginas. Overflow descreve os destinos visíveis daquele papel.
 - Enquanto o prompt/tour estiver aberto, o nudge de 2FA não aparece.
 
 ## Arquivos-chave

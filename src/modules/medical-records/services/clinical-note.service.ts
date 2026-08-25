@@ -1,4 +1,5 @@
 import { Permission } from "@/config/permissions"
+import { hasAllPermissions } from "@/core/permissions"
 import { appointmentService } from "@/modules/appointments/services/appointment.service"
 import {
   AUDIT_ACTIONS,
@@ -55,7 +56,7 @@ export const clinicalNoteService = {
     appointmentId: string,
     ctx: AuthRequestContext,
   ): Promise<ClinicalNoteForAppointment> {
-    await requirePermission(ctx, Permission.RECORDS_READ)
+    const auth = await requirePermission(ctx, Permission.RECORDS_READ)
     const appointment = await appointmentService.getById(appointmentId, ctx)
     const note = await clinicalNoteRepository.findByAppointmentId(
       appointmentId,
@@ -66,7 +67,9 @@ export const clinicalNoteService = {
       note,
       appointmentId: appointment.id,
       patientId: appointment.patientId,
-      editable: canEditClinicalNote(appointment.status),
+      editable:
+        canEditClinicalNote(appointment.status) &&
+        hasAllPermissions(auth.permissions, [Permission.RECORDS_WRITE]),
     }
   },
 

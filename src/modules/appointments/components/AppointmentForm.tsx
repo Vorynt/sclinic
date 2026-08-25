@@ -261,6 +261,8 @@ export function AppointmentForm({
     Permission.FINANCIAL_MANAGE,
   );
   const canManageFinancial = can(Permission.FINANCIAL_MANAGE);
+  const canWritePatients = can(Permission.PATIENTS_WRITE);
+  const canManageProfessionals = can(Permission.PROFESSIONALS_MANAGE);
   const isProfessionalLocked = isSelfScheduleOnlyRole(
     sessionQuery.data?.membership?.roleKey,
   );
@@ -578,7 +580,7 @@ export function AppointmentForm({
                           }}
                           displayLabel={selectedPatientLabel}
                           onCreatePatient={
-                            isPatientLocked
+                            isPatientLocked || !canWritePatients
                               ? undefined
                               : () => setPatientDialogOpen(true)
                           }
@@ -621,7 +623,7 @@ export function AppointmentForm({
                       <p className="text-sm text-muted-foreground">
                         {isProfessionalLocked ? (
                           "Seu perfil profissional não está vinculado a esta clínica."
-                        ) : (
+                        ) : canManageProfessionals ? (
                           <>
                             <Link
                               href={routes.professionals}
@@ -630,6 +632,8 @@ export function AppointmentForm({
                             </Link>{" "}
                             para a clínica.
                           </>
+                        ) : (
+                          "Não há profissionais disponíveis para agendar."
                         )}
                       </p>
                     ) : null}
@@ -854,7 +858,7 @@ export function AppointmentForm({
         </form>
       </FormProvider>
 
-      {isPatientLocked ? null : (
+      {isPatientLocked || !canWritePatients ? null : (
         <PatientFormDialog
           open={patientDialogOpen}
           onOpenChange={setPatientDialogOpen}

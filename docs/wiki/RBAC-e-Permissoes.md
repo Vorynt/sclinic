@@ -30,6 +30,16 @@ Fontes: `src/config/permissions.ts`, `src/db/seed/rbac.ts` (`npm run db:seed:rba
 | `records.write` | ✓ | ✓ | — | — | ✓ | ✓ | — |
 | `audit.read` | ✓ | ✓ | — | — | — | — | — |
 
+## UI esconde / service rejeita
+
+A UI (`useAuth().can` / `canAny`) **esconde** botões, menus e atalhos sem a permissão da ação. O **service** continua sendo a autoridade (`requirePermission` / `requireAnyPermission` → `FORBIDDEN`). Esconder na tela não substitui o guard.
+
+Padrão de UI: o componente que renderiza a ação chama `can()` (espelhar catálogo de serviços). `PermissionProvider` cobre a rota; não basta para ações de escrita numa página de leitura (ex.: `/patients` com `patients.read` e sem `patients.write`).
+
+**Cancelar agendamento** exige `appointments.delete` (não basta `update`). Clinician/nurse confirmam, marcam falta e remarcam; não cancelam.
+
+O flag `editable` de notas, vitais e documentos no atendimento é `status checked_in` **e** `records.write`. Gestor (`records.read` só) vê o prontuário em somente leitura.
+
 ## Regras além da matriz
 
 | Tema | Regra |

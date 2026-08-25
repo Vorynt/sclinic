@@ -16,6 +16,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
+import { Permission } from "@/config/permissions"
 import { AttendanceTabButton } from "@/modules/appointments/components/AttendanceTabButton"
 import {
   canCompleteAttendance,
@@ -27,6 +28,7 @@ import { useOwnProfessionalIdQuery } from "@/modules/appointments/hooks/use-appo
 import { useUpdateAppointmentStatusMutation } from "@/modules/appointments/hooks/use-appointment-mutations"
 import type { Appointment } from "@/modules/appointments/types/appointment"
 import { useAuthSession } from "@/modules/authentication/hooks/use-auth"
+import { useAuth } from "@/providers/AuthProvider"
 
 type AttendanceCompleteActionProps = {
   appointment: Appointment
@@ -39,6 +41,8 @@ export function AttendanceCompleteAction({
   className,
   presentation = "button",
 }: AttendanceCompleteActionProps) {
+  const { can } = useAuth()
+  const canUpdate = can(Permission.APPOINTMENTS_UPDATE)
   const router = useRouter()
   const agendaHref = useAgendaReturnHref()
   const sessionQuery = useAuthSession()
@@ -61,15 +65,19 @@ export function AttendanceCompleteAction({
   const canCompleteStatus = canCompleteAttendance(appointment.status)
   const canComplete =
     canCompleteStatus &&
+    canUpdate &&
     canPerformThisAttendance({
       roleKey: sessionQuery.data?.membership?.roleKey,
       appointmentProfessionalId: appointment.professionalId,
       ownProfessionalId: ownProfessionalIdQuery.data ?? null,
     })
   const completeLocked =
-    canCompleteStatus && !isCompletePermissionPending && !canComplete
+    canCompleteStatus &&
+    canUpdate &&
+    !isCompletePermissionPending &&
+    !canComplete
 
-  if (!canCompleteStatus) return null
+  if (!canCompleteStatus || !canUpdate) return null
 
   const triggerDisabled =
     completeAttendance.isPending ||

@@ -26,6 +26,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Spinner } from "@/components/ui/spinner";
+import { Permission } from "@/config/permissions";
 import { cn } from "@/lib/utils";
 import { VitalSignsHistoryPanel } from "@/modules/medical-records/components/VitalSignsHistoryPanel";
 import {
@@ -40,6 +41,7 @@ import type {
 } from "@/modules/medical-records/types/vital-signs";
 import { calculateBmi } from "@/modules/medical-records/utils/bmi";
 import { formatVitalSignsSummary } from "@/modules/medical-records/utils/format-vital-signs";
+import { useAuth } from "@/providers/AuthProvider";
 
 /** Hides native number input spinners (Chrome/Safari/Firefox). */
 const numericInputClassName =
@@ -140,7 +142,8 @@ function VitalSignsPanelContent({
   onHistoryRetry,
   historyRetrying,
 }: VitalSignsPanelContentProps) {
-  const editable = data.editable;
+  const { can } = useAuth();
+  const editable = data.editable && can(Permission.RECORDS_WRITE);
   const hasVitals = data.vitals != null;
   const showEmptyReadonly = !editable && !hasVitals;
 
@@ -186,7 +189,7 @@ function VitalSignsPanelContent({
     <div className="flex flex-col gap-6">
       {!editable ? (
         <p className="text-sm text-muted-foreground">
-          Somente leitura — o atendimento não está em andamento.
+          Somente leitura — você não pode editar os sinais vitais.
         </p>
       ) : null}
 

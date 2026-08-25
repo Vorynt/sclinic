@@ -57,23 +57,27 @@ import { formatPhone } from "@/utils/phone";
 type PatientsTableProps = {
   filters: ListQueryParams;
   onPageChange: (page: number) => void;
-  onEdit: (patient: Patient) => void;
+  onEdit?: (patient: Patient) => void;
   onSchedule?: (patient: Patient) => void;
 };
 
 function PatientRowActions({
   patient,
   canSchedule,
+  canWrite,
   onSchedule,
   onEdit,
   onDelete,
 }: {
   patient: Patient;
   canSchedule: boolean;
+  canWrite: boolean;
   onSchedule?: (patient: Patient) => void;
-  onEdit: (patient: Patient) => void;
+  onEdit?: (patient: Patient) => void;
   onDelete: (patient: Patient) => void;
 }) {
+  if (!canSchedule && !canWrite) return null;
+
   return (
     <ButtonGroup>
       {canSchedule ? (
@@ -87,24 +91,28 @@ function PatientRowActions({
           <span className="sr-only">Agendar</span>
         </Button>
       ) : null}
-      <Button
-        type="button"
-        variant="secondary"
-        size="icon"
-        tooltip="Editar"
-        onClick={() => onEdit(patient)}>
-        <PencilSimpleIcon />
-        <span className="sr-only">Editar</span>
-      </Button>
-      <Button
-        type="button"
-        variant="destructive"
-        size="icon"
-        tooltip="Remover"
-        onClick={() => onDelete(patient)}>
-        <TrashIcon />
-        <span className="sr-only">Remover</span>
-      </Button>
+      {canWrite ? (
+        <>
+          <Button
+            type="button"
+            variant="secondary"
+            size="icon"
+            tooltip="Editar"
+            onClick={() => onEdit?.(patient)}>
+            <PencilSimpleIcon />
+            <span className="sr-only">Editar</span>
+          </Button>
+          <Button
+            type="button"
+            variant="destructive"
+            size="icon"
+            tooltip="Remover"
+            onClick={() => onDelete(patient)}>
+            <TrashIcon />
+            <span className="sr-only">Remover</span>
+          </Button>
+        </>
+      ) : null}
     </ButtonGroup>
   );
 }
@@ -120,6 +128,7 @@ export function PatientsTable({
 
   const canSchedule =
     Boolean(onSchedule) && can(Permission.APPOINTMENTS_CREATE);
+  const canWrite = Boolean(onEdit) && can(Permission.PATIENTS_WRITE);
 
   const patientsQuery = usePatientsQuery(filters);
 
@@ -208,6 +217,7 @@ export function PatientsTable({
                     <PatientRowActions
                       patient={patient}
                       canSchedule={canSchedule}
+                      canWrite={canWrite}
                       onSchedule={onSchedule}
                       onEdit={onEdit}
                       onDelete={setPatientToDelete}
@@ -251,6 +261,7 @@ export function PatientsTable({
                     <PatientRowActions
                       patient={patient}
                       canSchedule={canSchedule}
+                      canWrite={canWrite}
                       onSchedule={onSchedule}
                       onEdit={onEdit}
                       onDelete={setPatientToDelete}

@@ -28,7 +28,7 @@ type AppointmentDayViewProps = {
   cardFields?: CalendarCardPreset;
   onSelectAppointment: (appointment: Appointment) => void;
   onSelectScheduleBlock?: (block: ScheduleBlock) => void;
-  onSelectSlot: (date: Date) => void;
+  onSelectSlot?: (date: Date) => void;
 };
 
 export function AppointmentDayView({

@@ -7,6 +7,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet"
+import { Permission } from "@/config/permissions"
 import { AppointmentFormDialog } from "@/modules/appointments/components/AppointmentFormDialog"
 import { PatientAppointmentHistory } from "@/modules/appointments/components/PatientAppointmentHistory"
 import { useAttendancePanel } from "@/modules/appointments/hooks/use-attendance-panel"
@@ -17,6 +18,7 @@ import { PrescriptionsPanel } from "@/modules/medical-records/components/Prescri
 import { VitalSignsPanel } from "@/modules/medical-records/components/VitalSignsPanel"
 import { usePatientClinicalNotesQuery } from "@/modules/medical-records/hooks/use-clinical-notes"
 import { PatientQuickCard } from "@/modules/patients/components/PatientQuickCard"
+import { useAuth } from "@/providers/AuthProvider"
 
 const FOLLOW_UP_TYPES = ["follow_up", "procedure"] as const
 
@@ -28,6 +30,8 @@ export function AttendancePanelSheets({
   appointment,
 }: AttendancePanelSheetsProps) {
   const { panel, setPanel } = useAttendancePanel()
+  const { can } = useAuth()
+  const canCreate = can(Permission.APPOINTMENTS_CREATE)
   const notesQuery = usePatientClinicalNotesQuery(
     {
       patientId: appointment.patientId,
@@ -126,21 +130,23 @@ export function AttendancePanelSheets({
         </SheetContent>
       </Sheet>
 
-      <AppointmentFormDialog
-        open={panel === "next"}
-        onOpenChange={(open) => {
-          if (!open) setPanel(null)
-        }}
-        lockedPatient={{
-          id: appointment.patientId,
-          name: appointment.patientName,
-        }}
-        defaultType="follow_up"
-        allowedTypes={FOLLOW_UP_TYPES}
-        defaultProfessionalId={appointment.professionalId}
-        title="Agendar retorno ou procedimento"
-        description={`Paciente: ${appointment.patientName}. Escolha retorno ou procedimento, data e horário.`}
-      />
+      {canCreate ? (
+        <AppointmentFormDialog
+          open={panel === "next"}
+          onOpenChange={(open) => {
+            if (!open) setPanel(null)
+          }}
+          lockedPatient={{
+            id: appointment.patientId,
+            name: appointment.patientName,
+          }}
+          defaultType="follow_up"
+          allowedTypes={FOLLOW_UP_TYPES}
+          defaultProfessionalId={appointment.professionalId}
+          title="Agendar retorno ou procedimento"
+          description={`Paciente: ${appointment.patientName}. Escolha retorno ou procedimento, data e horário.`}
+        />
+      ) : null}
     </>
   )
 }

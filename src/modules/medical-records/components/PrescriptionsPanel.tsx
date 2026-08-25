@@ -16,6 +16,7 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Permission } from "@/config/permissions"
 import { routes } from "@/config/routes"
 import { AttendanceDeclarationFormDialog } from "@/modules/medical-records/components/AttendanceDeclarationFormDialog"
 import { ExamRequestFormDialog } from "@/modules/medical-records/components/ExamRequestFormDialog"
@@ -46,6 +47,7 @@ import type {
   Prescription,
   PrescriptionsForAppointment,
 } from "@/modules/medical-records/types/prescription"
+import { useAuth } from "@/providers/AuthProvider"
 
 type PrescriptionsPanelProps = {
   appointmentId: string
@@ -101,6 +103,7 @@ function PrescriptionsPanelContent({
   appointmentId,
   data,
 }: PrescriptionsPanelContentProps) {
+  const { can } = useAuth()
   const [pickerOpen, setPickerOpen] = useState(false)
   const [dialogMode, setDialogMode] = useState<DialogMode>(null)
   const [editing, setEditing] = useState<Prescription | null>(null)
@@ -226,7 +229,7 @@ function PrescriptionsPanelContent({
     onError: (error) => toast.error(error.message),
   })
 
-  const editable = data.editable
+  const editable = data.editable && can(Permission.RECORDS_WRITE)
 
   function closeDialogs() {
     setDialogMode(null)
@@ -359,7 +362,7 @@ function PrescriptionsPanelContent({
       {!editable ? (
         <p className="flex items-center gap-2 text-sm text-muted-foreground">
           <LockIcon className="size-4 shrink-0" />
-          Edição disponível apenas com o atendimento em andamento.
+          Edição indisponível neste atendimento.
         </p>
       ) : null}
 

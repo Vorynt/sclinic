@@ -42,6 +42,7 @@ import {
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
+import { Permission } from "@/config/permissions";
 import {
   CLINICAL_ALERT_KIND_LABELS,
   CLINICAL_ALERT_KINDS,
@@ -58,10 +59,11 @@ import type {
   ClinicalAlert,
   ClinicalAlertSeverity,
 } from "@/modules/medical-records/types/clinical-alert";
+import { useAuth } from "@/providers/AuthProvider";
 
 type PatientClinicalAlertsPanelProps = {
   patientId: string;
-  /** When false, hide create/delete (read-only chart context). Default true. */
+  /** Extra lock. `false` forces read-only even with `records.write`. */
   canWrite?: boolean;
 };
 
@@ -78,8 +80,10 @@ function severityVariant(
 
 export function PatientClinicalAlertsPanel({
   patientId,
-  canWrite = true,
+  canWrite,
 }: PatientClinicalAlertsPanelProps) {
+  const { can } = useAuth();
+  const allowWrite = canWrite !== false && can(Permission.RECORDS_WRITE);
   const [createOpen, setCreateOpen] = useState(false);
   const alertsQuery = useClinicalAlertsQuery(patientId);
 
@@ -95,7 +99,7 @@ export function PatientClinicalAlertsPanel({
           </p>
         </div>
 
-        {canWrite ? (
+        {allowWrite ? (
           <Button
             type="button"
             variant="outline"
@@ -131,7 +135,7 @@ export function PatientClinicalAlertsPanel({
             </EmptyMedia>
             <EmptyTitle>Nenhum alerta clínico</EmptyTitle>
             <EmptyDescription>
-              {canWrite
+              {allowWrite
                 ? "Cadastre alergias, restrições e avisos permanentes do paciente."
                 : "Não há alergias, restrições ou avisos cadastrados."}
             </EmptyDescription>
@@ -148,13 +152,13 @@ export function PatientClinicalAlertsPanel({
             <ClinicalAlertListItem
               key={alert.id}
               alert={alert}
-              canWrite={canWrite}
+              canWrite={allowWrite}
             />
           ))}
         </ul>
       ) : null}
 
-      {canWrite ? (
+      {allowWrite ? (
         <ClinicalAlertCreateDialog
           patientId={patientId}
           open={createOpen}

@@ -20,11 +20,10 @@
 
 | Camada | Destinos | Onde aparece |
 |--------|----------|--------------|
-| Primária | Início, Agendamentos, Pacientes | Top nav (md+) e bottom tabs (mobile) |
-| Overflow (“Mais”) | Profissionais, Equipe, Serviços, Faturamento | Dropdown no desktop; sheet no mobile |
-| Utilitária | Configurações, Ajuda | Dentro do overflow |
+| Primária | Até 3 destinos permitidos, na ordem do config (Início → Agendamentos → Pacientes → Profissionais → Equipe → Serviços → Faturamento → Configurações → Ajuda). Se o overflow teria só 1 item, ele também entra aqui (4º) | Top nav (md+) e bottom tabs (mobile) |
+| Overflow (“Mais”) | O restante após os 3 slots, **somente se houver 2+ destinos** | Dropdown no desktop; sheet no mobile |
 
-Itens sem permissão continuam filtrados por `getVisibleShellNav` / `canAny`. Header do shell sem título de página (já vem do `PageHeader` / `SettingsPageHeader`). Tema fica no menu da conta. Shell em `h-dvh` com main scrollável; bottom tabs **no fluxo** (não `fixed`) para não cobrir conteúdo no mobile.
+`getVisibleShellNav` filtra por permissão/`enabled` e **preenche** os 3 slots primários com os próximos destinos visíveis (ex.: financeiro sem agenda vê Início, Pacientes, Serviços + Mais com Faturamento e Ajuda). Item promovido não duplica no overflow. Um único restante (ex.: recepção: só Ajuda) aparece na primária — “Mais” some. Header do shell sem título de página (já vem do `PageHeader` / `SettingsPageHeader`). Tema fica no menu da conta. Shell em `h-dvh` com main scrollável; bottom tabs **no fluxo** (não `fixed`) para não cobrir conteúdo no mobile.
 
 ### Ações de página (mobile FAB)
 
@@ -83,7 +82,7 @@ Catálogo de serviços (ADR-009) vive em `/services` (`financial.view` para ler;
 
 ## Ajuda
 
-Central de FAQ em `/help` (módulo `help`) — conteúdo **por papel**; ver [Dominio-Ajuda](Dominio-Ajuda). Item Ajuda no overflow da nav + atalho Ajuda nas homes de todos os papéis. Tour guiado no primeiro acesso ao `AppShell` (âncoras `data-tour` na chrome; passos filtrados pela nav visível).
+Central de FAQ em `/help` (módulo `help`) — conteúdo **por papel**; ver [Dominio-Ajuda](Dominio-Ajuda). Ajuda entra no overflow só quando há 2+ destinos restantes; senão aparece na primária. Atalho Ajuda nas homes de todos os papéis. Tour guiado no primeiro acesso ao `AppShell` (âncoras `data-tour` na chrome; passos filtrados pela nav visível).
 
 ## Decisões relacionadas
 

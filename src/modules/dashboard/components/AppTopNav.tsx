@@ -25,8 +25,7 @@ export function AppTopNav({ nav, className }: AppTopNavProps) {
         "hidden min-w-0 flex-1 items-center gap-0.5 md:flex",
         className,
       )}
-      aria-label="Navegação principal"
-    >
+      aria-label="Navegação principal">
       {nav.primary.map((item) => {
         const Icon = item.icon;
         const active = isNavActive(pathname, item.href);
@@ -41,9 +40,12 @@ export function AppTopNav({ nav, className }: AppTopNavProps) {
               active
                 ? "bg-accent text-accent-foreground"
                 : "text-muted-foreground hover:bg-accent/70 hover:text-foreground",
-            )}
-          >
-            <Icon className="size-4 shrink-0" aria-hidden />
+            )}>
+            <Icon
+              className="size-4 shrink-0"
+              aria-hidden
+              weight={active ? "duotone" : "regular"}
+            />
             <span className="truncate">{item.title}</span>
           </Link>
         );

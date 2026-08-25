@@ -1,4 +1,5 @@
 import { Permission } from "@/config/permissions"
+import { hasAllPermissions } from "@/core/permissions"
 import { appointmentService } from "@/modules/appointments/services/appointment.service"
 import {
   AUDIT_ACTIONS,
@@ -128,7 +129,7 @@ export const prescriptionService = {
     data: ListAppointmentPrescriptionsDto,
     ctx: AuthRequestContext,
   ): Promise<PrescriptionsForAppointment> {
-    await requirePermission(ctx, Permission.RECORDS_READ)
+    const auth = await requirePermission(ctx, Permission.RECORDS_READ)
     const appointment = await appointmentService.getById(
       data.appointmentId,
       ctx,
@@ -161,7 +162,9 @@ export const prescriptionService = {
       items,
       appointmentId: appointment.id,
       patientId: appointment.patientId,
-      editable: canEditPrescription(appointment.status),
+      editable:
+        canEditPrescription(appointment.status) &&
+        hasAllPermissions(auth.permissions, [Permission.RECORDS_WRITE]),
       templates,
       preview: {
         layoutHtml: layout.html,

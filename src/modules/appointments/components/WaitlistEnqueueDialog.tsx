@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
+import { Permission } from "@/config/permissions";
 import { useEnqueueWaitlistMutation } from "@/modules/appointments/hooks/use-waitlist";
 import { enqueueWaitlistSchema } from "@/modules/appointments/schemas/waitlist.schema";
 import { useActiveClinicServices } from "@/modules/billing/hooks/use-clinic-services";
@@ -37,6 +38,7 @@ import { PatientCombobox } from "@/modules/patients/components/PatientCombobox";
 import { PatientFormDialog } from "@/modules/patients/components/PatientFormDialog";
 import type { Patient } from "@/modules/patients/types/patient";
 import { ProfessionalCombobox } from "@/modules/professionals/components/ProfessionalCombobox";
+import { useAuth } from "@/providers/AuthProvider";
 import { ErrorCode, getClientMessage, isAppError } from "@/shared/errors";
 
 type WaitlistEnqueueFormValues = {
@@ -57,6 +59,8 @@ export function WaitlistEnqueueDialog({
   onOpenChange,
   onSuccess,
 }: WaitlistEnqueueDialogProps) {
+  const { can } = useAuth();
+  const canWritePatients = can(Permission.PATIENTS_WRITE);
   const [formError, setFormError] = useState<string | null>(null);
   const [patientDialogOpen, setPatientDialogOpen] = useState(false);
   const [selectedPatientLabel, setSelectedPatientLabel] = useState<
@@ -159,7 +163,11 @@ export function WaitlistEnqueueDialog({
                           field.onChange(patientId);
                         }}
                         displayLabel={selectedPatientLabel}
-                        onCreatePatient={() => setPatientDialogOpen(true)}
+                        onCreatePatient={
+                          canWritePatients
+                            ? () => setPatientDialogOpen(true)
+                            : undefined
+                        }
                         disabled={isPending}
                         aria-invalid={Boolean(errors.patientId) || undefined}
                       />
@@ -242,12 +250,14 @@ export function WaitlistEnqueueDialog({
         </DialogContent>
       </Dialog>
 
-      <PatientFormDialog
-        open={patientDialogOpen}
-        onOpenChange={setPatientDialogOpen}
-        variant="quick"
-        onSuccess={handlePatientCreated}
-      />
+      {canWritePatients ? (
+        <PatientFormDialog
+          open={patientDialogOpen}
+          onOpenChange={setPatientDialogOpen}
+          variant="quick"
+          onSuccess={handlePatientCreated}
+        />
+      ) : null}
     </>
   );
 }

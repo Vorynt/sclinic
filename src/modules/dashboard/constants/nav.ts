@@ -36,8 +36,16 @@ export type NavGroup = {
   items: NavItem[];
 };
 
+/** How many permitted destinations sit in top nav / bottom tabs. */
+export const PRIMARY_NAV_SLOT_COUNT = 3;
+
 export type NavConfig = {
-  /** Always visible in top nav (desktop) and bottom tabs (mobile). */
+  /**
+   * Preferred top-nav / bottom-tab destinations (config order).
+   * After permission filtering, `getVisibleNavConfig` fills up to
+   * `PRIMARY_NAV_SLOT_COUNT` from groups/secondary if slots are empty.
+   * A single leftover overflow item is also promoted (no “Mais” for one link).
+   */
   primary: NavItem[];
   /** Overflow sections — “Mais” dropdown / sheet. */
   groups: NavGroup[];
@@ -316,19 +324,56 @@ export function filterVisibleItems(
   });
 }
 
+function overflowItemCount(groups: NavGroup[], secondary: NavItem[]): number {
+  return (
+    groups.reduce((sum, group) => sum + group.items.length, 0) +
+    secondary.length
+  );
+}
+
+function firstOverflowItem(
+  groups: NavGroup[],
+  secondary: NavItem[],
+): NavItem | undefined {
+  return groups[0]?.items[0] ?? secondary[0];
+}
+
 export function getVisibleNavConfig(
   canAny: (...permissions: PermissionKey[]) => boolean,
 ): NavConfig {
-  return {
-    primary: filterVisibleItems(NAV_CONFIG.primary, canAny),
-    groups: NAV_CONFIG.groups
-      .map((group) => ({
-        ...group,
-        items: filterVisibleItems(group.items, canAny),
-      }))
-      .filter((group) => group.items.length > 0),
-    secondary: filterVisibleItems(NAV_CONFIG.secondary, canAny),
-  };
+  const filteredPrimary = filterVisibleItems(NAV_CONFIG.primary, canAny);
+  const filteredGroups = NAV_CONFIG.groups
+    .map((group) => ({
+      ...group,
+      items: filterVisibleItems(group.items, canAny),
+    }))
+    .filter((group) => group.items.length > 0);
+  const filteredSecondary = filterVisibleItems(NAV_CONFIG.secondary, canAny);
+
+  const ordered = [
+    ...filteredPrimary,
+    ...filteredGroups.flatMap((group) => group.items),
+    ...filteredSecondary,
+  ];
+  const primary = ordered.slice(0, PRIMARY_NAV_SLOT_COUNT);
+  const primaryHrefs = new Set(primary.map((item) => item.href));
+
+  const groups = filteredGroups
+    .map((group) => ({
+      ...group,
+      items: group.items.filter((item) => !primaryHrefs.has(item.href)),
+    }))
+    .filter((group) => group.items.length > 0);
+  const secondary = filteredSecondary.filter(
+    (item) => !primaryHrefs.has(item.href),
+  );
+
+  const leftover = firstOverflowItem(groups, secondary);
+  if (leftover && overflowItemCount(groups, secondary) === 1) {
+    return { primary: [...primary, leftover], groups: [], secondary: [] };
+  }
+
+  return { primary, groups, secondary };
 }
 
 /** Alias for the hybrid shell (top nav + bottom tabs + overflow). */

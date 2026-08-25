@@ -17,7 +17,7 @@ Não há rota top-level: vive no attendance e no detalhe do paciente. Workspace 
 ## Clinical notes
 
 - 1 nota por appointment (upsert)
-- Editável só com appointment `checked_in`
+- Editável só com appointment `checked_in` **e** `records.write` (sem write, `editable: false` mesmo em atendimento em andamento)
 - **TipTap-first (ADR-015):** editor rich text aberto por padrão; `content` + `plainText` são a fonte da verdade
 - Autosave com debounce (2s após a última tecla) em background; botão **Salvar anotação** permanece para persistência imediata
 - Indicador de status: “Salvando…”, “Salvo às HH:mm” ou erro; toast só no save manual e em falha
@@ -28,12 +28,13 @@ Não há rota top-level: vive no attendance e no detalhe do paciente. Workspace 
 
 ## Vital signs
 
-- 1 registro por appointment; mesmo gate `checked_in`
+- 1 registro por appointment; mesmo gate `checked_in` + `records.write`
 - Ranges clínicos no schema; IMC **derivado** (não persistido)
 
 ## Clinical alerts
 
 - Escopo paciente (não appointment)
+- Criar/remover exige `records.write` (a UI esconde Adicionar/Remover sem a permissão)
 - Kinds: allergy, restriction, attention, other
 - Severity: low | medium | high
 
@@ -41,7 +42,7 @@ Não há rota top-level: vive no attendance e no detalhe do paciente. Workspace 
 
 | Status | Comportamento |
 |--------|----------------|
-| `draft` | Editável em `checked_in`; receita guarda `layoutId` do template escolhido |
+| `draft` | Editável em `checked_in` com `records.write`; receita guarda `layoutId` do template escolhido |
 | `issued` | Imutável; congela `layoutHtml` + snapshots |
 
 - 0..N por appointment; tipados por `kind` (ADR-010)

@@ -150,6 +150,8 @@ function AppointmentDetailContent({
     ownProfessionalId: ownProfessionalIdQuery.data ?? null,
   });
   const canReadRecords = can(Permission.RECORDS_READ);
+  const canUpdate = can(Permission.APPOINTMENTS_UPDATE);
+  const canDelete = can(Permission.APPOINTMENTS_DELETE);
 
   const cancelAppointment = useCancelAppointmentMutation({
     onSuccess: () => {
@@ -189,9 +191,11 @@ function AppointmentDetailContent({
   });
 
   const isCanceled = appointment.status === "canceled";
-  const canEditSchedule = isAppointmentScheduleEditable(appointment.status);
-  const showConfirm = canConfirmAppointment(appointment.status);
-  const showNoShow = canMarkAppointmentNoShow(appointment.status);
+  const scheduleEditable = isAppointmentScheduleEditable(appointment.status);
+  const canEditSchedule = canUpdate && scheduleEditable;
+  const showConfirm = canUpdate && canConfirmAppointment(appointment.status);
+  const showNoShow = canUpdate && canMarkAppointmentNoShow(appointment.status);
+  const showCancel = canDelete && scheduleEditable;
   const needsCheckIn = canStartAttendance(appointment.status);
   const showAttendanceSlot = canOpenAttendance(appointment.status);
   const isAttendancePermissionPending =
@@ -206,7 +210,8 @@ function AppointmentDetailContent({
     !isAttendancePermissionPending &&
     !canUseAttendanceAction;
   const attendanceLabel = getAttendanceActionLabel(appointment.status);
-  const showActionGroup = showConfirm || showNoShow || canEditSchedule;
+  const showActionGroup =
+    showConfirm || showNoShow || canEditSchedule || showCancel;
   const isStatusPending = updateStatus.isPending;
 
   function openAttendanceWorkspace() {
@@ -423,15 +428,20 @@ function AppointmentDetailContent({
                         </>
                       ) : null}
 
-                      <DropdownMenuSeparator />
-
-                      <DropdownMenuItem
-                        variant="destructive"
-                        disabled={isStatusPending}
-                        onSelect={() => setConfirmOpen(true)}>
-                        <XCircleIcon />
-                        Cancelar agendamento
-                      </DropdownMenuItem>
+                      {showCancel ? (
+                        <>
+                          {showConfirm || showNoShow || canEditSchedule ? (
+                            <DropdownMenuSeparator />
+                          ) : null}
+                          <DropdownMenuItem
+                            variant="destructive"
+                            disabled={isStatusPending}
+                            onSelect={() => setConfirmOpen(true)}>
+                            <XCircleIcon />
+                            Cancelar agendamento
+                          </DropdownMenuItem>
+                        </>
+                      ) : null}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 ) : null}

@@ -46,9 +46,9 @@ Soft nav Termos/Privacidade → modal `@modal/(.)…`.
 - Settings: `settings.manage`; subtítulos `audit.read` / owner-only usage.
 - `/services`: `financial.view` (CRUD com `financial.manage`). `/settings/services` redireciona para `/services`.
 - Patient clinical tabs: `records.read`.
-- `/help`: FAQ curado por papel (módulo `help`); item Ajuda no overflow da nav, habilitado para todos.
+- `/help`: FAQ curado por papel (módulo `help`); item Ajuda na nav (primária se for o único restante, senão overflow), habilitado para todos.
 
-Nav: `src/modules/dashboard/constants/nav.ts` — shell híbrido (top nav + bottom tabs + “Mais”); itens somem sem permissão. Ações de página (`PageAction[]` no `PageHeader`) viram FAB mobile no `AppShell` (`PageActionsFab`).
+Nav: `src/modules/dashboard/constants/nav.ts` — shell híbrido (top nav + bottom tabs + “Mais”); até 3 destinos permitidos na primária, na ordem do config; o restante em “Mais” só se houver 2+ destinos (um único sobe para a primária); itens somem sem permissão. Ações de página (`PageAction[]` no `PageHeader`) viram FAB mobile no `AppShell` (`PageActionsFab`).
 
 ## Ver também
 
